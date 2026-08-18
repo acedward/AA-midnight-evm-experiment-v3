@@ -24,12 +24,14 @@ import { withDustRetry } from '../night.js';
 import {
   accountWithdrawShielded,
   accountWithdrawUnshielded,
+  errorChain,
   mintShieldedToUser,
   mintUnshieldedToUser,
   mixedColourDeposit,
   transferInternal,
   userDepositShielded,
   userDepositUnshielded,
+  type MixedResult,
 } from './actions.js';
 import {
   assertAll,
@@ -243,7 +245,7 @@ const main = async () => {
       who: 'OwnerN' | 'OwnerM',
       tag: string,
       fn: (s: Spender) => Promise<T>,
-      require?: { colour: string; shielded: boolean; amount: bigint },
+      require?: Array<{ colour: string; shielded: boolean; amount: bigint }>,
     ): Promise<T> => {
       const s = await rig!.openSpender(who, tag, require);
       try {
@@ -368,7 +370,7 @@ const main = async () => {
           shielded
             ? await userDepositShielded(ctx, s.party, s.managerProviders, colour, amount, raw[account])
             : { txId: await userDepositUnshielded(ctx, s.party, s.managerProviders, colour, amount, raw[account]) },
-        { colour: colours.hex[colour], shielded, amount },
+        [{ colour: colours.hex[colour], shielded, amount }],
       );
       const id = tx((detail as any).txId as string);
       log(`  ${who} deposited ${colour} ${amount} -> ${account}: tx ${id}`);
@@ -480,20 +482,40 @@ const main = async () => {
     // =========================================================================================
     console.log(`\n## STEP 13 — ${ACTIONS[13]}`);
     const e13 = new StepEvidence(13, ACTIONS[13]!);
-    const mixed = await withSpender(
-      'OwnerM',
-      'step13-M1',
-      (s) =>
-        mixedColourDeposit(ctx, s.party, s.managerProviders, {
-          shieldedColour: 'S2',
-          shieldedValue: 2n,
-          unshieldedColour: 'U2',
-          unshieldedAmount: 2n,
-          accountId: raw.AA_B,
-        }),
-      // OwnerM must be able to see BOTH legs' funds; the shielded side is the scarcer one (4 left).
-      { colour: colours.hex.S2, shielded: true, amount: 2n },
-    );
+    // Both composition shapes are attempted inside `mixedColourDeposit`; this loop additionally
+    // retries the whole thing on a FRESH spender wallet, because the failure mode this step has
+    // actually shown is a node refusal that the diagnostic probe could not reproduce with a wallet
+    // that had fully caught up (`evidence/g3-ledger/probe-merge.json`).
+    let mixed: MixedResult | undefined;
+    let lastMixedError: unknown;
+    for (let tryNo = 1; tryNo <= 2 && !mixed; tryNo++) {
+      try {
+        mixed = await withSpender(
+          'OwnerM',
+          `step13-M1-try${tryNo}`,
+          (s) =>
+            mixedColourDeposit(ctx, s.party, s.managerProviders, {
+              shieldedColour: 'S2',
+              shieldedValue: 2n,
+              unshieldedColour: 'U2',
+              unshieldedAmount: 2n,
+              accountId: raw.AA_B,
+            }),
+          // BOTH legs, not just one. A wallet that cannot yet see the second leg's funds does not
+          // fail loudly — it balances into a transaction the node refuses with a bare
+          // `1010: Invalid Transaction: Custom error: 223`, which is what took gate runs 1 and 2 RED
+          // here while the probe, whose wallet saw both legs, had the identical shape ACCEPTED.
+          [
+            { colour: colours.hex.S2, shielded: true, amount: 2n },
+            { colour: colours.hex.U2, shielded: false, amount: 2n },
+          ],
+        );
+      } catch (e) {
+        lastMixedError = e;
+        log(`  M1 attempt ${tryNo} failed on BOTH shapes: ${errorChain(e)}`);
+      }
+    }
+    if (!mixed) throw lastMixedError;
     tx(mixed.txId);
     log(`  M1: ONE transaction ${mixed.txId} — shape "${mixed.shape}", circuits ${mixed.circuits.join(' + ')}`);
     e13.op('OwnerM deposits S2 2 AND U2 2 -> AA_B in ONE transaction', [mixed.txId], 'LEDGER', mixed);

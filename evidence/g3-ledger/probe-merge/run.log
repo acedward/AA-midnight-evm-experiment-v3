@@ -34,3 +34,13 @@ label: EXPERIMENTAL_LANE
     utc_start: 2026-08-18T22:42:23Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
     argv: step_probe
+    utc_end: 2026-08-18T22:58:40Z
+    duration_s: 977
+    exit: 1
+    output: 04-probe.out
+--- teardown
+    utc: 2026-08-18T22:58:40Z
+    argv: docker compose --env-file /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/docker/.env -f /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00004-g3probe-20260818224215-75444
+    exit: 0
+finished_utc: 2026-08-18T22:58:41Z
+final_exit: 1

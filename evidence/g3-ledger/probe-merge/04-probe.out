@@ -7,3 +7,78 @@
 [2026-08-18T22:42:27.576Z] genesis: NIGHT=250000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
 [2026-08-18T22:42:27.589Z]   funding feePayer with 1000000000000 NIGHT from genesis
 [2026-08-18T22:42:27.608Z]   fund feePayer: attempt 1 — DUST not yet generated, waiting 15s
+[2026-08-18T22:43:01.919Z]   submitted tx 00f618d40d4bdb977f50da6309d513a6369b82070b0363e1f6dbaccb55aeac0983 (hash efc9c310025cbc92ca2ae0e2c27a683e6bc922cb7cd6d96d13e8b029ed543c1a)
+[2026-08-18T22:43:01.923Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-18T22:43:02.072Z]   waiting for genesis to observe its own spend (NIGHT at or below 249000000000000) …
+[2026-08-18T22:43:02.771Z]   feePayer: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T22:43:19.266Z]   feePayer: DUST registration tx 004a864b77f300a476379a913ea92449eced75ec21c181c6ee9a33fa7f8819a16e
+[2026-08-18T22:43:19.266Z]   waiting for feePayer NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-18 18:43:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+2026-08-18 18:43:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+[2026-08-18T22:43:35.619Z]   funding OwnerN-funding with 200000000000 NIGHT from feePayer
+[2026-08-18T22:43:55.358Z]   submitted tx 00ab3d86b55c47373e0e73e8d2c8cf0509d06e5f1c75eb451ea1673df575e62bac (hash 03e8d429e4643b9d37e505a4ae6cfb46f8f49fec91afb5b36730809eec89df17)
+[2026-08-18T22:43:55.358Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-18T22:43:55.529Z]   waiting for feePayer to observe its own spend (NIGHT at or below 800000000000) …
+[2026-08-18T22:45:00.678Z]   OwnerN-funding: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T22:45:19.576Z]   OwnerN-funding: DUST registration tx 00c105b62a26fe60c3da8b17ee77a7c52bf4f25e005245898779819e0e2a83e985
+[2026-08-18T22:45:19.579Z]   waiting for OwnerN-funding NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-18 18:45:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+2026-08-18 18:45:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+[2026-08-18T22:45:20.004Z]   funding OwnerM-funding with 200000000000 NIGHT from feePayer
+[2026-08-18T22:45:36.980Z]   submitted tx 002e09e84d3ce959c7f02ac01bba88cfee20517c70cb03205c7750a1b11fac48e7 (hash 3f95309bc0be15aee602bccc53b99174d7bef853117764d5fc3dafef54743784)
+[2026-08-18T22:45:36.981Z]   waiting for OwnerM-funding NIGHT to arrive …
+[2026-08-18T22:45:37.129Z]   waiting for feePayer to observe its own spend (NIGHT at or below 600000000000) …
+[2026-08-18T22:45:52.288Z]   OwnerM-funding: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T22:46:07.736Z]   OwnerM-funding: DUST registration tx 00610ce2abb4fee09ded37015e24869e2d2934bcfc4dc2ebc940e17494ce054c84
+[2026-08-18T22:46:07.737Z]   waiting for OwnerM-funding NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-18 18:46:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+2026-08-18 18:46:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+2026-08-18 18:46:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+2026-08-18 18:46:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+[2026-08-18T22:46:08.413Z] deploying Minter1 with constructor tag "TOKA" …
+[2026-08-18T22:47:02.226Z]   Minter1 at fa321c71fbe8ed8f006abc9d14e19e4307a12e44eb517e5481572dd0112a0be0: shielded d8cc05ef573d1a178701f73ee948d41493c7fb21815842c3e42b71a6e7bae966 / unshielded 0ba7032f965790d589264cda134313232ef851cf6d82cdce652175c07b8559ef
+[2026-08-18T22:47:02.227Z] deploying Minter2 with constructor tag "TOKB" …
+[2026-08-18T22:47:57.049Z]   Minter2 at c3a803c77d0386c773339e1f0f385263ebb232e135c60d8eb44145f99ff0a28e: shielded aa534e908fcd90b7c1b1aa078236d18b0865c238c71fc4a377f6dbc6f241c515 / unshielded 7567f9e498ff70df49952dc042807f2c6555f80083458084bfdc9bca89350044
+[2026-08-18T22:47:57.050Z] deploying Minter3 with constructor tag "TOKC" …
+[2026-08-18T22:48:50.534Z]   Minter3 at c153f6ce95454fe9038f1507a9b3bfbf697106f79333e87eef9c767726bd190a: shielded b8d9f51e1f13c47b8d00baa87d4e55ff576840fe2ca8d043d260dde4a867215b / unshielded 5d1477feb2290fb3b86236501eb709856604ecb85c4f9986a753c46a5dfd0068
+[2026-08-18T22:48:50.535Z] pairwise colour distinctness: 15/15
+[2026-08-18T22:48:50.538Z] deploying Manager …
+[2026-08-18T22:49:08.047Z]   Manager at 2a398d2be22a23cb9412d6452fee6b4b4a35c23be3bacc6b74c26c2e25e8b606
+[2026-08-18T22:49:08.047Z] configure(S1, S2, U1, U2) …
+[2026-08-18T22:50:02.822Z] AA_A 67105e92521d24ccd0b0ee9d2ff842aec4b0dbfb81123b2143c9512fe6f114e7 / AA_B e01c3be2d447aa46f6b9a9d8ab6b0f5fef285782b0b6af40bea330a59de33e92 registered; 8 seeded cells
+[2026-08-18T22:50:02.870Z] fixture: minting S1, S2, U1, U2 to OwnerM
+2026-08-18 18:51:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+2026-08-18 18:51:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+[2026-08-18T22:51:34.235Z]   waiting for OwnerM-spender-1-establish to see 6 of aa534e908fcd… before spending it …
+[2026-08-18T22:51:34.316Z] --- establish-pool (pool S2=absent): Manager.depositShielded(S2,6) ALONE, empty pool
+[2026-08-18T22:52:02.006Z]     ACCEPTED — tx 005a721de7474e11b10ed09e74fb4440c86e106691be33856ad651b75089ff4c88
+[2026-08-18T22:52:17.054Z]     pool after: S2=6
+2026-08-18 18:52:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+2026-08-18 18:52:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+[2026-08-18T22:52:17.349Z]   waiting for OwnerM-spender-2-merge-alone to see 2 of aa534e908fcd… before spending it …
+[2026-08-18T22:52:17.429Z] --- merge-alone (pool S2=6): Manager.depositShielded(S2,2) ALONE, poolS2 non-empty -> mergeCoinImmediate
+[2026-08-18T22:52:43.416Z]     ACCEPTED — tx 00ca9226511b75ef007dc03202ecd7c5fd3393c9c8aa5704f7c023f6588d37adc5
+[2026-08-18T22:52:58.449Z]     pool after: S2=8
+2026-08-18 18:52:58        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+2026-08-18 18:52:58        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+[2026-08-18T22:52:58.762Z]   waiting for OwnerM-spender-3-merge-mixed to see 2 of aa534e908fcd… before spending it …
+[2026-08-18T22:52:58.838Z] --- merge-plus-unshielded-one-intent (pool S2=8): Manager.depositShielded(S2,2) [MERGE] + Manager.depositUnshielded(U2,2), one ledger Intent
+[2026-08-18T22:52:59.049Z]     assembled: {"intentCount":1,"intents":[{"segment":51957,"actions":2,"entryPoints":["depositShielded","depositUnshielded"],"addresses":["2a398d2be22a","2a398d2be22a"],"guaranteedUnshieldedOffer":null,"fallibleUnshieldedOffer":null,"dustActions":null}],"guaranteedZswapOffer":"present","fallibleZswapOffer":null}
+[2026-08-18T22:53:24.844Z]     ACCEPTED — tx 006acec476e3342ba919d6f89a6367b25aeea6b0548aef5f57f2e4e4767e115e2e
+[2026-08-18T22:53:39.876Z]     pool after: S2=10
+2026-08-18 18:53:40        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+2026-08-18 18:53:40        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:24100/: 1000:: Normal Closure
+[2026-08-18T22:53:40.178Z]   waiting for OwnerM-spender-4-merge-scoped to see 2 of aa534e908fcd… before spending it …
+
+FAILED: Timeout has occurred
+Error
+    at _super (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/rxjs@7.8.2/node_modules/rxjs/src/internal/util/createErrorClass.ts:13:22)
+    at new TimeoutErrorImpl (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/rxjs@7.8.2/node_modules/rxjs/src/internal/operators/timeout.ts:89:7)
+    at timeoutErrorFactory (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/rxjs@7.8.2/node_modules/rxjs/src/internal/operators/timeout.ts:402:9)
+    at <anonymous> (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/rxjs@7.8.2/node_modules/rxjs/src/internal/operators/timeout.ts:347:15)
+    at AsyncAction.<anonymous> (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/rxjs@7.8.2/node_modules/rxjs/src/internal/util/executeSchedule.ts:27:5)
+    at AsyncAction.AsyncAction._execute (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/rxjs@7.8.2/node_modules/rxjs/src/internal/scheduler/AsyncAction.ts:119:12)
+    at AsyncAction.AsyncAction.execute (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/rxjs@7.8.2/node_modules/rxjs/src/internal/scheduler/AsyncAction.ts:94:24)
+    at AsyncScheduler.AsyncScheduler.flush (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/rxjs@7.8.2/node_modules/rxjs/src/internal/scheduler/AsyncScheduler.ts:38:27)
+    at listOnTimeout (node:internal/timers:608:17)
+    at process.processTimers (node:internal/timers:543:7)

@@ -82,7 +82,8 @@ export type Rig = {
   openSpender: (
     who: 'OwnerN' | 'OwnerM',
     tag: string,
-    require?: { colour: string; shielded: boolean; amount: bigint },
+    /** Wait until the fresh wallet can see EVERY leg's funds before it builds anything. */
+    require?: Array<{ colour: string; shielded: boolean; amount: bigint }>,
   ) => Promise<Spender>;
   refreshObservers: () => Promise<void>;
   ctx: Ctx;
@@ -178,28 +179,31 @@ export const bootstrap = async (): Promise<Rig> => {
       who: 'OwnerN' | 'OwnerM',
       tag: string,
       /**
-       * Optional readiness condition: wait until this fresh wallet can actually SEE the funds it is
-       * about to spend. Reading a balance from a wallet BEFORE it submits anything is not what
-       * F-104 warns about (that is about a wallet's view of its own balance AFTER a send), and it
-       * turns "the shielded sub-wallet had not caught up yet" from an obscure
-       * `Wallet.InsufficientFunds` deep inside `balanceTx` into a plain wait.
+       * Readiness conditions: wait until this fresh wallet can actually SEE the funds for EVERY leg
+       * it is about to spend. Reading a balance from a wallet BEFORE it submits anything is not what
+       * F-104 warns about (that is about a wallet's view of its own balance AFTER a send).
+       *
+       * It must cover every leg, not just one. A transaction whose SECOND leg's funds the wallet
+       * cannot yet see does not fail loudly: `balanceTx` produces a transaction the node then
+       * refuses with a bare `1010: Invalid Transaction: Custom error: 223`, which is exactly what
+       * gate runs 1 and 2 hit at step 13 while the diagnostic probe — whose wallet could see both
+       * legs — had the identical shape ACCEPTED.
        */
-      require?: { colour: string; shielded: boolean; amount: bigint },
+      require?: Array<{ colour: string; shielded: boolean; amount: bigint }>,
     ): Promise<Spender> => {
       const seed = who === 'OwnerN' ? SEEDS.ownerN : SEEDS.ownerM;
       const name = `${who}-spender-${++spenderSeq}-${tag}`;
       const party = await openParty(name, seed);
       await syncedState(party);
-      if (require) {
+      for (const need of require ?? []) {
         const held = (st: any): bigint =>
           BigInt(
-            (require.shielded ? st?.shielded?.balances?.[require.colour] : st?.unshielded?.balances?.[require.colour]) ??
-              0n,
+            (need.shielded ? st?.shielded?.balances?.[need.colour] : st?.unshielded?.balances?.[need.colour]) ?? 0n,
           );
         await waitFor(
           party,
-          (st) => held(st) >= require.amount,
-          `${name} to see ${require.amount} of ${require.colour.slice(0, 12)}… before spending it`,
+          (st) => held(st) >= need.amount,
+          `${name} to see ${need.amount} of ${need.shielded ? 'shielded' : 'unshielded'} ${need.colour.slice(0, 12)}… before spending it`,
           300_000,
         );
       }

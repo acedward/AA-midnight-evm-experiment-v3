@@ -183,7 +183,7 @@ const main = async () => {
 
     // --- 1. establish the pool, exactly as spec step 7 does -----------------------------------------
     {
-      const s = await rig.openSpender('OwnerM', 'establish', { colour: colours.hex.S2, shielded: true, amount: 6n });
+      const s = await rig.openSpender('OwnerM', 'establish', [{ colour: colours.hex.S2, shielded: true, amount: 6n }]);
       try {
         await attempt(
           'establish-pool',
@@ -199,7 +199,7 @@ const main = async () => {
 
     // --- 2. a MERGE, on its own --------------------------------------------------------------------
     {
-      const s = await rig.openSpender('OwnerM', 'merge-alone', { colour: colours.hex.S2, shielded: true, amount: 2n });
+      const s = await rig.openSpender('OwnerM', 'merge-alone', [{ colour: colours.hex.S2, shielded: true, amount: 2n }]);
       try {
         await attempt(
           'merge-alone',
@@ -215,7 +215,7 @@ const main = async () => {
 
     // --- 3. THE GATE STEP-13 SHAPE: merge + unshielded, ONE INTENT ----------------------------------
     {
-      const s = await rig.openSpender('OwnerM', 'merge-mixed', { colour: colours.hex.S2, shielded: true, amount: 2n });
+      const s = await rig.openSpender('OwnerM', 'merge-mixed', [{ colour: colours.hex.S2, shielded: true, amount: 2n }]);
       try {
         await attempt(
           'merge-plus-unshielded-one-intent',
@@ -231,7 +231,7 @@ const main = async () => {
 
     // --- 4. the same via the SDK scoped batch --------------------------------------------------------
     {
-      const s = await rig.openSpender('OwnerM', 'merge-scoped', { colour: colours.hex.S2, shielded: true, amount: 2n });
+      const s = await rig.openSpender('OwnerM', 'merge-scoped', [{ colour: colours.hex.S2, shielded: true, amount: 2n }]);
       try {
         await attempt(
           'merge-plus-unshielded-scoped',
@@ -247,7 +247,7 @@ const main = async () => {
 
     // --- 5. CONTROL: the round-1 shape that passed, on a still-empty pool ------------------------------
     {
-      const s = await rig.openSpender('OwnerM', 'fresh-mixed', { colour: colours.hex.S1, shielded: true, amount: 2n });
+      const s = await rig.openSpender('OwnerM', 'fresh-mixed', [{ colour: colours.hex.S1, shielded: true, amount: 2n }]);
       try {
         await attempt(
           'fresh-plus-unshielded-one-intent',
