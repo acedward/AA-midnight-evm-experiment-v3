@@ -45,6 +45,37 @@
 //
 // The Manager's transaction is a superset in both families (the unshielded side needs no zswap
 // parts at all), so it is always the carrier.
+//
+// ---------------------------------------------------------------------------------------------
+// 00004: THE SAME-CONTRACT CASE (decision D-102, FR-107)
+// ---------------------------------------------------------------------------------------------
+//
+// R8 derived the carrier rule for TWO DIFFERENT contracts. 00004's probe M1 needs TWO CALLS ON THE
+// SAME CONTRACT in one intent — `Manager.depositShielded(S2 coin)` plus
+// `Manager.depositUnshielded(U2)` — which is why decision D-102 exists. Nothing in the assembly
+// below is contract-specific: `addCall` takes a prototype, and the prototype carries its own
+// contract address, so two prototypes for one address are assembled exactly like two for two.
+//
+// What DOES need re-deriving is the carrier rule and the replay assumption:
+//
+//   * carrier — still the SHIELDED leg. When that colour's pool is already populated (it is, at
+//     step 13: poolS2 = 6 from step 7), `depositShielded` merges, and `mergeCoinImmediate` puts a
+//     zswap input (the held pool coin) and a zswap output (the merged coin) into THAT call's own
+//     transaction. Those parts exist nowhere else. The unshielded leg needs no zswap parts at all,
+//     so it is always the graft. Same rule, same reason, one contract instead of two.
+//
+//   * replay — the two calls are built INDEPENDENTLY against the same pre-state, and the ledger
+//     replays their transcripts in intent order. That is safe here only because the legs are
+//     DISJOINT in state: the shielded leg touches `pools[S2]` and `balances[key(AA_B, S2)]`, the
+//     unshielded leg touches the kernel's U2 balance and `balances[key(AA_B, U2)]` — different keys
+//     of the same map — and neither writes anything the other reads (`configured`, the four colour
+//     cells and `accounts` are read-only in both). Two calls that read-then-wrote the SAME cell
+//     would need the state threaded between them, which is what midnight-js's own
+//     `withContractScopedTransaction` does and this ledger-level assembly does not.
+//
+// If the ledger refuses the shape outright, `actions.ts` records the verbatim error and falls back
+// to `withContractScopedTransaction` (one transaction, one segment per call), so D-102 is resolved
+// from evidence either way.
 import * as ledger from '@midnightntwrk/ledger-v9';
 import { encodeContractKeyLocation, hashVerifierKey } from '@midnight-ntwrk/midnight-js-types';
 import { buildCall, type CallSpec } from './compose.js';

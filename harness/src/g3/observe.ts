@@ -1,88 +1,105 @@
-// G3 — observation points.
+// G3 — the raw observation points behind the 16-cell table (EXPERIMENTAL_LANE / LANE-DEV-1).
 //
-// Spec FR-004 requires every assertion to read at least TWO INDEPENDENT observation points.
-// This project uses:
+// `table.ts` composes these into the spec's 4-party x 4-colour table; this module only READS.
 //
-//   Manager-held balances  (AA_A / AA_B)
-//     1. the Manager's internal ACCOUNT MAP, decoded from contract state
-//     2. the Manager's POOLED LEDGER HOLDINGS (pool coin value / unshielded ledger balance),
-//        which are maintained by an entirely different mechanism (zswap coin + kernel balance)
-//     The spec's standing invariant `pool == AA_A + AA_B` IS the cross-check between them, so a
-//     disagreement between the two points fails the run rather than passing silently.
+// FR-108 requires two independent observation points wherever the rails allow. What exists on this
+// pinned lane, per party class:
 //
-//   User-held balances (OwnerN / OwnerM)
-//     1. the wallet SDK's own synced state
-//     2. the indexer, queried directly over GraphQL (independent of the wallet's view)
-import * as ledger from '@midnightntwrk/ledger-v9';
+//   AA_A / AA_B (Manager-held, per colour)
+//     1. the Manager's `balances` map, decoded from contract state (`src/manager-view.ts`)
+//     2. the CUSTODY side of the same colour — the pooled zswap coin for a shielded colour, or the
+//        LEDGER KERNEL's unshielded balance for an unshielded one. Neither is written by the same
+//        code that writes `balances`, so the per-colour invariant
+//        `custody[c] == Σ_account balances[(account, c)]` is a real cross-check.
+//     3. (rotating, once per step) a real ON-CHAIN `accountBalance(account, colour)` circuit call —
+//        a proved transaction whose result comes back through the SDK, not through a state decode.
+//
+//   OwnerN / OwnerM (user-held, per colour)
+//     1. a wallet SDK state — read from an OBSERVER wallet that has never submitted a transaction.
+//        **F-104 discipline (00004 G1):** on this lane the wallet that SUBMITTED a transaction
+//        under-reports its own balance indefinitely while still returning
+//        `progress.isStrictlyComplete() === true`. A submitting wallet is therefore never an
+//        observation point here; the observers are separate facade instances on the same seeds that
+//        only ever read, and can be re-opened if they ever fall behind.
+//     2. unshielded — the UTXO set RECONSTRUCTED from the indexer's own transaction history, per
+//        colour, independent of any wallet. (The pinned indexer v4.4.0-rc.1 has no per-address
+//        balance query at all — 00003 finding G3-4 — but it does report every transaction's
+//        `unshieldedCreatedOutputs` with owner, token type, value and spent-ness.)
+//        shielded  — the LEDGER CONSERVATION IDENTITY per colour:
+//        `minted[c] == custody[c] + Σ user holdings[c]`. A shielded coin is private by
+//        construction, so the indexer cannot attribute it to an owner; this ledger-side identity is
+//        the honest second point.
 import { MidnightBech32m } from '@midnightntwrk/wallet-sdk-address-format';
+import * as rx from 'rxjs';
 import { endpoints, readLaneEnv } from '../lane.js';
+import type { Party } from '../wallet.js';
 
-// @ts-ignore — generated artifact
-import { ledger as managerLedger } from '../../generated-zk/manager/contract/index.js';
+export type ColourName = 'S1' | 'S2' | 'U1' | 'U2';
+export const COLOURS: readonly ColourName[] = ['S1', 'S2', 'U1', 'U2'] as const;
+export const SHIELDED_COLOURS: readonly ColourName[] = ['S1', 'S2'] as const;
+export const UNSHIELDED_COLOURS: readonly ColourName[] = ['U1', 'U2'] as const;
 
-export type ManagerView = {
-  configured: boolean;
-  shieldedColor: string;
-  unshieldedColor: string;
-  hasPool: boolean;
-  poolValue: bigint;
-  poolNonce: string;
-  accounts: string[];
-  shieldedOf: Record<string, bigint>;
-  unshieldedOf: Record<string, bigint>;
+export type PartyName = 'OwnerN' | 'OwnerM' | 'AA_A' | 'AA_B';
+export const PARTIES: readonly PartyName[] = ['OwnerN', 'OwnerM', 'AA_A', 'AA_B'] as const;
+export const AA_PARTIES: readonly PartyName[] = ['AA_A', 'AA_B'] as const;
+export const USER_PARTIES: readonly PartyName[] = ['OwnerN', 'OwnerM'] as const;
+
+/** The four configured colours, hex and raw, plus the two never-configured control colours. */
+export type ColourSet = {
+  hex: Record<ColourName, string>;
+  raw: Record<ColourName, Uint8Array>;
+  /** Minter3's two colours — recorded so NC-4 can name them and so nothing configures them. */
+  control: { shielded: string; unshielded: string; rawShielded: Uint8Array; rawUnshielded: Uint8Array };
 };
 
-const hex = (u: Uint8Array) => Buffer.from(u).toString('hex');
+export type CoinDetail = { nonce: string; value: string; commitment: string; nullifier: string };
+export type UtxoDetail = { value: string; intentHash?: string; outputNo?: string };
 
-/** Observation point 1 for contract-held value: decode the Manager's own state. */
-export const readManager = async (providers: any, address: string): Promise<ManagerView> => {
-  const state = await providers.publicDataProvider.queryContractState(address);
-  if (!state) throw new Error(`no contract state for Manager at ${address}`);
-  const l: any = managerLedger(state.data);
+export const walletState = async (p: Party): Promise<any> => rx.firstValueFrom(p.wallet.state());
 
-  const accounts: string[] = [];
-  for (const a of l.accounts) accounts.push(hex(a));
+export const shieldedOfWallet = (s: any, colour: string): bigint => BigInt(s?.shielded?.balances?.[colour] ?? 0n);
+export const unshieldedOfWallet = (s: any, colour: string): bigint => BigInt(s?.unshielded?.balances?.[colour] ?? 0n);
 
-  const shieldedOf: Record<string, bigint> = {};
-  const unshieldedOf: Record<string, bigint> = {};
-  for (const [k, v] of l.shieldedOf) shieldedOf[hex(k)] = v as bigint;
-  for (const [k, v] of l.unshieldedOf) unshieldedOf[hex(k)] = v as bigint;
+export const coinDetails = (s: any, colour: string): CoinDetail[] =>
+  (s?.shielded?.availableCoins ?? [])
+    .filter((c: any) => String(c?.coin?.color ?? c?.coin?.type).toLowerCase() === colour.toLowerCase())
+    .map((c: any) => ({
+      nonce: String(c.coin.nonce),
+      value: String(c.coin.value),
+      commitment: String(c.commitment),
+      nullifier: String(c.nullifier),
+    }))
+    .sort((a: CoinDetail, b: CoinDetail) => a.commitment.localeCompare(b.commitment));
 
-  return {
-    configured: l.configured,
-    shieldedColor: hex(l.minterShieldedColor),
-    unshieldedColor: hex(l.minterUnshieldedColor),
-    hasPool: l.hasPool,
-    poolValue: l.hasPool ? (l.pool.value as bigint) : 0n,
-    poolNonce: hex(l.pool.nonce),
-    accounts,
-    shieldedOf,
-    unshieldedOf,
-  };
-};
+export const utxoDetails = (s: any, colour: string): UtxoDetail[] =>
+  (s?.unshielded?.availableCoins ?? [])
+    .filter((u: any) => String(u?.utxo?.type).toLowerCase() === colour.toLowerCase())
+    .map((u: any) => ({
+      value: String(u.utxo.value),
+      intentHash: u.utxo.intentHash === undefined ? undefined : String(u.utxo.intentHash),
+      outputNo: u.utxo.outputNo === undefined ? undefined : String(u.utxo.outputNo),
+    }))
+    .sort((a: UtxoDetail, b: UtxoDetail) => `${a.value}${a.intentHash}`.localeCompare(`${b.value}${b.intentHash}`));
 
 /**
- * Observation point 2 for USER-held unshielded value: the unshielded UTXO set reconstructed from
- * the INDEXER'S OWN TRANSACTION HISTORY, independent of the wallet SDK.
+ * Observation point 2 for USER-held UNSHIELDED value: every party's unspent UTXO set of every
+ * unshielded colour under test, reconstructed from the INDEXER'S OWN transaction history and
+ * independent of any wallet.
  *
- * NOTE (recorded as Finding G3-4): the pinned indexer `v4.4.0-rc.1` exposes NO per-address
- * unshielded-balance query — schema introspection shows no `unshieldedUtxos` field on `Query` at
- * all. What it does expose is, per transaction, `unshieldedCreatedOutputs` with each output's
- * owner, token type, value and (crucially) whether it has since been spent. Since every movement
- * of the Minter's colours happens in a transaction this harness submitted, replaying those
- * transactions' created outputs and keeping the unspent ones reconstructs each party's UTXO set
- * from chain data alone.
+ * One replay covers both colours, so the per-step cost is one indexer query per submitted
+ * transaction rather than one per (transaction, colour).
  *
  * @param txIdentifiers every transaction this run has submitted, in any order
- * @param color the unshielded colour under test
- * @returns owner address (hex) -> unspent value of that colour
+ * @param colours the unshielded colours under test, hex
+ * @returns owner address (hex, lowercase) -> colour (hex, lowercase) -> unspent value
  */
 export const indexerUnshieldedByOwner = async (
   txIdentifiers: readonly string[],
-  color: string,
-): Promise<Map<string, bigint>> => {
+  colours: readonly string[],
+): Promise<Map<string, Map<string, bigint>>> => {
   const ep = endpoints(readLaneEnv());
-  const byOwner = new Map<string, bigint>();
+  const wanted = new Set(colours.map((c) => c.toLowerCase()));
+  const byOwner = new Map<string, Map<string, bigint>>();
   const seen = new Set<string>();
 
   for (const identifier of txIdentifiers) {
@@ -99,96 +116,20 @@ export const indexerUnshieldedByOwner = async (
     const json: any = await res.json();
     for (const tx of json?.data?.transactions ?? []) {
       for (const utxo of tx?.unshieldedCreatedOutputs ?? []) {
-        if (String(utxo.tokenType).toLowerCase() !== color.toLowerCase()) continue;
+        const colour = String(utxo.tokenType).toLowerCase();
+        if (!wanted.has(colour)) continue;
         // One transaction can be returned under more than one identifier, so outputs are keyed by
         // their own identity rather than counted per response.
         const key = `${utxo.intentHash}:${utxo.outputIndex}`;
         if (seen.has(key)) continue;
         seen.add(key);
         if (utxo.spentAtTransaction) continue;
-        const owner = MidnightBech32m.parse(String(utxo.owner)).data.toString('hex');
-        byOwner.set(owner, (byOwner.get(owner) ?? 0n) + BigInt(utxo.value));
+        const owner = MidnightBech32m.parse(String(utxo.owner)).data.toString('hex').toLowerCase();
+        const perColour = byOwner.get(owner) ?? new Map<string, bigint>();
+        perColour.set(colour, (perColour.get(colour) ?? 0n) + BigInt(utxo.value));
+        byOwner.set(owner, perColour);
       }
     }
   }
   return byOwner;
-};
-
-/** The spec's standing invariant, asserted after every step. */
-export const assertPoolInvariant = (m: ManagerView, label: string): void => {
-  const sumShielded = Object.values(m.shieldedOf).reduce((a, b) => a + b, 0n);
-  if (m.poolValue !== sumShielded) {
-    throw new Error(
-      `${label}: SHIELDED POOL INVARIANT VIOLATED — pool=${m.poolValue} but AA_A+AA_B=${sumShielded}`,
-    );
-  }
-};
-
-/**
- * Contract state is only observable once the block carrying the transaction has been applied and
- * indexed. Reading immediately after `submitTx` returns the PRE-transaction state, which silently
- * looks like "the call did nothing" — that false negative is exactly what the first deposit probe
- * hit. Always wait on the expected condition instead of reading once.
- */
-export const waitForManager = async (
-  providers: any,
-  address: string,
-  predicate: (m: ManagerView) => boolean,
-  what: string,
-  timeoutMs = 180_000,
-): Promise<ManagerView> => {
-  const deadline = Date.now() + timeoutMs;
-  let last: ManagerView | undefined;
-  for (;;) {
-    last = await readManager(providers, address);
-    if (predicate(last)) return last;
-    if (Date.now() > deadline) {
-      throw new Error(
-        `timed out after ${timeoutMs}ms waiting for ${what}; last observed pool=${last.poolValue} accounts=${JSON.stringify(last.shieldedOf, (_k, v) => (typeof v === 'bigint' ? `${v}` : v))}`,
-      );
-    }
-    await new Promise((r) => setTimeout(r, 2000));
-  }
-};
-
-/**
- * Observation point 2 for CONTRACT-held unshielded value: the contract's own LEDGER BALANCE MAP,
- * decoded from its on-chain state.
- *
- * This is maintained by the kernel's unshielded-balance machinery — `receiveUnshielded` /
- * `sendUnshielded` move it — entirely separately from the `unshieldedOf` account map that the
- * contract's own ledger accessor decodes above. The spec's per-family invariant
- * `pool = AA_A + AA_B` is therefore a genuine cross-check between two independent mechanisms, and
- * a disagreement fails the run.
- *
- * NOTE (recorded as Finding G3-3): the indexer's convenience view
- * `publicDataProvider.queryUnshieldedBalances(contractAddress)` returns an EMPTY list for a
- * contract that verifiably holds unshielded tokens on this pinned lane, so it cannot serve as this
- * observation point. The ledger state is authoritative and is what the node itself enforces
- * against, so it is read directly instead.
- */
-export const managerUnshieldedLedger = async (
-  providers: any,
-  address: string,
-  color: string,
-): Promise<bigint> => {
-  const state = await providers.publicDataProvider.queryContractState(address);
-  if (!state) return 0n;
-  const ledgerState: any = (ledger as any).ContractState.deserialize(state.serialize());
-  for (const [tokenType, value] of ledgerState.balance) {
-    if (tokenType?.tag === 'unshielded' && String(tokenType.raw).toLowerCase() === color.toLowerCase()) {
-      return BigInt(value);
-    }
-  }
-  return 0n;
-};
-
-/** The unshielded half of the standing invariant. Shielded is `assertPoolInvariant`. */
-export const assertUnshieldedPoolInvariant = (m: ManagerView, ledgerBalance: bigint, label: string): void => {
-  const sum = Object.values(m.unshieldedOf).reduce((a, b) => a + b, 0n);
-  if (ledgerBalance !== sum) {
-    throw new Error(
-      `${label}: UNSHIELDED POOL INVARIANT VIOLATED — contract ledger balance=${ledgerBalance} but AA_A+AA_B=${sum}`,
-    );
-  }
 };
