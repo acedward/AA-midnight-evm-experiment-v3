@@ -1,0 +1,17 @@
+ Container aa00004-g3probe-20260818222531-68761-indexer-1  Stopping
+ Container aa00004-g3probe-20260818222531-68761-proof-server-1  Stopping
+ Container aa00004-g3probe-20260818222531-68761-indexer-1  Stopped
+ Container aa00004-g3probe-20260818222531-68761-indexer-1  Removing
+ Container aa00004-g3probe-20260818222531-68761-indexer-1  Removed
+ Container aa00004-g3probe-20260818222531-68761-node-1  Stopping
+ Container aa00004-g3probe-20260818222531-68761-proof-server-1  Stopped
+ Container aa00004-g3probe-20260818222531-68761-proof-server-1  Removing
+ Container aa00004-g3probe-20260818222531-68761-proof-server-1  Removed
+ Container aa00004-g3probe-20260818222531-68761-node-1  Stopped
+ Container aa00004-g3probe-20260818222531-68761-node-1  Removing
+ Container aa00004-g3probe-20260818222531-68761-node-1  Removed
+ Volume aa00004-g3probe-20260818222531-68761_node-data  Removing
+ Network aa00004-g3probe-20260818222531-68761_default  Removing
+ Volume aa00004-g3probe-20260818222531-68761_node-data  Removed
+ Network aa00004-g3probe-20260818222531-68761_default  Removed
+host clean: no containers, volumes or networks named aa00004-g3probe-20260818222531-68761*

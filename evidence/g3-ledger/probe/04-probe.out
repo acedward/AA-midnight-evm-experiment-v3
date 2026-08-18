@@ -7,3 +7,82 @@
 [2026-08-18T22:25:43.800Z] genesis: NIGHT=250000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
 [2026-08-18T22:25:43.808Z]   funding feePayer with 1000000000000 NIGHT from genesis
 [2026-08-18T22:25:43.825Z]   fund feePayer: attempt 1 — DUST not yet generated, waiting 15s
+[2026-08-18T22:26:18.689Z]   submitted tx 00906d610718c08fb87b19f3b70a66aacb91a257e15014eafe6ec926074ed03b3b (hash 7dc293f5d82ee5bc9243221d6059865f97b839157bdcb9e4afec97b0a5c6135a)
+[2026-08-18T22:26:18.689Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-18T22:26:18.798Z]   waiting for genesis to observe its own spend (NIGHT at or below 249000000000000) …
+[2026-08-18T22:27:16.330Z]   feePayer: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T22:27:30.765Z]   feePayer: DUST registration tx 00b6348bb963f5d291d6031ae47507409654f4868326e649979fa129f1ab52f384
+[2026-08-18T22:27:30.765Z]   waiting for feePayer NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-18 18:27:31        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+2026-08-18 18:27:31        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+[2026-08-18T22:27:48.878Z]   funding OwnerN-funding with 200000000000 NIGHT from feePayer
+[2026-08-18T22:28:06.794Z]   submitted tx 002472824b779c6a3baec13ae8faca7a2624b4f318ec0dd68df06144826b37c398 (hash 5cd70303dcb39757ce9b873f3702cb6a165cfcfcf1323a51ad37d7c6b8242fae)
+[2026-08-18T22:28:06.795Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-18T22:28:06.954Z]   waiting for feePayer to observe its own spend (NIGHT at or below 800000000000) …
+[2026-08-18T22:29:00.787Z]   OwnerN-funding: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T22:29:18.826Z]   OwnerN-funding: DUST registration tx 003df55f00846f3c5146842d1cf7dc520d34d45208eed2394f8bc6d0b46087a6c9
+[2026-08-18T22:29:18.827Z]   waiting for OwnerN-funding NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-18 18:29:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+2026-08-18 18:29:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+[2026-08-18T22:29:19.255Z]   funding OwnerM-funding with 200000000000 NIGHT from feePayer
+[2026-08-18T22:29:37.502Z]   submitted tx 00907113f9f9f32471d92004c196ebf0594b1e73fac871170f5a4f16bdc46ec358 (hash 235ea5fcd21f92fc80a037eb9ce31bfa4bbe3c4ac1f356054d7682a58ebe30b4)
+[2026-08-18T22:29:37.502Z]   waiting for OwnerM-funding NIGHT to arrive …
+[2026-08-18T22:29:37.670Z]   waiting for feePayer to observe its own spend (NIGHT at or below 600000000000) …
+[2026-08-18T22:29:50.483Z]   OwnerM-funding: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T22:30:06.845Z]   OwnerM-funding: DUST registration tx 00cc16bb2a35260acb51883e392787aeeb81f5c3aa12598a8843ad6e24ceaee80b
+[2026-08-18T22:30:06.845Z]   waiting for OwnerM-funding NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-18 18:30:07        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+2026-08-18 18:30:07        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+2026-08-18 18:30:07        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+2026-08-18 18:30:07        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+[2026-08-18T22:30:07.536Z] deploying Minter1 with constructor tag "TOKA" …
+[2026-08-18T22:31:02.555Z]   Minter1 at 8830c44ec3baae388b7e4c7d666eca2d9d76c50c65fc0af473ed2dad2e86e1f1: shielded 3645f637cbf57f5ab940c8067b55edf8b35528e3c3aa89bbaf2889609b61a7cd / unshielded 37d69c7a90453caf001287d9f431fe38d5d4e2075f64a8fdb964ba2eaf0b8b39
+[2026-08-18T22:31:02.556Z] deploying Minter2 with constructor tag "TOKB" …
+[2026-08-18T22:31:55.894Z]   Minter2 at db26f31d63d81cb42ceddedff880ab868ade78ba180a76c840241d6b36bbf72a: shielded c54aeabc2c291fd5b188fafe2df9c5b46513bf2db19becc6b451959aee58e296 / unshielded c72c545f9d8f28c3e2650d11a2153047244a5b0ff207920e5a7a5fa73084cf0a
+[2026-08-18T22:31:55.895Z] deploying Minter3 with constructor tag "TOKC" …
+[2026-08-18T22:33:03.215Z]   Minter3 at ec273b667237ddca309ec31a45b7e2f4ab567505ae21d2e35caea426f0262501: shielded ee915db334c92fb8c6db01344aee2eb6ea46f9826ca2be30bebd3bc92b7fba68 / unshielded c0fcabafe8e0db645a7372dba10667f43ccf353be30a9b39d1c6e627ac11b379
+[2026-08-18T22:33:03.216Z] pairwise colour distinctness: 15/15
+[2026-08-18T22:33:03.224Z] deploying Manager …
+[2026-08-18T22:33:26.381Z]   Manager at c3d8df91ace4444bb9d2feac097d4922931606b76990a7d55141e0138116f6fb
+[2026-08-18T22:33:26.382Z] configure(S1, S2, U1, U2) …
+[2026-08-18T22:34:20.470Z] AA_A 67105e92521d24ccd0b0ee9d2ff842aec4b0dbfb81123b2143c9512fe6f114e7 / AA_B e01c3be2d447aa46f6b9a9d8ab6b0f5fef285782b0b6af40bea330a59de33e92 registered; 8 seeded cells
+[2026-08-18T22:34:20.521Z] fixture: minting all four colours to OwnerM
+2026-08-18 18:36:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+2026-08-18 18:36:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+[2026-08-18T22:36:15.931Z] --- two-shielded-one-intent: Manager.depositShielded(S1,2) + Manager.depositShielded(S2,2), one ledger Intent
+[2026-08-18T22:36:16.105Z]     assembled: {"intentCount":1,"intents":[{"segment":16760,"actions":2,"entryPoints":["depositShielded","depositShielded"],"addresses":["c3d8df91ace4","c3d8df91ace4"],"guaranteedUnshieldedOffer":null,"fallibleUnshieldedOffer":null,"dustActions":null}],"guaranteedZswapOffer":"present","fallibleZswapOffer":null}
+2026-08-18 18:36:27        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 218
+2026-08-18 18:36:27        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 218
+[2026-08-18T22:36:27.321Z]     REFUSED — Transaction submission error
+2026-08-18 18:36:42        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+2026-08-18 18:36:42        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+[2026-08-18T22:36:42.702Z] --- two-unshielded-one-intent: Manager.depositUnshielded(U1,2) + Manager.depositUnshielded(U2,2), one ledger Intent
+[2026-08-18T22:36:42.860Z]     assembled: {"intentCount":1,"intents":[{"segment":42488,"actions":2,"entryPoints":["depositUnshielded","depositUnshielded"],"addresses":["c3d8df91ace4","c3d8df91ace4"],"guaranteedUnshieldedOffer":null,"fallibleUnshieldedOffer":null,"dustActions":null}],"guaranteedZswapOffer":null,"fallibleZswapOffer":null}
+[2026-08-18T22:37:00.943Z]     ACCEPTED — tx 004ba8a39b7ad803cdcca9add90249f2311cf88da7f745269040682e75fc8d63f2
+2026-08-18 18:37:16        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+2026-08-18 18:37:16        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+[2026-08-18T22:37:16.317Z] --- mixed-one-intent: Manager.depositShielded(S2,2) + Manager.depositUnshielded(U2,2), one ledger Intent
+[2026-08-18T22:37:16.484Z]     assembled: {"intentCount":1,"intents":[{"segment":44137,"actions":2,"entryPoints":["depositShielded","depositUnshielded"],"addresses":["c3d8df91ace4","c3d8df91ace4"],"guaranteedUnshieldedOffer":null,"fallibleUnshieldedOffer":null,"dustActions":null}],"guaranteedZswapOffer":"present","fallibleZswapOffer":null}
+[2026-08-18T22:37:36.962Z]     ACCEPTED — tx 00266cc4735027f25ac21277b136a2fd6e1d17ab00cc489e0c32ae48dfce5286a9
+2026-08-18 18:37:52        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+2026-08-18 18:37:52        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+[2026-08-18T22:37:52.369Z] --- two-shielded-scoped: Manager.depositShielded(S1,2) + Manager.depositShielded(S2,2), withContractScopedTransaction
+[2026-08-18T22:38:20.742Z]     ACCEPTED — tx 003d6491b9afdfc43e053161e7426f832be7dccce7f6c759b10e3cfc026e7de302
+[2026-08-18T22:38:35.788Z] --- r8-cross-contract-control: Minter1.mintShieldedTo(S1,3 -> Manager) + Manager.depositShielded(S1,3), one ledger Intent
+[2026-08-18T22:38:35.950Z]     assembled: {"intentCount":1,"intents":[{"segment":54691,"actions":2,"entryPoints":["depositShielded","mintShieldedTo"],"addresses":["c3d8df91ace4","8830c44ec3ba"],"guaranteedUnshieldedOffer":null,"fallibleUnshieldedOffer":null,"dustActions":null}],"guaranteedZswapOffer":"present","fallibleZswapOffer":null}
+[2026-08-18T22:39:01.008Z]     ACCEPTED — tx 001fefcd48d14fae09adc09cae5136c5b83401f2954a4a7e79c0d7d3c4135f4505
+[2026-08-18T22:39:16.051Z] --- fr107-cross-contract-mixed: Manager.depositShielded(S1,2) + Minter1.mintUnshieldedTo(U1,2 -> Manager) + Manager.depositUnshielded(U1,2), one ledger Intent
+[2026-08-18T22:39:16.300Z]     assembled: {"intentCount":1,"intents":[{"segment":7056,"actions":3,"entryPoints":["depositShielded","mintUnshieldedTo","depositUnshielded"],"addresses":["c3d8df91ace4","8830c44ec3ba","c3d8df91ace4"],"guaranteedUnshieldedOffer":null,"fallibleUnshieldedOffer":null,"dustActions":null}],"guaranteedZswapOffer":"present","fallibleZswapOffer":null}
+[2026-08-18T22:39:21.346Z]     REFUSED — Insufficient funds
+
+## RESULT
+  REFUSED  two-shielded-one-intent      Manager.depositShielded(S1,2) + Manager.depositShielded(S2,2), one ledger Intent
+      Transaction submission error
+  ACCEPTED two-unshielded-one-intent    Manager.depositUnshielded(U1,2) + Manager.depositUnshielded(U2,2), one ledger Intent
+  ACCEPTED mixed-one-intent             Manager.depositShielded(S2,2) + Manager.depositUnshielded(U2,2), one ledger Intent
+  ACCEPTED two-shielded-scoped          Manager.depositShielded(S1,2) + Manager.depositShielded(S2,2), withContractScopedTransaction
+  ACCEPTED r8-cross-contract-control    Minter1.mintShieldedTo(S1,3 -> Manager) + Manager.depositShielded(S1,3), one ledger Intent
+  REFUSED  fr107-cross-contract-mixed   Manager.depositShielded(S1,2) + Minter1.mintUnshieldedTo(U1,2 -> Manager) + Manager.depositUnshielded(U1,2), one ledger Intent
+      Insufficient funds
+
+VERDICT: the step-13 shape was ACCEPTED here — re-examine the gate run rather than the shape

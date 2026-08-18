@@ -19,7 +19,12 @@ source "$ROOT/scripts/lib/failsafe.sh"
 # shellcheck source=../lib/stack.sh
 source "$ROOT/scripts/lib/stack.sh"
 
-EVID="$ROOT/evidence/g3-ledger/probe"
+# Which probe to run. Round 1 (`probe-mixed.ts`) asked whether the composition was the problem;
+# round 2 (`probe-merge.ts`) asks whether the pool MERGE is. Override with PROBE_MODULE.
+PROBE_MODULE="${PROBE_MODULE:-src/g3/probe-mixed.ts}"
+PROBE_NAME="$(basename "$PROBE_MODULE" .ts)"
+
+EVID="$ROOT/evidence/g3-ledger/probe-${PROBE_NAME#probe-}"
 fs_init "G3-PROBE" "$EVID" "$@"
 
 PROJECT="aa00004-g3probe-$(date -u +%Y%m%d%H%M%S)-$$"
@@ -29,9 +34,9 @@ fs_set_teardown "${COMPOSE[*]} down -v --remove-orphans && stack_assert_clean ${
 step_probe_ports() { "$ROOT/scripts/g1/probe-ports.sh" --project "$PROJECT" --evidence "$EVID"; }
 step_boot()        { "${COMPOSE[@]}" up -d; }
 step_health()      { stack_health "$ROOT"; }
-step_probe()       { (cd "$ROOT/harness" && npx tsx src/g3/probe-mixed.ts); }
+step_probe()       { (cd "$ROOT/harness" && npx tsx "$PROBE_MODULE"); }
 
-echo "[G3-PROBE] EXPERIMENTAL_LANE / LANE-DEV-1 — diagnosing the step-13 node refusal"
+echo "[G3-PROBE] EXPERIMENTAL_LANE / LANE-DEV-1 — diagnosing the step-13 node refusal (${PROBE_MODULE})"
 echo "[G3-PROBE] compose project: ${PROJECT}"
 fs_run 01-probe-ports step_probe_ports
 fs_run 02-boot        step_boot
