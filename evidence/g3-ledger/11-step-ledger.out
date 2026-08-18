@@ -1,224 +1,210 @@
-# G3 FOUR-COLOUR STEP LEDGER — steps 0-13 + NC-1..5 + M1 + M2 — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-18T22:04:48.001Z
-[2026-08-18T22:04:48.079Z] wallets open; syncing genesis …
-2026-08-18 18:04:48        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:04:48        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:04:48        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:04:48        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-[2026-08-18T22:04:48.510Z] genesis: NIGHT=250000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
-[2026-08-18T22:04:48.518Z]   funding feePayer with 1000000000000 NIGHT from genesis
-[2026-08-18T22:04:48.534Z]   fund feePayer: attempt 1 — DUST not yet generated, waiting 15s
-[2026-08-18T22:05:19.400Z]   submitted tx 002c10d99223d1963a4fd27e3748db23e5ffc9dba00b6ed4607b0fe067b43ed7a7 (hash 156362baffe4beb3e36cf43e2486542732ae99bfcd950d772f9b9aaaff2d7b7a)
-[2026-08-18T22:05:19.400Z]   waiting for feePayer NIGHT to arrive …
-[2026-08-18T22:05:19.543Z]   waiting for genesis to observe its own spend (NIGHT at or below 249000000000000) …
-[2026-08-18T22:06:22.062Z]   feePayer: registering 1 NIGHT utxo(s) for DUST generation
-[2026-08-18T22:06:36.899Z]   feePayer: DUST registration tx 00261adcdace91c0a8932b3db25c6fd7fb13159b54fd2b04d289b6776b0cc5b862
-[2026-08-18T22:06:36.900Z]   waiting for feePayer NIGHT utxos to show registeredForDustGeneration=true …
-2026-08-18 18:06:37        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:06:37        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-[2026-08-18T22:06:56.089Z]   funding OwnerN-funding with 200000000000 NIGHT from feePayer
-[2026-08-18T22:07:13.023Z]   submitted tx 004ef57d33efa3dee8e5c6c67d53df21fb0657dd74f5923f8e844794fe38ddfc2f (hash e04e4d735ce9c098449c3b894ab1774f8ab8205bd05ea642df24908bc6ed5bc0)
-[2026-08-18T22:07:13.023Z]   waiting for OwnerN-funding NIGHT to arrive …
-[2026-08-18T22:07:13.174Z]   waiting for feePayer to observe its own spend (NIGHT at or below 800000000000) …
-[2026-08-18T22:08:06.917Z]   OwnerN-funding: registering 1 NIGHT utxo(s) for DUST generation
-[2026-08-18T22:08:25.166Z]   OwnerN-funding: DUST registration tx 007c430f92625fbfd4c7130f4194d137be98a79f0bfe0cd55bb8dc763fb1818059
-[2026-08-18T22:08:25.166Z]   waiting for OwnerN-funding NIGHT utxos to show registeredForDustGeneration=true …
-2026-08-18 18:08:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:08:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-[2026-08-18T22:08:25.584Z]   funding OwnerM-funding with 200000000000 NIGHT from feePayer
-[2026-08-18T22:08:43.864Z]   submitted tx 00f7ab2806a77751ab437a81395a7cb4cf0f99fb6173abf9f848eb74cf245166e6 (hash 8ab84397f7510dbb2f6fc2f819114ac7b44c06fa38d1b2ea4c80cdd2d0eb750b)
-[2026-08-18T22:08:43.864Z]   waiting for OwnerM-funding NIGHT to arrive …
-[2026-08-18T22:08:44.003Z]   waiting for feePayer to observe its own spend (NIGHT at or below 600000000000) …
-[2026-08-18T22:08:53.389Z]   OwnerM-funding: registering 1 NIGHT utxo(s) for DUST generation
-[2026-08-18T22:09:13.263Z]   OwnerM-funding: DUST registration tx 00903c127e6e0221d748830d46915375c8402bc582873c366715d0564956b92d5b
-[2026-08-18T22:09:13.263Z]   waiting for OwnerM-funding NIGHT utxos to show registeredForDustGeneration=true …
-2026-08-18 18:09:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:09:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:09:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:09:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-[2026-08-18T22:09:13.925Z] deploying Minter1 with constructor tag "TOKA" …
-[2026-08-18T22:10:07.736Z]   Minter1 at b2de7b9e89455fee7d57459c1bf0d8ae4dcda848db9204b696e16f09d3959689: shielded 68618788658363e69f1af183573fbf25057da6341c0f87e19ce167cee8efec16 / unshielded 574eb563fd70fd98d146eb28670b30195d7840cebbebcde127f2143030fe6be4
-[2026-08-18T22:10:07.736Z] deploying Minter2 with constructor tag "TOKB" …
-[2026-08-18T22:11:02.510Z]   Minter2 at fe08b65c17d04a4761a213c5d923a646a162080b5d88ccbe593b98fc0deabf11: shielded 40db5d19d124299c219325cee4f277c40fbada00be8c478b56ec28937b09c957 / unshielded 2fef45c2065ab87bec8ddd87d0b2e18d30d754713176a26d86be67440aa0a981
-[2026-08-18T22:11:02.510Z] deploying Minter3 with constructor tag "TOKC" …
-[2026-08-18T22:11:55.920Z]   Minter3 at fb781ee087f4603868484574f37b6e6a858550f42ba863066d1dc8ffa9402573: shielded fa05d37a47dd63e7a2cdda099f6b794de9a93f04ac26ff91175b768b326d2b9f / unshielded 0e5036f9f0af58bcdac7ae4019de0d1c8d90da59538a3e29b0d685b0db58e050
-[2026-08-18T22:11:55.920Z] pairwise colour distinctness: 15/15
-[2026-08-18T22:11:55.923Z] deploying Manager …
-[2026-08-18T22:12:14.732Z]   Manager at 446485ab396a28c18f923a09b568f1f9c3667dbe375b5e2919744ef5091762ca
-[2026-08-18T22:12:14.732Z] configure(S1, S2, U1, U2) …
-[2026-08-18T22:13:14.790Z] AA_A 67105e92521d24ccd0b0ee9d2ff842aec4b0dbfb81123b2143c9512fe6f114e7 / AA_B e01c3be2d447aa46f6b9a9d8ab6b0f5fef285782b0b6af40bea330a59de33e92 registered; 8 seeded cells
+# G3 FOUR-COLOUR STEP LEDGER — steps 0-13 + NC-1..5 + M1 + M2 — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-18T23:05:36.556Z
+[2026-08-18T23:05:36.644Z] wallets open; syncing genesis …
+2026-08-18 19:05:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:05:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:05:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:05:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+[2026-08-18T23:05:37.099Z] genesis: NIGHT=250000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+[2026-08-18T23:05:37.106Z]   funding feePayer with 1000000000000 NIGHT from genesis
+[2026-08-18T23:05:37.123Z]   fund feePayer: attempt 1 — DUST not yet generated, waiting 15s
+[2026-08-18T23:06:13.908Z]   submitted tx 00cf3916309b355bacd8bb9708a2a5159ebea28c418e5925dfa395d364f653dab8 (hash f7bce220df00a0f5c87aa7f069d0dc14e71029d4a8abf00bb40d5c2dee434634)
+[2026-08-18T23:06:13.908Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-18T23:06:14.034Z]   waiting for genesis to observe its own spend (NIGHT at or below 249000000000000) …
+[2026-08-18T23:07:14.731Z]   feePayer: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T23:07:31.302Z]   feePayer: DUST registration tx 00b922ac1cff582e10deffe8b873f62b361d659f4eaffd51820aeeb5bc59387703
+[2026-08-18T23:07:31.303Z]   waiting for feePayer NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-18 19:07:31        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:07:31        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+[2026-08-18T23:07:45.454Z]   funding OwnerN-funding with 200000000000 NIGHT from feePayer
+[2026-08-18T23:08:01.998Z]   submitted tx 0000050288479808179a5bc7b82a78a7da6b2117d13d5ba37d1d59b2aff7ed6922 (hash c321606ad37b0e861cdac960df572e3a31ebfa429ed7f49ae6309399b388136e)
+[2026-08-18T23:08:01.998Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-18T23:08:02.158Z]   waiting for feePayer to observe its own spend (NIGHT at or below 800000000000) …
+[2026-08-18T23:08:05.109Z]   OwnerN-funding: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T23:08:26.025Z]   OwnerN-funding: DUST registration tx 00846a0af923215ff18c69bb89c01243fa074b6d6fe1298fa59a4320ca1d423745
+[2026-08-18T23:08:26.025Z]   waiting for OwnerN-funding NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-18 19:08:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:08:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+[2026-08-18T23:08:26.601Z]   funding OwnerM-funding with 200000000000 NIGHT from feePayer
+[2026-08-18T23:08:43.352Z]   submitted tx 0005fd052fbfcdefa4242bba396c48bd3425f7d5ab31738c3df42e5e5333ebc173 (hash 0e3de1da7fcaa87a8721ddf39897a6abafcb849b896b68a1b002399878759396)
+[2026-08-18T23:08:43.352Z]   waiting for OwnerM-funding NIGHT to arrive …
+[2026-08-18T23:08:43.464Z]   waiting for feePayer to observe its own spend (NIGHT at or below 600000000000) …
+[2026-08-18T23:09:01.850Z]   OwnerM-funding: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T23:09:19.383Z]   OwnerM-funding: DUST registration tx 00dfb71607eeb523b53432efc02ee4a66536f2cbedd44d09a856afcaa40b95ae12
+[2026-08-18T23:09:19.383Z]   waiting for OwnerM-funding NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-18 19:09:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:09:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:09:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:09:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+[2026-08-18T23:09:20.099Z] deploying Minter1 with constructor tag "TOKA" …
+[2026-08-18T23:10:13.807Z]   Minter1 at 8ff81b38627d0a611c3c558eed28b859b0b5e1b9ea88159caee4ae6bc257e692: shielded 9c77d2fb6250482c9c7bff6f8ceedc71f687b8d502383b33012f9602d711d888 / unshielded 888080b72e0f350e6599b3d146a26585a4462a6ec08cea9424b5144785ec0ad3
+[2026-08-18T23:10:13.808Z] deploying Minter2 with constructor tag "TOKB" …
+[2026-08-18T23:11:08.511Z]   Minter2 at 4cf57bdd66fa67d51305194bf68b6611b14261f31e21cfcfee8593cee742a0a0: shielded 6dda5d892a426e5776ecb97c6b6ff0131f1bb3f39da6457f8b1d32cc5c0032ab / unshielded 90c789c4d6d5bfe7d01f9084e8d337b1a096b4fa272d0eca3958db9404603ca0
+[2026-08-18T23:11:08.512Z] deploying Minter3 with constructor tag "TOKC" …
+[2026-08-18T23:12:01.888Z]   Minter3 at c4b9aec02d9d45d75ffcb7a5bc1d5223658d6130232fcdd09752ab9fa3b4b14f: shielded e9325f1bfbc367ffbd60b40342b9d4f0b6783e1e611a32ccd700aac7fa2c22bd / unshielded 783bdd8bbde7ee60f214bab51531e268391e5c8e9939d4f593a45c3954e8579b
+[2026-08-18T23:12:01.889Z] pairwise colour distinctness: 15/15
+[2026-08-18T23:12:01.892Z] deploying Manager …
+[2026-08-18T23:12:20.669Z]   Manager at 10ea8ca47a36e89a6534148161355156ce2b1cd372ac748502cb273b29cba901
+[2026-08-18T23:12:20.669Z] configure(S1, S2, U1, U2) …
+[2026-08-18T23:13:14.101Z] AA_A 67105e92521d24ccd0b0ee9d2ff842aec4b0dbfb81123b2143c9512fe6f114e7 / AA_B e01c3be2d447aa46f6b9a9d8ab6b0f5fef285782b0b6af40bea330a59de33e92 registered; 8 seeded cells
 
 ## STEP 0 — baseline — deploy 3 Minters + 1 Manager, configure S1/S2/U1/U2, register AA_A and AA_B
-[2026-08-18T22:13:32.127Z]   spot check: on-chain accountBalance(AA_A, S1) = 0 (tx 00bdfd2fb77fc7c592d2b32963979b119498c8a06eb864ed2523208370bab22512)
-[2026-08-18T22:13:32.149Z]   evidence -> evidence/g3-ledger/step-0/
+[2026-08-18T23:13:32.829Z]   spot check: on-chain accountBalance(AA_A, S1) = 0 (tx 0066d1362645d5b655f8b5de768edf3128cfb6f154dc240225ff22450d250d8244)
+[2026-08-18T23:13:32.859Z]   evidence -> evidence/g3-ledger/step-0/
 STEP 0 ASSERTED — OwnerN=[S1:0 S2:0 U1:0 U2:0]  OwnerM=[S1:0 S2:0 U1:0 U2:0]  AA_A=[S1:0 S2:0 U1:0 U2:0]  AA_B=[S1:0 S2:0 U1:0 U2:0]  poolS1=0 poolS2=0 ledgerU1=0 ledgerU2=0
   CELL GREEN step-0 — Baseline: all 16 cells 0, no pools, no contract balances
   CELL GREEN distinctness — Distinctness: all 6 colours (4 configured + 2 control) pairwise distinct from on-chain reads
 
 ## STEP 1 — Minter1 mints S1 10 -> OwnerN
-[2026-08-18T22:13:49.752Z]   Minter1 minted S1 10 -> OwnerN: tx 00febcd3eef228e300e1c684b93845d9560ec86893ea373a5b44c7091e1799fa2f
-[2026-08-18T22:14:08.193Z]   spot check: on-chain accountBalance(AA_A, S2) = 0 (tx 0066a8d1e4c787b10ec107f6b2039d5cfb9001e8ac181a4f32b84b5f58e7a0d585)
-[2026-08-18T22:14:08.211Z]   evidence -> evidence/g3-ledger/step-1/
+[2026-08-18T23:13:49.120Z]   Minter1 minted S1 10 -> OwnerN: tx 0045181cb47aedb1844393713a0f31d400936cf568fcef792a05e8f1ddd20b2355
+[2026-08-18T23:14:08.934Z]   spot check: on-chain accountBalance(AA_A, S2) = 0 (tx 004e4afe213e55649ff76ed3a7b1d6ae033822c2051c9c0e9e1cc7afe5438ec994)
+[2026-08-18T23:14:08.962Z]   evidence -> evidence/g3-ledger/step-1/
 STEP 1 ASSERTED — OwnerN=[S1:10 S2:0 U1:0 U2:0]  OwnerM=[S1:0 S2:0 U1:0 U2:0]  AA_A=[S1:0 S2:0 U1:0 U2:0]  AA_B=[S1:0 S2:0 U1:0 U2:0]  poolS1=0 poolS2=0 ledgerU1=0 ledgerU2=0
   CELL GREEN step-1 — Minter1 mints S1 10 -> OwnerN
 
 ## STEP 2 — Minter1 mints U1 10 -> OwnerN
-[2026-08-18T22:14:25.817Z]   Minter1 minted U1 10 -> OwnerN: tx 0072407c3e2c51b448b645696d3dd31236bb9074b45a1888844a6b485237b1aa07
-[2026-08-18T22:14:44.244Z]   spot check: on-chain accountBalance(AA_A, U1) = 0 (tx 00884ca4db4d6b0b99ef74ab7035e7f4a2c6e9f32000941f7efabbaa9646b811d1)
-[2026-08-18T22:14:44.265Z]   evidence -> evidence/g3-ledger/step-2/
+[2026-08-18T23:14:25.222Z]   Minter1 minted U1 10 -> OwnerN: tx 008a147ce27f42faf4bf6a4f0742bed37bccc29359379ab4b4d5d404a18e92e6b0
+[2026-08-18T23:14:44.976Z]   spot check: on-chain accountBalance(AA_A, U1) = 0 (tx 001bbb14f12ea2dde6373c4e45ed7a7cf9d76e92aee66a347d5aa5240f4f23b247)
+[2026-08-18T23:14:45.009Z]   evidence -> evidence/g3-ledger/step-2/
 STEP 2 ASSERTED — OwnerN=[S1:10 S2:0 U1:10 U2:0]  OwnerM=[S1:0 S2:0 U1:0 U2:0]  AA_A=[S1:0 S2:0 U1:0 U2:0]  AA_B=[S1:0 S2:0 U1:0 U2:0]  poolS1=0 poolS2=0 ledgerU1=0 ledgerU2=0
   CELL GREEN step-2 — Minter1 mints U1 10 -> OwnerN
 
 ## STEP 3 — Minter2 mints S2 10 -> OwnerM
-[2026-08-18T22:15:01.865Z]   Minter2 minted S2 10 -> OwnerM: tx 002a546026b1bbdb215705e6707448badb0f4ab46ca28d1a5a248ead5408f4e9c0
-[2026-08-18T22:15:20.286Z]   spot check: on-chain accountBalance(AA_A, U2) = 0 (tx 001b24ad92d87dd089f1396eaad4f6cbb925173f5d3e0741565ee9ad9da8a77e2b)
-[2026-08-18T22:15:20.308Z]   evidence -> evidence/g3-ledger/step-3/
+[2026-08-18T23:15:08.058Z]   Minter2 minted S2 10 -> OwnerM: tx 0086d01bd3b658f8f067eb0e01752a0a528e50a5872c94a37cb77a10ebf849c0ab
+[2026-08-18T23:15:33.107Z]   spot check: on-chain accountBalance(AA_A, U2) = 0 (tx 00c61b9857532a111f88f96c11ec3387da089c00d96781042a0cef36f0ee1ffc65)
+[2026-08-18T23:15:33.135Z]   evidence -> evidence/g3-ledger/step-3/
 STEP 3 ASSERTED — OwnerN=[S1:10 S2:0 U1:10 U2:0]  OwnerM=[S1:0 S2:10 U1:0 U2:0]  AA_A=[S1:0 S2:0 U1:0 U2:0]  AA_B=[S1:0 S2:0 U1:0 U2:0]  poolS1=0 poolS2=0 ledgerU1=0 ledgerU2=0
   CELL GREEN step-3 — Minter2 mints S2 10 -> OwnerM
 
 ## STEP 4 — Minter2 mints U2 10 -> OwnerM
-[2026-08-18T22:15:37.904Z]   Minter2 minted U2 10 -> OwnerM: tx 007d555a0ac81bc5813e5399b8194bdafff91817235c27ab9b220c9aa788cb7da3
-[2026-08-18T22:15:56.320Z]   spot check: on-chain accountBalance(AA_B, S1) = 0 (tx 00afc50f93a3fdd9911aa04dafec883ec12689f79a7471424a327249167f940f09)
-[2026-08-18T22:15:56.345Z]   evidence -> evidence/g3-ledger/step-4/
+[2026-08-18T23:15:49.396Z]   Minter2 minted U2 10 -> OwnerM: tx 002b24b97c2c2df2227dbb1cc4e599661099bd51fbcd9f063a6aa8d94a81529104
+[2026-08-18T23:16:07.856Z]   spot check: on-chain accountBalance(AA_B, S1) = 0 (tx 0045d282f7fa439b31f5db5b943186ee3e7c8aa588d94c0cc2f4baa550b2401e81)
+[2026-08-18T23:16:07.882Z]   evidence -> evidence/g3-ledger/step-4/
 STEP 4 ASSERTED — OwnerN=[S1:10 S2:0 U1:10 U2:0]  OwnerM=[S1:0 S2:10 U1:0 U2:10]  AA_A=[S1:0 S2:0 U1:0 U2:0]  AA_B=[S1:0 S2:0 U1:0 U2:0]  poolS1=0 poolS2=0 ledgerU1=0 ledgerU2=0
   CELL GREEN step-4 — Minter2 mints U2 10 -> OwnerM
 
 ## STEP 5 — OwnerN deposits S1 6 -> AA_A
-2026-08-18 18:15:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:15:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-[2026-08-18T22:15:56.634Z]   waiting for OwnerN-spender-1-step5 to see 6 of 686187886583… before spending it …
-[2026-08-18T22:16:19.299Z]   OwnerN deposited S1 6 -> AA_A: tx 006aab4592c20b63ca8bf11cd0d93ad93d65c95acf37d276b761a5cd49b7e16250
-[2026-08-18T22:16:44.404Z]   spot check: on-chain accountBalance(AA_B, S2) = 0 (tx 0091d370adff21e797d368bd0641508a3f6f7b7d0172abb894b9ef2feacbe933b7)
-[2026-08-18T22:16:44.431Z]   evidence -> evidence/g3-ledger/step-5/
+2026-08-18 19:16:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:16:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+[2026-08-18T23:16:08.173Z]   waiting for OwnerN-spender-1-step5 to see 6 of shielded 9c77d2fb6250… before spending it …
+[2026-08-18T23:16:30.837Z]   OwnerN deposited S1 6 -> AA_A: tx 0057e73c1475975b379ed58c260e6d621b531f20a7ea68cbd078badb9b068bc047
+[2026-08-18T23:16:50.624Z]   spot check: on-chain accountBalance(AA_B, S2) = 0 (tx 003f77465925a08283d70f121cf93429c06f7e4c3e86dc8aa5e8a79b283208bede)
+[2026-08-18T23:16:50.654Z]   evidence -> evidence/g3-ledger/step-5/
 STEP 5 ASSERTED — OwnerN=[S1:4 S2:0 U1:10 U2:0]  OwnerM=[S1:0 S2:10 U1:0 U2:10]  AA_A=[S1:6 S2:0 U1:0 U2:0]  AA_B=[S1:0 S2:0 U1:0 U2:0]  poolS1=6 poolS2=0 ledgerU1=0 ledgerU2=0
   CELL GREEN step-5 — OwnerN deposits S1 6 -> AA_A
 
 ## STEP 6 — OwnerN deposits U1 5 -> AA_A
-2026-08-18 18:16:44        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:16:44        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-[2026-08-18T22:16:44.731Z]   waiting for OwnerN-spender-2-step6 to see 5 of 574eb563fd70… before spending it …
-[2026-08-18T22:17:02.016Z]   OwnerN deposited U1 5 -> AA_A: tx 004cd8706ac5c7d175b376fb878408fd2a93805173ba2305636e71f27ef598900b
-[2026-08-18T22:17:25.759Z]   spot check: on-chain accountBalance(AA_B, U1) = 0 (tx 003676a8a391690444004b1e5ed946b7596ab92829c324aa759d41c0ff8466b116)
-[2026-08-18T22:17:25.798Z]   evidence -> evidence/g3-ledger/step-6/
+2026-08-18 19:16:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:16:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+[2026-08-18T23:16:50.956Z]   waiting for OwnerN-spender-2-step6 to see 5 of unshielded 888080b72e0f… before spending it …
+[2026-08-18T23:17:06.924Z]   OwnerN deposited U1 5 -> AA_A: tx 00469a8269b3b43a46fb26199a7255d5510aa616867c71fd9cbb34d6fd70c73162
+[2026-08-18T23:17:26.694Z]   spot check: on-chain accountBalance(AA_B, U1) = 0 (tx 0032035eec4d37ef268c364244bfe4ff63a6864657303c636fde1cd11c47de8c1b)
+[2026-08-18T23:17:26.737Z]   evidence -> evidence/g3-ledger/step-6/
 STEP 6 ASSERTED — OwnerN=[S1:4 S2:0 U1:5 U2:0]  OwnerM=[S1:0 S2:10 U1:0 U2:10]  AA_A=[S1:6 S2:0 U1:5 U2:0]  AA_B=[S1:0 S2:0 U1:0 U2:0]  poolS1=6 poolS2=0 ledgerU1=5 ledgerU2=0
   CELL GREEN step-6 — OwnerN deposits U1 5 -> AA_A
 
 ## STEP 7 — OwnerM deposits S2 6 -> AA_B
-2026-08-18 18:17:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:17:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-[2026-08-18T22:17:26.101Z]   waiting for OwnerM-spender-3-step7 to see 6 of 40db5d19d124… before spending it …
-[2026-08-18T22:17:48.709Z]   OwnerM deposited S2 6 -> AA_B: tx 00ef7b3f04ff1eef416f7ec213b204e323363a1c3a97e9abac938ac0cd16e9b08d
-[2026-08-18T22:18:08.466Z]   spot check: on-chain accountBalance(AA_B, U2) = 0 (tx 00af48171f3f9eb3648692a3073a388c80d573c666858b39a2b4d587e5c78ce580)
-[2026-08-18T22:18:08.508Z]   evidence -> evidence/g3-ledger/step-7/
+2026-08-18 19:17:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:17:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+[2026-08-18T23:17:27.052Z]   waiting for OwnerM-spender-3-step7 to see 6 of shielded 6dda5d892a42… before spending it …
+[2026-08-18T23:17:55.027Z]   OwnerM deposited S2 6 -> AA_B: tx 00216963a7f4cdcae2294a234989730e8ba51fffdf44b221f8702e759a97ce455d
+[2026-08-18T23:18:14.824Z]   spot check: on-chain accountBalance(AA_B, U2) = 0 (tx 00af3a86836d647c5b2aa1ca75807fe391bbbfbb6d933ab1dd6b97bf912ede518d)
+[2026-08-18T23:18:14.888Z]   evidence -> evidence/g3-ledger/step-7/
 STEP 7 ASSERTED — OwnerN=[S1:4 S2:0 U1:5 U2:0]  OwnerM=[S1:0 S2:4 U1:0 U2:10]  AA_A=[S1:6 S2:0 U1:5 U2:0]  AA_B=[S1:0 S2:6 U1:0 U2:0]  poolS1=6 poolS2=6 ledgerU1=5 ledgerU2=0
   CELL GREEN step-7 — OwnerM deposits S2 6 -> AA_B
 
 ## STEP 8 — OwnerM deposits U2 5 -> AA_B
-2026-08-18 18:18:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:18:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-[2026-08-18T22:18:08.860Z]   waiting for OwnerM-spender-4-step8 to see 5 of 2fef45c2065a… before spending it …
-[2026-08-18T22:18:24.734Z]   OwnerM deposited U2 5 -> AA_B: tx 00eba4af7993821fe16dda66874e147d6b19d5c3dbda4ee2ac7d74f2afb373b02a
-[2026-08-18T22:18:44.464Z]   spot check: on-chain accountBalance(AA_A, S1) = 6 (tx 009aa871ece7e3ce059424150f245f8cbe1d4b06dac2aa1ac1bf98e56bf2864ea1)
-[2026-08-18T22:18:44.511Z]   evidence -> evidence/g3-ledger/step-8/
+2026-08-18 19:18:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:18:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+[2026-08-18T23:18:15.212Z]   waiting for OwnerM-spender-4-step8 to see 5 of unshielded 90c789c4d6d5… before spending it …
+[2026-08-18T23:18:37.760Z]   OwnerM deposited U2 5 -> AA_B: tx 0086ae50203ff22ae3659888abb8bf6d663a7f954574f415468761dabe5919b437
+[2026-08-18T23:18:56.174Z]   spot check: on-chain accountBalance(AA_A, S1) = 6 (tx 00d3bc6056fa46afd0f0c176606d5b85cbca552f514af27ca452f096cd0ffbec51)
+[2026-08-18T23:18:56.222Z]   evidence -> evidence/g3-ledger/step-8/
 STEP 8 ASSERTED — OwnerN=[S1:4 S2:0 U1:5 U2:0]  OwnerM=[S1:0 S2:4 U1:0 U2:5]  AA_A=[S1:6 S2:0 U1:5 U2:0]  AA_B=[S1:0 S2:6 U1:0 U2:5]  poolS1=6 poolS2=6 ledgerU1=5 ledgerU2=5
   CELL GREEN step-8 — OwnerM deposits U2 5 -> AA_B
 
 ## STEP 9 — internal transfer S1 3: AA_A -> AA_B (no token operation)
-[2026-08-18T22:19:00.763Z]   internal transfer S1 3 -> AA_B: tx 009df4039fcd05c77cec29c6e9d419a23e74d60dfd19b6e567a38d96e2cd43818f
-[2026-08-18T22:19:20.518Z]   spot check: on-chain accountBalance(AA_A, S2) = 0 (tx 0066f96aae68260e654fcd5691272f597f7925c3097b04034164d1165dc532dd50)
-[2026-08-18T22:19:20.590Z]   evidence -> evidence/g3-ledger/step-9/
+[2026-08-18T23:19:13.817Z]   internal transfer S1 3 -> AA_B: tx 0086407dadb4024f765779716a66662228701e654b38c7cc32dcbf1b0d985ddf96
+[2026-08-18T23:19:32.295Z]   spot check: on-chain accountBalance(AA_A, S2) = 0 (tx 006675d62c2f28def709ff806976291ef71e89a20300494e02c20c85861f4e9ebc)
+[2026-08-18T23:19:32.363Z]   evidence -> evidence/g3-ledger/step-9/
 STEP 9 ASSERTED — OwnerN=[S1:4 S2:0 U1:5 U2:0]  OwnerM=[S1:0 S2:4 U1:0 U2:5]  AA_A=[S1:3 S2:0 U1:5 U2:0]  AA_B=[S1:3 S2:6 U1:0 U2:5]  poolS1=6 poolS2=6 ledgerU1=5 ledgerU2=5
   CELL GREEN step-9 — internal transfer S1 3: AA_A -> AA_B (no token operation)
 
 ## STEP 10 — internal transfer U2 2: AA_B -> AA_A (no token operation)
-[2026-08-18T22:19:43.444Z]   internal transfer U2 2 -> AA_A: tx 003bb20302e8f6dd0cb48f0d740be6b813bcc0c104271b19d4765acea482d1671c
-[2026-08-18T22:20:01.912Z]   spot check: on-chain accountBalance(AA_A, U1) = 5 (tx 009b561d1531eb7a50c6c02489c1caf26cc476e893374b5915f0db988c7f604f49)
-[2026-08-18T22:20:03.133Z]   evidence -> evidence/g3-ledger/step-10/
+[2026-08-18T23:19:49.906Z]   internal transfer U2 2 -> AA_A: tx 00660b98f793ce3a494e31e96253d79289906cf9b8a9968db2acf57e27b2c8b4f2
+[2026-08-18T23:20:08.358Z]   spot check: on-chain accountBalance(AA_A, U1) = 5 (tx 002718643a027e0ed86168596cea7a023d9b53a5169c993184a1eb1a2ee12d8f44)
+[2026-08-18T23:20:08.424Z]   evidence -> evidence/g3-ledger/step-10/
 STEP 10 ASSERTED — OwnerN=[S1:4 S2:0 U1:5 U2:0]  OwnerM=[S1:0 S2:4 U1:0 U2:5]  AA_A=[S1:3 S2:0 U1:5 U2:2]  AA_B=[S1:3 S2:6 U1:0 U2:3]  poolS1=6 poolS2=6 ledgerU1=5 ledgerU2=5
   CELL GREEN step-10 — internal transfer U2 2: AA_B -> AA_A (no token operation)
 
 ## STEP 11 — AA_B withdraws S1 3 -> OwnerM
-[2026-08-18T22:20:31.468Z]   AA_B withdrew S1 3 -> OwnerM: tx 006f8eab2d7f26b6e544dbb511206218ce3db18c5e5d27c162995b11758a575d81
-[2026-08-18T22:20:49.876Z]   spot check: on-chain accountBalance(AA_A, U2) = 2 (tx 0003286c2dcbaec255bf61a171756675a0dfd4acb280d987e25015101911412b24)
-[2026-08-18T22:20:49.927Z]   evidence -> evidence/g3-ledger/step-11/
+[2026-08-18T23:20:31.314Z]   AA_B withdrew S1 3 -> OwnerM: tx 00d39ad68196e8426254c45c9f59382cf0f161a1dad69aad0eebad4b55d9fb9850
+[2026-08-18T23:20:51.092Z]   spot check: on-chain accountBalance(AA_A, U2) = 2 (tx 00206240dc06a7e5e0a56f0576c22690ce9093021511f98b07d2a105329a0bd193)
+[2026-08-18T23:20:51.166Z]   evidence -> evidence/g3-ledger/step-11/
 STEP 11 ASSERTED — OwnerN=[S1:4 S2:0 U1:5 U2:0]  OwnerM=[S1:3 S2:4 U1:0 U2:5]  AA_A=[S1:3 S2:0 U1:5 U2:2]  AA_B=[S1:0 S2:6 U1:0 U2:3]  poolS1=3 poolS2=6 ledgerU1=5 ledgerU2=5
   CELL GREEN step-11 — AA_B withdraws S1 3 -> OwnerM
 
 ## STEP 12 — AA_A withdraws U2 2 -> OwnerN
-[2026-08-18T22:21:07.479Z]   AA_A withdrew U2 2 -> OwnerN: tx 001da13063559318832c3d5cd07bcc572096b3a10d429131fdb934f6fe1ef92f19
-[2026-08-18T22:21:32.546Z]   spot check: on-chain accountBalance(AA_B, S1) = 0 (tx 0027c5b44ab177c5d51be0967ba9cd953d41a0a338dc96a7c65fa417823b9ce287)
-[2026-08-18T22:21:32.602Z]   evidence -> evidence/g3-ledger/step-12/
+[2026-08-18T23:21:07.371Z]   AA_A withdrew U2 2 -> OwnerN: tx 00954729ff02920dbd2f91eca1a1aa20cf546f53e6e2c7101f2597be0a51290bc9
+[2026-08-18T23:21:25.797Z]   spot check: on-chain accountBalance(AA_B, S1) = 0 (tx 0070d204188deea834dfc298f989bbe37dc2b57147b23cc0bf03dc9709b2c97c97)
+[2026-08-18T23:21:25.848Z]   evidence -> evidence/g3-ledger/step-12/
 STEP 12 ASSERTED — OwnerN=[S1:4 S2:0 U1:5 U2:2]  OwnerM=[S1:3 S2:4 U1:0 U2:5]  AA_A=[S1:3 S2:0 U1:5 U2:0]  AA_B=[S1:0 S2:6 U1:0 U2:3]  poolS1=3 poolS2=6 ledgerU1=5 ledgerU2=3
   CELL GREEN step-12 — AA_A withdraws U2 2 -> OwnerN
 
 ## STEP 13 — M1 mixed-colour probe: OwnerM deposits S2 2 AND U2 2 to AA_B in ONE transaction
-2026-08-18 18:21:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-2026-08-18 18:21:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39864/: 1000:: Normal Closure
-[2026-08-18T22:21:32.949Z]   waiting for OwnerM-spender-5-step13-M1 to see 2 of 40db5d19d124… before spending it …
-  M1 shape 1 assembled: {"intentCount":1,"intents":[{"segment":63785,"actions":2,"entryPoints":["depositShielded","depositUnshielded"],"addresses":["446485ab396a","446485ab396a"],"guaranteedUnshieldedOffer":null,"fallibleUnshieldedOffer":null,"dustActions":null}],"guaranteedZswapOffer":null,"fallibleZswapOffer":"present"}
-2026-08-18 18:21:43        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 223
-2026-08-18 18:21:43        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 223
+2026-08-18 19:21:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:21:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+[2026-08-18T23:21:26.197Z]   waiting for OwnerM-spender-5-step13-M1-try1 to see 2 of shielded 6dda5d892a42… before spending it …
+[2026-08-18T23:21:26.199Z]   waiting for OwnerM-spender-5-step13-M1-try1 to see 2 of unshielded 90c789c4d6d5… before spending it …
+  M1 shape 1 assembled: {"intentCount":1,"intents":[{"segment":3662,"actions":2,"entryPoints":["depositShielded","depositUnshielded"],"addresses":["10ea8ca47a36","10ea8ca47a36"],"guaranteedUnshieldedOffer":null,"fallibleUnshieldedOffer":null,"dustActions":null}],"guaranteedZswapOffer":null,"fallibleZswapOffer":"present"}
+2026-08-18 19:21:35        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 223
+2026-08-18 19:21:35        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 223
   M1 shape 1 (ONE ledger Intent) FAILED — verbatim: Transaction submission error
   falling back to the SDK's own same-contract batching (D-102 fallback)
-2026-08-18 18:21:52        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 223
-2026-08-18 18:21:52        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 223
+[2026-08-18T23:22:01.854Z]   M1: ONE transaction 00b61d330b2a782e234dac5fdabaf8134b7be065a64cdfeb5855d513f055c7f7e6 — shape "sdk-scoped batch (one transaction, one segment per call, state threaded)", circuits depositShielded + depositUnshielded
+[2026-08-18T23:22:20.526Z]   spot check: on-chain accountBalance(AA_B, S2) = 8 (tx 007f2cbedae97b428dc074ca6b1e0ebf8ebd7e9ef9cfb42c72f5c7d33079d850f0)
+[2026-08-18T23:22:20.596Z]   evidence -> evidence/g3-ledger/step-13/
+STEP 13 ASSERTED — OwnerN=[S1:4 S2:0 U1:5 U2:2]  OwnerM=[S1:3 S2:2 U1:0 U2:3]  AA_A=[S1:3 S2:0 U1:5 U2:0]  AA_B=[S1:0 S2:8 U1:0 U2:5]  poolS1=3 poolS2=8 ledgerU1=5 ledgerU2=5
+  CELL GREEN step-13 — M1 mixed-colour probe: OwnerM deposits S2 2 AND U2 2 to AA_B in ONE transaction
+  CELL GREEN M1 — M1 — mixed-colour composition: two colours move atomically in ONE transaction (FR-107)
+  CELL GREEN invariant-per-colour — Invariant: `custody[c] == AA_A[c] + AA_B[c]` for all four colours, after EVERY step
+  CELL GREEN enumeration — FR-105 exactness: `balances.size() == accounts x 4` with ZERO unaccounted keys, after every step
 
-FAILED: Unexpected error submitting scoped transaction 'aa00004-mixed-colour': (FiberFailure) SubmissionError: Transaction submission error
-    at file:///Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@midnightntwrk+wallet-sdk-capabilities@4.0.0-beta.2_ws@8.21.3/node_modules/@midnightntwrk/wallet-sdk-capabilities/dist/submission/submissionService.js:31:279
-    at /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/core.ts:1078:35
-    at <anonymous> (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1161:41)
-    at body (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/Utils.ts:786:14)
-    at FiberRuntime.Sync (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1161:19)
-    at <anonymous> (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1398:53)
-    at Object.f (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/tracer.ts:101:19)
-    at FiberRuntime.runLoop (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1384:34)
-    at FiberRuntime.evaluateEffect (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:950:27)
-    at FiberRuntime.evaluateMessageWhileSuspended (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:918:14) {
-  [cause]: SubmissionError: Transaction submission failed
-      at file:///Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@midnightntwrk+wallet-sdk-node-client@2.0.0-beta.2_@midnightntwrk+ledger-v9@1.0.0-rc.3__9fdca0ce4a97c2531cda791ff76bb4dc/node_modules/@midnightntwrk/wallet-sdk-node-client/dist/effect/PolkadotNodeClient.js:86:27
-      at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
-    [cause]: RpcError: 1010: Invalid Transaction: Custom error: 223
-        at checkError (file:///Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/coder/index.js:19:15)
-        at RpcCoder.decodeResponse (file:///Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/coder/index.js:35:9)
-        at #onSocketMessageResult (file:///Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/ws/index.js:429:40)
-        at #onSocketMessage (file:///Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/ws/index.js:418:42)
-        at [nodejs.internal.kHybridDispatch] (node:internal/event_target:827:20)
-        at WebSocket.dispatchEvent (node:internal/event_target:762:26)
-        at fireEvent (node:internal/deps/undici/undici:12652:14)
-        at #onMessage (node:internal/deps/undici/undici:13883:9)
-        at Object.onMessage (node:internal/deps/undici/undici:13596:76)
-        at websocketMessageReceived (node:internal/deps/undici/undici:12656:15)
-  }
-}
-Error: Unexpected error submitting scoped transaction 'aa00004-mixed-colour': (FiberFailure) SubmissionError: Transaction submission error
-    at file:///Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@midnightntwrk+wallet-sdk-capabilities@4.0.0-beta.2_ws@8.21.3/node_modules/@midnightntwrk/wallet-sdk-capabilities/dist/submission/submissionService.js:31:279
-    at /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/core.ts:1078:35
-    at <anonymous> (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1161:41)
-    at body (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/Utils.ts:786:14)
-    at FiberRuntime.Sync (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1161:19)
-    at <anonymous> (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1398:53)
-    at Object.f (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/tracer.ts:101:19)
-    at FiberRuntime.runLoop (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1384:34)
-    at FiberRuntime.evaluateEffect (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:950:27)
-    at FiberRuntime.evaluateMessageWhileSuspended (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:918:14) {
-  [cause]: SubmissionError: Transaction submission failed
-      at file:///Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@midnightntwrk+wallet-sdk-node-client@2.0.0-beta.2_@midnightntwrk+ledger-v9@1.0.0-rc.3__9fdca0ce4a97c2531cda791ff76bb4dc/node_modules/@midnightntwrk/wallet-sdk-node-client/dist/effect/PolkadotNodeClient.js:86:27
-      at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
-    [cause]: RpcError: 1010: Invalid Transaction: Custom error: 223
-        at checkError (file:///Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/coder/index.js:19:15)
-        at RpcCoder.decodeResponse (file:///Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/coder/index.js:35:9)
-        at #onSocketMessageResult (file:///Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/ws/index.js:429:40)
-        at #onSocketMessage (file:///Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/ws/index.js:418:42)
-        at [nodejs.internal.kHybridDispatch] (node:internal/event_target:827:20)
-        at WebSocket.dispatchEvent (node:internal/event_target:762:26)
-        at fireEvent (node:internal/deps/undici/undici:12652:14)
-        at #onMessage (node:internal/deps/undici/undici:13883:9)
-        at Object.onMessage (node:internal/deps/undici/undici:13596:76)
-        at websocketMessageReceived (node:internal/deps/undici/undici:12656:15)
-  }
-}
-    at scoped (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/node_modules/.pnpm/@midnight-ntwrk+midnight-js-contracts@5.0.0-beta.6/node_modules/@midnight-ntwrk/midnight-js-contracts/src/internal/transaction.ts:291:23)
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async withDustRetry (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/src/night.ts:92:14)
-    at async mixedColourDeposit (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/src/g3/actions.ts:452:26)
-    at async withSpender (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/src/g3/ledger-run.ts:250:16)
-    at async main (/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/harness/src/g3/ledger-run.ts:483:19)
+## FINAL TABLE
+|  | S1 | S2 | U1 | U2 |
+|---|---|---|---|---|
+| OwnerN | 4 | 0 | 5 | 2 |
+| OwnerM | 3 | 2 | 0 | 3 |
+| AA_A | 3 | 0 | 5 | 0 |
+| AA_B | 0 | 8 | 0 | 5 |
+| pool / ledger | poolS1=3 | poolS2=8 | ledgerU1=5 | ledgerU2=5 |
+
+## NEGATIVE CONTROLS AND M2 — against the post-step-13 state
+  GREEN NC-1 — failed assert: caller's owner witness matches no registered account | cause: Error executing circuit 'withdrawShielded'
+  GREEN NC-2 — failed assert: account colour balance too low | cause: Error executing circuit 'withdrawShielded'
+  GREEN NC-3 — failed assert: account colour balance too low | cause: Error executing circuit 'withdrawShielded'
+2026-08-18 19:22:57        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:22:57        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+  GREEN NC-4a — failed assert: colour is not a configured unshielded colour | cause: Error executing circuit 'depositUnshielded'
+[2026-08-18T23:23:31.550Z]   NC-4b fixture: Minter3 minted 5 of its (never configured) shielded colour to OwnerM: tx 00699894645fd54957523e2105d038abbf6de94cf7c10965df7de509ea7851d002
+2026-08-18 19:23:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:23:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+  GREEN NC-4b — failed assert: colour is not a configured shielded colour | cause: Error executing circuit 'depositShielded'
+  GREEN NC-5 — failed assert: account colour balance too low | cause: Error executing circuit 'transferInternal'
+2026-08-18 19:24:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+2026-08-18 19:24:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15938/: 1000:: Normal Closure
+  GREEN M2 — Unexpected error executing scoped transaction 'aa00004-mixed-colour': Error: failed assert: colour is not a configured unshielded colour | cause: failed assert: colour is not a configured unshielded c
+
+  7/7 controls GREEN
+  CELL GREEN NC-1 — Owner-only / unregistered: OwnerN's witness opens no Manager account
+  CELL GREEN NC-2 — Owner-only / cross-account: OwnerB's witness cannot reach AA_A's S1, though the pool covers it
+  CELL GREEN NC-3 — Cross-colour: AA_A is rich in U1 (and S1) but holds no S2 at all
+  CELL GREEN NC-4a — Wrong colour / named: an unshielded deposit naming Minter3's colour, which `configure` never admitted
+  CELL GREEN NC-4b — Wrong colour / carried: a REAL shielded coin minted by Minter3 offered to `depositShielded`
+  CELL GREEN NC-5 — Internal transfer colour guard: AA_A moves S2 it does not hold, while holding S1 and U1
+  CELL GREEN M2 — M2 — mixed-colour atomicity negative: the step-13-shaped transaction with the second leg wrong-coloured
+
+## RESULT
+14/14 step rows asserted live; 25 records written
+final table: OwnerN=[S1:4 S2:0 U1:5 U2:2]  OwnerM=[S1:3 S2:2 U1:0 U2:3]  AA_A=[S1:3 S2:0 U1:5 U2:0]  AA_B=[S1:0 S2:8 U1:0 U2:5]  poolS1=3 poolS2=8 ledgerU1=5 ledgerU2=5
+manager_address: 10ea8ca47a36e89a6534148161355156ce2b1cd372ac748502cb273b29cba901
+M1 transaction:  00b61d330b2a782e234dac5fdabaf8134b7be065a64cdfeb5855d513f055c7f7e6  (sdk-scoped batch (one transaction, one segment per call, state threaded))

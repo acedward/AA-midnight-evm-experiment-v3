@@ -2,7 +2,7 @@
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
   "step": 10,
   "action": "internal transfer U2 2: AA_B -> AA_A (no token operation)",
-  "utc": "2026-08-18T22:20:03.132Z",
+  "utc": "2026-08-18T23:20:08.423Z",
   "expected": {
     "table": {
       "OwnerN": {
@@ -74,12 +74,12 @@
       "S1": {
         "present": true,
         "value": "6",
-        "nonce": "ebc619359f5a1be5acf67cff8adf36aca4936b2e92dcb4d54c6816cf3d9a512b"
+        "nonce": "1f5dc575c2472ac5c4c070d316fd0038a44cc37d29ac83a245b326b145895951"
       },
       "S2": {
         "present": true,
         "value": "6",
-        "nonce": "c75b62afd59b74a026fc00d80b9040e932e80d50e55512da833c4fc32874a43c"
+        "nonce": "90f1aaddaf69efe7c071905b1b0cbf6045be09e010abc9d9b5d5d270f8e06d9d"
       },
       "U1": {
         "present": false,
@@ -97,34 +97,34 @@
       "e01c3be2d447aa46f6b9a9d8ab6b0f5fef285782b0b6af40bea330a59de33e92"
     ],
     "balances": {
-      "910d4663ed759b7c30bee9f5df55c0e20a33060f43a3ab3f26f7d110d3ee048c": "2",
-      "1781ad29c64151439fa541435e8468ce43cfa2a66eeb6aa970f3e646148f7b3f": "0",
-      "185f40638692fc36fa145b385427148104d8b1e260221f06034feb27f3ac62a2": "6",
-      "7b4154b5590eb1c347e4b01916bde975058ffc2541d45dfa06a1f7d666ecfe19": "3",
-      "7a688b8f1f922c55951d6bde310bb0831f99fe9578d232681448f45b95c413b6": "3",
-      "0a9917c5a12581c8694adc2180344ac60cd40b598b395882abe3515d0ff8b6a8": "0",
-      "e5199846c1a23ed20437e0e1ded01e4520279a68e775d8c7e4c353b0ce6377ea": "5",
-      "7dbb025a093e3f4ae63713aacef1080624c1dbe762d4c1fe9cee9a9abd06c648": "3"
+      "309cbe1d5693258b118a2a0033a89d58076cf16c4d156de97d8bf8a81482bf20": "6",
+      "5d82cfef524db4eac63d32a54dd0f05ea4a51c22989901b709eb2725328ce5da": "5",
+      "11f4c1d5ea1f2fca82853b20c3ed3793546f7e665ee8deed9128a328baf98f63": "3",
+      "ddce69cd9b322a966d82769107f70275b3e868cfaef7e1bb57fdc1e03598c20e": "3",
+      "28d2d9cbfb683643bdda3f72b1adf6f2b79d63e86f7ccad53ce751c740401644": "2",
+      "78096820e4beee66e702bb7cdbb57f8ce3fdfef22333f87d0a900ce6bdce3bed": "0",
+      "70f256d9130434bfa16fde017045d03dc10f2feedf4886580b1c6e8e21436a0c": "0",
+      "40a6bfcd3af92f26278289a14e733029ff55696b6463d9911ca16061c5395772": "3"
     },
     "kernelUnshielded": {
-      "574eb563fd70fd98d146eb28670b30195d7840cebbebcde127f2143030fe6be4": "5",
-      "2fef45c2065ab87bec8ddd87d0b2e18d30d754713176a26d86be67440aa0a981": "5"
+      "888080b72e0f350e6599b3d146a26585a4462a6ec08cea9424b5144785ec0ad3": "5",
+      "90c789c4d6d5bfe7d01f9084e8d337b1a096b4fa272d0eca3958db9404603ca0": "5"
     },
     "colours": {
-      "S1": "68618788658363e69f1af183573fbf25057da6341c0f87e19ce167cee8efec16",
-      "S2": "40db5d19d124299c219325cee4f277c40fbada00be8c478b56ec28937b09c957",
-      "U1": "574eb563fd70fd98d146eb28670b30195d7840cebbebcde127f2143030fe6be4",
-      "U2": "2fef45c2065ab87bec8ddd87d0b2e18d30d754713176a26d86be67440aa0a981"
+      "S1": "9c77d2fb6250482c9c7bff6f8ceedc71f687b8d502383b33012f9602d711d888",
+      "S2": "6dda5d892a426e5776ecb97c6b6ff0131f1bb3f39da6457f8b1d32cc5c0032ab",
+      "U1": "888080b72e0f350e6599b3d146a26585a4462a6ec08cea9424b5144785ec0ad3",
+      "U2": "90c789c4d6d5bfe7d01f9084e8d337b1a096b4fa272d0eca3958db9404603ca0"
     },
     "configured": true,
     "coins": {
       "OwnerN": {
         "S1": [
           {
-            "nonce": "3f8af05ef661968f4b00ea6e82f6257405074cd358828c83e6ee739e1aa85bee",
+            "nonce": "2c70338ebf9bf16d1e3305a10c96ba5981dcc6d4f3b822b28d497cfbec5d4004",
             "value": "4",
-            "commitment": "ff3a1c3a824f3551faa1ff65b24123a041a0c9310607e3832558a3af3e528acf",
-            "nullifier": "8a8d504173bb1c74657870ca29f9e91d1f519e8353a5e9085e77935b13b1b99e"
+            "commitment": "b8200ea962062d12bd536f1ca4cc687c25d4abaf22453ea3aa8e390e9e67e01e",
+            "nullifier": "80ba453fc8a243b9ecb73fae94d54f31ac14aa8a0de19bdc68a0cdd01da15efa"
           }
         ],
         "S2": [],
@@ -135,10 +135,10 @@
         "S1": [],
         "S2": [
           {
-            "nonce": "92ab3875d78c237f1d9fd0d93b7876cd1b7e80a9a1313c0c36ea130ef2f34056",
+            "nonce": "a1c2d1462ed2df9bf060e2d19977384c61c1fdf0633b6adc4cbe294ae922fff8",
             "value": "4",
-            "commitment": "600ebe722c8402c80a5422ce8724249ddbff8cd064cd2b0a43a54767b0a76028",
-            "nullifier": "892c83e0216351ab53e231ae14933de6429c7dfdc59198e2ad76bc94c5b3ecaf"
+            "commitment": "2c313fe6855e521972c65b3ba089526c1c29322df8771a7918584e7cdfa1271f",
+            "nullifier": "880615ba43b1d39cb8b641d042e58bd307d77a5b3e353aa6ea0a749e356087bd"
           }
         ],
         "U1": [],
@@ -152,7 +152,7 @@
         "U1": [
           {
             "value": "5",
-            "intentHash": "4836932d50e0fc753198c3bb76ee18966b326338fb73afbc69f07ecf476de67f",
+            "intentHash": "0e13343c0feb6323694ef29f3be5c56819768b790d4fd9c1d0b9c5f58957ae3d",
             "outputNo": "0"
           }
         ],
@@ -165,7 +165,7 @@
         "U2": [
           {
             "value": "5",
-            "intentHash": "eaa1454b2f69f91fe1fc81badbe32ca0f5e63d37cd78e28a3c4d6de23b812b91",
+            "intentHash": "ae6ac3ca7f576220a8d6436741c1a7117d5377927f1d38212dd154371d3bdb48",
             "outputNo": "0"
           }
         ]
@@ -195,7 +195,7 @@
     "colour": "U1",
     "onChain": "5",
     "ledgerState": "5",
-    "txish": "009b561d1531eb7a50c6c02489c1caf26cc476e893374b5915f0db988c7f604f49"
+    "txish": "002718643a027e0ed86168596cea7a023d9b53a5169c993184a1eb1a2ee12d8f44"
   },
   "mintedTotals": {
     "S1": "10",
@@ -213,7 +213,7 @@
     {
       "label": "internal transfer U2 2 (owner B) -> AA_A",
       "txs": [
-        "003bb20302e8f6dd0cb48f0d740be6b813bcc0c104271b19d4765acea482d1671c"
+        "00660b98f793ce3a494e31e96253d79289906cf9b8a9968db2acf57e27b2c8b4f2"
       ],
       "level": "SDK",
       "detail": {
@@ -221,12 +221,12 @@
           "S1": {
             "present": true,
             "value": "6",
-            "nonce": "ebc619359f5a1be5acf67cff8adf36aca4936b2e92dcb4d54c6816cf3d9a512b"
+            "nonce": "1f5dc575c2472ac5c4c070d316fd0038a44cc37d29ac83a245b326b145895951"
           },
           "S2": {
             "present": true,
             "value": "6",
-            "nonce": "c75b62afd59b74a026fc00d80b9040e932e80d50e55512da833c4fc32874a43c"
+            "nonce": "90f1aaddaf69efe7c071905b1b0cbf6045be09e010abc9d9b5d5d270f8e06d9d"
           },
           "U1": {
             "present": false,
@@ -243,12 +243,12 @@
           "S1": {
             "present": true,
             "value": "6",
-            "nonce": "ebc619359f5a1be5acf67cff8adf36aca4936b2e92dcb4d54c6816cf3d9a512b"
+            "nonce": "1f5dc575c2472ac5c4c070d316fd0038a44cc37d29ac83a245b326b145895951"
           },
           "S2": {
             "present": true,
             "value": "6",
-            "nonce": "c75b62afd59b74a026fc00d80b9040e932e80d50e55512da833c4fc32874a43c"
+            "nonce": "90f1aaddaf69efe7c071905b1b0cbf6045be09e010abc9d9b5d5d270f8e06d9d"
           },
           "U1": {
             "present": false,

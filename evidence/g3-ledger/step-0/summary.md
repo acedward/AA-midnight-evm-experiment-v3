@@ -22,5 +22,5 @@ On-chain spot check: `accountBalance(AA_A, S1)` = 0 (ledger state says 0).
 
 ## Operations
 
-- **deploy 3 Minters + Manager, configure, register both accounts** (SDK) — tx `0029a2766ea4c8fbc58497859c4c37c3cdbd81258e1e807cb3e3ab53e75d8ef831`, `008c3011bccf86f4d1d86e3aae057c0ee2b414ccca14d191cd84d57fa8855188d6`, `003295a2fda3d280b84b014ec69afe2382853fadf6ea937224e393e28cad5bba69`, `00b54b63ca2f701f3905e0ed9f4d111086370375090f734bd64f146d23406aeb4b`
+- **deploy 3 Minters + Manager, configure, register both accounts** (SDK) — tx `00542cbc80ba05c1617401201af6cb0a45825cd2e3de62f734638d83a6f5058303`, `004a6bed745684b9917ee6f222ed55cac3f35284c8b06ca3c0fb46bb1dc07f8673`, `00b74f8069638b56e7980166218959546c5f7730c87939efe49ff1fd39731b2c52`, `00b2901bb9133826430be1db4c632338401fc0652f60758ab2b2685a4b231da2a1`
 

@@ -2,7 +2,7 @@
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
   "step": 0,
   "action": "baseline — deploy 3 Minters + 1 Manager, configure S1/S2/U1/U2, register AA_A and AA_B",
-  "utc": "2026-08-18T22:13:32.142Z",
+  "utc": "2026-08-18T23:13:32.858Z",
   "expected": {
     "table": {
       "OwnerN": {
@@ -97,21 +97,21 @@
       "e01c3be2d447aa46f6b9a9d8ab6b0f5fef285782b0b6af40bea330a59de33e92"
     ],
     "balances": {
-      "910d4663ed759b7c30bee9f5df55c0e20a33060f43a3ab3f26f7d110d3ee048c": "0",
-      "1781ad29c64151439fa541435e8468ce43cfa2a66eeb6aa970f3e646148f7b3f": "0",
-      "185f40638692fc36fa145b385427148104d8b1e260221f06034feb27f3ac62a2": "0",
-      "7b4154b5590eb1c347e4b01916bde975058ffc2541d45dfa06a1f7d666ecfe19": "0",
-      "7a688b8f1f922c55951d6bde310bb0831f99fe9578d232681448f45b95c413b6": "0",
-      "0a9917c5a12581c8694adc2180344ac60cd40b598b395882abe3515d0ff8b6a8": "0",
-      "e5199846c1a23ed20437e0e1ded01e4520279a68e775d8c7e4c353b0ce6377ea": "0",
-      "7dbb025a093e3f4ae63713aacef1080624c1dbe762d4c1fe9cee9a9abd06c648": "0"
+      "309cbe1d5693258b118a2a0033a89d58076cf16c4d156de97d8bf8a81482bf20": "0",
+      "5d82cfef524db4eac63d32a54dd0f05ea4a51c22989901b709eb2725328ce5da": "0",
+      "11f4c1d5ea1f2fca82853b20c3ed3793546f7e665ee8deed9128a328baf98f63": "0",
+      "ddce69cd9b322a966d82769107f70275b3e868cfaef7e1bb57fdc1e03598c20e": "0",
+      "28d2d9cbfb683643bdda3f72b1adf6f2b79d63e86f7ccad53ce751c740401644": "0",
+      "78096820e4beee66e702bb7cdbb57f8ce3fdfef22333f87d0a900ce6bdce3bed": "0",
+      "70f256d9130434bfa16fde017045d03dc10f2feedf4886580b1c6e8e21436a0c": "0",
+      "40a6bfcd3af92f26278289a14e733029ff55696b6463d9911ca16061c5395772": "0"
     },
     "kernelUnshielded": {},
     "colours": {
-      "S1": "68618788658363e69f1af183573fbf25057da6341c0f87e19ce167cee8efec16",
-      "S2": "40db5d19d124299c219325cee4f277c40fbada00be8c478b56ec28937b09c957",
-      "U1": "574eb563fd70fd98d146eb28670b30195d7840cebbebcde127f2143030fe6be4",
-      "U2": "2fef45c2065ab87bec8ddd87d0b2e18d30d754713176a26d86be67440aa0a981"
+      "S1": "9c77d2fb6250482c9c7bff6f8ceedc71f687b8d502383b33012f9602d711d888",
+      "S2": "6dda5d892a426e5776ecb97c6b6ff0131f1bb3f39da6457f8b1d32cc5c0032ab",
+      "U1": "888080b72e0f350e6599b3d146a26585a4462a6ec08cea9424b5144785ec0ad3",
+      "U2": "90c789c4d6d5bfe7d01f9084e8d337b1a096b4fa272d0eca3958db9404603ca0"
     },
     "configured": true,
     "coins": {
@@ -166,7 +166,7 @@
     "colour": "S1",
     "onChain": "0",
     "ledgerState": "0",
-    "txish": "00bdfd2fb77fc7c592d2b32963979b119498c8a06eb864ed2523208370bab22512"
+    "txish": "0066d1362645d5b655f8b5de768edf3128cfb6f154dc240225ff22450d250d8244"
   },
   "mintedTotals": {
     "S1": "0",
@@ -184,10 +184,10 @@
     {
       "label": "deploy 3 Minters + Manager, configure, register both accounts",
       "txs": [
-        "0029a2766ea4c8fbc58497859c4c37c3cdbd81258e1e807cb3e3ab53e75d8ef831",
-        "008c3011bccf86f4d1d86e3aae057c0ee2b414ccca14d191cd84d57fa8855188d6",
-        "003295a2fda3d280b84b014ec69afe2382853fadf6ea937224e393e28cad5bba69",
-        "00b54b63ca2f701f3905e0ed9f4d111086370375090f734bd64f146d23406aeb4b"
+        "00542cbc80ba05c1617401201af6cb0a45825cd2e3de62f734638d83a6f5058303",
+        "004a6bed745684b9917ee6f222ed55cac3f35284c8b06ca3c0fb46bb1dc07f8673",
+        "00b74f8069638b56e7980166218959546c5f7730c87939efe49ff1fd39731b2c52",
+        "00b2901bb9133826430be1db4c632338401fc0652f60758ab2b2685a4b231da2a1"
       ],
       "level": "SDK",
       "detail": {
@@ -196,52 +196,52 @@
             "label": "Minter1",
             "tagText": "TOKA",
             "tagIn": "544f4b4100000000000000000000000000000000000000000000000000000000",
-            "address": "b2de7b9e89455fee7d57459c1bf0d8ae4dcda848db9204b696e16f09d3959689",
+            "address": "8ff81b38627d0a611c3c558eed28b859b0b5e1b9ea88159caee4ae6bc257e692",
             "ledgerTag": "544f4b4100000000000000000000000000000000000000000000000000000000",
             "shieldedSep": "f0d01ad6d6ebe86a154ad08351017bb8bcce8d0431ccffa29f5ecb4c15bcce2e",
             "unshieldedSep": "20712f5ad7c47b300147ad7a92d9d606575a12d46dc00c6991758a596c9d4ac6",
             "simShieldedSep": "f0d01ad6d6ebe86a154ad08351017bb8bcce8d0431ccffa29f5ecb4c15bcce2e",
             "simUnshieldedSep": "20712f5ad7c47b300147ad7a92d9d606575a12d46dc00c6991758a596c9d4ac6",
-            "shieldedColour": "68618788658363e69f1af183573fbf25057da6341c0f87e19ce167cee8efec16",
-            "unshieldedColour": "574eb563fd70fd98d146eb28670b30195d7840cebbebcde127f2143030fe6be4"
+            "shieldedColour": "9c77d2fb6250482c9c7bff6f8ceedc71f687b8d502383b33012f9602d711d888",
+            "unshieldedColour": "888080b72e0f350e6599b3d146a26585a4462a6ec08cea9424b5144785ec0ad3"
           },
           {
             "label": "Minter2",
             "tagText": "TOKB",
             "tagIn": "544f4b4200000000000000000000000000000000000000000000000000000000",
-            "address": "fe08b65c17d04a4761a213c5d923a646a162080b5d88ccbe593b98fc0deabf11",
+            "address": "4cf57bdd66fa67d51305194bf68b6611b14261f31e21cfcfee8593cee742a0a0",
             "ledgerTag": "544f4b4200000000000000000000000000000000000000000000000000000000",
             "shieldedSep": "f3940770d5517d6ca314ced3be429137cbf5813aed8a6a16d25e951cbf15aeaa",
             "unshieldedSep": "074e16e697ad8b0b62a37692da4a00d63d5e284ead62fd691e3507ec23ddb509",
             "simShieldedSep": "f3940770d5517d6ca314ced3be429137cbf5813aed8a6a16d25e951cbf15aeaa",
             "simUnshieldedSep": "074e16e697ad8b0b62a37692da4a00d63d5e284ead62fd691e3507ec23ddb509",
-            "shieldedColour": "40db5d19d124299c219325cee4f277c40fbada00be8c478b56ec28937b09c957",
-            "unshieldedColour": "2fef45c2065ab87bec8ddd87d0b2e18d30d754713176a26d86be67440aa0a981"
+            "shieldedColour": "6dda5d892a426e5776ecb97c6b6ff0131f1bb3f39da6457f8b1d32cc5c0032ab",
+            "unshieldedColour": "90c789c4d6d5bfe7d01f9084e8d337b1a096b4fa272d0eca3958db9404603ca0"
           },
           {
             "label": "Minter3",
             "tagText": "TOKC",
             "tagIn": "544f4b4300000000000000000000000000000000000000000000000000000000",
-            "address": "fb781ee087f4603868484574f37b6e6a858550f42ba863066d1dc8ffa9402573",
+            "address": "c4b9aec02d9d45d75ffcb7a5bc1d5223658d6130232fcdd09752ab9fa3b4b14f",
             "ledgerTag": "544f4b4300000000000000000000000000000000000000000000000000000000",
             "shieldedSep": "43c395dfd73f970e3276d2fec3bef618203008f990c84a972fc6f201eb48b60e",
             "unshieldedSep": "08ffdfbb93a13cf953af7a4263f4b210e2418654cb581b078a968575265475c9",
             "simShieldedSep": "43c395dfd73f970e3276d2fec3bef618203008f990c84a972fc6f201eb48b60e",
             "simUnshieldedSep": "08ffdfbb93a13cf953af7a4263f4b210e2418654cb581b078a968575265475c9",
-            "shieldedColour": "fa05d37a47dd63e7a2cdda099f6b794de9a93f04ac26ff91175b768b326d2b9f",
-            "unshieldedColour": "0e5036f9f0af58bcdac7ae4019de0d1c8d90da59538a3e29b0d685b0db58e050"
+            "shieldedColour": "e9325f1bfbc367ffbd60b40342b9d4f0b6783e1e611a32ccd700aac7fa2c22bd",
+            "unshieldedColour": "783bdd8bbde7ee60f214bab51531e268391e5c8e9939d4f593a45c3954e8579b"
           }
         ],
-        "managerAddress": "446485ab396a28c18f923a09b568f1f9c3667dbe375b5e2919744ef5091762ca",
+        "managerAddress": "10ea8ca47a36e89a6534148161355156ce2b1cd372ac748502cb273b29cba901",
         "colours": {
-          "S1": "68618788658363e69f1af183573fbf25057da6341c0f87e19ce167cee8efec16",
-          "S2": "40db5d19d124299c219325cee4f277c40fbada00be8c478b56ec28937b09c957",
-          "U1": "574eb563fd70fd98d146eb28670b30195d7840cebbebcde127f2143030fe6be4",
-          "U2": "2fef45c2065ab87bec8ddd87d0b2e18d30d754713176a26d86be67440aa0a981"
+          "S1": "9c77d2fb6250482c9c7bff6f8ceedc71f687b8d502383b33012f9602d711d888",
+          "S2": "6dda5d892a426e5776ecb97c6b6ff0131f1bb3f39da6457f8b1d32cc5c0032ab",
+          "U1": "888080b72e0f350e6599b3d146a26585a4462a6ec08cea9424b5144785ec0ad3",
+          "U2": "90c789c4d6d5bfe7d01f9084e8d337b1a096b4fa272d0eca3958db9404603ca0"
         },
         "controlColours": {
-          "shielded": "fa05d37a47dd63e7a2cdda099f6b794de9a93f04ac26ff91175b768b326d2b9f",
-          "unshielded": "0e5036f9f0af58bcdac7ae4019de0d1c8d90da59538a3e29b0d685b0db58e050"
+          "shielded": "e9325f1bfbc367ffbd60b40342b9d4f0b6783e1e611a32ccd700aac7fa2c22bd",
+          "unshielded": "783bdd8bbde7ee60f214bab51531e268391e5c8e9939d4f593a45c3954e8579b"
         },
         "accounts": {
           "AA_A": "67105e92521d24ccd0b0ee9d2ff842aec4b0dbfb81123b2143c9512fe6f114e7",
@@ -253,12 +253,12 @@
           "collisions": []
         },
         "fundingTxs": {
-          "feePayer": "156362baffe4beb3e36cf43e2486542732ae99bfcd950d772f9b9aaaff2d7b7a",
-          "feePayerDust": "00261adcdace91c0a8932b3db25c6fd7fb13159b54fd2b04d289b6776b0cc5b862",
-          "OwnerN": "e04e4d735ce9c098449c3b894ab1774f8ab8205bd05ea642df24908bc6ed5bc0",
-          "OwnerNDust": "007c430f92625fbfd4c7130f4194d137be98a79f0bfe0cd55bb8dc763fb1818059",
-          "OwnerM": "8ab84397f7510dbb2f6fc2f819114ac7b44c06fa38d1b2ea4c80cdd2d0eb750b",
-          "OwnerMDust": "00903c127e6e0221d748830d46915375c8402bc582873c366715d0564956b92d5b"
+          "feePayer": "f7bce220df00a0f5c87aa7f069d0dc14e71029d4a8abf00bb40d5c2dee434634",
+          "feePayerDust": "00b922ac1cff582e10deffe8b873f62b361d659f4eaffd51820aeeb5bc59387703",
+          "OwnerN": "c321606ad37b0e861cdac960df572e3a31ebfa429ed7f49ae6309399b388136e",
+          "OwnerNDust": "00846a0af923215ff18c69bb89c01243fa074b6d6fe1298fa59a4320ca1d423745",
+          "OwnerM": "0e3de1da7fcaa87a8721ddf39897a6abafcb849b896b68a1b002399878759396",
+          "OwnerMDust": "00dfb71607eeb523b53432efc02ee4a66536f2cbedd44d09a856afcaa40b95ae12"
         }
       }
     }

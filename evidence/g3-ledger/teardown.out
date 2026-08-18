@@ -32,3 +32,20 @@ host clean: no containers, volumes or networks named aa00004-g3-20260818213654-4
  Volume aa00004-g3-20260818215907-57494_node-data  Removed
  Network aa00004-g3-20260818215907-57494_default  Removed
 host clean: no containers, volumes or networks named aa00004-g3-20260818215907-57494*
+ Container aa00004-g3-20260818230156-84425-indexer-1  Stopping
+ Container aa00004-g3-20260818230156-84425-proof-server-1  Stopping
+ Container aa00004-g3-20260818230156-84425-indexer-1  Stopped
+ Container aa00004-g3-20260818230156-84425-indexer-1  Removing
+ Container aa00004-g3-20260818230156-84425-indexer-1  Removed
+ Container aa00004-g3-20260818230156-84425-node-1  Stopping
+ Container aa00004-g3-20260818230156-84425-proof-server-1  Stopped
+ Container aa00004-g3-20260818230156-84425-proof-server-1  Removing
+ Container aa00004-g3-20260818230156-84425-proof-server-1  Removed
+ Container aa00004-g3-20260818230156-84425-node-1  Stopped
+ Container aa00004-g3-20260818230156-84425-node-1  Removing
+ Container aa00004-g3-20260818230156-84425-node-1  Removed
+ Volume aa00004-g3-20260818230156-84425_node-data  Removing
+ Network aa00004-g3-20260818230156-84425_default  Removing
+ Volume aa00004-g3-20260818230156-84425_node-data  Removed
+ Network aa00004-g3-20260818230156-84425_default  Removed
+host clean: no containers, volumes or networks named aa00004-g3-20260818230156-84425*

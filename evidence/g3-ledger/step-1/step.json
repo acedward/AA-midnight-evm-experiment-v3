@@ -2,7 +2,7 @@
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
   "step": 1,
   "action": "Minter1 mints S1 10 -> OwnerN",
-  "utc": "2026-08-18T22:14:08.210Z",
+  "utc": "2026-08-18T23:14:08.961Z",
   "expected": {
     "table": {
       "OwnerN": {
@@ -97,31 +97,31 @@
       "e01c3be2d447aa46f6b9a9d8ab6b0f5fef285782b0b6af40bea330a59de33e92"
     ],
     "balances": {
-      "910d4663ed759b7c30bee9f5df55c0e20a33060f43a3ab3f26f7d110d3ee048c": "0",
-      "1781ad29c64151439fa541435e8468ce43cfa2a66eeb6aa970f3e646148f7b3f": "0",
-      "185f40638692fc36fa145b385427148104d8b1e260221f06034feb27f3ac62a2": "0",
-      "7b4154b5590eb1c347e4b01916bde975058ffc2541d45dfa06a1f7d666ecfe19": "0",
-      "7a688b8f1f922c55951d6bde310bb0831f99fe9578d232681448f45b95c413b6": "0",
-      "0a9917c5a12581c8694adc2180344ac60cd40b598b395882abe3515d0ff8b6a8": "0",
-      "e5199846c1a23ed20437e0e1ded01e4520279a68e775d8c7e4c353b0ce6377ea": "0",
-      "7dbb025a093e3f4ae63713aacef1080624c1dbe762d4c1fe9cee9a9abd06c648": "0"
+      "309cbe1d5693258b118a2a0033a89d58076cf16c4d156de97d8bf8a81482bf20": "0",
+      "5d82cfef524db4eac63d32a54dd0f05ea4a51c22989901b709eb2725328ce5da": "0",
+      "11f4c1d5ea1f2fca82853b20c3ed3793546f7e665ee8deed9128a328baf98f63": "0",
+      "ddce69cd9b322a966d82769107f70275b3e868cfaef7e1bb57fdc1e03598c20e": "0",
+      "28d2d9cbfb683643bdda3f72b1adf6f2b79d63e86f7ccad53ce751c740401644": "0",
+      "78096820e4beee66e702bb7cdbb57f8ce3fdfef22333f87d0a900ce6bdce3bed": "0",
+      "70f256d9130434bfa16fde017045d03dc10f2feedf4886580b1c6e8e21436a0c": "0",
+      "40a6bfcd3af92f26278289a14e733029ff55696b6463d9911ca16061c5395772": "0"
     },
     "kernelUnshielded": {},
     "colours": {
-      "S1": "68618788658363e69f1af183573fbf25057da6341c0f87e19ce167cee8efec16",
-      "S2": "40db5d19d124299c219325cee4f277c40fbada00be8c478b56ec28937b09c957",
-      "U1": "574eb563fd70fd98d146eb28670b30195d7840cebbebcde127f2143030fe6be4",
-      "U2": "2fef45c2065ab87bec8ddd87d0b2e18d30d754713176a26d86be67440aa0a981"
+      "S1": "9c77d2fb6250482c9c7bff6f8ceedc71f687b8d502383b33012f9602d711d888",
+      "S2": "6dda5d892a426e5776ecb97c6b6ff0131f1bb3f39da6457f8b1d32cc5c0032ab",
+      "U1": "888080b72e0f350e6599b3d146a26585a4462a6ec08cea9424b5144785ec0ad3",
+      "U2": "90c789c4d6d5bfe7d01f9084e8d337b1a096b4fa272d0eca3958db9404603ca0"
     },
     "configured": true,
     "coins": {
       "OwnerN": {
         "S1": [
           {
-            "nonce": "d1b7bb6e60d6e99e153c77d73d0cde6b41c344901313ccb29238ad99cc95de7e",
+            "nonce": "4f08178a37db51589a6525d7b6f97081e5df6ca3599c1cc0002e420f74763884",
             "value": "10",
-            "commitment": "5d7c4684a45907ec16332f0739df71c27a6f5a466da4310ad1bf42d0077ec0d8",
-            "nullifier": "7795c3fb88d5d4b585aaf04333befb5145a0b47e5fdc3751ea8c1b028ad8314e"
+            "commitment": "33872de3799d661be45ea11ca5b3e9c5aeabc9b32d0922ce688757a267792d7d",
+            "nullifier": "3e29c6e00264502675ba30bdea2d60a72f6ba9b19a3b181395b6072a0c24744c"
           }
         ],
         "S2": [],
@@ -173,7 +173,7 @@
     "colour": "S2",
     "onChain": "0",
     "ledgerState": "0",
-    "txish": "0066a8d1e4c787b10ec107f6b2039d5cfb9001e8ac181a4f32b84b5f58e7a0d585"
+    "txish": "004e4afe213e55649ff76ed3a7b1d6ae033822c2051c9c0e9e1cc7afe5438ec994"
   },
   "mintedTotals": {
     "S1": "10",
@@ -191,11 +191,11 @@
     {
       "label": "Minter1 mints S1 10 -> OwnerN",
       "txs": [
-        "00febcd3eef228e300e1c684b93845d9560ec86893ea373a5b44c7091e1799fa2f"
+        "0045181cb47aedb1844393713a0f31d400936cf568fcef792a05e8f1ddd20b2355"
       ],
       "level": "SDK",
       "detail": {
-        "colour": "68618788658363e69f1af183573fbf25057da6341c0f87e19ce167cee8efec16"
+        "colour": "9c77d2fb6250482c9c7bff6f8ceedc71f687b8d502383b33012f9602d711d888"
       }
     }
   ]

@@ -22,5 +22,5 @@ On-chain spot check: `accountBalance(AA_A, U2)` = 0 (ledger state says 0).
 
 ## Operations
 
-- **Minter2 mints S2 10 -> OwnerM** (SDK) — tx `002a546026b1bbdb215705e6707448badb0f4ab46ca28d1a5a248ead5408f4e9c0`
+- **Minter2 mints S2 10 -> OwnerM** (SDK) — tx `0086d01bd3b658f8f067eb0e01752a0a528e50a5872c94a37cb77a10ebf849c0ab`
 

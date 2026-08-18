@@ -22,5 +22,5 @@ On-chain spot check: `accountBalance(AA_B, U1)` = 0 (ledger state says 0).
 
 ## Operations
 
-- **OwnerN deposits U1 5 -> AA_A** (SDK) — tx `004cd8706ac5c7d175b376fb878408fd2a93805173ba2305636e71f27ef598900b`
+- **OwnerN deposits U1 5 -> AA_A** (SDK) — tx `00469a8269b3b43a46fb26199a7255d5510aa616867c71fd9cbb34d6fd70c73162`
 
