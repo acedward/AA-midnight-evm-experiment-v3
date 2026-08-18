@@ -1,0 +1,26 @@
+# G3 — UNSHIELDED custody mechanics proven live
+# label: EXPERIMENTAL_LANE / LANE-DEV-1
+# command: npx tsx src/g3/probe-unshielded.ts (exit 0)
+
+# G3 probe: UNSHIELDED custody mechanics — 2026-08-18T03:16:12.268Z
+[2026-08-18T03:16:50.274Z] Minter 168d14a463cf3ca198fbce09a670c7d930b4e1b95434aaabb6bddafa9b1e2987 / Manager e4401ba5b10ca1cbbaca73fdc5e30ee04b56e56450e91de4740714027d1c3593
+[2026-08-18T03:18:20.960Z] AA_A dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331 / AA_B bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c registered
+[2026-08-18T03:18:20.961Z] minting unshielded 10 -> wallet …
+[2026-08-18T03:18:38.260Z] depositing unshielded 10 -> AA_A …
+[2026-08-18T03:18:55.922Z]   deposit tx 007e8cd7710fc8c64f4e1ef8f8f14b0c2b7d0deaeb52615f5d9d5c2166d2da7145
+
+MECHANIC 1u user->account deposit: AA_A unshielded 10
+[2026-08-18T03:18:58.001Z] internal transfer AA_A -5-> AA_B (unshielded) …
+
+MECHANIC 2u account->account internal: AA_A 5, AA_B 5
+  shielded pool untouched by an unshielded move: true
+[2026-08-18T03:19:21.069Z] withdraw AA_B -5-> user …
+
+MECHANIC 3u account->user withdraw: AA_B 0
+[2026-08-18T03:19:38.416Z] pool self-send unshielded …
+
+MECHANIC 4u pool self-send unshielded: account map byte-identical: true
+
+## UNSHIELDED MECHANICS PROVEN LIVE
+  1u user -> account deposit    2u account -> account internal
+  3u account -> user withdraw   4u pool self-send (auto-receive)
