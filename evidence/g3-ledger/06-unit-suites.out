@@ -6,6 +6,6 @@ Sourcemap for "/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custo
 
  Test Files  3 passed (3)
       Tests  45 passed (45)
-   Start at  17:36:59
-   Duration  1.43s (transform 403ms, setup 0ms, import 588ms, tests 1.77s, environment 0ms)
+   Start at  17:59:11
+   Duration  1.19s (transform 261ms, setup 0ms, import 399ms, tests 1.49s, environment 0ms)
 

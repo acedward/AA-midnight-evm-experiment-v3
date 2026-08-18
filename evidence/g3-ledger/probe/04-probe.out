@@ -1,0 +1,9 @@
+# G3 PROBE — why is a two-call Manager transaction refused? — 2026-08-18T22:25:43.270Z
+[2026-08-18T22:25:43.354Z] wallets open; syncing genesis …
+2026-08-18 18:25:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+2026-08-18 18:25:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+2026-08-18 18:25:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+2026-08-18 18:25:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21904/: 1000:: Normal Closure
+[2026-08-18T22:25:43.800Z] genesis: NIGHT=250000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+[2026-08-18T22:25:43.808Z]   funding feePayer with 1000000000000 NIGHT from genesis
+[2026-08-18T22:25:43.825Z]   fund feePayer: attempt 1 — DUST not yet generated, waiting 15s

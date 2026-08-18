@@ -22,5 +22,5 @@ On-chain spot check: `accountBalance(AA_A, U1)` = 5 (ledger state says 5).
 
 ## Operations
 
-- **internal transfer U2 2 (owner B) -> AA_A** (SDK) — tx `006315235045d7646b382656ecfe239333fdbaef93a0ad5f4f6f4534c897246b5e`
+- **internal transfer U2 2 (owner B) -> AA_A** (SDK) — tx `003bb20302e8f6dd0cb48f0d740be6b813bcc0c104271b19d4765acea482d1671c`
 

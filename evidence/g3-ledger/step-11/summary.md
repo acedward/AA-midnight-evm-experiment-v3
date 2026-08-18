@@ -22,5 +22,5 @@ On-chain spot check: `accountBalance(AA_A, U2)` = 2 (ledger state says 2).
 
 ## Operations
 
-- **AA_B withdraws S1 3 -> OwnerM** (SDK) — tx `00205d1dbfb93f8004d49269050f9e1c6a647badec5e65c9b22cc80e48ea774bcf`
+- **AA_B withdraws S1 3 -> OwnerM** (SDK) — tx `006f8eab2d7f26b6e544dbb511206218ce3db18c5e5d27c162995b11758a575d81`
 
