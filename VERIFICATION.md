@@ -333,3 +333,57 @@ RED. Reproduction: `npx tsx src/g3/deploy.ts` with the stack up.
 **Consequence:** the last outstanding `LANE-DEV-1` check — on-chain acceptance of
 `compactc 0.33.0` artifacts by the pinned `ledger-9.1.0.0-rc.3` node — remains **unproven**. G2
 therefore stands as verified at build level only, exactly as recorded above.
+
+### Phase 1/2 progress — step 0 GREEN, step 1 partial
+
+| UTC | Result |
+|---|---|
+| 2026-08-18T02:06Z | **Step 0 asserted** (repeatably, exit 0): Minter + Manager deployed, Manager bound to the two verified-distinct Minter colors, AA_A + AA_B registered, all accounts `0/0`, `pool = AA_A + AA_B = 0` |
+| 2026-08-18T02:33Z | **Step 1(a) mint shielded 10 → OwnerN SUCCEEDED** — tx `00f8b1e213a365c4450f74f868a3e9dc19916cd11c4a849188db4abac423799cbe` |
+| 2026-08-18T02:33Z | **Step 1(b) paired mint → AA_A: fails at balancing** — see Finding G3-2 |
+
+### Composition (master Q2 / OQ2) — mechanism WORKS, pairing semantics OPEN
+
+The SDK-level composition **mechanism** is proven to work on this lane:
+
+    createUnprovenCallTx(per contract)
+      -> proofProvider.proveTx(per contract)      // per-contract, see below
+      -> UnprovenTransaction/Transaction.merge    // transaction-level composition
+      -> walletProvider.balanceTx -> submitTx
+
+`withContractScopedTransaction` was evaluated first and rejected: it batches calls into one
+transaction but is scoped to a **single** contract's providers, so it cannot pair a Minter call
+with a Manager call.
+
+Two requirements discovered while getting the single-call mint to submit, both now satisfied:
+
+1. **Encryption keys for third-party recipients.** Minting a shielded coin to another party needs
+   that party's *encryption* public key (`additionalCoinEncPublicKeyMappings`), otherwise the
+   builder fails with `Unable to resolve encryption public key for recipient`.
+2. **Proofs must be produced per contract.** A flattened "all keys in one directory"
+   zkConfigProvider does **not** work: the proof provider resolves ZK artifact bundles against the
+   *deployed contract's verifier key*, so the lookup is per contract, not per circuit name
+   (`ZKArtifactNotFoundError: No ZK artifact bundle matches the deployed verifier key`). Each call
+   is therefore proven with its own contract's providers and the **proven** transactions are merged.
+
+### Finding G3-2 — paired mint-into-Manager does not balance (OPEN)
+
+Merging `Minter.mintShieldedTo(value, nonce, recipient = Manager)` with
+`Manager.depositShielded({nonce, color, value}, account)` produces a transaction the wallet cannot
+balance: `Wallet.InsufficientFunds: Insufficient funds`.
+
+Working hypothesis, from the pinned standard library: **both halves create the same zswap output.**
+`mintShieldedToken` does `createZswapOutput(coin, recipient)` then `claimZswapCoinSpend(cm)`, and
+claims the receive only when the recipient is `kernel.self()`. `receiveShielded` *also* does
+`createZswapOutput(coin, right(self))` and then `claimZswapCoinReceive(cm)`. Paired naively, the
+coin appears to be created twice while only one side is claimed as spend, so the shielded offer for
+the demo color does not net to zero and the balancer tries to source the shortfall from the fee
+wallet — which holds none of that color.
+
+**Not yet classified.** It is unresolved whether the correct pairing is (a) a Manager receive
+primitive that claims the receive WITHOUT re-creating the output, (b) mint-to-self on the Minter
+followed by a send into the Manager, or (c) a different claim discipline entirely. This is a
+contract/ledger-semantics question, not a lane defect, so **no lane RED is recorded**.
+
+Consequence: step 1 is not asserted, and **0 of 26 combination cells are evidenced**. Step 0
+remains the only asserted row.

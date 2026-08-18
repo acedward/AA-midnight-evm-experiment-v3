@@ -14,7 +14,7 @@ import { endpoints, readLaneEnv, REPO_ROOT } from '../lane.js';
 import type { Party } from '../wallet.js';
 
 /** Where scripts/g2/compile.sh --zk puts prover/verifier keys and zkir. */
-export const zkDir = (contract: 'minter' | 'manager') => join(REPO_ROOT, 'harness', 'generated-zk', contract);
+export const zkDir = (contract: 'minter' | 'manager' | '_combined') => join(REPO_ROOT, 'harness', 'generated-zk', contract);
 
 const TTL_MS = 30 * 60 * 1000;
 
@@ -23,7 +23,7 @@ const TTL_MS = 30 * 60 * 1000;
 // midnight-js-utils enforces >=3 character classes, so a bare hex string is rejected.
 const EPHEMERAL_PRIVATE_STORE_PASSWORD = `Aa1!${randomBytes(24).toString('base64url')}`;
 
-export const makeProviders = (party: Party, contract: 'minter' | 'manager', privateStateDir: string) => {
+export const makeProviders = (party: Party, contract: 'minter' | 'manager' | '_combined', privateStateDir: string) => {
   const ep = endpoints(readLaneEnv());
   const facade: any = party.wallet;
   // The proof provider needs the ZK config to look up prover keys per circuit.

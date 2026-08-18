@@ -41,4 +41,26 @@ done
 
 # harness/package.json already declares "type": "module", which these subdirectories inherit.
 
+# A transaction that composes calls to BOTH contracts must be proved against BOTH key sets, but a
+# NodeZkConfigProvider is rooted at one directory. Build a combined view. Circuit names are unique
+# across the two contracts, so no key can shadow another; the copy is asserted collision-free.
+if [ "$MODE" = "--zk" ]; then
+  COMBINED="${OUT}/_combined"
+  rm -rf "$COMBINED"; mkdir -p "$COMBINED/keys" "$COMBINED/zkir"
+  for c in minter manager; do
+    for sub in keys zkir; do
+      for f in "${OUT}/${c}/${sub}"/*; do
+        [ -e "$f" ] || continue
+        base="$(basename "$f")"
+        if [ -e "${COMBINED}/${sub}/${base}" ]; then
+          echo "FATAL: circuit name collision on ${sub}/${base} between contracts" >&2
+          exit 1
+        fi
+        cp "$f" "${COMBINED}/${sub}/${base}"
+      done
+    done
+  done
+  echo "combined zk view: $(find "$COMBINED/keys" -name '*.verifier' | wc -l | tr -d ' ') verifier keys"
+fi
+
 echo "compiled: $(find "${OUT}" -name '*.zkir' | wc -l | tr -d ' ') zkir, $(find "${OUT}" -name '*.verifier' 2>/dev/null | wc -l | tr -d ' ') verifier keys"
