@@ -20,8 +20,8 @@
 //                                                     (decision D-102; see `mixedColourDeposit`)
 import { randomBytes } from 'node:crypto';
 import { buildCall, type CallSpec } from './compose.js';
-import { composeOneIntent, proveBalanceSubmit } from './ledger-compose.js';
-import { withContractScopedTransaction, createUnprovenCallTx } from '@midnight-ntwrk/midnight-js-contracts';
+import { composeOneIntent, describe, proveBalanceSubmit } from './ledger-compose.js';
+import { withContractScopedTransaction, submitCallTx } from '@midnight-ntwrk/midnight-js-contracts';
 import { withDustRetry } from '../night.js';
 import type { Party } from '../wallet.js';
 import type { ColourName, ColourSet } from './observe.js';
@@ -286,7 +286,31 @@ export const transferInternal = async (
 // MIXED-COLOUR ONE-TRANSACTION COMPOSITION — FR-107 / decision D-102 (step 13 = probe M1)
 // ---------------------------------------------------------------------------------------------
 
-export type MixedShape = 'one-intent (two same-contract calls)' | 'sdk-scoped batch (two intents, one transaction)';
+export type MixedShape =
+  | 'one-intent (two same-contract calls in ONE ledger Intent)'
+  | 'sdk-scoped batch (one transaction, one segment per call, state threaded)';
+
+export const ONE_INTENT: MixedShape = 'one-intent (two same-contract calls in ONE ledger Intent)';
+export const SDK_SCOPED: MixedShape = 'sdk-scoped batch (one transaction, one segment per call, state threaded)';
+
+/**
+ * Every message in an error's `cause` chain.
+ *
+ * The pinned SDK reports a node-side refusal as a bare `Transaction submission error`, with the
+ * substance — including the node's `1010: Invalid Transaction: Custom error: NNN` — one or more
+ * links down the chain. Recording only `e.message` would put "Transaction submission error" in the
+ * evidence as if it were a diagnosis.
+ */
+export const errorChain = (e: unknown, depth = 6): string => {
+  const parts: string[] = [];
+  let cur: any = e;
+  for (let i = 0; i < depth && cur; i++) {
+    const msg = cur instanceof Error ? cur.message : String(cur);
+    if (msg && !parts.includes(msg)) parts.push(msg);
+    cur = cur?.cause;
+  }
+  return parts.join(' | cause: ').replace(/\s+/g, ' ').slice(0, 1200);
+};
 
 export type MixedResult = {
   txId: string;
@@ -294,25 +318,32 @@ export type MixedResult = {
   segment?: number;
   circuits: string[];
   shieldedNonce: string;
-  /** Verbatim error from any shape that was tried and failed, in the order tried. */
-  attempts: Array<{ shape: MixedShape; ok: boolean; error?: string }>;
+  /** What the one-Intent composer actually assembled, whether or not it was accepted. */
+  composedStructure?: unknown;
+  /** Every shape tried, in order, with the verbatim failure of any that did not land. */
+  attempts: Array<{ shape: MixedShape; ok: boolean; error?: string; structure?: unknown }>;
 };
 
 type MixedLegs = {
-  shieldedColour: ColourName;
+  shieldedColour: ColourArg;
   shieldedValue: bigint;
-  unshieldedColour: ColourName;
+  unshieldedColour: ColourArg;
   unshieldedAmount: bigint;
   accountId: Uint8Array;
 };
 
-const mixedSpecs = (c: Ctx, providers: any, legs: MixedLegs, nonce: Uint8Array): { shielded: CallSpec; unshielded: CallSpec } => ({
+const mixedSpecs = (
+  c: Ctx,
+  providers: any,
+  legs: MixedLegs,
+  nonce: Uint8Array,
+): { shielded: CallSpec; unshielded: CallSpec } => ({
   shielded: {
     providers,
     compiledContract: c.compiledManager(),
     contractAddress: c.managerAddress,
     circuitId: 'depositShielded',
-    args: [{ nonce, color: c.colours.raw[legs.shieldedColour], value: legs.shieldedValue }, legs.accountId],
+    args: [{ nonce, color: colourBytes(c, legs.shieldedColour), value: legs.shieldedValue }, legs.accountId],
     privateStateId: 'manager',
   },
   unshielded: {
@@ -320,35 +351,65 @@ const mixedSpecs = (c: Ctx, providers: any, legs: MixedLegs, nonce: Uint8Array):
     compiledContract: c.compiledManager(),
     contractAddress: c.managerAddress,
     circuitId: 'depositUnshielded',
-    args: [c.colours.raw[legs.unshieldedColour], legs.unshieldedAmount, legs.accountId],
+    args: [colourBytes(c, legs.unshieldedColour), legs.unshieldedAmount, legs.accountId],
     privateStateId: 'manager',
   },
 });
 
+/** Shape 2: midnight-js's OWN same-contract batching. Both calls, ONE transaction. */
+export const mixedColourScoped = async (
+  c: Ctx,
+  providers: any,
+  legs: MixedLegs,
+  nonce: Uint8Array,
+): Promise<any> => {
+  const specs = mixedSpecs(c, providers, legs, nonce);
+  return (withContractScopedTransaction as any)(
+    providers,
+    async (txCtx: any) => {
+      for (const spec of [specs.shielded, specs.unshielded]) {
+        // `submitCallTx` with an OUTER transaction context is the SDK's own batching entry point:
+        // it builds the call AND registers it with the scope. `createUnprovenCallTx` alone builds
+        // the call but never registers it, so the scope ends with "No calls were submitted." —
+        // a trap the 00003 `submitInOneIntent` helper also contained, masked because it always
+        // failed earlier on the two-CONTRACT identity check.
+        await (submitCallTx as any)(
+          spec.providers,
+          {
+            compiledContract: spec.compiledContract,
+            circuitId: spec.circuitId,
+            contractAddress: spec.contractAddress,
+            args: spec.args,
+            ...(spec.privateStateId ? { privateStateId: spec.privateStateId } : {}),
+          },
+          txCtx,
+        );
+      }
+    },
+    { scopeName: 'aa00004-mixed-colour' },
+  );
+};
+
 /**
  * Move TWO DIFFERENT COLOURS in ONE transaction, atomically (FR-107, spec step 13 / probe M1).
  *
- * Shape 1 — the preferred one, and the open half of decision D-102: both `depositShielded` and
- * `depositUnshielded` prototypes in ONE ledger `Intent`, using the 00003 R8 machinery
- * (`ledger-compose.ts`). R8 derived its carrier rule for TWO DIFFERENT contracts; here both calls
- * are on the SAME contract, which is why D-102 exists at all. The carrier rule still decides which
- * transaction is kept whole, and it still picks the SHIELDED leg: when the pool already holds that
- * colour, `depositShielded` merges, and `mergeCoinImmediate` puts a zswap input (the held pool coin)
- * and a zswap output (the merged coin) in that call's own transaction. Those parts exist nowhere
- * else, so discarding that transaction would drop them. The unshielded leg needs no zswap parts at
- * all, so it is always the graft.
+ * Shape 1 — FR-107's preferred one, and the open half of decision D-102: both `depositShielded` and
+ * `depositUnshielded` prototypes in ONE ledger `Intent`, via the 00003 R8 machinery. R8 derived its
+ * carrier rule for two DIFFERENT contracts; here both calls are on the SAME contract, which is what
+ * D-102 asks about. Its weakness is structural and is documented in `ledger-compose.ts`: the two
+ * calls are built INDEPENDENTLY against the same pre-state, so nothing threads the first call's
+ * result into the second.
  *
- * Shape 2 — the recorded fallback if the ledger refuses two calls on one contract in one intent:
- * midnight-js's own `withContractScopedTransaction`, which batches several calls to the SAME
- * contract into ONE transaction (it refuses a second CONTRACT outright — that asymmetry is exactly
- * why 00003 had to go to ledger level). It threads the running contract state through the calls, so
- * the second call is built against the first call's result; the cost is that its internal
- * `UnprovenTransaction.merge` puts each call in its own SEGMENT, so it is one TRANSACTION but not
- * one INTENT.
+ * Shape 2 — midnight-js's own `withContractScopedTransaction`, which exists precisely for several
+ * calls to the SAME contract and THREADS the running contract state between them (the second call
+ * is built against the first call's output state). One transaction; its internal
+ * `UnprovenTransaction.merge` places each call in its own SEGMENT, so it is one transaction rather
+ * than one intent. It also waits for finalisation and throws unless the status is `SucceedEntirely`,
+ * so a partial success cannot be mistaken for a commit.
  *
- * Whichever shape lands, the evidence requirement is the same: ONE transaction id carrying BOTH
- * effects. Every attempt — including the verbatim error of one that fails — is returned so D-102
- * can be resolved from evidence rather than from an assumption.
+ * Whichever lands, the evidence requirement is the spec's: ONE transaction id carrying BOTH effects.
+ * Every attempt, with the verbatim failure of any that did not land, is returned so D-102 is
+ * resolved from evidence rather than assumption.
  */
 export const mixedColourDeposit = async (
   c: Ctx,
@@ -356,58 +417,48 @@ export const mixedColourDeposit = async (
   depositorManagerProviders: any,
   legs: MixedLegs,
 ): Promise<MixedResult> => {
-  const nonce = randomBytes(32);
   const attempts: MixedResult['attempts'] = [];
 
-  // --- shape 1: two same-contract calls in ONE ledger Intent ------------------------------------
-  const oneIntent: MixedShape = 'one-intent (two same-contract calls)';
+  // --- shape 1: two same-contract calls in ONE ledger Intent -------------------------------------
+  const nonce1 = randomBytes(32);
+  let structure: unknown;
   try {
-    const specs = mixedSpecs(c, depositorManagerProviders, legs, nonce);
+    const specs = mixedSpecs(c, depositorManagerProviders, legs, nonce1);
     const composed = await composeOneIntent(specs.shielded, [specs.unshielded]);
+    structure = composed.structure;
+    console.log(`  M1 shape 1 assembled: ${JSON.stringify(composed.structure)}`);
     const txId = await withDustRetry(depositor, 'mixedColourDeposit/one-intent', () =>
       proveBalanceSubmit(composed.tx, c.composedProof, depositorManagerProviders),
     );
-    attempts.push({ shape: oneIntent, ok: true });
-    return { txId, shape: oneIntent, segment: composed.segment, circuits: composed.circuits, shieldedNonce: hex(nonce), attempts };
+    attempts.push({ shape: ONE_INTENT, ok: true, structure });
+    return {
+      txId,
+      shape: ONE_INTENT,
+      segment: composed.segment,
+      circuits: composed.circuits,
+      shieldedNonce: hex(nonce1),
+      composedStructure: structure,
+      attempts,
+    };
   } catch (e) {
-    const err = e as any;
-    const cause = err?.cause ? ` | cause: ${String(err.cause?.message ?? err.cause)}` : '';
-    const message = `${e instanceof Error ? e.message : String(e)}${cause}`;
-    attempts.push({ shape: oneIntent, ok: false, error: message.split('\n').slice(0, 4).join(' / ').slice(0, 800) });
-    console.log(`  M1 shape 1 (one Intent) FAILED — falling back; verbatim: ${message.split('\n')[0]}`);
+    const message = errorChain(e);
+    attempts.push({ shape: ONE_INTENT, ok: false, error: message, structure });
+    console.log(`  M1 shape 1 (ONE ledger Intent) FAILED — verbatim: ${message}`);
+    console.log('  falling back to the SDK\'s own same-contract batching (D-102 fallback)');
   }
 
   // --- shape 2: midnight-js's own same-contract batch --------------------------------------------
-  const scoped: MixedShape = 'sdk-scoped batch (two intents, one transaction)';
   const nonce2 = randomBytes(32);
-  const specs2 = mixedSpecs(c, depositorManagerProviders, legs, nonce2);
   const finalized: any = await withDustRetry(depositor, 'mixedColourDeposit/scoped', () =>
-    (withContractScopedTransaction as any)(
-      depositorManagerProviders,
-      async (txCtx: any) => {
-        for (const spec of [specs2.shielded, specs2.unshielded]) {
-          await (createUnprovenCallTx as any)(
-            spec.providers,
-            {
-              compiledContract: spec.compiledContract,
-              circuitId: spec.circuitId,
-              contractAddress: spec.contractAddress,
-              args: spec.args,
-              ...(spec.privateStateId ? { privateStateId: spec.privateStateId } : {}),
-            },
-            txCtx,
-          );
-        }
-      },
-      { scopeName: 'aa00004-mixed-colour' },
-    ),
+    mixedColourScoped(c, depositorManagerProviders, legs, nonce2),
   );
-  attempts.push({ shape: scoped, ok: true });
+  attempts.push({ shape: SDK_SCOPED, ok: true });
   return {
     txId: String(finalized?.public?.txId ?? finalized?.public?.txHash ?? finalized),
-    shape: scoped,
+    shape: SDK_SCOPED,
     circuits: ['depositShielded', 'depositUnshielded'],
     shieldedNonce: hex(nonce2),
+    composedStructure: structure,
     attempts,
   };
 };
@@ -415,55 +466,43 @@ export const mixedColourDeposit = async (
 /**
  * The M2 negative: the step-13-shaped mixed-colour transaction with the SECOND leg wrong-coloured.
  *
- * Built exactly like `mixedColourDeposit` shape 1 — the valid shielded leg is built FIRST and in
- * full — and then the unshielded leg names a colour the Manager was never configured with. The
- * whole composition throws, so nothing is ever submitted: the valid leg's transaction is discarded
- * with it. Returns the verbatim rejection.
+ * It is built with the SAME shape M1 resolved to, so it is genuinely "the step-13-shaped
+ * transaction" rather than a differently-composed lookalike. The valid shielded leg is built FIRST
+ * and in full — the result records that it built — and the composition then fails on the second leg,
+ * so the whole transaction is discarded and the valid leg never reaches the chain.
  */
 export const mixedColourDepositWrongColour = async (
   c: Ctx,
   depositorManagerProviders: any,
+  shape: MixedShape,
   legs: Omit<MixedLegs, 'unshieldedColour'> & { wrongUnshieldedColour: Uint8Array },
-): Promise<{ carrierBuilt: boolean; error: string }> => {
+): Promise<{ validLegBuilt: boolean; error: string }> => {
   const nonce = randomBytes(32);
-  const shielded: CallSpec = {
-    providers: depositorManagerProviders,
-    compiledContract: c.compiledManager(),
-    contractAddress: c.managerAddress,
-    circuitId: 'depositShielded',
-    args: [{ nonce, color: c.colours.raw[legs.shieldedColour], value: legs.shieldedValue }, legs.accountId],
-    privateStateId: 'manager',
-  };
-  const wrongUnshielded: CallSpec = {
-    providers: depositorManagerProviders,
-    compiledContract: c.compiledManager(),
-    contractAddress: c.managerAddress,
-    circuitId: 'depositUnshielded',
-    args: [legs.wrongUnshieldedColour, legs.unshieldedAmount, legs.accountId],
-    privateStateId: 'manager',
-  };
+  const full: MixedLegs = { ...legs, unshieldedColour: legs.wrongUnshieldedColour };
+  const specs = mixedSpecs(c, depositorManagerProviders, full, nonce);
 
   // Build the VALID leg first and on its own, so the evidence can say the failure was the second
   // leg's and not a defect in the shape itself.
-  let carrierBuilt = false;
+  let validLegBuilt = false;
   try {
-    await buildCall(shielded);
-    carrierBuilt = true;
+    await buildCall(specs.shielded);
+    validLegBuilt = true;
   } catch (e) {
     return {
-      carrierBuilt: false,
-      error: `the VALID leg failed to build, so this control proves nothing: ${e instanceof Error ? e.message : String(e)}`,
+      validLegBuilt: false,
+      error: `the VALID leg failed to build, so this control proves nothing: ${errorChain(e)}`,
     };
   }
 
   try {
-    await composeOneIntent(shielded, [wrongUnshielded]);
-    return { carrierBuilt, error: 'NOT REJECTED — the wrong-coloured mixed transaction was composed successfully' };
+    if (shape === ONE_INTENT) await composeOneIntent(specs.shielded, [specs.unshielded]);
+    else await mixedColourScoped(c, depositorManagerProviders, full, nonce);
+    return { validLegBuilt, error: 'NOT REJECTED — the wrong-coloured mixed transaction was accepted' };
   } catch (e) {
-    const err = e as any;
-    const cause = err?.cause ? ` | cause: ${String(err.cause?.message ?? err.cause)}` : '';
-    return { carrierBuilt, error: `${e instanceof Error ? e.message : String(e)}${cause}` };
+    return { validLegBuilt, error: errorChain(e) };
   }
 };
+
+export { describe as describeTransaction };
 
 export { hex };

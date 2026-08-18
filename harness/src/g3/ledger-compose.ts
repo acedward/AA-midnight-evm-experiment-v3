@@ -97,6 +97,8 @@ export type ComposedTx = {
   circuits: string[];
   /** The carrier call's execution result (its `private.result` is the minted coin, etc.). */
   carrierResult: any;
+  /** What was actually assembled — recorded so a node-side rejection can be diagnosed. */
+  structure: unknown;
 };
 
 /**
@@ -160,13 +162,66 @@ export const composeOneIntent = async (carrier: CallSpec, grafts: CallSpec[]): P
       );
       circuits.push(String(call.circuitId));
     }
+
+    // UNSHIELDED OFFERS LIVE ON THE INTENT, NOT ON THE TRANSACTION. Keeping the carrier's whole
+    // transaction preserves its ZSWAP offers (those are transaction-level), but the graft's UTXO
+    // inputs and outputs would be discarded along with its intent — and a Manager call that
+    // `receiveUnshielded`s needs exactly those. So they are transplanted here. Signatures are
+    // deliberately NOT carried over: the composed intent is signed as a whole later, by
+    // `signRecipe` during balancing, over this intent's own `signatureData`.
+    for (const which of ['guaranteedUnshieldedOffer', 'fallibleUnshieldedOffer'] as const) {
+      const graftOffer = (built.private.unprovenTx.intents
+        ? [...(built.private.unprovenTx.intents as Map<number, any>).values()][0]?.[which]
+        : undefined) as any;
+      if (!graftOffer) continue;
+      const carrierOffer = intent[which];
+      const inputs = [...(carrierOffer?.inputs ?? []), ...graftOffer.inputs];
+      const outputs = [...(carrierOffer?.outputs ?? []), ...graftOffer.outputs];
+      intent[which] = (ledger as any).UnshieldedOffer.new(inputs, outputs, []);
+    }
   }
 
   // Writing `intents` on an unbound, unproven transaction re-computes binding information, which
   // is why this must happen before proving.
   tx.intents = new Map([[segment, intent]]);
 
-  return { tx, segment, circuits, carrierResult: carrierBuilt };
+  return { tx, segment, circuits, carrierResult: carrierBuilt, structure: describe(tx) };
+};
+
+/**
+ * A structural description of an unproven transaction, for evidence and for diagnosing a node-side
+ * rejection.
+ *
+ * A node that refuses a composed transaction reports a bare
+ * `1010: Invalid Transaction: Custom error: NNN` over RPC, which says nothing about WHY. Recording
+ * what was actually assembled — how many intents, how many actions in each, which unshielded offers
+ * survived — turns that into something a reader can act on.
+ */
+export const describe = (tx: any): unknown => {
+  try {
+    const intents: Array<Record<string, unknown>> = [];
+    for (const [segment, intent] of (tx.intents ?? new Map()) as Map<number, any>) {
+      const offer = (o: any) =>
+        o === undefined ? null : { inputs: o.inputs?.length ?? 0, outputs: o.outputs?.length ?? 0, signatures: o.signatures?.length ?? 0 };
+      intents.push({
+        segment,
+        actions: (intent.actions ?? []).length,
+        entryPoints: (intent.actions ?? []).map((a: any) => String(a?.entryPoint ?? '?')),
+        addresses: (intent.actions ?? []).map((a: any) => String(a?.address ?? '?').slice(0, 12)),
+        guaranteedUnshieldedOffer: offer(intent.guaranteedUnshieldedOffer),
+        fallibleUnshieldedOffer: offer(intent.fallibleUnshieldedOffer),
+        dustActions: intent.dustActions === undefined ? null : 'present',
+      });
+    }
+    return {
+      intentCount: intents.length,
+      intents,
+      guaranteedZswapOffer: tx.guaranteedOffer === undefined ? null : 'present',
+      fallibleZswapOffer: tx.fallibleOffer === undefined ? null : 'present',
+    };
+  } catch (e) {
+    return { describeFailed: e instanceof Error ? e.message : String(e) };
+  }
 };
 
 /**

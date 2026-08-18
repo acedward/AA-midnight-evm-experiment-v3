@@ -29,6 +29,7 @@ import {
   userDepositShielded,
   userDepositUnshielded,
 } from './actions.js';
+import type { MixedShape } from './actions.js';
 import { observe, snapshot, snapshotObject, type Observation } from './table.js';
 import { unshieldedSeedOf } from '../wallet.js';
 import { SEEDS } from '../lane.js';
@@ -62,6 +63,8 @@ export const runControls = async (
   rig: Rig,
   after13: Observation,
   tx: (id: string) => string,
+  /** The composition shape probe M1 actually landed with — M2 must mirror it exactly. */
+  m1Shape: MixedShape,
 ): Promise<ControlResult[]> => {
   const { ctx, deps, raw, colours } = rig;
   const results: ControlResult[] = [];
@@ -240,7 +243,7 @@ export const runControls = async (
   // comparison against a demonstrated positive rather than an assumption.
   await (async () => {
     const s = await rig.openSpender('OwnerM', 'm2');
-    let carrierBuilt = false;
+    let validLegBuilt = false;
     try {
       await expectRejection(
         'M2',
@@ -249,14 +252,14 @@ export const runControls = async (
         'circuit execution of the second leg (the composed transaction is discarded, never submitted)',
         /colour is not a configured unshielded colour/,
         async () => {
-          const r = await mixedColourDepositWrongColour(ctx, s.managerProviders, {
+          const r = await mixedColourDepositWrongColour(ctx, s.managerProviders, m1Shape, {
             shieldedColour: 'S2',
             shieldedValue: 2n,
             unshieldedAmount: 2n,
             accountId: raw.AA_B,
             wrongUnshieldedColour: colours.control.rawUnshielded,
           });
-          carrierBuilt = r.carrierBuilt;
+          validLegBuilt = r.validLegBuilt;
           throw new Error(r.error);
         },
         {
@@ -267,8 +270,8 @@ export const runControls = async (
         },
       );
       const m2 = results[results.length - 1]!;
-      m2.fixture = { ...(m2.fixture ?? {}), validLegBuilt: String(carrierBuilt) };
-      if (!carrierBuilt) {
+      m2.fixture = { ...(m2.fixture ?? {}), validLegBuilt: String(validLegBuilt), shape: m1Shape };
+      if (!validLegBuilt) {
         m2.status = 'RED';
         m2.reason = `${m2.reason} [the valid leg did not build, so this control proves nothing]`;
       }

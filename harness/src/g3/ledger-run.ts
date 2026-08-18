@@ -553,7 +553,7 @@ const main = async () => {
     // =========================================================================================
     // NEGATIVE CONTROLS AND M2 — run against the post-step-13 state, in this same process
     // =========================================================================================
-    controls = await runControls(rig, o, tx);
+    controls = await runControls(rig, o, tx, mixed.shape);
     for (const c of controls) {
       cell({
         id: c.id,
