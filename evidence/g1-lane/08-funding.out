@@ -1,0 +1,34 @@
+# G1 Phase 4 — funding + DUST + smoke tx — EXPERIMENTAL_LANE — 2026-08-18T01:12:40.372Z
+[2026-08-18T01:12:40.473Z] syncing genesis + feePayer …
+2026-08-17 21:12:40        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:31573/: 1000:: Normal Closure
+2026-08-17 21:12:40        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:31573/: 1000:: Normal Closure
+2026-08-17 21:12:40        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:31573/: 1000:: Normal Closure
+2026-08-17 21:12:40        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:31573/: 1000:: Normal Closure
+[2026-08-18T01:12:40.940Z] genesis(before): NIGHT=250000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+2026-08-17 21:12:41        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:31573/: 1000:: Normal Closure
+2026-08-17 21:12:41        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:31573/: 1000:: Normal Closure
+[2026-08-18T01:12:41.084Z] feePayer(before): NIGHT=0 DUST=0 utxos=0 unregisteredNightUtxos=0
+[2026-08-18T01:12:41.085Z] funding feePayer with 1000000000000 NIGHT from genesis
+[2026-08-18T01:12:41.123Z]   fund feePayer: attempt 1 — DUST not yet generated, waiting 15s
+[2026-08-18T01:13:12.708Z]   submitted tx 0071c1d6274ef397fdd98f2030cf225d3c56655c0581ae052b1ff3571e1341d9df (hash 466284a51aca0d36ee0463e836e824cc31ea1a30ba02b12006396b0e12f740cb)
+[2026-08-18T01:13:12.709Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-18T01:13:12.812Z] feePayer(funded): NIGHT=1000000000000 DUST=0 utxos=1 unregisteredNightUtxos=1
+[2026-08-18T01:13:12.812Z] registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T01:13:31.398Z]   DUST registration tx 0082906adcd1d15e806a74a0bca6d4f7e6a00c70f3d1b8b875e48e9278df2c1d43
+[2026-08-18T01:13:31.398Z]   waiting for feePayer NIGHT utxos to show registeredForDustGeneration=true …
+[2026-08-18T01:13:31.534Z] feePayer(registered): NIGHT=1000000000000 DUST=0 utxos=1 unregisteredNightUtxos=0
+[2026-08-18T01:13:31.535Z] smoke transfer: feePayer -> OwnerN 1000000 NIGHT (fees paid from generated DUST)
+[2026-08-18T01:13:31.539Z] ownerN(before): NIGHT=0 DUST=0 utxos=0 unregisteredNightUtxos=0
+[2026-08-18T01:13:48.764Z]   submitted tx 002f370f4e271a9336427bcefaef30cfb9d9756ded99e5d80bbefacd7e5389c903 (hash 3f1645966d4c7cd6e80dd61aaa04b9e68619658948db8bcf8cf378b5a20c6c55)
+[2026-08-18T01:13:48.764Z]   waiting for OwnerN NIGHT to arrive …
+[2026-08-18T01:13:48.913Z] ownerN(after): NIGHT=1000000 DUST=0 utxos=1 unregisteredNightUtxos=1
+
+## RESULT
+fund_tx:             466284a51aca0d36ee0463e836e824cc31ea1a30ba02b12006396b0e12f740cb
+dust_registration_tx:0082906adcd1d15e806a74a0bca6d4f7e6a00c70f3d1b8b875e48e9278df2c1d43
+smoke_tx:            3f1645966d4c7cd6e80dd61aaa04b9e68619658948db8bcf8cf378b5a20c6c55
+feePayer_night:      1000000000000
+feePayer_dust:       0
+ownerN_night:        1000000
+
+G1 Phase 4: fee wallet funded, DUST generated, smoke transaction confirmed

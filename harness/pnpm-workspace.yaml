@@ -1,3 +1,8 @@
+# pnpm 11 fails an install when a dependency's build script is silently ignored, which would
+# make the gate wrappers RED for a non-lane reason. Both packages below are required and are
+# approved explicitly:
+#   esbuild          — backs `tsx`, which runs the harness
+#   msgpackr-extract — transitive native dependency of the pinned wallet SDK
 allowBuilds:
-  esbuild: set this to true or false
-  msgpackr-extract: set this to true or false
+  esbuild: true
+  msgpackr-extract: true

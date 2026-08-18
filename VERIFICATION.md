@@ -138,6 +138,56 @@ feePayer ends with NIGHT `3001000000000` across 4 UTXOs, **all `registeredForDus
 OwnerN received NIGHT `1000000`. Fees are paid by a wallet disjoint from every demo balance under
 test, so demo-color evidence stays fee-isolated.
 
+### Phase 5 — Gate wrapper — **G1 GREEN**
+
+`./scripts/g1/verify-g1-lane.sh` runs the entire lane from nothing and owns its own teardown:
+`probe ports → pull → assert digests → boot → host health → install → wallets → funding/DUST/smoke
+→ teardown`.
+
+| Run | Result |
+|---|---|
+| 2026-08-18T01:11Z | **RED (correctly)** — `06-install` exit 1: pnpm 11 fails an install whose build scripts are silently ignored. Fixed by approving `esbuild` + `msgpackr-extract` in `harness/pnpm-workspace.yaml`. |
+| 2026-08-18T01:11Z | **RED (correctly)** — `08-funding` exit 1 on a *freshly booted* chain: `Insufficient Funds: could not balance dust`. Genesis holds registered NIGHT but DUST has not yet accrued in the first seconds of a new chain. Fixed with `withDustRetry`, which waits on the SDK's own reported shortfall (`waitForGeneratedDust`) or backs off — a deterministic wait on an observable condition, not a blind sleep. |
+| **2026-08-18T01:12:22Z → 01:13:49Z** | **GREEN — `final_exit: 0`** |
+
+Green-run step timings (from `evidence/g1-lane/run.log`), every step exit `0`:
+
+| Step | Duration |
+|---|---|
+| 01-probe-ports | 1s |
+| 02-pull | 2s |
+| 03-assert-digests | 0s |
+| 04-boot | 6s |
+| 05-health | 2s |
+| 06-install | 0s |
+| 07-wallets | 5s |
+| 08-funding | 70s |
+| teardown | exit 0 |
+
+**Total: 87 s from nothing to a fully verified lane and a clean teardown.**
+
+Transactions from the green run (a genuinely fresh chain, distinct from the earlier manual run):
+
+| Step | Transaction hash |
+|---|---|
+| Fund feePayer from genesis | `466284a51aca0d36ee0463e836e824cc31ea1a30ba02b12006396b0e12f740cb` |
+| DUST registration | `0082906adcd1d15e806a74a0bca6d4f7e6a00c70f3d1b8b875e48e9278df2c1d43` |
+| Smoke transfer (fees from generated DUST) | `3f1645966d4c7cd6e80dd61aaa04b9e68619658948db8bcf8cf378b5a20c6c55` |
+
+The wrapper asserts the digests Compose will actually run against the LANE.md pins before booting,
+so a retagged upstream image cannot silently change the lane.
+
+## G1 EXIT CRITERIA — MET
+
+- [x] Lane manifest complete, every component pinned by digest/integrity hash, `EXPERIMENTAL_LANE`.
+- [x] Fresh stack boots reproducibly **from the wrapper alone**; health checks pass from the host.
+- [x] Fee wallet generates DUST and pays for a smoke transaction; demo wallets exist and are
+      fee-isolated.
+- [x] Master G1 row updated with links to retained evidence.
+
+One owner-approved deviation is carried forward: **`LANE-DEV-1`** (compiler `0.33.0` released form
+substituted for the unobtainable `-rc.2`), still to be empirically verified at G2.
+
 #### Bearing on Finding L-3
 
 The pinned wallet SDK's own compose targets node `2.0.0-rc.3` + a pre-alpha indexer. This run

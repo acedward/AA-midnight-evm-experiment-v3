@@ -82,6 +82,42 @@ const sendUnshielded = async (from: Party, toAddress: unknown, amount: bigint): 
   return hash;
 };
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * DUST accrues over time from registered NIGHT, so on a freshly booted chain even the genesis
+ * wallet cannot pay fees for the first seconds. Retry on the two shapes the SDK reports:
+ *   - "have N, need M"            -> wait for exactly M via the documented API
+ *   - "could not balance dust"    -> no figure given; back off and let DUST accrue
+ * This is a deterministic wait on an observable condition, not a blind sleep-and-hope.
+ */
+const withDustRetry = async <T>(p: Party, what: string, fn: () => Promise<T>, maxAttempts = 20): Promise<T> => {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      const isDust = /could not balance dust|InsufficientFunds|Insufficient generated dust/i.test(msg);
+      if (!isDust || attempt >= maxAttempts) throw e;
+
+      const need = /need (\d+)/.exec(msg)?.[1];
+      if (need) {
+        log(`  ${what}: attempt ${attempt} short of DUST, waiting for ${need} …`);
+        const s: any = await rx.firstValueFrom(p.wallet.state());
+        const utxos = (s?.unshielded?.availableCoins ?? []).filter((c: any) => c?.utxo?.type === NIGHT());
+        try {
+          await (p.wallet as any).waitForGeneratedDust(utxos, BigInt(need), { timeoutMs: 300_000 });
+          continue;
+        } catch {
+          /* fall through to backoff */
+        }
+      }
+      log(`  ${what}: attempt ${attempt} — DUST not yet generated, waiting 15s`);
+      await sleep(15_000);
+    }
+  }
+};
+
 const waitFor = async (p: Party, pred: (s: any) => boolean, what: string, timeoutMs = 180_000) => {
   log(`  waiting for ${what} …`);
   return rx.firstValueFrom(
@@ -121,7 +157,9 @@ const main = async () => {
     // DUST. Fund generously so generation reaches the registration fee quickly.
     const fundAmount = units(1_000_000n);
     log(`funding feePayer with ${fundAmount} NIGHT from genesis`);
-    const fundHash = await sendUnshielded(genesis, feeAddress, fundAmount);
+    const fundHash = await withDustRetry(genesis, 'fund feePayer', () =>
+      sendUnshielded(genesis, feeAddress, fundAmount),
+    );
 
     // Wait for an increase over the pre-existing balance, so reruns don't pass instantly.
     const feeFunded = await waitFor(
@@ -145,26 +183,13 @@ const main = async () => {
     } else {
       log(`registering ${utxos.length} NIGHT utxo(s) for DUST generation`);
 
-    // The registration transaction is itself paid in DUST, which accrues over time from the
-    // freshly received NIGHT. The SDK reports the exact shortfall, so wait for that amount via
-    // the documented API and retry rather than guessing a sleep.
-    const registerWithWait = async (attempt = 1): Promise<any> => {
-      try {
-        return await (fee.wallet as any).registerNightUtxosForDustGeneration(
+      const regRecipe = await withDustRetry(fee, 'register for DUST', () =>
+        (fee.wallet as any).registerNightUtxosForDustGeneration(
           utxos,
           (fee.unshieldedKeystore as any).getPublicKey(),
           (fee.unshieldedKeystore as any).signDataAsync,
-        );
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        const need = /need (\d+)/.exec(msg)?.[1];
-        if (!need || attempt > 6) throw e;
-        log(`  attempt ${attempt}: insufficient DUST, waiting for ${need} …`);
-        await (fee.wallet as any).waitForGeneratedDust(utxos, BigInt(need), { timeoutMs: 300_000 });
-        return registerWithWait(attempt + 1);
-      }
-    };
-      const regRecipe = await registerWithWait();
+        ),
+      );
       const regFinal = await (fee.wallet as any).finalizeRecipe(regRecipe);
       regHash = await (fee.wallet as any).submitTransaction(regFinal);
       log(`  DUST registration tx ${String(regHash)}`);
@@ -191,26 +216,9 @@ const main = async () => {
     const before = await syncedState(ownerN);
     report('ownerN(before)', before);
 
-    // Retry on DUST shortfall using the SDK's own wait API — this is the assertion that fees
-    // are genuinely payable from generated DUST.
-    const smokeWithWait = async (attempt = 1): Promise<string> => {
-      try {
-        return await sendUnshielded(fee, ownerNAddress, smokeAmount);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        const need = /need (\d+)/.exec(msg)?.[1];
-        if (!need || attempt > 6) throw e;
-        log(`  smoke attempt ${attempt}: insufficient DUST, waiting for ${need} …`);
-        const utxosNow = (await rx.firstValueFrom(fee.wallet.state()) as any)?.unshielded?.availableCoins ?? [];
-        await (fee.wallet as any).waitForGeneratedDust(
-          utxosNow.filter((c: any) => c?.utxo?.type === NIGHT()),
-          BigInt(need),
-          { timeoutMs: 300_000 },
-        );
-        return smokeWithWait(attempt + 1);
-      }
-    };
-    const smokeHash = await smokeWithWait();
+    const smokeHash = await withDustRetry(fee, 'smoke transfer', () =>
+      sendUnshielded(fee, ownerNAddress, smokeAmount),
+    );
     const after = await waitFor(ownerN, (s) => nightBalance(s) >= smokeAmount, 'OwnerN NIGHT to arrive');
     report('ownerN(after)', after);
 
