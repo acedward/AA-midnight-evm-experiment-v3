@@ -1,0 +1,37 @@
+== lane reuse proof — base commit a8ebff9614b4d2a811d90b1956c6f1d969160dd6 (00003 merged head)
+base commit present: a8ebff9 Merge pull request #1 from acedward/addendum-a1-multi-input
+
+== (1) pin values in docker/ are unchanged since the base commit
+pins unchanged: docker/compose.yml
+    sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a
+    sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f
+    sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e
+pins unchanged: compactc archive
+    ARG COMPACTC_SHA256=3aa23812b0b086dbce07da3931a40dcb01bec9676b1ceed7f2d0be370ab2dc46
+    ARG COMPACTC_URL=https://github.com/midnightntwrk/compact/releases/download/compactc-v0.33.0/compactc_v0.33.0_aarch64-unknown-linux-musl.zip
+
+== (2) npm pins: harness lockfile byte-identical to the base commit
+lockfile unchanged: harness/pnpm-lock.yaml (a0a191d1da5ebc21dbe32a69d144870ddfc72424)
+dependency versions unchanged: harness/package.json
+
+== (3) the images docker compose will run reference exactly the pinned digests
+digest ok: node -> sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e
+digest ok: indexer -> sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a
+digest ok: proof-server -> sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f
+-- images compose will run:
+    midnightntwrk/proof-server@sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f
+    midnightntwrk/midnight-node@sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e
+    midnightntwrk/indexer-standalone@sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a
+
+== lane component table (EXPERIMENTAL_LANE / LANE-DEV-1)
+    midnight-node            node-2.0.0-rc.4
+    midnight-ledger          ledger-9.1.0.0-rc.3
+    midnight-indexer         v4.4.0-rc.1 (arm64 tag 4.4.0-rc.1-arm64, finding L-1)
+    proof-server             9.0.0-rc.3 (finding L-2)
+    midnight-js              v5.0.0-beta.6
+    wallet-sdk               2.0.0-beta.2
+    compactc                 0.33.0 / language 0.25.0 (LANE-DEV-1)
+    arm64 image digests (recorded by 00003):
+      node         sha256:d1e5fc231147e9af739a1128ae0941119fd59dca7356a2333567bad7b57d7424
+      indexer      sha256:628002a181edfc7d67d43944e84a35d920a0077c89cab6301169079b30c79316
+      proof-server sha256:8a4b29d737c1da754df0443e4a552a7934b47e17e99cd893a70120e4ce21fcaf

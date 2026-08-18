@@ -89,6 +89,9 @@ type NegativeResult = {
   expectation: string;
   rejectedAt: string;
   reason: string;
+  /** The message the contract's own `assert` must produce — a rejection for any OTHER reason is RED. */
+  expectedMessage: string;
+  messageMatched: boolean;
   stateUnchanged: boolean;
   status: 'GREEN' | 'RED';
 };
@@ -338,6 +341,12 @@ const main = async () => {
       label: string,
       expectation: string,
       rejectedAt: string,
+      /**
+       * The contract's own assert message. Requiring it is what stops a rejection for some
+       * UNRELATED reason — a malformed argument, a funding hiccup — from being recorded as the
+       * guard doing its job.
+       */
+      expectedMessage: RegExp,
       attempt: () => Promise<unknown>,
     ): Promise<void> => {
       const before = snapshot(await readManager(managerProviders, managerAddress));
@@ -359,17 +368,24 @@ const main = async () => {
       const unchanged = snapshot(afterView) === before;
 
       const first = reason.split('\n')[0]!.slice(0, 400);
+      const matched = rejected && expectedMessage.test(reason);
+      const ok = rejected && matched && unchanged;
       negatives.push({
         id,
         label,
         expectation,
         rejectedAt,
         reason: first,
+        expectedMessage: String(expectedMessage),
+        messageMatched: matched,
         stateUnchanged: unchanged,
-        status: rejected && unchanged ? 'GREEN' : 'RED',
+        status: ok ? 'GREEN' : 'RED',
       });
-      console.log(`  ${rejected && unchanged ? 'GREEN' : 'RED  '} ${id} — ${first.slice(0, 200)}`);
+      console.log(`  ${ok ? 'GREEN' : 'RED  '} ${id} — ${first.slice(0, 200)}`);
       if (!rejected) failures.push(`negative ${id}: the operation was NOT rejected`);
+      if (rejected && !matched) {
+        failures.push(`negative ${id}: rejected, but not by ${expectedMessage} — got: ${first}`);
+      }
       if (!unchanged) {
         failures.push(`negative ${id}: Manager state changed across a rejected call`);
         console.log(`    BEFORE ${before}`);
@@ -384,6 +400,7 @@ const main = async () => {
       'A second `configure` is refused (FR-102, one-time binding)',
       "rejected with 'already configured'; the four bound colours are unchanged",
       'circuit execution (no transaction built)',
+      /already configured/,
       () => manager.callTx.configure(S1, S2, U1, U2),
     );
 
@@ -392,6 +409,7 @@ const main = async () => {
       'Registering an account id that already exists is refused',
       "rejected with 'account already registered'; the account set and the 8 seeded cells are unchanged",
       'circuit execution (no transaction built)',
+      /account already registered/,
       async () => {
         await actAs(managerProviders, secretA);
         return manager.callTx.registerAccount(idA);
@@ -404,6 +422,7 @@ const main = async () => {
       "rejected with \"caller's owner witness matches no registered account\" before any colour, " +
         'balance or pool guard is reached',
       'circuit execution (no transaction built)',
+      /matches no registered account/,
       async () => {
         // OwnerN is a pure user in the demo: its secret opens no Manager account.
         await actAs(managerProviders, unshieldedSeedOf(SEEDS.ownerN));
@@ -546,11 +565,12 @@ const writeContractsMd = (r: any): void => {
   lines.push('');
   lines.push('## Unit-level negatives');
   lines.push('');
-  lines.push('| Id | Status | Refused at | Verbatim error | State byte-identical |');
-  lines.push('|---|---|---|---|---|');
+  lines.push('| Id | Status | Refused at | Verbatim error | Expected message | State byte-identical |');
+  lines.push('|---|---|---|---|---|---|');
   for (const n of r.negatives) {
     lines.push(
       `| \`${n.id}\` | **${n.status}** | ${n.rejectedAt} | \`${n.reason.replace(/\|/g, '\\|')}\` | ` +
+        `\`${String(n.expectedMessage).replace(/\|/g, '\\|')}\` ${n.messageMatched ? 'matched' : '**NOT MATCHED**'} | ` +
         `${n.stateUnchanged ? 'yes' : '**NO**'} |`,
     );
   }
