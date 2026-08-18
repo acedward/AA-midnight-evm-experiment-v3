@@ -19,7 +19,7 @@ import { SEEDS } from '../lane.js';
 import { closeParty, openParty, unshieldedSeedOf, type Party } from '../wallet.js';
 import { compiledManager, compiledMinter } from './contracts.js';
 import { ManagerSim } from '../test/sim.js';
-import { readManager, waitForManager } from './observe.js';
+import { assertPoolInvariant, readManager, waitForManager } from './observe.js';
 import { makeProviders } from './providers.js';
 import { buildCall } from './compose.js';
 
@@ -104,7 +104,82 @@ const main = async () => {
     } else {
       console.log('\nDeposit did not credit as expected.');
       process.exitCode = 1;
+      return;
     }
+    assertPoolInvariant(after, 'after deposit');
+
+    // ---- Register AA_B so internal transfers have a destination --------------------------------
+    const secretB = unshieldedSeedOf(SEEDS.ownerB);
+    const idB = await sim.ownerCommitmentFor(secretB);
+    await managerProviders.privateStateProvider.set('manager', { ownerSecret: secretB });
+    await manager.callTx.registerAccount(idB);
+    log(`AA_B registered ${hex(idB)}`);
+
+    // ---- MECHANIC 2: account -> account INTERNAL transfer (ownership only) ---------------------
+    // Authorised by OwnerA's witness. The pooled coin and ledger balances must be BYTE-IDENTICAL
+    // before and after; only the account map may move (spec FR-005).
+    const beforeInternal = await readManager(managerProviders, managerAddr);
+    await managerProviders.privateStateProvider.set('manager', { ownerSecret: secretA });
+    log('internal transfer AA_A -5-> AA_B (shielded) …');
+    await manager.callTx.transferInternal(idB, true, 5n);
+    const afterInternal = await waitForManager(
+      managerProviders, managerAddr,
+      (m) => (m.shieldedOf[hex(idB)] ?? 0n) === 5n && (m.shieldedOf[hex(idA)] ?? 0n) === 5n,
+      'AA_A 5 / AA_B 5 after internal transfer',
+    );
+    const poolUntouched =
+      afterInternal.poolValue === beforeInternal.poolValue &&
+      afterInternal.poolNonce === beforeInternal.poolNonce;
+    console.log(`\nMECHANIC 2 account->account internal: AA_A ${afterInternal.shieldedOf[hex(idA)]}, AA_B ${afterInternal.shieldedOf[hex(idB)]}`);
+    console.log(`  pool value unchanged: ${afterInternal.poolValue === beforeInternal.poolValue}`);
+    console.log(`  pool coin nonce unchanged (no ledger movement): ${poolUntouched}`);
+    if (!poolUntouched) { console.log('  INTERNAL TRANSFER MOVED THE POOL — violates FR-005'); process.exitCode = 1; }
+    assertPoolInvariant(afterInternal, 'after internal transfer');
+
+    // ---- MECHANIC 3: account -> user withdrawal ------------------------------------------------
+    // Authorised by OwnerB's witness; pool pays out and retains change.
+    await managerProviders.privateStateProvider.set('manager', { ownerSecret: secretB });
+    log('withdraw AA_B -5-> user wallet …');
+    await manager.callTx.withdrawShielded(5n, {
+      is_left: true,
+      left: { bytes: typeof coinPk === 'string' ? Buffer.from(coinPk, 'hex') : coinPk },
+      right: { bytes: new Uint8Array(32) },
+    });
+    const afterWithdraw = await waitForManager(
+      managerProviders, managerAddr,
+      (m) => (m.shieldedOf[hex(idB)] ?? 0n) === 0n && m.poolValue === 5n,
+      'AA_B drained to 0 and pool down to 5',
+    );
+    console.log(`\nMECHANIC 3 account->user withdraw: AA_B ${afterWithdraw.shieldedOf[hex(idB)] ?? 0n}, pool ${afterWithdraw.poolValue}`);
+    assertPoolInvariant(afterWithdraw, 'after withdraw');
+
+    // ---- MECHANIC 4: pool SELF-SEND (stdlib auto-receive branch) -------------------------------
+    // Balance- and ownership-neutral by definition; the evidence is that identifiers change while
+    // the balance table does not (spec FR-005, inverse of the internal-transfer case).
+    const beforeSelf = await readManager(managerProviders, managerAddr);
+    await managerProviders.privateStateProvider.set('manager', { ownerSecret: secretA });
+    log('pool self-send to kernel.self() …');
+    await manager.callTx.selfSendShielded();
+    const afterSelf = await waitForManager(
+      managerProviders, managerAddr,
+      (m) => m.poolNonce !== beforeSelf.poolNonce,
+      'pool coin nonce to change under an unchanged balance',
+    );
+    const balancesUnchanged =
+      afterSelf.poolValue === beforeSelf.poolValue &&
+      JSON.stringify(afterSelf.shieldedOf, (_k, v) => (typeof v === 'bigint' ? `${v}` : v)) ===
+        JSON.stringify(beforeSelf.shieldedOf, (_k, v) => (typeof v === 'bigint' ? `${v}` : v));
+    console.log(`\nMECHANIC 4 pool self-send: pool value ${beforeSelf.poolValue} -> ${afterSelf.poolValue}`);
+    console.log(`  nonce changed:      ${beforeSelf.poolNonce} -> ${afterSelf.poolNonce}`);
+    console.log(`  balances unchanged: ${balancesUnchanged}`);
+    if (!balancesUnchanged) { console.log('  SELF-SEND CHANGED BALANCES — violates FR-005'); process.exitCode = 1; }
+    assertPoolInvariant(afterSelf, 'after pool self-send');
+
+    console.log('\n## MECHANICS PROVEN LIVE');
+    console.log('  1. user -> account deposit          (single call, wallet-balanced)');
+    console.log('  2. account -> account internal      (ownership-only; pool byte-identical)');
+    console.log('  3. account -> user withdraw         (pool pays out, retains change)');
+    console.log('  4. pool self-send to kernel.self()  (auto-receive; identifiers change, balances do not)');
   } finally {
     for (const p of parties) await closeParty(p);
   }

@@ -1,0 +1,37 @@
+# G3 — custody mechanics proven live on the pinned rc4 lane
+# label: EXPERIMENTAL_LANE / LANE-DEV-1
+# command: npx tsx src/g3/probe-deposit.ts (exit 0)
+
+# G3 probe: user -> contract deposit — 2026-08-18T03:06:51.621Z
+[2026-08-18T03:07:27.101Z] Minter 22318dfbc19ad8e019e79f1eff8fcd511039adbf31ffb76f61da10fbe52946ef / Manager 367224fe136759764faca381e54a9a646ddcf2fddca7986422f2597791aaae4a
+[2026-08-18T03:08:37.781Z] AA_A registered dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331
+[2026-08-18T03:08:37.781Z] minting shielded 10 -> feePayer wallet …
+[2026-08-18T03:08:56.418Z]   minted
+[2026-08-18T03:08:56.418Z] depositing shielded 10 -> AA_A as a single call balanced by the wallet …
+[2026-08-18T03:09:19.409Z]   deposit tx 0082dc230f472674ed77078be99513ae3ab24db314e82e6d56aa2ca874817e661a
+
+## PROBE RESULT
+AA_A before: 0   after: 10
+pool  before: 0   after: 10
+
+USER -> CONTRACT DEPOSIT WORKS at SDK level (single call, wallet-balanced).
+[2026-08-18T03:09:37.825Z] AA_B registered bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c
+[2026-08-18T03:09:37.883Z] internal transfer AA_A -5-> AA_B (shielded) …
+
+MECHANIC 2 account->account internal: AA_A 5, AA_B 5
+  pool value unchanged: true
+  pool coin nonce unchanged (no ledger movement): true
+[2026-08-18T03:09:56.566Z] withdraw AA_B -5-> user wallet …
+
+MECHANIC 3 account->user withdraw: AA_B 0, pool 5
+[2026-08-18T03:10:20.602Z] pool self-send to kernel.self() …
+
+MECHANIC 4 pool self-send: pool value 5 -> 5
+  nonce changed:      5b90b18b6b2ffb0e54974156b96b0d5392afe4b42432aa9dbb5ce15faf4b0800 -> 52ce697b0ac896db01bb4ae7b1b0f336776c569829617f4321b637a81ff29800
+  balances unchanged: true
+
+## MECHANICS PROVEN LIVE
+  1. user -> account deposit          (single call, wallet-balanced)
+  2. account -> account internal      (ownership-only; pool byte-identical)
+  3. account -> user withdraw         (pool pays out, retains change)
+  4. pool self-send to kernel.self()  (auto-receive; identifiers change, balances do not)
