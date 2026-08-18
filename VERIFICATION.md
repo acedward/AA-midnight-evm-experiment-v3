@@ -282,3 +282,54 @@ the account-state change may survive"* — which is a property of **transaction 
 node**, not of the simulator. A simulator probe would only re-prove that a thrown assertion abandons
 in-memory state, which the 27 suites above already show. The real probes therefore run live in G3
 against the pinned node, one per family.
+
+---
+
+## G3 — Step-ledger run — **IN PROGRESS (not green)**
+
+### Phase 1 — harness and providers (partial)
+
+| UTC | Command | Exit | Result |
+|---|---|---|---|
+| 2026-08-18T01:33Z | `docker compose up -d` + `npx tsx src/g1/fund.ts` | 0 | G1 flow reproduces on a fresh chain: funding, DUST registration and fee-paying smoke tx all confirmed again |
+| 2026-08-18T01:34Z | `npx tsx src/g3/deploy.ts` | 1 | **Blocked — see Finding G3-1** |
+
+The midnight-js provider set is wired (`harness/src/g3/providers.ts`): stock
+`levelPrivateStateProvider` / `indexerPublicDataProvider` / `NodeZkConfigProvider` /
+`httpClientProofProvider`, with `walletProvider.balanceTx` and `midnightProvider.submitTx` bridged
+to the pinned wallet facade's proven pipeline
+(`balanceUnboundTransaction → signRecipe → finalizeRecipe → submitTransaction`).
+
+Four provider-contract requirements were discovered and satisfied along the way, each a real API
+requirement of the pinned beta.6 packages rather than a workaround:
+
+1. `midnight-js-network-id` exports only `setNetworkId`/`getNetworkId`; the `NetworkId` value comes
+   from `@midnightntwrk/wallet-sdk-abstractions`.
+2. `levelPrivateStateProvider` requires a `privateStoragePasswordProvider` (≥16 chars). The harness
+   generates an ephemeral per-process password; it is never written to disk or evidence.
+3. `levelPrivateStateProvider` requires an `accountId` to scope storage per party.
+4. `httpClientProofProvider`'s positional overload requires the `zkConfigProvider`.
+
+### Finding G3-1 — `deployContract` fails inside `compact-js` (OPEN, blocking G3)
+
+`deployContract(providers, { contract, privateStateId, initialPrivateState })` fails before any
+network interaction with:
+
+```
+Unexpected error: TypeError: Cannot read properties of undefined (reading 'Symbol()')
+  at getContractContext (@midnight-ntwrk/compact-js@2.5.5-rc.7 …/effect/internal/compactContext.ts:37)
+```
+
+`@midnight-ntwrk/compact-js@2.5.5-rc.7` is pulled in transitively by
+`@midnight-ntwrk/midnight-js-contracts@5.0.0-beta.6`. The failure is in the library's own
+contract-context lookup, which suggests the beta.6 `deployContract` options shape differs from the
+one used here (the pinned midnight-js checkout contains only mock-based unit tests for
+`deployContract`, no runnable end-to-end example to copy).
+
+**Status: under investigation, not yet classified.** It is not yet established whether this is a
+harness call-shape error or a genuine lane defect, so it is deliberately *not* recorded as a lane
+RED. Reproduction: `npx tsx src/g3/deploy.ts` with the stack up.
+
+**Consequence:** the last outstanding `LANE-DEV-1` check — on-chain acceptance of
+`compactc 0.33.0` artifacts by the pinned `ledger-9.1.0.0-rc.3` node — remains **unproven**. G2
+therefore stands as verified at build level only, exactly as recorded above.

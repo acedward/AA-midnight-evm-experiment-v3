@@ -3,6 +3,8 @@
 # approved explicitly:
 #   esbuild          — backs `tsx`, which runs the harness
 #   msgpackr-extract — transitive native dependency of the pinned wallet SDK
+#   classic-level    — LevelDB binding behind midnight-js's private-state provider
 allowBuilds:
+  classic-level: true
   esbuild: true
   msgpackr-extract: true
