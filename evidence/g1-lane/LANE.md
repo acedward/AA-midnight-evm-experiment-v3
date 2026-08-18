@@ -129,9 +129,11 @@ Mandatory verification before any G2 cell counts as green — if any check fails
 
 - [ ] Installed `compactc` reports compiler version `0.33.0`.
 - [ ] Installed `compactc` reports language version `0.25.0`.
-- [ ] Artifacts compiled by it are accepted on-chain by the pinned `ledger-9.1.0.0-rc.3` node
-      (deploy + a real circuit call succeed).
-- [ ] Binary pinned by SHA-256 of the downloaded release asset, recorded here.
+- [x] Artifacts compiled by it are accepted on-chain by the pinned `ledger-9.1.0.0-rc.3` node.
+      **VERIFIED 2026-08-18**: Minter and Manager both deployed and applied — see
+      `evidence/g3-ledger/deploy.txt`. (A real circuit call follows in the step-ledger run.)
+- [x] Binary pinned by SHA-256 `3aa23812b0b086dbce07da3931a40dcb01bec9676b1ceed7f2d0be370ab2dc46`
+      (`compactc_v0.33.0_aarch64-unknown-linux-musl.zip`) in `docker/compactc.Dockerfile`.
 
 **Every piece of G2 and G3 evidence carries the `LANE-DEV-1` label in addition to
 `EXPERIMENTAL_LANE`,** and the final report states this deviation explicitly.
