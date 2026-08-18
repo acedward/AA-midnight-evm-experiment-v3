@@ -8,7 +8,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 # Each gate wrapper owns its own stack, so the compose project name and the evidence destination
 # are parameters. Defaults reproduce the original G1 behaviour exactly.
-PROJECT="aa00003-token-custody"
+PROJECT="aa00004-multi-token-custody"
 EVID="$ROOT/evidence/g1-lane"
 while [ $# -gt 0 ]; do
   case "$1" in

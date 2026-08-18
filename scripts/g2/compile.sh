@@ -10,8 +10,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
+# shellcheck source=../lib/compactc.sh
+source "$ROOT/scripts/lib/compactc.sh"
 
-IMAGE="aa00003-compactc:0.33.0"
+IMAGE="$COMPACTC_IMAGE"
 MODE="${1:---skip-zk}"
 
 # Output lands INSIDE the harness package on purpose: the generated modules `import
@@ -24,10 +26,7 @@ else
 fi
 
 # Build the compiler image if it is not present (idempotent; content-pinned by SHA-256).
-if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
-  echo "building compiler image $IMAGE"
-  docker build -q -f docker/compactc.Dockerfile -t "$IMAGE" . >/dev/null
-fi
+compactc_ensure_image "$ROOT"
 
 for c in minter manager; do
   echo "compiling ${c} (${MODE}) -> ${OUT}/${c}"

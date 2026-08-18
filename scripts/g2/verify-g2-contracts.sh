@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# G2 gate wrapper — 00003-contract-token-custody (EXPERIMENTAL_LANE, LANE-DEV-1).
+# G2 gate wrapper — 00004-multi-token-custody (EXPERIMENTAL_LANE, LANE-DEV-1).
 #
 #   verify LANE-DEV-1 -> compile (fast) -> simulator/unit suites -> compile (full ZK)
 #   -> record artifacts, circuit list and verifier-key hashes
@@ -14,11 +14,13 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 # shellcheck source=../lib/failsafe.sh
 source "$ROOT/scripts/lib/failsafe.sh"
+# shellcheck source=../lib/compactc.sh
+source "$ROOT/scripts/lib/compactc.sh"
 
 EVID="$ROOT/evidence/g2-contracts"
 fs_init "G2" "$EVID" "$@"
 
-IMAGE="aa00003-compactc:0.33.0"
+IMAGE="$COMPACTC_IMAGE"
 
 # --- LANE-DEV-1: the substitution must be proven, not assumed -----------------------------------
 # The spec pins compactc-v0.33.0-rc.2, which has no published binary (LANE.md Finding L-4). The

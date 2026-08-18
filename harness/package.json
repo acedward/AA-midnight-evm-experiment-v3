@@ -1,9 +1,9 @@
 {
-  "name": "aa00003-contract-token-custody-harness",
+  "name": "aa00004-multi-token-custody-harness",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Step-ledger harness for 00003-contract-token-custody (EXPERIMENTAL_LANE, v2.0.0-rc.4 slot)",
+  "description": "Step-ledger harness for 00004-multi-token-custody (EXPERIMENTAL_LANE, v2.0.0-rc.4 slot)",
   "engines": {
     "node": ">=22"
   },

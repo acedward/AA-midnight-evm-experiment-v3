@@ -1,4 +1,4 @@
-// Lane configuration for 00003-contract-token-custody — EXPERIMENTAL_LANE (v2.0.0-rc.4 slot).
+// Lane configuration for 00004-multi-token-custody — EXPERIMENTAL_LANE (v2.0.0-rc.4 slot).
 //
 // Endpoints come from docker/.env, produced by scripts/g1/probe-ports.sh. Nothing here is
 // hard-coded to a port, so a fresh clone reproduces with whatever free ports it probes.
