@@ -8,6 +8,7 @@ import { NodeZkConfigProvider } from '@midnight-ntwrk/midnight-js-node-zk-config
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { ZKConfigRegistry } from '@midnight-ntwrk/midnight-js-types';
+import { recordTxSize, timedProofProvider } from './metrics.js';
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
 import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
@@ -39,7 +40,7 @@ export const makeProviders = (party: Party, contract: 'minter' | 'manager' | '_c
     }),
     publicDataProvider: indexerPublicDataProvider(ep.indexerHttpUrl, ep.indexerWsUrl),
     zkConfigProvider,
-    proofProvider: httpClientProofProvider(ep.provingServerUrl.toString(), zkConfigProvider as any),
+    proofProvider: timedProofProvider(httpClientProofProvider(ep.provingServerUrl.toString(), zkConfigProvider as any)),
 
     walletProvider: {
       /** Balance an unbound (proven, pre-binding) transaction into a submittable one. */
@@ -59,7 +60,10 @@ export const makeProviders = (party: Party, contract: 'minter' | 'manager' | '_c
     },
 
     midnightProvider: {
-      submitTx: async (tx: any) => await facade.submitTransaction(tx),
+      submitTx: async (tx: any) => {
+        recordTxSize(`${party.name}/${contract}`, tx);
+        return await facade.submitTransaction(tx);
+      },
     },
   } as any;
 };
@@ -80,5 +84,5 @@ export const makeComposedProofProvider = () => {
     new NodeZkConfigProvider(zkDir('minter')),
     new NodeZkConfigProvider(zkDir('manager')),
   ]);
-  return httpClientProofProvider(ep.provingServerUrl.toString(), registry as any);
+  return timedProofProvider(httpClientProofProvider(ep.provingServerUrl.toString(), registry as any));
 };

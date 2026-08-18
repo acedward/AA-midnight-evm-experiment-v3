@@ -13,6 +13,7 @@
 //   User-held balances (OwnerN / OwnerM)
 //     1. the wallet SDK's own synced state
 //     2. the indexer, queried directly over GraphQL (independent of the wallet's view)
+import * as ledger from '@midnightntwrk/ledger-v9';
 import { endpoints, readLaneEnv } from '../lane.js';
 
 // @ts-ignore — generated artifact
@@ -111,5 +112,47 @@ export const waitForManager = async (
       );
     }
     await new Promise((r) => setTimeout(r, 2000));
+  }
+};
+
+/**
+ * Observation point 2 for CONTRACT-held unshielded value: the contract's own LEDGER BALANCE MAP,
+ * decoded from its on-chain state.
+ *
+ * This is maintained by the kernel's unshielded-balance machinery — `receiveUnshielded` /
+ * `sendUnshielded` move it — entirely separately from the `unshieldedOf` account map that the
+ * contract's own ledger accessor decodes above. The spec's per-family invariant
+ * `pool = AA_A + AA_B` is therefore a genuine cross-check between two independent mechanisms, and
+ * a disagreement fails the run.
+ *
+ * NOTE (recorded as Finding G3-3): the indexer's convenience view
+ * `publicDataProvider.queryUnshieldedBalances(contractAddress)` returns an EMPTY list for a
+ * contract that verifiably holds unshielded tokens on this pinned lane, so it cannot serve as this
+ * observation point. The ledger state is authoritative and is what the node itself enforces
+ * against, so it is read directly instead.
+ */
+export const managerUnshieldedLedger = async (
+  providers: any,
+  address: string,
+  color: string,
+): Promise<bigint> => {
+  const state = await providers.publicDataProvider.queryContractState(address);
+  if (!state) return 0n;
+  const ledgerState: any = (ledger as any).ContractState.deserialize(state.serialize());
+  for (const [tokenType, value] of ledgerState.balance) {
+    if (tokenType?.tag === 'unshielded' && String(tokenType.raw).toLowerCase() === color.toLowerCase()) {
+      return BigInt(value);
+    }
+  }
+  return 0n;
+};
+
+/** The unshielded half of the standing invariant. Shielded is `assertPoolInvariant`. */
+export const assertUnshieldedPoolInvariant = (m: ManagerView, ledgerBalance: bigint, label: string): void => {
+  const sum = Object.values(m.unshieldedOf).reduce((a, b) => a + b, 0n);
+  if (ledgerBalance !== sum) {
+    throw new Error(
+      `${label}: UNSHIELDED POOL INVARIANT VIOLATED — contract ledger balance=${ledgerBalance} but AA_A+AA_B=${sum}`,
+    );
   }
 };

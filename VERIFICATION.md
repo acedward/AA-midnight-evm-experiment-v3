@@ -473,3 +473,39 @@ offset. The earlier working hypothesis in this ledger ("the coin appears to be c
 **Consequence:** spec steps 1 and 2 are unblocked. Master **Q3 is resolved**; the owner-authorized
 hybrid route (C) is now implemented — SDK level everywhere else, ledger-level assembly only for
 the paired mint→Manager cells.
+
+---
+
+## 2026-08-18 — G3: Finding G3-3 — the indexer does not surface a CONTRACT's unshielded balance
+
+**Label:** `EXPERIMENTAL_LANE` / `LANE-DEV-1`.
+
+While wiring the second observation point for contract-held unshielded value, the first ordered
+step-ledger run halted at step 2 with:
+
+```
+STEP 2 DIVERGENCE — UNSHIELDED POOL INVARIANT — contract ledger balance=0 but AA_A+AA_B=10
+```
+
+The halt was correct and the contract was not at fault. Probed directly against the same live
+Manager (`dcdc5d12c232c7dd8d28e3d372bbc5bcd777145d3be1ebb409d67ad7be047cbe`, unshielded colour
+`035499bb24e637c6ca2fb6c73ee27db99857f086ff726e6b254371b3cfaaafe8`):
+
+| Source | Result |
+|---|---|
+| `publicDataProvider.queryUnshieldedBalances(contractAddress)` | `[]` — empty |
+| the contract's own LEDGER state, `ContractState.balance` | `{tag: unshielded, raw: 0354…afe8} -> 10` |
+
+So the tokens are demonstrably held; the indexer's convenience view simply does not report
+unshielded balances for a **contract** address on this pinned lane. (The same provider's
+`unshieldedUtxos` query for **user** addresses works correctly and remains the independent
+observation point for OwnerN and OwnerM.)
+
+**Resolution — no RED.** The harness reads the contract's kernel-maintained ledger balance map
+directly instead. That is the authoritative source the node itself enforces against, and it is
+still genuinely independent of the `unshieldedOf` account map: different part of the state,
+maintained by different machinery (`receiveUnshielded` / `sendUnshielded` versus the contract's own
+account bookkeeping). The unshielded half of the standing invariant is therefore a real
+cross-check, not a self-comparison.
+
+Recorded as a lane observation rather than a defect of this project. It affects no cell.

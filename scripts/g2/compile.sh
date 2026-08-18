@@ -41,9 +41,12 @@ done
 
 # harness/package.json already declares "type": "module", which these subdirectories inherit.
 
-# A transaction that composes calls to BOTH contracts must be proved against BOTH key sets, but a
-# NodeZkConfigProvider is rooted at one directory. Build a combined view. Circuit names are unique
-# across the two contracts, so no key can shadow another; the copy is asserted collision-free.
+# A BUILD-TIME COLLISION CHECK, not a proving input. A transaction spanning both contracts is
+# proved through a `ZKConfigRegistry` over the two per-contract artifact directories, because each
+# call's key location embeds the hash of its DEPLOYED verifier key and resolution joins on that —
+# a flattened directory could never serve two contracts. What this combined copy still buys is the
+# assertion below: it fails loudly if the two contracts ever export a circuit under the same name,
+# which would make per-name reasoning about artifacts ambiguous for a reader.
 if [ "$MODE" = "--zk" ]; then
   COMBINED="${OUT}/_combined"
   rm -rf "$COMBINED"; mkdir -p "$COMBINED/keys" "$COMBINED/zkir"
