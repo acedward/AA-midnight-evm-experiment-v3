@@ -124,8 +124,19 @@ is the funded wallet per the pinned SDK's own e2e suite):
 Genesis holdings observed on the fresh network: unshielded `250000000000000n` of the native color,
 plus shielded `100000000000000n` (color `…0000`) and `50000000000000n` (color `…0001`).
 
-**Still open in Phase 4:** fund the fee wallet with NIGHT from genesis, register for DUST
-generation, prove a fee-paying smoke transaction, and record per-party fee isolation.
+| 2026-08-18T00:12–00:21Z | `npx tsx src/g1/fund.ts` | 0 | Fee wallet funded, DUST registered, **fee-paying smoke transaction confirmed** — `evidence/g1-lane/funding.txt` |
+
+**Phase 4 complete.** Real transaction identifiers (all confirmed):
+
+| Step | Transaction hash |
+|---|---|
+| Fund feePayer from genesis | `fc513beb33268742985505de97fe6f931f050b05cb8242e24e1b8d2cca29d61d` |
+| DUST registration | `0026945dc2ce765cadf8402628b85f47118a8117ba62a87279183744643137170f` |
+| Smoke transfer feePayer → OwnerN (fees from generated DUST) | `221da1322a7ec4d8872246ce638423d4bdb0dc24ccb158b03a8a377f34aebb3b` |
+
+feePayer ends with NIGHT `3001000000000` across 4 UTXOs, **all `registeredForDustGeneration: true`**;
+OwnerN received NIGHT `1000000`. Fees are paid by a wallet disjoint from every demo balance under
+test, so demo-color evidence stays fee-isolated.
 
 #### Bearing on Finding L-3
 
