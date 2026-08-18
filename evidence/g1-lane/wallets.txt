@@ -1,0 +1,127 @@
+# G1 Phase 4 — wallet creation on the pinned rc4 lane
+# label: EXPERIMENTAL_LANE
+# captured: 2026-08-18T00:09:17Z
+# command: npx tsx src/g1/wallets.ts
+
+# G1 wallets — EXPERIMENTAL_LANE — 2026-08-18T00:09:18.854Z
+opening genesis … ok (58ms)
+--- genesis (initial)
+  shielded.address:    coinPublicKey=1bd4f827be97ff013c4a702e4b08f30ec378728a54670cf7cc92cb9b1a14eff6 encryptionPublicKey=b62e630a030171b5e11af2487f0103e650cc703f284d0a478b2a3abdf9715b70
+  shielded.coinPubKey: 1bd4f827be97ff013c4a702e4b08f30ec378728a54670cf7cc92cb9b1a14eff6
+  shielded.balances:   {}
+  unshielded.address:  bc610dd07c52f59012a88c2f9f1c5f34cbacc75b868202975d6f19beaf37284b
+  unshielded.balances: {}
+  dust.address:        73ff4aaccbb878703e922c8ab5da32a349ca7b5a6e0a2b0950ac68c6a3e273471a
+  dust.balance:        undefined
+  unshielded.progress: applied=0 highest=0 strictlyComplete=false
+--- genesis (synced)
+  shielded.address:    coinPublicKey=1bd4f827be97ff013c4a702e4b08f30ec378728a54670cf7cc92cb9b1a14eff6 encryptionPublicKey=b62e630a030171b5e11af2487f0103e650cc703f284d0a478b2a3abdf9715b70
+  shielded.coinPubKey: 1bd4f827be97ff013c4a702e4b08f30ec378728a54670cf7cc92cb9b1a14eff6
+  shielded.balances:   {
+  "0000000000000000000000000000000000000000000000000000000000000000": "100000000000000n",
+  "0000000000000000000000000000000000000000000000000000000000000001": "50000000000000n"
+}
+  unshielded.address:  bc610dd07c52f59012a88c2f9f1c5f34cbacc75b868202975d6f19beaf37284b
+  unshielded.balances: {
+  "0000000000000000000000000000000000000000000000000000000000000000": "250000000000000n"
+}
+  dust.address:        73ff4aaccbb878703e922c8ab5da32a349ca7b5a6e0a2b0950ac68c6a3e273471a
+  dust.balance:        undefined
+  unshielded.progress: applied=9 highest=9 strictlyComplete=true
+opening feePayer … ok (18ms)
+--- feePayer (initial)
+  shielded.address:    coinPublicKey=a65321de37dfeab9f4673066ea7dd7933846b9300a49b1fb20fd6d7ca431439f encryptionPublicKey=523c9e83d7bf337a47c6d8a638c5bc73e5c119ebd516aa266bc4923455dcc85e
+  shielded.coinPubKey: a65321de37dfeab9f4673066ea7dd7933846b9300a49b1fb20fd6d7ca431439f
+  shielded.balances:   {}
+  unshielded.address:  fdcbec11873c86ec5f651de21bbafb01cda094d38a27ae6a37cd3b48dbe163df
+  unshielded.balances: {}
+  dust.address:        73935fb9122d0861dc4cd33ec9c303510976458caae48e4829b1bd489f44bcae0e
+  dust.balance:        undefined
+  unshielded.progress: applied=0 highest=0 strictlyComplete=false
+--- feePayer (synced)
+  shielded.address:    coinPublicKey=a65321de37dfeab9f4673066ea7dd7933846b9300a49b1fb20fd6d7ca431439f encryptionPublicKey=523c9e83d7bf337a47c6d8a638c5bc73e5c119ebd516aa266bc4923455dcc85e
+  shielded.coinPubKey: a65321de37dfeab9f4673066ea7dd7933846b9300a49b1fb20fd6d7ca431439f
+  shielded.balances:   {}
+  unshielded.address:  fdcbec11873c86ec5f651de21bbafb01cda094d38a27ae6a37cd3b48dbe163df
+  unshielded.balances: {}
+  dust.address:        73935fb9122d0861dc4cd33ec9c303510976458caae48e4829b1bd489f44bcae0e
+  dust.balance:        undefined
+  unshielded.progress: applied=0 highest=0 strictlyComplete=true
+opening ownerN … ok (15ms)
+--- ownerN (initial)
+  shielded.address:    coinPublicKey=4cf42174b83eecaf61dce492466c693a90a0a7640f786feab4f7588dab346fc5 encryptionPublicKey=6af1cc7d2a79745f825be9fc0cb8ad15243a08c96da6b01548044bfe27f774af
+  shielded.coinPubKey: 4cf42174b83eecaf61dce492466c693a90a0a7640f786feab4f7588dab346fc5
+  shielded.balances:   {}
+  unshielded.address:  cf18e9ae9634e06bc661f615e18a9e1b2db35ef7d9a3b46b00b147a5008a30d1
+  unshielded.balances: {}
+  dust.address:        73b4de523f16d6d9fef72d4fd46d2c8d381d486f7e3c594a875df057d61fbbed04
+  dust.balance:        undefined
+  unshielded.progress: applied=0 highest=0 strictlyComplete=false
+--- ownerN (synced)
+  shielded.address:    coinPublicKey=4cf42174b83eecaf61dce492466c693a90a0a7640f786feab4f7588dab346fc5 encryptionPublicKey=6af1cc7d2a79745f825be9fc0cb8ad15243a08c96da6b01548044bfe27f774af
+  shielded.coinPubKey: 4cf42174b83eecaf61dce492466c693a90a0a7640f786feab4f7588dab346fc5
+  shielded.balances:   {}
+  unshielded.address:  cf18e9ae9634e06bc661f615e18a9e1b2db35ef7d9a3b46b00b147a5008a30d1
+  unshielded.balances: {}
+  dust.address:        73b4de523f16d6d9fef72d4fd46d2c8d381d486f7e3c594a875df057d61fbbed04
+  dust.balance:        undefined
+  unshielded.progress: applied=0 highest=0 strictlyComplete=true
+opening ownerM … ok (14ms)
+--- ownerM (initial)
+  shielded.address:    coinPublicKey=4af65e4fabe61a598754edf94fae04f0f33797a370cc70552b8946a921105920 encryptionPublicKey=b9b046ae5af0c9d0fdbfd79c2e5498e227ab0cce42293b2a52aa9c2bfa5dcb11
+  shielded.coinPubKey: 4af65e4fabe61a598754edf94fae04f0f33797a370cc70552b8946a921105920
+  shielded.balances:   {}
+  unshielded.address:  67adc793a337c10018eab9615af51727555b0bc77e5fccdf062fbeb01a57fd36
+  unshielded.balances: {}
+  dust.address:        7393e1ad7105b006c161854f55c77320636829bb6a26a905167b29515ee178ee0f
+  dust.balance:        undefined
+  unshielded.progress: applied=0 highest=0 strictlyComplete=false
+--- ownerM (synced)
+  shielded.address:    coinPublicKey=4af65e4fabe61a598754edf94fae04f0f33797a370cc70552b8946a921105920 encryptionPublicKey=b9b046ae5af0c9d0fdbfd79c2e5498e227ab0cce42293b2a52aa9c2bfa5dcb11
+  shielded.coinPubKey: 4af65e4fabe61a598754edf94fae04f0f33797a370cc70552b8946a921105920
+  shielded.balances:   {}
+  unshielded.address:  67adc793a337c10018eab9615af51727555b0bc77e5fccdf062fbeb01a57fd36
+  unshielded.balances: {}
+  dust.address:        7393e1ad7105b006c161854f55c77320636829bb6a26a905167b29515ee178ee0f
+  dust.balance:        undefined
+  unshielded.progress: applied=0 highest=0 strictlyComplete=true
+opening ownerA … ok (15ms)
+--- ownerA (initial)
+  shielded.address:    coinPublicKey=5e2d89576eed4ab6b4b2eb4b6aadd85c00a096ab819bb2454b1387bd76c2333d encryptionPublicKey=5621dd9b0d7253f1842d0425343b510ce524fe12a7817211cca3b758514477e8
+  shielded.coinPubKey: 5e2d89576eed4ab6b4b2eb4b6aadd85c00a096ab819bb2454b1387bd76c2333d
+  shielded.balances:   {}
+  unshielded.address:  1bce0f62e26806ae15404466be20f9d3c6452351c5814b9a0314457b560be392
+  unshielded.balances: {}
+  dust.address:        73aeedc051f7c224a971042494eba152ef6e30b0942f810cb4d21da3b651a6ef2b
+  dust.balance:        undefined
+  unshielded.progress: applied=0 highest=0 strictlyComplete=false
+--- ownerA (synced)
+  shielded.address:    coinPublicKey=5e2d89576eed4ab6b4b2eb4b6aadd85c00a096ab819bb2454b1387bd76c2333d encryptionPublicKey=5621dd9b0d7253f1842d0425343b510ce524fe12a7817211cca3b758514477e8
+  shielded.coinPubKey: 5e2d89576eed4ab6b4b2eb4b6aadd85c00a096ab819bb2454b1387bd76c2333d
+  shielded.balances:   {}
+  unshielded.address:  1bce0f62e26806ae15404466be20f9d3c6452351c5814b9a0314457b560be392
+  unshielded.balances: {}
+  dust.address:        73aeedc051f7c224a971042494eba152ef6e30b0942f810cb4d21da3b651a6ef2b
+  dust.balance:        undefined
+  unshielded.progress: applied=0 highest=0 strictlyComplete=true
+opening ownerB … ok (14ms)
+--- ownerB (initial)
+  shielded.address:    coinPublicKey=60c7f420ec1e76ab240480498f71926da85d19f44df6c2ded833d2c3a86e06bc encryptionPublicKey=3c58279f86ff918f34ef3ffb3d2b346786afd503d99aa560315eff1097a87786
+  shielded.coinPubKey: 60c7f420ec1e76ab240480498f71926da85d19f44df6c2ded833d2c3a86e06bc
+  shielded.balances:   {}
+  unshielded.address:  efffda0bd6590feff825856dfdb0fc1b584290eefe64004578a898f8624c49f5
+  unshielded.balances: {}
+  dust.address:        7316db024afcbf208ff8f1fd51bb940db9cec4faf7144d6c1affe5b90dc6ab946d
+  dust.balance:        undefined
+  unshielded.progress: applied=0 highest=0 strictlyComplete=false
+--- ownerB (synced)
+  shielded.address:    coinPublicKey=60c7f420ec1e76ab240480498f71926da85d19f44df6c2ded833d2c3a86e06bc encryptionPublicKey=3c58279f86ff918f34ef3ffb3d2b346786afd503d99aa560315eff1097a87786
+  shielded.coinPubKey: 60c7f420ec1e76ab240480498f71926da85d19f44df6c2ded833d2c3a86e06bc
+  shielded.balances:   {}
+  unshielded.address:  efffda0bd6590feff825856dfdb0fc1b584290eefe64004578a898f8624c49f5
+  unshielded.balances: {}
+  dust.address:        7316db024afcbf208ff8f1fd51bb940db9cec4faf7144d6c1affe5b90dc6ab946d
+  dust.balance:        undefined
+  unshielded.progress: applied=0 highest=0 strictlyComplete=true
+
+all wallets opened

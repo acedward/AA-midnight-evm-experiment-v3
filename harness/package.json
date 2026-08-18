@@ -1,0 +1,33 @@
+{
+  "name": "aa00003-contract-token-custody-harness",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Step-ledger harness for 00003-contract-token-custody (EXPERIMENTAL_LANE, v2.0.0-rc.4 slot)",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "wallets": "tsx src/g1/wallets.ts"
+  },
+  "dependencies": {
+    "@midnightntwrk/ledger-v9": "1.0.0-rc.3",
+    "@midnightntwrk/wallet-sdk": "2.0.0-beta.2",
+    "@midnightntwrk/wallet-sdk-abstractions": "3.0.0-beta.0",
+    "@midnightntwrk/wallet-sdk-address-format": "4.0.0-beta.2",
+    "@midnightntwrk/wallet-sdk-capabilities": "4.0.0-beta.2",
+    "@midnightntwrk/wallet-sdk-dust-wallet": "5.0.0-beta.2",
+    "@midnightntwrk/wallet-sdk-facade": "5.0.0-beta.2",
+    "@midnightntwrk/wallet-sdk-hd": "3.1.0-beta.1",
+    "@midnightntwrk/wallet-sdk-runtime": "1.0.6-beta.0",
+    "@midnightntwrk/wallet-sdk-shielded": "4.0.0-beta.2",
+    "@midnightntwrk/wallet-sdk-unshielded-wallet": "4.0.0-beta.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.2",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,74 @@
+# 00003-contract-token-custody — isolated rc4 stack (EXPERIMENTAL_LANE)
+#
+# Every image is pinned by immutable digest (see evidence/g1-lane/LANE.md).
+# Host ports come from docker/.env, produced by scripts/g1/probe-ports.sh, which verifies each
+# port is free before writing it. All ports are bound to 127.0.0.1 only.
+#
+# Fresh volumes only. Teardown is `docker compose ... down -v --remove-orphans`.
+
+services:
+  proof-server:
+    # midnightntwrk/proof-server:9.0.0-rc.3
+    image: midnightntwrk/proof-server@sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    ports:
+      - "127.0.0.1:${PORT_PROOF_SERVER}:6300"
+    environment:
+      RUST_BACKTRACE: "full"
+      EXTRA_ARGS: "-v"
+    # NOTE (G1 finding L-5): this image is distroless — no `sh`, no `curl` — so the upstream
+    # `CMD curl -f http://localhost:6300/version` healthcheck can never pass and reports a
+    # permanently "unhealthy" container even though the service is fine. Health is therefore
+    # asserted from the HOST over the published port by scripts/g1/verify-g1-lane.sh.
+
+  node:
+    # midnightntwrk/midnight-node:2.0.0-rc.4
+    image: midnightntwrk/midnight-node@sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
+    ports:
+      - "127.0.0.1:${PORT_NODE_RPC}:9944"
+    volumes:
+      - node-data:/data
+    environment:
+      CFG_PRESET: "dev"
+      SHOW_CONFIG: "false"
+      # Same beneficiary the pinned wallet SDK's own undeployed stack uses.
+      SIDECHAIN_BLOCK_BENEFICIARY: "04bcf7ad3be7a5c790460be82a713af570f22e0f801f6659ab8e84a52be6969e"
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - >
+          curl -fs -H 'Content-Type: application/json' -d
+          '{"id":1,"jsonrpc":"2.0","method":"chain_getBlockHash","params":[1]}' http://localhost:9944 | grep -q
+          '"result":"0x'
+      interval: 2s
+      timeout: 5s
+      retries: 45
+      start_period: 5s
+
+  indexer:
+    # midnightntwrk/indexer-standalone:4.4.0-rc.1-arm64 (same version as 4.4.0-rc.1; the
+    # multi-arch index for that tag is amd64-only — see LANE.md Finding L-1)
+    image: midnightntwrk/indexer-standalone@sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      node:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${PORT_INDEXER}:8088"
+    environment:
+      RUST_LOG: "indexer=debug,chain_indexer=debug,indexer_api=debug,wallet_indexer=debug,indexer_common=debug,fastrace_opentelemetry=off,info"
+      APP__INFRA__NODE__URL: "ws://node:9944"
+      APP__APPLICATION__NETWORK_ID: "undeployed"
+      APP__INFRA__SECRET: "${APP_INFRA_SECRET}"
+      APP__INFRA__SPO_NODE__URL: "ws://node:9944"
+      APP__INFRA__SPO_NODE__BLOCKFROST_ID: "local-dev-dummy-not-using-spo"
+    # NOTE (G1 finding L-5): same as proof-server — no shell/curl in the image, so the upstream
+    # `/ready` healthcheck never reports healthy. Readiness is asserted from the HOST
+    # (`GET /ready` -> 200 and a GraphQL block query) by scripts/g1/verify-g1-lane.sh.
+
+volumes:
+  node-data:
