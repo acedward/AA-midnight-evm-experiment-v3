@@ -413,3 +413,63 @@ by both sides.
 Next investigative step for whoever resumes: compare against the mint path in the ledger tests
 (rather than the vault deposit path) and inspect the merged transaction's zswap offer deltas per
 segment before balancing.
+
+---
+
+## 2026-08-18 — G3: Q3 / Finding G3-2 RESOLVED — ledger-level composition works, both families
+
+**Label:** `EXPERIMENTAL_LANE` / `LANE-DEV-1`. Stack: Compose project `aa00003-token-custody`
+(node `31573`, indexer `34299`, proof server `21095`), same pinned digests as G1.
+
+| Command | `cd harness && npx tsx src/g3/probe-mint-compose.ts` |
+|---|---|
+| cwd | `/Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody/harness` |
+| Run 1 (UTC) | `2026-08-18T11:31:36Z` → `2026-08-18T11:34:07Z`, exit 0 |
+| Run 2 (UTC, retained) | `2026-08-18T11:34:20Z` → `2026-08-18T11:36:49Z`, exit 0 |
+| Retained output | `evidence/g3-ledger/mint-compose.txt` |
+
+### What was implemented
+
+`harness/src/g3/ledger-compose.ts` assembles ONE ledger `Intent` holding BOTH
+`ContractCallPrototype`s — the Minter's mint and the Manager's receive/credit — mirroring
+`midnight-ledger/ledger/tests/token_vault_shielded.rs`. Each call's transcript, ZK input/output and
+private transcript still come from executing the real compiled circuit through midnight-js; only
+the *assembly* is done at ledger level, so nothing about the contracts is reimplemented off-chain.
+
+The carrier call (the mint, which creates the coin) keeps its own transaction and therefore its
+zswap offer — exactly one contract-owned output, claimed as a spend by the Minter and as a receive
+by the Manager, which is the shape the prior art builds. The Manager's separately built
+transaction is discarded; only its call prototype is grafted in.
+
+Proving a two-contract intent uses the pinned SDK's own `ZKConfigRegistry`
+(`makeComposedProofProvider`), which resolves each call's key location by joining on the hash of
+the **deployed** verifier key. This supersedes the earlier `_combined` flat-directory attempt: the
+lookup is per deployed contract, not per circuit name, so a flat directory can never serve two
+contracts whose circuits share names (`mintShieldedTo`).
+
+### Result — both families, reproduced twice
+
+| Family | Composed transaction (retained run) | AA_A | pool / ledger |
+|---|---|---|---|
+| Shielded | `004d83b72c1dd872a4dd31564f1d09c6a02a7f0ec119c10b972a246233593bc7b1` | 0 → **10** | 0 → **10** |
+| Unshielded | `0029024540c332b0095538a4864ee5706617328c4118c6c735e0e4684f623bcaa8` | 0 → **10** | shielded untouched |
+
+Run 1 transactions (independent deployment, same code):
+`00efa498f198d9b447acfc4e04c60e21a20446e40622447221f231555e22223406` (shielded) and
+`00f646b49f0505c19245e1e76f64ec064d83b71e569cbc79363ecb5ed56e62e0d7` (unshielded).
+
+The pooled coin's nonce equals the mint nonce chosen by the harness, confirming the Manager
+claimed exactly the coin the Minter created. The pool invariant `pool = AA_A + AA_B` was asserted
+after each transfer.
+
+### Why the earlier route failed (Finding G3-2, now explained)
+
+`UnprovenTransaction.merge` places each call in its **own segment**, so the Minter's spend claim
+and the Manager's receive claim were in different segments and could not offset — hence
+`Wallet.InsufficientFunds`. Putting both calls in one intent puts them in one segment, and they
+offset. The earlier working hypothesis in this ledger ("the coin appears to be created twice") is
+**refuted**: the ledger unifies the two declared outputs, exactly as the prior art implied.
+
+**Consequence:** spec steps 1 and 2 are unblocked. Master **Q3 is resolved**; the owner-authorized
+hybrid route (C) is now implemented — SDK level everywhere else, ledger-level assembly only for
+the paired mint→Manager cells.

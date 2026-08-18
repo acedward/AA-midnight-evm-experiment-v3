@@ -11,7 +11,7 @@ when the recipient is `kernel.self()`.
 | Sender of the value | Mechanism that works | Level |
 |---|---|---|
 | **A user wallet** (steps 4, 6, 7, 8 deposits) | A **single** `Manager.depositShielded` call, balanced by the depositor's wallet | **SDK** — proven |
-| **A minting contract** (steps 1, 2 mint→AA_A) | Not expressible in midnight-js — see below | **ledger-level fallback required** |
+| **A minting contract** (steps 1, 2 mint→AA_A) | ONE ledger `Intent` holding both call prototypes | **ledger level** — proven |
 
 ### 1. User → contract deposit: PROVEN WORKING at SDK level
 
@@ -54,15 +54,51 @@ Two independent routes were tried and both are ruled out:
   segment**, so the Minter's output and the Manager's receive claim cannot offset and the wallet
   fails to balance: `Wallet.InsufficientFunds`. (Finding G3-2.)
 
-**Therefore the spec's documented fallback applies for the mint→account cells**: the ledger-level
-composition approach of `token_vault_*.rs`. The required primitives exist in the pinned TS
-bindings — `Intent.new(ttl)` / `Intent.addCall(ContractCallPrototype)` and
-`Transaction.addCalls(segment, calls, params, ttl, …)`, the latter documented to "ensure that
-relevant Zswap parts are placed in the same section as contract interactions with them" — but they
-take **pre-partition** calls, so the calls must be constructed at ledger level rather than reused
-from midnight-js. **Not yet implemented.**
+**Therefore the spec's documented fallback applies for the mint→account cells** — and it is now
+**IMPLEMENTED AND PROVEN**, in both families. See section 2b.
 
-### 3. Two further SDK requirements discovered (both satisfied)
+## 2b. Ledger-level composition: the fix, and why the earlier diagnosis was wrong
+
+`harness/src/g3/ledger-compose.ts` builds ONE `Intent` containing BOTH `ContractCallPrototype`s,
+mirroring `token_vault_shielded.rs`:
+
+| `token_vault_shielded.rs` | `ledger-compose.ts` |
+|---|---|
+| hand-written `Op<>` transcript | transcript from executing the real compiled circuit |
+| `partition_transcripts(&[pre])` | partitioning done by compact-js per call |
+| `ContractCallPrototype { … }` | `new ContractCallPrototype(…)` per call |
+| `test_intents(rng, vec![call], …)` | `Intent.addCall` for every call |
+| `Transaction::new(nid, intents, offer)` | the carrier call's own transaction, intent replaced |
+
+Only the **assembly** is at ledger level. Each call's transcript, ZK input/output and private
+transcript still come from midnight-js executing the compiled circuit, so no contract behaviour is
+reimplemented off-chain.
+
+**The carrier.** `mintShieldedToken` and `receiveShielded` both call `createZswapOutput` for the
+same coin to the same recipient, and the ledger **unifies** them: the transaction needs exactly ONE
+contract-owned zswap output, claimed as a spend by the Minter and as a receive by the Manager. So
+the mint's transaction — with its offer — is kept whole, and the Manager's call prototype is grafted
+into its intent; the Manager's own transaction is discarded.
+
+**Proving across two contracts** uses the pinned SDK's `ZKConfigRegistry`
+(`makeComposedProofProvider`), which resolves each call's key location by joining on the hash of
+the DEPLOYED verifier key. This is why the earlier flat `_combined` directory could never work:
+resolution is per deployed contract, not per circuit name, and both contracts export
+`mintShieldedTo`-style names.
+
+**Why `merge` failed.** `UnprovenTransaction.merge` puts each call in its **own segment**, so the
+spend claim and the receive claim could not offset (`Wallet.InsufficientFunds`). One intent means
+one segment, and they offset. The earlier hypothesis — "the coin appears to be created twice" — is
+**refuted**.
+
+**Evidence** (`evidence/g3-ledger/mint-compose.txt`, reproduced on two independent runs):
+
+| Family | Composed tx (retained run) | AA_A | second observation point |
+|---|---|---|---|
+| Shielded | `004d83b72c1dd872a4dd31564f1d09c6a02a7f0ec119c10b972a246233593bc7b1` | 0 → **10** | pool 0 → **10**, pool nonce == mint nonce |
+| Unshielded | `0029024540c332b0095538a4864ee5706617328c4118c6c735e0e4684f623bcaa8` | 0 → **10** | shielded pool untouched |
+
+## 3. Two further SDK requirements discovered (both satisfied)
 
 - Minting/sending a shielded coin to a third party needs that party's **encryption** public key via
   `additionalCoinEncPublicKeyMappings`, else: `Unable to resolve encryption public key for recipient`.

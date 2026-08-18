@@ -1,0 +1,32 @@
+# G3 probe: LEDGER-LEVEL mint -> Manager composition — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-18T11:34:20.627Z
+2026-08-18 07:34:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:31573/: 1000:: Normal Closure
+2026-08-18 07:34:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:31573/: 1000:: Normal Closure
+[2026-08-18T11:34:21.396Z] feePayer synced
+[2026-08-18T11:34:56.277Z] Minter a91e12106a4390d71163675ee22abd161804059278645cfc4523739b7dd4aee3 / Manager efe2b1406d5fe38415f9a8d7e5028609750001421dba204d78f2ccf42bd88637
+[2026-08-18T11:36:08.280Z] AA_A registered dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331
+[2026-08-18T11:36:08.289Z] composing mint -> Manager (shielded) into ONE ledger intent …
+[2026-08-18T11:36:08.402Z]   one intent in segment 47786: mintShieldedTo + depositShielded
+[2026-08-18T11:36:31.225Z]   composed shielded tx 004d83b72c1dd872a4dd31564f1d09c6a02a7f0ec119c10b972a246233593bc7b1
+
+## SHIELDED mint -> Manager (ledger-level composition)
+tx:                 004d83b72c1dd872a4dd31564f1d09c6a02a7f0ec119c10b972a246233593bc7b1
+AA_A shielded:      0 -> 10
+pool (2nd point):   0 -> 10
+pool coin nonce:    8fc32e780828fadc1db7f14d43868722119bf6405395c4a7108799db0d939848 (== mint nonce: true)
+[2026-08-18T11:36:33.253Z] composing mint -> Manager (unshielded) into ONE ledger intent …
+[2026-08-18T11:36:33.355Z]   one intent in segment 8336: mintUnshieldedTo + depositUnshielded
+[2026-08-18T11:36:49.901Z]   composed unshielded tx 0029024540c332b0095538a4864ee5706617328c4118c6c735e0e4684f623bcaa8
+
+## UNSHIELDED mint -> Manager (ledger-level composition)
+tx:                 0029024540c332b0095538a4864ee5706617328c4118c6c735e0e4684f623bcaa8
+AA_A unshielded:    0 -> 10
+shielded untouched: true
+
+## RESULT
+LEDGER-LEVEL COMPOSITION WORKS for mint(contract) -> Manager in BOTH families.
+minter_address:   a91e12106a4390d71163675ee22abd161804059278645cfc4523739b7dd4aee3
+manager_address:  efe2b1406d5fe38415f9a8d7e5028609750001421dba204d78f2ccf42bd88637
+aa_a_account_id:  dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331
+shielded_tx:      004d83b72c1dd872a4dd31564f1d09c6a02a7f0ec119c10b972a246233593bc7b1
+unshielded_tx:    0029024540c332b0095538a4864ee5706617328c4118c6c735e0e4684f623bcaa8
+EXIT=0

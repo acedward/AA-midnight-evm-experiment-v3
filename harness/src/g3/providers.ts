@@ -7,6 +7,7 @@
 import { NodeZkConfigProvider } from '@midnight-ntwrk/midnight-js-node-zk-config-provider';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
+import { ZKConfigRegistry } from '@midnight-ntwrk/midnight-js-types';
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
 import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
@@ -61,4 +62,23 @@ export const makeProviders = (party: Party, contract: 'minter' | 'manager' | '_c
       submitTx: async (tx: any) => await facade.submitTransaction(tx),
     },
   } as any;
+};
+
+/**
+ * Proof provider for a transaction whose single intent spans BOTH contracts (ledger-level
+ * composition — see `ledger-compose.ts`).
+ *
+ * A flattened "all keys in one directory" provider does NOT work: each call's key location embeds
+ * the hash of its DEPLOYED verifier key, and resolution joins on that hash rather than on the
+ * circuit name. `ZKConfigRegistry` is the pinned SDK's own answer — it takes one artifact source
+ * per compiled contract and selects the source whose verifier key matches, which is immune to the
+ * `mintShieldedTo`-style name collisions between our two contracts.
+ */
+export const makeComposedProofProvider = () => {
+  const ep = endpoints(readLaneEnv());
+  const registry = new ZKConfigRegistry([
+    new NodeZkConfigProvider(zkDir('minter')),
+    new NodeZkConfigProvider(zkDir('manager')),
+  ]);
+  return httpClientProofProvider(ep.provingServerUrl.toString(), registry as any);
 };
