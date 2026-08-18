@@ -15,8 +15,16 @@ import { join } from 'node:path';
 import { endpoints, readLaneEnv, REPO_ROOT } from '../lane.js';
 import type { Party } from '../wallet.js';
 
-/** Where scripts/g2/compile.sh --zk puts prover/verifier keys and zkir. */
-export const zkDir = (contract: 'minter' | 'manager' | '_combined') => join(REPO_ROOT, 'harness', 'generated-zk', contract);
+/**
+ * Where scripts/g2/compile.sh --zk puts prover/verifier keys and zkir.
+ *
+ * `contract` is a plain string rather than a union so the G1 compile probes can point the same
+ * provider wiring at their own throwaway artifact directories (see `probeZkDir`).
+ */
+export const zkDir = (contract: string) => join(REPO_ROOT, 'harness', 'generated-zk', contract);
+
+/** Where scripts/g1/probe-compile.sh puts a probe's artifacts (throwaway, gitignored). */
+export const probeZkDir = (probe: string) => join(REPO_ROOT, 'harness', 'generated-probes', probe);
 
 const TTL_MS = 30 * 60 * 1000;
 
@@ -25,11 +33,17 @@ const TTL_MS = 30 * 60 * 1000;
 // midnight-js-utils enforces >=3 character classes, so a bare hex string is rejected.
 const EPHEMERAL_PRIVATE_STORE_PASSWORD = `Aa1!${randomBytes(24).toString('base64url')}`;
 
-export const makeProviders = (party: Party, contract: 'minter' | 'manager' | '_combined', privateStateDir: string) => {
+export const makeProviders = (
+  party: Party,
+  contract: string,
+  privateStateDir: string,
+  /** Override the ZK artifact directory (the G1 probes compile outside `generated-zk`). */
+  zkArtifactDir: string = zkDir(contract),
+) => {
   const ep = endpoints(readLaneEnv());
   const facade: any = party.wallet;
   // The proof provider needs the ZK config to look up prover keys per circuit.
-  const zkConfigProvider = new NodeZkConfigProvider(zkDir(contract));
+  const zkConfigProvider = new NodeZkConfigProvider(zkArtifactDir);
 
   return {
     privateStateProvider: levelPrivateStateProvider({

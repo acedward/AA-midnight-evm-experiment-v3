@@ -62,11 +62,13 @@ lane_assert_pins_unchanged() {
 
   echo
   echo "== (1) pin values in docker/ are unchanged since the base commit"
-  for f in docker/compose.yml docker/compactc.Dockerfile; do
+  # Only compose.yml carries `sha256:`-prefixed IMAGE digests. compactc.Dockerfile pins an ARCHIVE
+  # by bare-hex SHA-256 and is checked separately, just below.
+  for f in docker/compose.yml; do
     base_d="$(git -C "$root" show "${LANE_BASE_COMMIT}:${f}" | _lane_digests || true)"
     now_d="$(_lane_digests < "$root/$f" || true)"
     if [ -z "$base_d" ]; then
-      echo "FATAL: no digests found in ${f} at the base commit"; rc=1; continue
+      echo "FATAL: no image digests found in ${f} at the base commit"; rc=1; continue
     fi
     if [ "$base_d" = "$now_d" ]; then
       echo "pins unchanged: ${f}"
@@ -79,7 +81,7 @@ lane_assert_pins_unchanged() {
     fi
   done
 
-  # The compiler archive is pinned by URL + SHA-256 rather than by an image digest.
+  # The compiler archive is pinned by URL + bare-hex SHA-256 rather than by an image digest.
   base_d="$(git -C "$root" show "${LANE_BASE_COMMIT}:docker/compactc.Dockerfile" \
             | grep -E '^ARG COMPACTC_(URL|SHA256)=' | sort)"
   now_d="$(grep -E '^ARG COMPACTC_(URL|SHA256)=' "$root/docker/compactc.Dockerfile" | sort)"

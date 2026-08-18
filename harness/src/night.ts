@@ -199,17 +199,50 @@ export const registerForDust = async (p: Party): Promise<string> => {
  * settled NIGHT balance is exactly `before - amount` — a precise condition to wait on rather than
  * a sleep.
  */
-export const fundWithNight = async (from: Party, to: Party, amount: bigint): Promise<string> => {
+export const fundWithNight = async (
+  from: Party,
+  to: Party,
+  amount: bigint,
+  opts: { arriveTimeoutMs?: number; changeTimeoutMs?: number } = {},
+): Promise<string> => {
   const beforeTo = nightBalance(await syncedState(to));
   const beforeFrom = nightBalance(await syncedState(from));
   const address = await (to.wallet as any).unshielded.getAddress();
   log(`  funding ${to.name} with ${amount} NIGHT from ${from.name}`);
   const hash = await withDustRetry(from, `fund ${to.name}`, () => sendUnshielded(from, address, amount));
-  await waitFor(to, (s) => nightBalance(s) >= beforeTo + amount, `${to.name} NIGHT to arrive`);
+  await waitFor(
+    to,
+    (s) => nightBalance(s) >= beforeTo + amount,
+    `${to.name} NIGHT to arrive`,
+    opts.arriveTimeoutMs ?? 180_000,
+  );
+  // Wait for the SENDER to have OBSERVED ITS OWN SPEND before it is used again — this guards the
+  // next transfer against selecting a stale UTXO.
+  //
+  // This was an exact-equality wait (`=== beforeFrom - amount`) and it is now an inequality, for a
+  // diagnosed reason (finding F-104, 00004 G1). On this pinned wallet SDK the sender's LIVE state
+  // stream under-reports its own balance after a send and never self-corrects, while still
+  // reporting `progress.isStrictlyComplete() === true`:
+  //
+  //   genesis before      250000000000000  (5 UTXOs x 50000000000000)
+  //   sent                  1000000000000
+  //   live sender stream  199000000000000  (4 UTXOs)  <- WRONG, and stable for 15+ minutes
+  //   freshly opened wallet, same chain, same moment:
+  //                       249000000000000  (5 UTXOs: 4 untouched + 49000000000000 change) <- CORRECT
+  //
+  // So the chain and the indexer are right; only the submitting wallet's in-memory view is wrong.
+  // Exact equality is therefore UNSATISFIABLE on that stream and hung the whole 900s budget.
+  //
+  // The inequality is in the SAFE direction: the sender's live balance can only reach
+  // `beforeFrom - amount` or lower once the spend has been observed, so this still cannot pass
+  // before the spend is reflected. It just no longer depends on the SDK accounting for its own
+  // change correctly. The receiver-side wait above has always been an inequality for the same
+  // pragmatic reason.
   await waitFor(
     from,
-    (s) => nightBalance(s) === beforeFrom - amount,
-    `${from.name} to see its change (NIGHT back to ${beforeFrom - amount})`,
+    (s) => nightBalance(s) <= beforeFrom - amount,
+    `${from.name} to observe its own spend (NIGHT at or below ${beforeFrom - amount})`,
+    opts.changeTimeoutMs ?? 300_000,
   );
   return hash;
 };

@@ -1,0 +1,19 @@
+# probe p1c — nested `Map<Bytes<32>, Map<Bytes<32>, Uint<128>>>` (informational)
+# source:   contracts/probes/p1c-nested-map.compact
+# mode:     --skip-zk
+# image:    aa00004-compactc:0.33.0
+# utc:      2026-08-18T20:17:35Z
+# argv:     compactc --skip-zk contracts/probes/p1c-nested-map.compact harness/generated-probes/p1c
+# ---------------- verbatim compiler output below ----------------
+# ---------------- end verbatim output ----------------
+# exit: 0
+# artifacts produced:
+#   harness/generated-probes/p1c/compiler/contract-info.json
+#   harness/generated-probes/p1c/compiler/contract-manifest.json
+#   harness/generated-probes/p1c/contract/index.d.ts
+#   harness/generated-probes/p1c/contract/index.js
+#   harness/generated-probes/p1c/contract/index.js.map
+#   harness/generated-probes/p1c/zkir/balanceOf.zkir
+#   harness/generated-probes/p1c/zkir/credit.zkir
+#   harness/generated-probes/p1c/zkir/debit.zkir
+#   harness/generated-probes/p1c/zkir/openAccount.zkir
