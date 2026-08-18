@@ -29,6 +29,9 @@ importers:
       '@midnight-ntwrk/midnight-js-node-zk-config-provider':
         specifier: 5.0.0-beta.6
         version: 5.0.0-beta.6
+      '@midnight-ntwrk/midnight-js-protocol':
+        specifier: 5.0.0-beta.6
+        version: 5.0.0-beta.6
       '@midnight-ntwrk/midnight-js-types':
         specifier: 5.0.0-beta.6
         version: 5.0.0-beta.6

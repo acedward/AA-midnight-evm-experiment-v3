@@ -20,7 +20,8 @@ const TTL_MS = 30 * 60 * 1000;
 
 // The private-state store is encrypted at rest. This project's private state is disposable local
 // test state, so the password is generated per process and never written to disk or evidence.
-const EPHEMERAL_PRIVATE_STORE_PASSWORD = randomBytes(32).toString('hex');
+// midnight-js-utils enforces >=3 character classes, so a bare hex string is rejected.
+const EPHEMERAL_PRIVATE_STORE_PASSWORD = `Aa1!${randomBytes(24).toString('base64url')}`;
 
 export const makeProviders = (party: Party, contract: 'minter' | 'manager', privateStateDir: string) => {
   const ep = endpoints(readLaneEnv());

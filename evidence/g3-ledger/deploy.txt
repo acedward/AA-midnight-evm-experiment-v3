@@ -1,0 +1,47 @@
+# G3 — contract deployment on the pinned rc4 lane
+# label: EXPERIMENTAL_LANE / LANE-DEV-1
+# captured: 2026-08-18T01:55Z
+# command: npx tsx src/g3/deploy.ts
+
+| What | Value |
+|---|---|
+| Minter address | `9a2276bcb6abe6ae0efc6f73ad20c4b9bf2b8b6291d0ed98374cc7ccd90cfc2f` |
+| Minter deploy tx | `00ed84515f64277eeb8bb5fe09829566414a67ad3dc7be8adff6423273aac1a5cc` |
+| Manager address | `8b18ec8961e18e9f80541eb2e9ae5d5e827265f40e18e2c6ef4247d540e09c82` |
+| Node | `2.0.0-rc.4` on fresh `undeployed1` (ledger `9.1.0.0-rc.3`) |
+| Prover | `9.0.0-rc.3` |
+| Fee source | `feePayer` wallet only — demo colors never pay fees |
+
+## LANE-DEV-1 — FULLY VERIFIED
+
+The fourth and final check is now met: **artifacts produced by `compactc 0.33.0` are accepted
+on-chain by the pinned `ledger-9.1.0.0-rc.3` node.** Both contracts deployed, each proven by the
+pinned proof server `9.0.0-rc.3` and applied by the node. The owner-approved substitution of the
+released `0.33.0` for the unpublished `compactc-v0.33.0-rc.2` is therefore verified end to end,
+not merely at build level.
+
+## Finding G3-1 — RESOLVED (harness defect, not a lane defect)
+
+`deployContract` was being called with the pre-beta.6 option shape. midnight-js
+`v5.0.0-beta.6` does **not** accept a raw `new Contract(witnesses)`:
+`DeployContractOptions.compiledContract` is a compact-js `CompiledContract`, constructed as
+
+    CompiledContract.make(tag, Ctor)
+      |> withWitnesses({...}) | withVacantWitnesses     // Minter declares none
+      |> withCompiledFileAssets(<zk artifacts dir>)
+
+Passing the raw class left the witness context unset, which is precisely what
+`compact-js`'s `getContractContext` dereferenced
+(`Cannot read properties of undefined (reading 'Symbol()')`).
+
+**This was a defect in this harness, NOT an incoherence in the pinned lane.** No lane RED is
+recorded, and the SDK-level path stands.
+
+Three further real beta.6 requirements surfaced on the way to a successful deploy:
+
+1. `compact-js` is a transitive dependency; it must be imported from the supported re-export
+   subpath `@midnight-ntwrk/midnight-js-protocol/compact-js/effect`.
+2. `levelPrivateStateProvider` requires a `privateStoragePasswordProvider` **and** an `accountId`.
+3. That password is validated: it must contain at least 3 of {uppercase, lowercase, digits,
+   special}. A bare hex string is rejected. The harness generates an ephemeral per-process
+   password meeting the rule; it is never written to disk or evidence.

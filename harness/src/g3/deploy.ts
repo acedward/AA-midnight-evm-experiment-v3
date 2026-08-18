@@ -13,10 +13,7 @@ import { SEEDS } from '../lane.js';
 import { closeParty, openParty, type Party } from '../wallet.js';
 import { makeProviders } from './providers.js';
 
-// @ts-ignore — generated artifact
-import { Contract as MinterContract } from '../../generated-zk/minter/contract/index.js';
-// @ts-ignore — generated artifact
-import { Contract as ManagerContract } from '../../generated-zk/manager/contract/index.js';
+import { compiledManager, compiledMinter } from './contracts.js';
 
 const stamp = () => new Date().toISOString();
 const log = (m: string) => console.log(`[${stamp()}] ${m}`);
@@ -38,20 +35,15 @@ const main = async () => {
 
     log('deploying Minter …');
     const minter = await deployContract(makeProviders(fee, 'minter', psDir), {
-      contract: new MinterContract({}),
-      privateStateId: 'minter',
-      initialPrivateState: {},
+      compiledContract: compiledMinter(),
     } as any);
     const minterAddr = minter.deployTxData.public.contractAddress;
     log(`Minter deployed at ${minterAddr}`);
     log(`  deploy tx: ${minter.deployTxData.public.txId ?? minter.deployTxData.public.txHash ?? '(id not exposed)'}`);
 
     log('deploying Manager …');
-    const managerWitnesses = {
-      localOwnerSecret: (ctx: any): [any, Uint8Array] => [ctx.privateState, ctx.privateState.ownerSecret],
-    };
     const manager = await deployContract(makeProviders(fee, 'manager', psDir), {
-      contract: new ManagerContract(managerWitnesses),
+      compiledContract: compiledManager(),
       privateStateId: 'manager',
       initialPrivateState: { ownerSecret: new Uint8Array(32) },
     } as any);
