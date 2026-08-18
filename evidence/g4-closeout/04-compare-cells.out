@@ -1,3 +1,6 @@
+original   Minter/Manager: b0a96ac61f4bc71de1627657dc934b11aefab199a50dc73a115b0fcc041a28ad / 1d838367033c26ea83bcfde405851aeec45057390dd364ca6632299d6c39e183
+reproduced Minter/Manager: 3f7de5d25f798768bd07f110fead5bc71b9d659c5d711fda52462a8200e9de55 / 10522fb9c3636d84d95a05d88ec6dc164cdfc965b49c200da716e336cadcca5e
+transaction ids: 20 original, 20 reproduced, 0 in common
 original cells:   26
 reproduced cells: 26
   GREEN internal-shielded  step 3  level SDK
@@ -26,3 +29,7 @@ reproduced cells: 26
   GREEN split-shielded-user-change  step 3  level wallet
   GREEN split-unshielded-partial-pool  step 6  level SDK
   GREEN split-unshielded-user-utxo  step 5  level wallet
+negative-controls.json: original {'wrong-owner-witness': 'GREEN', 'unregistered-witness': 'GREEN', 'per-account-overdraw': 'GREEN', 'omitted-claim-shielded': 'GREEN', 'omitted-claim-unshielded': 'GREEN'}, reproduced {'wrong-owner-witness': 'GREEN', 'unregistered-witness': 'GREEN', 'per-account-overdraw': 'GREEN', 'omitted-claim-shielded': 'GREEN', 'omitted-claim-unshielded': 'GREEN'}
+atomicity.json: original {'shielded': 'GREEN', 'unshielded': 'GREEN'}, reproduced {'shielded': 'GREEN', 'unshielded': 'GREEN'}
+
+reproduction matches the original cell for cell, on a demonstrably different chain

@@ -20,3 +20,10 @@ temporary clone removed
 -- containers matching this project:
 -- volumes matching this project:
 remaining containers: 0, remaining volumes: 0
+removing temporary clone parent: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00003-g4-jiGFq5
+temporary clone removed
+-- bringing down this project's development stack (no-op if absent)
+time="2026-08-18T10:57:22-04:00" level=warning msg="Warning: No resource found to remove for project \"aa00003-token-custody\"."
+-- containers matching this project:
+-- volumes matching this project:
+remaining containers: 0, remaining volumes: 0

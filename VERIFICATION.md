@@ -645,3 +645,99 @@ max 34341. Plain wallet-to-wallet transfers are proven and submitted inside the 
 deliberately not instrumented, so these are not whole-run averages.
 
 **Gate G3 is GREEN.**
+
+---
+
+## 2026-08-18 — G4 run 1: clean-clone reproduction PASSED, and a gap in its own comparison
+
+**Label:** `EXPERIMENTAL_LANE` / `LANE-DEV-1`.
+
+| Command | `./scripts/g4/verify-g4-closeout.sh` |
+|---|---|
+| Started / finished (UTC) | `2026-08-18T13:15:24Z` → `2026-08-18T14:11:29Z` |
+| **final_exit** | **0** — including teardown |
+| Clean clone | `…/T/aa00003-g4-bbNhku/clone`, asserted to carry no `docker/.env`, no `node_modules` and no generated artifacts |
+| Reproduced G2 | 57 s |
+| Reproduced G3 | **3289 s** (54m49s) — its own fresh stack, its own chain |
+
+The reproduction produced 26/26 GREEN cells with the same steps and composition levels as the
+original, on a brand-new deployment (`Minter d99c20b7…`, `Manager 37eba6ca…`). Teardown removed the
+temporary clone, brought down this project's long-lived development stack, and proved **0 remaining
+containers and 0 remaining volumes** matching the project.
+
+### The gap, found by reading the run rather than trusting it
+
+Retained evidence is **committed**, so `git clone` carries the ORIGINAL run's `evidence/` directory
+into the clone; the clone's own run then overwrites it as it proceeds. Mid-run inspection made this
+concrete — the clone's `run-context.json` still reported the original's Minter address while its own
+ledger had not yet reached that step.
+
+The comparison step as written compared only cell verdicts, so **had the clone's G3 somehow produced
+no new evidence, the comparison would have compared the original against itself and passed.** The
+`fs_run` exit-code discipline makes that unlikely — the clone's G3 wrapper must exit 0, and its
+final step regenerates `cells.json` — but "unlikely" is not the standard this project is held to.
+
+**Fix, applied before the retained G4 run.** `step_compare_cells` now first proves the reproduction
+is genuinely its own:
+
+- the clone's Minter **and** Manager addresses must DIFFER from the original's;
+- the two runs must share **no transaction id at all** (a fresh chain cannot reproduce one);
+
+and only then compares what the specification asserts — every cell's verdict, step and composition
+level, plus the negative-control and atomicity-probe verdicts, which the first version did not
+compare at all.
+
+Run 1's result stands on its merits (the reproduction demonstrably happened, on different
+addresses), but the **retained G4 evidence is the re-run under the strengthened comparison**.
+
+---
+
+## 2026-08-18 — **G4 GREEN**: clean-clone reproduction under the strengthened comparison
+
+**Label:** `EXPERIMENTAL_LANE` / `LANE-DEV-1`.
+
+| Command | `./scripts/g4/verify-g4-closeout.sh` |
+|---|---|
+| cwd | `/Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody` |
+| Started (UTC) | `2026-08-18T14:12:26Z` |
+| Finished (UTC) | `2026-08-18T14:57:22Z` (44m56s) |
+| **final_exit** | **0** — including teardown |
+| Run log | `evidence/g4-closeout/run.log` |
+
+| Step | s | exit |
+|---|---|---|
+| 01-clean-clone | 0 | 0 |
+| 02-reproduce-g2 | 56 | 0 |
+| **03-reproduce-g3** | **2638** | 0 |
+| 04-compare-cells | 0 | 0 |
+| 05-final-report | 0 | 0 |
+
+### Reproduction is provably a reproduction
+
+```
+original   Minter/Manager: b0a96ac6…041a28ad / 1d838367…6c39e183
+reproduced Minter/Manager: 3f7de5d2…00e9de55 / 10522fb9…cadcca5e
+transaction ids: 20 original, 20 reproduced, 0 in common
+original cells:   26
+reproduced cells: 26
+…
+reproduction matches the original cell for cell, on a demonstrably different chain
+```
+
+- The clone was asserted to carry **no** `docker/.env`, **no** `node_modules` and **no** generated
+  artifacts, so everything was rebuilt from source inside it.
+- Different Minter **and** Manager addresses, and **zero transaction ids in common** — the
+  reproduction cannot be the committed evidence that travels in with `git clone`.
+- All 26 cells match on verdict, step and composition level; all 5 negative controls and both
+  atomicity probes match verdict for verdict.
+- Zero manual intervention beyond running the one documented command (SC-004).
+
+### Teardown proof
+
+The temporary clone was removed after its path was validated as a `mktemp -d` directory, this
+project's long-lived development stack was brought down (already absent by then — the run reports
+`No resource found to remove`), and the wrapper asserted **0 remaining containers and 0 remaining
+volumes** matching the project. Nothing belonging to any other project on this shared host was
+touched.
+
+**Gate G4 is GREEN.** All four gates — G1, G2, G3, G4 — are GREEN.

@@ -1,5 +1,5 @@
 # G4 run log
-started_utc: 2026-08-18T13:15:26Z
+started_utc: 2026-08-18T14:12:26Z
 argv: ./scripts/g4/verify-g4-closeout.sh 
 cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
 host: Darwin arm64
@@ -7,48 +7,48 @@ docker: Docker version 29.1.3, build f52814d
 compose: 2.40.3-desktop.1
 label: EXPERIMENTAL_LANE
 --- step: 01-clean-clone
-    utc_start: 2026-08-18T13:15:27Z
+    utc_start: 2026-08-18T14:12:26Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
     argv: step_clean_clone
-    utc_end: 2026-08-18T13:15:27Z
+    utc_end: 2026-08-18T14:12:26Z
     duration_s: 0
     exit: 0
     output: 01-clean-clone.out
 --- step: 02-reproduce-g2
-    utc_start: 2026-08-18T13:15:27Z
+    utc_start: 2026-08-18T14:12:26Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
     argv: step_reproduce_g2
-    utc_end: 2026-08-18T13:16:24Z
-    duration_s: 57
+    utc_end: 2026-08-18T14:13:22Z
+    duration_s: 56
     exit: 0
     output: 02-reproduce-g2.out
 --- step: 03-reproduce-g3
-    utc_start: 2026-08-18T13:16:24Z
+    utc_start: 2026-08-18T14:13:22Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
     argv: step_reproduce_g3
-    utc_end: 2026-08-18T14:11:13Z
-    duration_s: 3289
+    utc_end: 2026-08-18T14:57:20Z
+    duration_s: 2638
     exit: 0
     output: 03-reproduce-g3.out
 --- step: 04-compare-cells
-    utc_start: 2026-08-18T14:11:13Z
+    utc_start: 2026-08-18T14:57:20Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
     argv: step_compare_cells
-    utc_end: 2026-08-18T14:11:13Z
+    utc_end: 2026-08-18T14:57:20Z
     duration_s: 0
     exit: 0
     output: 04-compare-cells.out
 --- step: 05-final-report
-    utc_start: 2026-08-18T14:11:13Z
+    utc_start: 2026-08-18T14:57:20Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
     argv: step_final_report
-    utc_end: 2026-08-18T14:11:14Z
-    duration_s: 1
+    utc_end: 2026-08-18T14:57:20Z
+    duration_s: 0
     exit: 0
     output: 05-final-report.out
 --- teardown
-    utc: 2026-08-18T14:11:14Z
+    utc: 2026-08-18T14:57:20Z
     argv: step_teardown
     exit: 0
-finished_utc: 2026-08-18T14:11:18Z
+finished_utc: 2026-08-18T14:57:22Z
 final_exit: 0
