@@ -193,6 +193,67 @@ instrumented here — the figures are not a whole-run average.
 
 Per-circuit verifier-key hashes and sizes: [`evidence/g2-contracts/ARTIFACTS.md`](evidence/g2-contracts/ARTIFACTS.md).
 
+## Addendum A1 — multi-input coin selection (outside the 26-cell matrix)
+
+> **Scope of this section.** Addendum A1 is **not part of the specified combination matrix**.
+> It claims **none** of the 26 cells, the approved specification is **unchanged** (SHA-256 still
+> `b707fc438721ebb750d301dc18c170229643c47d82ca551d739d7e4aac7c86d9`), and the G1–G4 evidence is
+> untouched. It was authorized after closeout to settle one adjacent behaviour the ordered ledger
+> never forced.
+
+**The gap.** Every send in the step ledger was coverable by a **single** held coin or UTXO. The
+retained step evidence shows the wallet spending exactly one piece whenever it held two — in steps
+7 and 8 OwnerM held two 5-pieces and sent 5, and the survivor kept its original identifier. So
+whether the pinned wallet SDK can select **two or more inputs** of a contract-minted colour in one
+transaction was never actually tested.
+
+**The probe.** OwnerN is minted **2** and **3** of the Minter's colour as *two separate
+transactions*, so it holds two discrete pieces and **no single piece covers a send of 4**. OwnerN
+then sends **4** to OwnerM in one transaction. Both families, identical choreography, on a fresh
+stack of the addendum's own.
+
+**Result: PROVEN in both families.**
+
+| family | held set before | send | OwnerN after | OwnerM after | one transaction |
+|---|---|---|---|---|---|
+| shielded | `{2, 3}` — two coins, distinct nonces | 4 → OwnerM | `{1}`, **new** nonce | `{4}`, **new** nonce | `0054c8910f…b5b81b` |
+| unshielded | `{2, 3}` — two UTXOs, distinct intent hashes | 4 → OwnerM | `{1}` | `{4}` | `009476730b…60c903` |
+
+The claim is deliberately made on **identifier sets, not balances**: in both families **both**
+original identifiers are gone from OwnerN's held set, the change piece carries a **new** identifier,
+and OwnerM's received piece is new — the assertions `bothGoneFromOwnerN`, `changeIdIsNew` and
+`ownerMIdsAreNew` are all true. Balances alone could not distinguish "combined two inputs" from
+"spent one and received change".
+
+Two independent observation points, as everywhere else in this project:
+
+- **shielded** — (1) the wallet SDK's synced per-coin state; (2) the ledger conservation identity,
+  which holds exactly: minted `5` = Manager pool `0` + OwnerN `1` + OwnerM `4`. A shielded coin is
+  private by construction, so the indexer cannot attribute it to an owner; this ledger-side
+  identity is the honest second point.
+- **unshielded** — (1) the wallet SDK's synced per-UTXO state; (2) the indexer's own records: both
+  consumed outputs report the **same** spending transaction `9ead2eb5…d771a065b`, which **is** the
+  send transaction's hash, and that transaction created exactly `1` → OwnerN and `4` → OwnerM under
+  one new intent hash. The indexer's independent UTXO reconstruction agrees with both wallets.
+
+**Why the ordered ledger never saw this.** The pinned balancer
+(`@midnightntwrk/wallet-sdk-capabilities`, `Balancer.ts`) is an accumulation loop — it adds one
+input per pass until the imbalance is covered, emitting a change output on overshoot — and its
+default picker takes the **smallest** coin of the type, irrespective of the amount needed. In steps
+7/8 a single 5-piece already covered a send of 5, so only one was spent. Nothing was wrong with
+those steps; the multi-input path was simply never exercised.
+
+No RED was recorded, no finding was raised, and no work-around was used. The harness's RED branch
+(exact error capture, funds-unchanged proof, and a separately labelled single-input control) was
+implemented but not needed.
+
+Gate wrapper `scripts/g5/verify-g5-multi-input.sh` exits **0 including teardown** in **9m16s**,
+leaving **0 containers and 0 volumes**. Evidence:
+[`evidence/g5-multi-input/summary.md`](evidence/g5-multi-input/summary.md),
+[`shielded.json`](evidence/g5-multi-input/shielded.json),
+[`unshielded.json`](evidence/g5-multi-input/unshielded.json),
+[`run.log`](evidence/g5-multi-input/run.log).
+
 ## Reproduction from a clean clone (SC-004)
 
 The G4 wrapper clones this repository into a fresh temporary directory — carrying **no**
@@ -217,6 +278,7 @@ verdict, its step, and its composition level.
 ./scripts/g2/verify-g2-contracts.sh   # contracts: compile + simulator suites + artifact record
 ./scripts/g3/verify-g3-ledger.sh      # the whole step ledger on a fresh stack of its own
 ./scripts/g4/verify-g4-closeout.sh    # clean-clone reproduction + this report
+./scripts/g5/verify-g5-multi-input.sh # ADDENDUM A1 (outside the matrix): multi-input sends
 ```
 
 Each wrapper owns its own disposable Docker stack under a compose project name unique to the

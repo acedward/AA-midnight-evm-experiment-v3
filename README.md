@@ -36,6 +36,7 @@ harness/                        TypeScript driver (midnight-js v5.0.0-beta.6, wa
     run.ts / actions.ts / table.ts   ordered steps 0..9, halt on first divergence
     negative-controls.ts             5 must-fail cases, state AND funds proven unchanged
     atomicity.ts                     2 deferred-failure probes: nothing survives a failed tx
+  src/g5/multi-input.ts            ADDENDUM A1 — can the wallet COMBINE inputs? (outside the matrix)
   src/test/                        27 simulator unit tests, incl. every authorization guard
 
 scripts/                        fail-safe gate wrappers — exit 0 (incl. teardown) = gate GREEN
@@ -43,6 +44,7 @@ scripts/                        fail-safe gate wrappers — exit 0 (incl. teardo
   g2/verify-g2-contracts.sh        compile both contracts, run unit suites, record VKs
   g3/verify-g3-ledger.sh           THE run: fresh stack -> steps 0..9 -> controls -> teardown (~27 min)
   g4/verify-g4-closeout.sh         clean-clone reproduction + final report              (~45 min)
+  g5/verify-g5-multi-input.sh      ADDENDUM A1: multi-input coin selection, both families (~9 min)
   lib/failsafe.sh                  UTC/argv/exit-code recording; a teardown failure fails the gate
 
 docker/                         node + indexer + proof server pinned by sha256 digest; compiler image
@@ -176,6 +178,41 @@ family) submit a withdraw whose on-chain replay diverges, and prove **neither** 
 **nor** the account-state change survived. Every assertion in the run reads **two independent
 observation points** (contract state vs. pool mechanics; wallet view vs. indexer reconstruction).
 
+## Addendum A1 — multi-input sends
+
+**Verdict: PROVEN in both families.** A wallet holding only pieces **smaller than the amount it
+wants to send** combines them into **one** transaction.
+
+This addendum sits **outside the 26-cell matrix** — it claims no matrix cell, and the approved
+specification is **unchanged**. It exists because the ordered ledger never forced the case: every
+amount it sent was coverable by a single held coin/UTXO, so whether the pinned wallet SDK could
+select **two or more inputs** of a contract-minted colour was genuinely untested.
+
+The probe mints **2** and **3** to OwnerN as *two separate transactions*, so OwnerN holds two
+discrete pieces and **no single piece covers a send of 4**. OwnerN then sends **4** to OwnerM.
+
+| family | held set | send | after | one transaction |
+|---|---|---|---|---|
+| shielded | `{2, 3}`, distinct nonces | 4 → OwnerM | OwnerN `{1}`, OwnerM `{4}` — both under **new** nonces | `0054c8910f…b5b81b` |
+| unshielded | `{2, 3}`, distinct intent hashes | 4 → OwnerM | OwnerN `{1}`, OwnerM `{4}` — both under a **new** intent hash | `009476730b…60c903` |
+
+The claim is made on **identifier sets**, not balances: both original identifiers are gone from
+OwnerN's held set and the change carries a new one. For the unshielded family the indexer confirms
+it independently — both consumed outputs report the **same** spending transaction, which is the
+send transaction itself, and that transaction created exactly the `4` to OwnerM and the `1` change.
+For the shielded family (where a coin is private by construction, so the indexer cannot attribute
+it to an owner) the second observation point is the ledger conservation identity: minted `5` =
+pool `0` + OwnerN `1` + OwnerM `4`.
+
+Why the ordered ledger never saw it: the pinned balancer accumulates one input per pass until the
+imbalance is covered, and its default picker takes the **smallest** coin of the type. In steps 7/8
+OwnerM held two 5-pieces and sent 5 — one coin already covered it.
+
+Evidence: [`evidence/g5-multi-input/summary.md`](evidence/g5-multi-input/summary.md) ·
+[`shielded.json`](evidence/g5-multi-input/shielded.json) ·
+[`unshielded.json`](evidence/g5-multi-input/unshielded.json) ·
+[`run.log`](evidence/g5-multi-input/run.log).
+
 ## Reproducing
 
 Prerequisites: Docker, Node 22+, pnpm. The Compact compiler runs inside a pinned Docker image —
@@ -188,6 +225,7 @@ random verified-free ports above 10000) and tears it down; the gate is green onl
 ./scripts/g2/verify-g2-contracts.sh   # compile + 27 unit tests + artifacts
 ./scripts/g3/verify-g3-ledger.sh      # the whole ledger from nothing        (~27 min)
 ./scripts/g4/verify-g4-closeout.sh    # clean-clone reproduction + report    (~45 min)
+./scripts/g5/verify-g5-multi-input.sh # ADDENDUM A1: multi-input sends       (~9 min)
 ```
 
 ## Reading order
