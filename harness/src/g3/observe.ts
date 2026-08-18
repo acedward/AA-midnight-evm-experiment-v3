@@ -86,3 +86,30 @@ export const assertPoolInvariant = (m: ManagerView, label: string): void => {
     );
   }
 };
+
+/**
+ * Contract state is only observable once the block carrying the transaction has been applied and
+ * indexed. Reading immediately after `submitTx` returns the PRE-transaction state, which silently
+ * looks like "the call did nothing" — that false negative is exactly what the first deposit probe
+ * hit. Always wait on the expected condition instead of reading once.
+ */
+export const waitForManager = async (
+  providers: any,
+  address: string,
+  predicate: (m: ManagerView) => boolean,
+  what: string,
+  timeoutMs = 180_000,
+): Promise<ManagerView> => {
+  const deadline = Date.now() + timeoutMs;
+  let last: ManagerView | undefined;
+  for (;;) {
+    last = await readManager(providers, address);
+    if (predicate(last)) return last;
+    if (Date.now() > deadline) {
+      throw new Error(
+        `timed out after ${timeoutMs}ms waiting for ${what}; last observed pool=${last.poolValue} accounts=${JSON.stringify(last.shieldedOf, (_k, v) => (typeof v === 'bigint' ? `${v}` : v))}`,
+      );
+    }
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+};

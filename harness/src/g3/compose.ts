@@ -16,7 +16,7 @@
 // This is exactly what the spec describes as "transaction-level composition of independent calls,
 // not nested C2C", so witnesses stay usable in each call and 00002's non-root-witness blocker
 // does not apply.
-import { createUnprovenCallTx } from '@midnight-ntwrk/midnight-js-contracts';
+import { createUnprovenCallTx, withContractScopedTransaction } from '@midnight-ntwrk/midnight-js-contracts';
 import type { Party } from '../wallet.js';
 
 export type CallSpec = {
@@ -32,6 +32,36 @@ export type CallSpec = {
    * without it the builder fails with "Unable to resolve encryption public key for recipient".
    */
   encMappings?: ReadonlyMap<unknown, unknown>;
+};
+
+/**
+ * Compose calls into ONE INTENT by threading a single scoped TransactionContext through every
+ * `createUnprovenCallTx`. Merging two separately-built transactions puts each call in its own
+ * segment, which is why the paired mint + receive did not balance (Finding G3-2): the Minter's
+ * output and the Manager's receive claim landed in different segments and could not offset.
+ */
+export const submitInOneIntent = async (specs: CallSpec[]): Promise<string> => {
+  if (specs.length === 0) throw new Error('submitInOneIntent: no calls given');
+  const scopeProviders = specs[0].providers;
+
+  const finalized: any = await (withContractScopedTransaction as any)(
+    scopeProviders,
+    async (txCtx: any) => {
+      for (const spec of specs) {
+        const options: any = {
+          compiledContract: spec.compiledContract,
+          circuitId: spec.circuitId,
+          contractAddress: spec.contractAddress,
+          args: spec.args,
+        };
+        if (spec.privateStateId) options.privateStateId = spec.privateStateId;
+        if (spec.encMappings) options.additionalCoinEncPublicKeyMappings = spec.encMappings;
+        await (createUnprovenCallTx as any)(spec.providers, options, txCtx);
+      }
+    },
+    { scopeName: 'aa00003-paired-transfer' },
+  );
+  return String(finalized?.public?.txId ?? finalized?.public?.txHash ?? finalized);
 };
 
 /** Build one unproven call transaction. */

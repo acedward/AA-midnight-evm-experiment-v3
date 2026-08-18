@@ -15,7 +15,7 @@ import { compiledManager, compiledMinter } from './contracts.js';
 import { ManagerSim } from '../test/sim.js';
 import { assertPoolInvariant, readManager } from './observe.js';
 import { makeProviders } from './providers.js';
-import { submitComposed } from './compose.js';
+import { submitComposed, submitInOneIntent } from './compose.js';
 
 const stamp = () => new Date().toISOString();
 const log = (m: string) => console.log(`[${stamp()}] ${m}`);
@@ -132,8 +132,8 @@ const main = async () => {
     };
     await managerProviders.privateStateProvider.set('manager', { ownerSecret: aaA.secret });
 
-    log('composing paired mint + Manager receive into ONE transaction …');
-    const composedId = await submitComposed(fee, composedProviders, [
+    log('composing paired mint + Manager receive into ONE INTENT …');
+    const composedId = await submitInOneIntent([
       {
         providers: minterProviders,
         compiledContract: compiledMinter(),

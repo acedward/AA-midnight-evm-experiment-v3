@@ -1,0 +1,20 @@
+import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
+import { NetworkId } from '@midnightntwrk/wallet-sdk-abstractions';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { SEEDS } from '../lane.js';
+import { openParty, closeParty } from '../wallet.js';
+import { readManager } from './observe.js';
+import { makeProviders } from './providers.js';
+const main = async () => {
+  setNetworkId(NetworkId.NetworkId.Undeployed as any);
+  const addr = process.argv[2];
+  const p = await openParty('feePayer', SEEDS.feePayer);
+  const pr = makeProviders(p, 'manager', mkdtempSync(join(tmpdir(), 'chk-')));
+  const m = await readManager(pr, addr);
+  console.log('pool:', m.poolValue, 'hasPool:', m.hasPool);
+  console.log('shieldedOf:', JSON.stringify(m.shieldedOf, (_k, v) => (typeof v === 'bigint' ? `${v}` : v)));
+  await closeParty(p); process.exit(0);
+};
+main();
