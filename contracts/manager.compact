@@ -1,0 +1,270 @@
+// Manager — 00003-contract-token-custody (EXPERIMENTAL_LANE)
+//
+// A singleton custodian. At ledger level the contract holds ONE pooled shielded coin and ONE
+// pooled unshielded balance per color; internally an account map attributes ownership to
+// per-owner accounts (AA_A owned by OwnerA, AA_B owned by OwnerB).
+//
+// Standing invariant the harness asserts after every step:
+//     pooled holdings == sum of account balances, per family
+//
+// Authorization is by witness. That is sound here because the Manager is always invoked in root
+// position (spec: "project 00002's non-root-witness blocker does not apply"), and nothing here
+// uses `kernel.caller()`.
+//
+// Derived from the pinned standard library at compactc-v0.33.0-rc.2 and from the ledger prior art
+// `midnight-ledger/ledger/tests/token-vault.compact` (deposit/withdraw shape, change handling).
+
+import CompactStandardLibrary;
+
+export {
+  configure,
+  registerAccount,
+  depositShielded,
+  withdrawShielded,
+  selfSendShielded,
+  depositUnshielded,
+  withdrawUnshielded,
+  selfSendUnshielded,
+  transferInternal,
+  myAccount,
+  isRegistered,
+  accountShielded,
+  accountUnshielded,
+  poolShieldedValue,
+  poolHasCoin
+}
+
+// --- ledger state -------------------------------------------------------------------------
+
+// The two Minter colors this Manager custodies. Set once, at configure time.
+export ledger minterShieldedColor: Bytes<32>;
+export ledger minterUnshieldedColor: Bytes<32>;
+export ledger configured: Boolean;
+
+// Pooled shielded custody: a single qualified coin (merged on every deposit).
+export ledger pool: QualifiedShieldedCoinInfo;
+export ledger hasPool: Boolean;
+
+// Internal ownership attribution.
+export ledger accounts: Set<Bytes<32>>;
+export ledger shieldedOf: Map<Bytes<32>, Uint<128>>;
+export ledger unshieldedOf: Map<Bytes<32>, Uint<128>>;
+
+// --- owner authorization ------------------------------------------------------------------
+
+witness localOwnerSecret(): Bytes<32>;
+
+/// Account identity = a commitment to the owner's secret. Registering an account publishes only
+/// the commitment; spending requires the witness that opens it.
+circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
+  return persistentCommit<Bytes<21>>("aa00003:manager:owner", disclose(sk));
+}
+
+/// The account of whoever supplied the witness, asserted to be registered.
+/// This is the single authorization choke point for every debiting circuit.
+circuit authenticatedAccount(): Bytes<32> {
+  const acct = ownerCommitment(localOwnerSecret());
+  assert(accounts.member(acct), "caller's owner witness matches no registered account");
+  return acct;
+}
+
+circuit shieldedBalanceOf(acct: Bytes<32>): Uint<128> {
+  return shieldedOf.member(acct) ? shieldedOf.lookup(acct) : 0;
+}
+
+circuit unshieldedBalanceOf(acct: Bytes<32>): Uint<128> {
+  return unshieldedOf.member(acct) ? unshieldedOf.lookup(acct) : 0;
+}
+
+// --- setup --------------------------------------------------------------------------------
+
+/// Bind this Manager to the Minter's two colors. One-time.
+export circuit configure(shieldedColor: Bytes<32>, unshieldedColor: Bytes<32>): [] {
+  assert(!configured, "already configured");
+  minterShieldedColor = disclose(shieldedColor);
+  minterUnshieldedColor = disclose(unshieldedColor);
+  configured = true;
+}
+
+/// Register an account under `owner` (a commitment produced by `ownerCommitment`).
+export circuit registerAccount(owner: Bytes<32>): [] {
+  assert(!accounts.member(disclose(owner)), "account already registered");
+  accounts.insert(disclose(owner));
+  shieldedOf.insert(disclose(owner), 0);
+  unshieldedOf.insert(disclose(owner), 0);
+}
+
+/// The account id (owner commitment) for the witness the caller supplies.
+/// Returns only the commitment — never the secret — so it is safe to expose: the commitment is
+/// exactly what `registerAccount` publishes. The harness uses it to learn each owner's account id
+/// without reimplementing the commitment scheme off-chain.
+export circuit myAccount(): Bytes<32> {
+  return ownerCommitment(localOwnerSecret());
+}
+
+export circuit isRegistered(owner: Bytes<32>): Boolean {
+  return accounts.member(disclose(owner));
+}
+
+export circuit accountShielded(owner: Bytes<32>): Uint<128> {
+  return shieldedBalanceOf(disclose(owner));
+}
+
+export circuit accountUnshielded(owner: Bytes<32>): Uint<128> {
+  return unshieldedBalanceOf(disclose(owner));
+}
+
+export circuit poolShieldedValue(): Uint<128> {
+  return hasPool ? pool.value : 0;
+}
+
+export circuit poolHasCoin(): Boolean {
+  return hasPool;
+}
+
+// --- shielded custody -----------------------------------------------------------------------
+
+/// Claim an incoming shielded coin and credit it to `account`.
+/// The stdlib only auto-receives when the recipient is this contract itself, so a transfer into
+/// the Manager commits only if THIS circuit runs in the same transaction as the sender's
+/// operation (spec FR-003; the omitted-claim negative control exercises the failure).
+export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
+  assert(configured, "manager not configured");
+  // The deposited coin and target account are public facts of this transfer: the pooled coin and
+  // the credited balance both land in ledger state, so they must be disclosed once, up front.
+  const c = disclose(coin);
+  const acct = disclose(account);
+
+  assert(c.color == minterShieldedColor, "wrong color for this manager");
+  assert(c.value > 0, "deposit must be positive");
+  assert(accounts.member(acct), "credit account is not registered");
+
+  receiveShielded(c);
+
+  if (!hasPool) {
+    pool.writeCoin(c, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+    hasPool = true;
+  } else {
+    // Merge on deposit: the pool stays a single coin.
+    pool.writeCoin(
+      mergeCoinImmediate(pool, c),
+      right<ZswapCoinPublicKey, ContractAddress>(kernel.self())
+    );
+  }
+
+  shieldedOf.insert(acct, (shieldedBalanceOf(acct) + c.value) as Uint<128>);
+}
+
+/// Pay `value` out of the pool to `recipient`, debiting the witness owner's account.
+export circuit withdrawShielded(
+  value: Uint<128>,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): ShieldedCoinInfo {
+  assert(configured, "manager not configured");
+  const acct = authenticatedAccount();
+
+  // PER-ACCOUNT guard first, and independently of the pool: an account may not spend more than
+  // it owns even when the pool holds more (spec: the ownership-integrity case).
+  assert(shieldedBalanceOf(acct) >= disclose(value), "account shielded balance too low");
+  assert(hasPool, "pool holds no shielded coin");
+  assert(pool.value >= disclose(value), "pool shielded balance too low");
+
+  const result = sendShielded(pool, disclose(recipient), disclose(value));
+
+  if (result.change.is_some) {
+    pool.writeCoin(result.change.value, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+  } else {
+    // Empty-change arm: the pool is fully spent.
+    hasPool = false;
+    pool.resetToDefault();
+  }
+
+  shieldedOf.insert(acct, (shieldedBalanceOf(acct) - disclose(value)) as Uint<128>);
+  return result.sent;
+}
+
+/// Send pooled shielded value to `kernel.self()`. Ownership- and balance-neutral: it exercises the
+/// stdlib auto-receive branch and rotates the pool coin's identifiers.
+///
+/// Full-value only, deliberately: a partial self-send would leave the pool as TWO self-owned coins
+/// (sent + change), which this single-coin pool representation cannot express.
+export circuit selfSendShielded(): [] {
+  assert(configured, "manager not configured");
+  const acct = authenticatedAccount();
+  assert(shieldedBalanceOf(acct) > 0, "authorizing account holds no shielded balance");
+  assert(hasPool, "pool holds no shielded coin");
+
+  const result = sendShielded(
+    pool,
+    right<ZswapCoinPublicKey, ContractAddress>(kernel.self()),
+    pool.value
+  );
+  // change is none (full value); `sent` was auto-claimed back to self by the stdlib.
+  pool.writeCoin(result.sent, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+  // No account balance changes: this is ownership-neutral by construction.
+}
+
+// --- unshielded custody ----------------------------------------------------------------------
+
+export circuit depositUnshielded(color: Bytes<32>, amount: Uint<128>, account: Bytes<32>): [] {
+  assert(configured, "manager not configured");
+  assert(disclose(color) == minterUnshieldedColor, "wrong color for this manager");
+  assert(disclose(amount) > 0, "deposit must be positive");
+  assert(accounts.member(disclose(account)), "credit account is not registered");
+
+  receiveUnshielded(disclose(color), disclose(amount));
+  unshieldedOf.insert(disclose(account), (unshieldedBalanceOf(disclose(account)) + disclose(amount)) as Uint<128>);
+}
+
+export circuit withdrawUnshielded(
+  color: Bytes<32>,
+  amount: Uint<128>,
+  recipient: Either<ContractAddress, UserAddress>
+): [] {
+  assert(configured, "manager not configured");
+  assert(disclose(color) == minterUnshieldedColor, "wrong color for this manager");
+  const acct = authenticatedAccount();
+
+  // PER-ACCOUNT guard first, independent of the contract's ledger balance.
+  assert(unshieldedBalanceOf(acct) >= disclose(amount), "account unshielded balance too low");
+  // Comparison guard rather than an exact-balance read (stdlib note on `unshieldedBalance`).
+  assert(unshieldedBalanceGte(disclose(color), disclose(amount)), "contract unshielded balance too low");
+
+  sendUnshielded(disclose(color), disclose(amount), disclose(recipient));
+  unshieldedOf.insert(acct, (unshieldedBalanceOf(acct) - disclose(amount)) as Uint<128>);
+}
+
+/// Unshielded self-send: balance- and ownership-neutral, exercises the auto-receive branch.
+export circuit selfSendUnshielded(color: Bytes<32>, amount: Uint<128>): [] {
+  assert(configured, "manager not configured");
+  assert(disclose(color) == minterUnshieldedColor, "wrong color for this manager");
+  const acct = authenticatedAccount();
+  assert(unshieldedBalanceOf(acct) >= disclose(amount), "authorizing account balance too low");
+  assert(unshieldedBalanceGte(disclose(color), disclose(amount)), "contract unshielded balance too low");
+
+  sendUnshielded(disclose(color), disclose(amount), left<ContractAddress, UserAddress>(kernel.self()));
+  // No account balance changes.
+}
+
+// --- internal ownership transfer ---------------------------------------------------------------
+
+/// Move ownership between two accounts inside the Manager. NO token operation occurs: the pooled
+/// coin and the contract's ledger balances are byte-identical before and after (spec FR-005).
+/// `family` selects the ledger: true = shielded, false = unshielded.
+export circuit transferInternal(to: Bytes<32>, shieldedFamily: Boolean, amount: Uint<128>): [] {
+  assert(configured, "manager not configured");
+  const fromAcct = authenticatedAccount();
+  assert(accounts.member(disclose(to)), "destination account is not registered");
+  assert(fromAcct != disclose(to), "internal transfer to the same account");
+  assert(disclose(amount) > 0, "internal transfer must be positive");
+
+  if (disclose(shieldedFamily)) {
+    assert(shieldedBalanceOf(fromAcct) >= disclose(amount), "account shielded balance too low");
+    shieldedOf.insert(fromAcct, (shieldedBalanceOf(fromAcct) - disclose(amount)) as Uint<128>);
+    shieldedOf.insert(disclose(to), (shieldedBalanceOf(disclose(to)) + disclose(amount)) as Uint<128>);
+  } else {
+    assert(unshieldedBalanceOf(fromAcct) >= disclose(amount), "account unshielded balance too low");
+    unshieldedOf.insert(fromAcct, (unshieldedBalanceOf(fromAcct) - disclose(amount)) as Uint<128>);
+    unshieldedOf.insert(disclose(to), (unshieldedBalanceOf(disclose(to)) + disclose(amount)) as Uint<128>);
+  }
+}

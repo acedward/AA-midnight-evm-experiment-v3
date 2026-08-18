@@ -203,3 +203,82 @@ One upstream caveat recorded while mirroring the SDK's e2e pattern: the SDK's ow
 wallet cannot transact on its own anymore". The active suites (`facadeTransfer`, `tokenTransfer`,
 `dust*`, `multipleWallets`, `swap`) all transact through `WalletFacade`, which is the API this
 harness uses.
+
+---
+
+## G2 — Minter and Manager contracts — **GREEN**
+
+`./scripts/g2/verify-g2-contracts.sh` → `final_exit: 0` (2026-08-18).
+
+| Step | Duration | Exit |
+|---|---|---|
+| 01-verify-lane-dev-1 | 1s | 0 |
+| 02-compile-fast | 1s | 0 |
+| 03-install | 0s | 0 |
+| 04-unit-suites | 2s | 0 |
+| 05-compile-zk | 47s | 0 |
+| 06-record-artifacts | 1s | 0 |
+
+It went RED once first, correctly: `${FLAGS[@]}` expansion of an empty array under `set -u` on
+bash 3.2 (the macOS default) aborted the `--zk` compile.
+
+### `LANE-DEV-1` — VERIFIED
+
+The owner-approved compiler substitution is now proven rather than assumed:
+
+- [x] Installed `compactc` reports compiler version **`0.33.0`**.
+- [x] Installed `compactc` reports language version **`0.25.0`**.
+- [x] The pinned read-only rc.2 source declares exactly the same pair
+      (`compiler-version.ss`, `language-version.ss`) and targets `ledger-9.1.0.0-rc.3` — this
+      lane's ledger.
+- [x] Binary pinned by SHA-256 `3aa23812b0b086dbce07da3931a40dcb01bec9676b1ceed7f2d0be370ab2dc46`
+      (`compactc_v0.33.0_aarch64-unknown-linux-musl.zip`, 31,550,294 B) in
+      `docker/compactc.Dockerfile`.
+- [ ] **On-chain acceptance by the pinned `ledger-9.1.0.0-rc.3` node — still outstanding**, proven
+      at G3 deploy time. Until then the deviation is verified at build level only.
+
+Independent corroboration: the emitted artifacts themselves carry
+`compiler-version: 0.33.0`, `language-version: 0.25.0`, `runtime-version: 0.18.0-rc.1` — and
+`0.18.0-rc.1` is exactly the `@midnight-ntwrk/compact-runtime` version the pinned
+`midnight-js v5.0.0-beta.6` depends on. The toolchain is internally coherent.
+
+### Contracts
+
+| Contract | Circuits | Witnesses |
+|---|---|---|
+| Minter | 4 — `shieldedColor`, `unshieldedColor`, `mintShieldedTo`, `mintUnshieldedTo` | none |
+| Manager | 15 — `configure`, `registerAccount`, `myAccount`, `isRegistered`, `accountShielded`, `accountUnshielded`, `poolShieldedValue`, `poolHasCoin`, `depositShielded`, `withdrawShielded`, `selfSendShielded`, `depositUnshielded`, `withdrawUnshielded`, `selfSendUnshielded`, `transferInternal` | `localOwnerSecret` |
+
+All 18 verifier keys are hashed in `evidence/g2-contracts/ARTIFACTS.md`.
+
+### Simulator/unit suites — 27 tests, all passing
+
+Run with the pinned `@midnight-ntwrk/compact-runtime@0.18.0-rc.1`, the same runtime stamped into
+the artifacts.
+
+Manager (21): configure-once; register + duplicate rejection; zero-initialised accounts; deposit
+credits the named account and pools the coin; **merge-on-deposit** (value combines, coin identity
+changes); wrong-color rejection (tag-aware, not byte-blind); deposit to an unregistered account
+rejected; payout retains change; **empty-change arm** (full withdraw empties the pool and the
+emptied account stays registered and reusable); **per-account overdraw rejected even when the pool
+holds more**; unregistered owner witness rejected; **wrong-owner witness cannot reach another
+account's balance**; **internal transfer moves attribution while the pooled coin stays
+byte-identical** (both families); internal-transfer overdraw and unregistered destination
+rejected; per-account unshielded guard; **self-send rotates the pooled coin identity while every
+balance and attribution is unchanged**, plus its two rejection paths.
+
+Minter (6): the two colors are **distinct**, deterministic, and contract-scoped (different
+deployments derive different colors); neither is the native token; minted coins carry the expected
+color in each family; zero-value mints rejected in both families.
+
+Every negative test asserts **state unchanged** as well as rejection: `ManagerSim.expectReject`
+snapshots the ledger before the call and fails if a rejected call moved any state.
+
+### Decision — atomicity probes (Plan 02 Question 2)
+
+Deferred to G3 rather than compiled as test-only circuits here. The spec's atomicity requirement is
+that *"a circuit performs the token operation then fails an assertion; neither the token effect nor
+the account-state change may survive"* — which is a property of **transaction application on the
+node**, not of the simulator. A simulator probe would only re-prove that a thrown assertion abandons
+in-memory state, which the 27 suites above already show. The real probes therefore run live in G3
+against the pinned node, one per family.

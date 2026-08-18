@@ -1,0 +1,60 @@
+// Minter — 00003-contract-token-custody (EXPERIMENTAL_LANE)
+//
+// Mints this contract's own shielded and unshielded colors to an arbitrary recipient.
+// Both colors derive from `tokenType(domainSep, kernel.self())` with one fixed domain separator
+// per family, so they are contract-scoped and independent of each other (spec: "shielded and
+// unshielded Minter colors are independent identifiers with independent family tags").
+//
+// This is a demo minting tool, not a product: any party may request minting. There is no custody
+// state here — custody lives in the Manager.
+//
+// Derived from the pinned standard library at compactc-v0.33.0-rc.2:
+//   mintShieldedToken   L125, mintUnshieldedToken L299, tokenType L121
+
+import CompactStandardLibrary;
+
+export { mintShieldedTo, mintUnshieldedTo, shieldedColor, unshieldedColor }
+
+// --- colors -----------------------------------------------------------------------------------
+
+circuit shieldedDomainSep(): Bytes<32> {
+  return pad(32, "aa00003:minter:shielded");
+}
+
+circuit unshieldedDomainSep(): Bytes<32> {
+  return pad(32, "aa00003:minter:unshielded");
+}
+
+/// The shielded color minted by this contract.
+export circuit shieldedColor(): Bytes<32> {
+  return tokenType(shieldedDomainSep(), kernel.self());
+}
+
+/// The unshielded color minted by this contract.
+export circuit unshieldedColor(): Bytes<32> {
+  return tokenType(unshieldedDomainSep(), kernel.self());
+}
+
+// --- minting ----------------------------------------------------------------------------------
+
+/// Mint `value` of the shielded color to `recipient`.
+/// When the recipient is a contract, the stdlib claims the receive only if that contract is
+/// *this* one; minting into the Manager therefore requires the Manager's receive circuit to run
+/// in the same transaction (spec FR-003).
+export circuit mintShieldedTo(
+  value: Uint<64>,
+  nonce: Bytes<32>,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): ShieldedCoinInfo {
+  assert(value > 0, "mint value must be positive");
+  return mintShieldedToken(shieldedDomainSep(), disclose(value), disclose(nonce), disclose(recipient));
+}
+
+/// Mint `amount` of the unshielded color to `recipient`.
+export circuit mintUnshieldedTo(
+  amount: Uint<64>,
+  recipient: Either<ContractAddress, UserAddress>
+): Bytes<32> {
+  assert(amount > 0, "mint amount must be positive");
+  return mintUnshieldedToken(unshieldedDomainSep(), disclose(amount), disclose(recipient));
+}

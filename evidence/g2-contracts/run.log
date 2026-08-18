@@ -1,0 +1,62 @@
+# G2 run log
+started_utc: 2026-08-18T01:28:06Z
+argv: ./scripts/g2/verify-g2-contracts.sh 
+cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+host: Darwin arm64
+docker: Docker version 29.1.3, build f52814d
+compose: 2.40.3-desktop.1
+label: EXPERIMENTAL_LANE
+--- step: 01-verify-lane-dev-1
+    utc_start: 2026-08-18T01:28:06Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_verify_lane_dev_1
+    utc_end: 2026-08-18T01:28:07Z
+    duration_s: 1
+    exit: 0
+    output: 01-verify-lane-dev-1.out
+--- step: 02-compile-fast
+    utc_start: 2026-08-18T01:28:07Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_compile_fast
+    utc_end: 2026-08-18T01:28:08Z
+    duration_s: 1
+    exit: 0
+    output: 02-compile-fast.out
+--- step: 03-install
+    utc_start: 2026-08-18T01:28:08Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_install
+    utc_end: 2026-08-18T01:28:08Z
+    duration_s: 0
+    exit: 0
+    output: 03-install.out
+--- step: 04-unit-suites
+    utc_start: 2026-08-18T01:28:08Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_unit_suites
+    utc_end: 2026-08-18T01:28:10Z
+    duration_s: 2
+    exit: 0
+    output: 04-unit-suites.out
+--- step: 05-compile-zk
+    utc_start: 2026-08-18T01:28:10Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_compile_zk
+    utc_end: 2026-08-18T01:28:57Z
+    duration_s: 47
+    exit: 0
+    output: 05-compile-zk.out
+--- step: 06-record-artifacts
+    utc_start: 2026-08-18T01:28:57Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_record_artifacts
+    utc_end: 2026-08-18T01:28:58Z
+    duration_s: 1
+    exit: 0
+    output: 06-record-artifacts.out
+--- teardown
+    utc: 2026-08-18T01:28:58Z
+    argv: docker image inspect aa00003-compactc:0.33.0 >/dev/null 2>&1 || true
+    exit: 0
+finished_utc: 2026-08-18T01:28:58Z
+final_exit: 0

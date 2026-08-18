@@ -1,0 +1,5 @@
+compiling minter (--zk) -> harness/generated-zk/minter
+Compiling 4 circuits:
+compiling manager (--zk) -> harness/generated-zk/manager
+Compiling 14 circuits:
+compiled: 18 zkir, 18 verifier keys

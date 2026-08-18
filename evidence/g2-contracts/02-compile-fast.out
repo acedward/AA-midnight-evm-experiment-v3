@@ -1,0 +1,3 @@
+compiling minter (--skip-zk) -> harness/generated/minter
+compiling manager (--skip-zk) -> harness/generated/manager
+compiled: 18 zkir, 0 verifier keys

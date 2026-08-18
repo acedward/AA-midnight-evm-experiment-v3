@@ -12,6 +12,7 @@
     "wallets": "tsx src/g1/wallets.ts"
   },
   "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.18.0-rc.1",
     "@midnightntwrk/ledger-v9": "1.0.0-rc.3",
     "@midnightntwrk/wallet-sdk": "2.0.0-beta.2",
     "@midnightntwrk/wallet-sdk-abstractions": "3.0.0-beta.0",
@@ -28,6 +29,7 @@
   "devDependencies": {
     "@types/node": "24.13.2",
     "tsx": "4.20.6",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.1.9"
   }
 }
