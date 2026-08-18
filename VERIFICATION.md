@@ -387,3 +387,29 @@ contract/ledger-semantics question, not a lane defect, so **no lane RED is recor
 
 Consequence: step 1 is not asserted, and **0 of 26 combination cells are evidenced**. Step 0
 remains the only asserted row.
+
+#### G3-2 — prior-art check (refines, and partly refutes, the hypothesis above)
+
+`midnight-ledger/ledger/tests/token_vault_shielded.rs` builds a deposit as:
+
+```rust
+// ZSwap offer: user sends coins (negative delta), contract receives output
+let offer = ZswapOffer { /* … */ outputs: vec![out].into(), /* … */ };
+```
+
+i.e. the **sender** contributes exactly one contract-owned output while the contract's
+`depositShielded` calls `receiveShielded` — which itself also calls `createZswapOutput`. Since that
+prior art is known-good, the ledger evidently **unifies** the contract's declared output with the
+sender's offer output rather than treating it as a duplicate. So plain "the output is created
+twice" does not by itself explain the failure.
+
+The remaining difference in this project's failing case is the **sender identity**: in the prior
+art the sender is a user wallet contributing a funded zswap offer, whereas here the sender is the
+**Minter contract**, which mints supply (`kernel.mintShielded`) and claims the *spend* side. The
+open question is therefore how a contract-minted coin's spend claim and a second contract's receive
+claim are expected to balance within one merged transaction — not whether outputs may be declared
+by both sides.
+
+Next investigative step for whoever resumes: compare against the mint path in the ledger tests
+(rather than the vault deposit path) and inspect the merged transaction's zswap offer deltas per
+segment before balancing.
