@@ -2,7 +2,7 @@
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
   "step": 0,
   "action": "Deploy Minter + Manager; register AA_A and AA_B; create OwnerN, OwnerM",
-  "utc": "2026-08-18T12:12:21.038Z",
+  "utc": "2026-08-18T12:53:08.469Z",
   "expected": {
     "AA_A": {
       "shielded": "0",
@@ -71,8 +71,8 @@
     {
       "label": "deploy + configure + register",
       "txs": [
-        "00ea00184ec88a73d8c5cadb72f2580ce623d5d2184c00cae9c422e47f9955d937",
-        "00cf69f7d9a33310a6f660c8fbcc8b21c4174651a734e69036a1ce4c76c9c31559"
+        "00f038253f2c7097d6c7be13d50c843930687f8d608063b4e34f875295bbf59612",
+        "00bdf42529603919899dabc5f8fd9ebbb2365066183c73ff21c6f7f02721f08897"
       ],
       "level": "SDK",
       "before": {
@@ -160,23 +160,23 @@
         }
       },
       "detail": {
-        "minterAddress": "714b91e890473b543faa22c252b5e5ec363b9d2f1949739c127bcde7cbf84584",
-        "managerAddress": "2d9e02fd4edf13fba3f939cf6827712ca86590a240cda621ccc61a1e07e3779c",
+        "minterAddress": "b0a96ac61f4bc71de1627657dc934b11aefab199a50dc73a115b0fcc041a28ad",
+        "managerAddress": "1d838367033c26ea83bcfde405851aeec45057390dd364ca6632299d6c39e183",
         "colors": {
-          "shielded": "e12ca8d2ec41ec066787e117d236ff0c5948196b380aada851d35e4658631664",
-          "unshielded": "6cdb40587d70ea2b425904a791f57b0b71de6f2be92ddbf4d9e7d37669e7776c"
+          "shielded": "7178f8449769f38ece84415349504bdf39b9deab8b158f23d5cf96d60cd3a478",
+          "unshielded": "de7966d6923a3c3a5cb07c90991ea2d530c74584b57b87f168f9722774d07426"
         },
         "accounts": {
           "AA_A": "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331",
           "AA_B": "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c"
         },
         "fundingTxs": {
-          "feePayer": "cd865d17da811e8559f5b8ea701052cd9899b5bc8560f091749a66d45885a37f",
-          "feePayerDust": "(skipped — already registered)",
-          "ownerN": "dd89327e612032482cfc6705f55a1ae022d33736323bee3e12180e03091df607",
-          "ownerM": "8732c0c40349120b08aed0609a1215a9e5af9a3b07d23e9d6ae4be3dd3b60fce",
-          "ownerNDust": "(skipped — already registered)",
-          "ownerMDust": "(skipped — already registered)"
+          "feePayer": "d29707ca4bdd5ddd1c8f70c1a986056193a85a3818aedf137045e8854750664e",
+          "feePayerDust": "00aeee2bf97bd40b342fc75515bdc19d4d0c61cb55e768d9a03267ad59429ee34b",
+          "ownerN": "e5db53e27cbe2369b8cda886faeafe04b9e5eabc3d3b78a520f4a2b9ec59dbee",
+          "ownerM": "8f385b2db5da3613cf91cf7fd8bb1ca4aef2536b843911457ca89df23b1edba2",
+          "ownerNDust": "00623c641f0870e97761c2f3a71304a98155e295aa4bd33095b025f860f2c04fbb",
+          "ownerMDust": "00fbc0121dc465526cabcf3fa36b871b77b9c32ddf38f897f2fe8262835488d2e1"
         }
       }
     }

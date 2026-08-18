@@ -1,0 +1,56 @@
+# G3 NEGATIVE CONTROLS — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-18T13:00:15.201Z
+[2026-08-18T13:00:15.314Z] wallets open; syncing genesis …
+2026-08-18 09:00:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 09:00:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 09:00:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 09:00:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 09:00:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 09:00:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 09:00:16        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 09:00:16        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+[2026-08-18T13:00:16.515Z] genesis: NIGHT=249000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+[2026-08-18T13:00:16.545Z]   funding feePayer with 1000000000000 NIGHT from genesis
+[2026-08-18T13:00:31.600Z]   submitted tx 000eaa48eb759657d317cfa6e0328dafb7b975ce2a34aab7be3255d76bd8867e28 (hash bff6562579c41e5221d198f9052543c0c8c2ecf897b770467c3607c073da27f4)
+[2026-08-18T13:00:31.600Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-18T13:00:31.755Z]   waiting for genesis to see its change (NIGHT back to 248000000000000) …
+[2026-08-18T13:00:44.883Z]   feePayer: NIGHT already registered for DUST
+[2026-08-18T13:00:44.890Z]   funding ownerN with 200000000000 NIGHT from feePayer
+[2026-08-18T13:01:00.950Z]   submitted tx 007774aed3ae84a926f1ac50e32a417133c007758b8dc7ad80bc398f8ba4e4df1b (hash 5e785b3af32911c778bc4d24dde0d9081b7fa73bd664c226d26bd2b779b26b23)
+[2026-08-18T13:01:00.950Z]   waiting for ownerN NIGHT to arrive …
+[2026-08-18T13:01:01.099Z]   waiting for feePayer to see its change (NIGHT back to 1400000000000) …
+[2026-08-18T13:01:15.407Z]   funding ownerM with 200000000000 NIGHT from feePayer
+[2026-08-18T13:01:31.635Z]   submitted tx 0013a5ec2ea0af6a8a3aa8eecebf8871e17611a9bcd5e6a3d0bc2e072299abbb1e (hash aef3b553a5ba834c85de363e77a3b57c4d502ff1c4572979069ae9cfc036d7d7)
+[2026-08-18T13:01:31.635Z]   waiting for ownerM NIGHT to arrive …
+[2026-08-18T13:01:31.793Z]   waiting for feePayer to see its change (NIGHT back to 1200000000000) …
+[2026-08-18T13:01:46.893Z]   ownerN: NIGHT already registered for DUST
+[2026-08-18T13:01:46.897Z]   ownerM: NIGHT already registered for DUST
+[2026-08-18T13:01:49.715Z] feePayer: NIGHT=1200000000000 DUST=0 utxos=2 unregisteredNightUtxos=0
+[2026-08-18T13:01:49.718Z] ownerN: NIGHT=400000000000 DUST=0 utxos=3 unregisteredNightUtxos=0
+[2026-08-18T13:01:49.721Z] ownerM: NIGHT=400000000000 DUST=0 utxos=4 unregisteredNightUtxos=0
+[2026-08-18T13:01:49.723Z] deploying Minter …
+[2026-08-18T13:02:08.747Z] Minter  89380ef09910e99e28d003e908748eaad4eafa6785d7ba607e5efe35daa76842
+[2026-08-18T13:02:08.747Z] deploying Manager …
+[2026-08-18T13:02:26.121Z] Manager a7ef32d6c798513f548bb13a11a617a6e91ff75379253c6dab8ec202d796e362
+[2026-08-18T13:03:02.038Z] colours: shielded da88710acaa30c51bb5de3ef43a6cecb2e9fa2cfba90164b7e908eba5f188965 / unshielded e1465ec55a154e3c97c03352f93b2829524c3391f98ff60ac23aad51f1293d69
+[2026-08-18T13:03:56.790Z] AA_A dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331 / AA_B bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c registered
+[2026-08-18T13:03:56.894Z] fixture: minting shielded 10 -> AA_A
+  GREEN wrong-owner-witness — failed assert: account shielded balance too low | cause: Error executing circuit 'withdrawShielded'
+  GREEN unregistered-witness — failed assert: caller's owner witness matches no registered account | cause: Error executing circuit 'withdrawShielded'
+[2026-08-18T13:04:46.099Z] fixture: minting shielded 10 -> AA_B so the pool (20) exceeds AA_A (10)
+[2026-08-18T13:05:09.804Z]   pool=20, AA_A=10, AA_B=10
+  GREEN per-account-overdraw — failed assert: account shielded balance too low | cause: Error executing circuit 'withdrawShielded'
+2026-08-18 09:05:24        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 218
+2026-08-18 09:05:24        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 218
+  GREEN omitted-claim-shielded — Transaction submission error
+2026-08-18 09:05:38        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 214
+2026-08-18 09:05:38        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 214
+  GREEN omitted-claim-unshielded — Transaction submission error
+
+## RESULT
+  GREEN wrong-owner-witness: rejected with 'account shielded balance too low' — AA_B owns 0 while the pool holds 10
+  GREEN unregistered-witness: rejected with 'caller\'s owner witness matches no registered account'
+  GREEN per-account-overdraw: rejected with 'account shielded balance too low' — AA_A owns 10, requested 15, pool holds 20
+  GREEN omitted-claim-shielded: rejected as imbalanced; no account credited and the pool untouched
+  GREEN omitted-claim-unshielded: rejected as imbalanced; no account credited and the ledger balance untouched
+
+all 5 negative controls passed with state AND funds proven unchanged

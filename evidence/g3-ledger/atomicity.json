@@ -1,14 +1,14 @@
 {
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
-  "utc": "2026-08-18T12:30:30.544Z",
+  "utc": "2026-08-18T13:13:24.537Z",
   "method": "deferred failure: a full-balance withdrawal is prepared against a state where the account holds the funds, the account is then emptied by an internal transfer submitted from a different wallet, and the stale withdrawal is submitted. Its recorded balance read no longer matches the chain, so the assertion fails on replay.",
-  "minterAddress": "6d7eca371a017ffbee23e392b1181b01462a2e8dcdd744802ff7baa3d7abf197",
-  "managerAddress": "66007aada15ab61bec1b45bde474a69d4981015a988b4e035df254449f30c138",
+  "minterAddress": "d665c714261b635bd421114645ae66563e10b1c567bf23bfe6cfce3baa9fb3c5",
+  "managerAddress": "a9e67fc8e197e3069e660a9359f4a4a9d641b71a0db252dcac79f64693aeaeab",
   "probes": [
     {
       "family": "shielded",
       "preparedFor": "withdrawShielded(10) authorized by OwnerA, prepared while AA_A held 10",
-      "displacingTx": "0015036f28b754f02450607b8d8840bad87f1be5890000fcfd3f1e2bb63d2bda82",
+      "displacingTx": "00e03ad92d7da1f35eff9e7f77c7ef95a167523eb874b64382daa192e0f15c8da9",
       "submission": {
         "accepted": false,
         "txIdOrError": "Transaction submission error"
@@ -35,7 +35,7 @@
         },
         "pool": {
           "value": "10",
-          "nonce": "9cdc34b78e99663c46a8726fa15735eecc4131b1fc3f92e9080c84defa1d7e1e",
+          "nonce": "8aedaae57b73330c8b644b6b6a14af8889610d6be21385e7b66381d3159dca59",
           "hasPool": true
         },
         "accountsShielded": {
@@ -77,7 +77,7 @@
         },
         "pool": {
           "value": "10",
-          "nonce": "9cdc34b78e99663c46a8726fa15735eecc4131b1fc3f92e9080c84defa1d7e1e",
+          "nonce": "8aedaae57b73330c8b644b6b6a14af8889610d6be21385e7b66381d3159dca59",
           "hasPool": true
         },
         "accountsShielded": {
@@ -103,7 +103,7 @@
     {
       "family": "unshielded",
       "preparedFor": "withdrawUnshielded(10) authorized by OwnerA, prepared while AA_A held 10",
-      "displacingTx": "0005bfec8d6a9c1e6f2c77305f56866c2e113d72a5138d1cebc2c879aee7dfaf86",
+      "displacingTx": "0044f5da22bab3adbcf3a3cb1f47c17384253f9b2a65d09d502154c0cfa5c0cd16",
       "submission": {
         "accepted": false,
         "txIdOrError": "Transaction submission error"
@@ -130,7 +130,7 @@
         },
         "pool": {
           "value": "10",
-          "nonce": "9cdc34b78e99663c46a8726fa15735eecc4131b1fc3f92e9080c84defa1d7e1e",
+          "nonce": "8aedaae57b73330c8b644b6b6a14af8889610d6be21385e7b66381d3159dca59",
           "hasPool": true
         },
         "accountsShielded": {
@@ -172,7 +172,7 @@
         },
         "pool": {
           "value": "10",
-          "nonce": "9cdc34b78e99663c46a8726fa15735eecc4131b1fc3f92e9080c84defa1d7e1e",
+          "nonce": "8aedaae57b73330c8b644b6b6a14af8889610d6be21385e7b66381d3159dca59",
           "hasPool": true
         },
         "accountsShielded": {

@@ -1,27 +1,27 @@
 {
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
-  "utc": "2026-08-18T12:19:30.953Z",
-  "minterAddress": "714b91e890473b543faa22c252b5e5ec363b9d2f1949739c127bcde7cbf84584",
-  "managerAddress": "2d9e02fd4edf13fba3f939cf6827712ca86590a240cda621ccc61a1e07e3779c",
+  "utc": "2026-08-18T13:00:12.995Z",
+  "minterAddress": "b0a96ac61f4bc71de1627657dc934b11aefab199a50dc73a115b0fcc041a28ad",
+  "managerAddress": "1d838367033c26ea83bcfde405851aeec45057390dd364ca6632299d6c39e183",
   "colors": {
-    "shielded": "e12ca8d2ec41ec066787e117d236ff0c5948196b380aada851d35e4658631664",
-    "unshielded": "6cdb40587d70ea2b425904a791f57b0b71de6f2be92ddbf4d9e7d37669e7776c"
+    "shielded": "7178f8449769f38ece84415349504bdf39b9deab8b158f23d5cf96d60cd3a478",
+    "unshielded": "de7966d6923a3c3a5cb07c90991ea2d530c74584b57b87f168f9722774d07426"
   },
   "accounts": {
     "idA": "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331",
     "idB": "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c"
   },
   "deployTxs": {
-    "minter": "00ea00184ec88a73d8c5cadb72f2580ce623d5d2184c00cae9c422e47f9955d937",
-    "manager": "00cf69f7d9a33310a6f660c8fbcc8b21c4174651a734e69036a1ce4c76c9c31559"
+    "minter": "00f038253f2c7097d6c7be13d50c843930687f8d608063b4e34f875295bbf59612",
+    "manager": "00bdf42529603919899dabc5f8fd9ebbb2365066183c73ff21c6f7f02721f08897"
   },
   "fundingTxs": {
-    "feePayer": "cd865d17da811e8559f5b8ea701052cd9899b5bc8560f091749a66d45885a37f",
-    "feePayerDust": "(skipped — already registered)",
-    "ownerN": "dd89327e612032482cfc6705f55a1ae022d33736323bee3e12180e03091df607",
-    "ownerM": "8732c0c40349120b08aed0609a1215a9e5af9a3b07d23e9d6ae4be3dd3b60fce",
-    "ownerNDust": "(skipped — already registered)",
-    "ownerMDust": "(skipped — already registered)"
+    "feePayer": "d29707ca4bdd5ddd1c8f70c1a986056193a85a3818aedf137045e8854750664e",
+    "feePayerDust": "00aeee2bf97bd40b342fc75515bdc19d4d0c61cb55e768d9a03267ad59429ee34b",
+    "ownerN": "e5db53e27cbe2369b8cda886faeafe04b9e5eabc3d3b78a520f4a2b9ec59dbee",
+    "ownerM": "8f385b2db5da3613cf91cf7fd8bb1ca4aef2536b843911457ca89df23b1edba2",
+    "ownerNDust": "00623c641f0870e97761c2f3a71304a98155e295aa4bd33095b025f860f2c04fbb",
+    "ownerMDust": "00fbc0121dc465526cabcf3fa36b871b77b9c32ddf38f897f2fe8262835488d2e1"
   },
   "mintedTotals": {
     "shielded": "20",
@@ -30,17 +30,17 @@
   "metrics": {
     "proofLatencyMs": {
       "count": 23,
-      "min": 0,
-      "median": 627,
-      "max": 6208,
-      "mean": 1481
+      "min": 1,
+      "median": 625,
+      "max": 6197,
+      "mean": 1644
     },
     "transactionBytes": {
       "count": 23,
-      "min": 6732,
-      "median": 9322,
-      "max": 37350,
-      "mean": 14514
+      "min": 6730,
+      "median": 9312,
+      "max": 34341,
+      "mean": 14250
     },
     "proofs": [
       {
@@ -49,97 +49,97 @@
       },
       {
         "circuits": "unknown",
-        "ms": 0
+        "ms": 1
       },
       {
         "circuits": "shieldedColor",
-        "ms": 621
+        "ms": 625
       },
       {
         "circuits": "unshieldedColor",
-        "ms": 607
+        "ms": 643
       },
       {
         "circuits": "configure",
-        "ms": 174
+        "ms": 193
       },
       {
         "circuits": "registerAccount",
-        "ms": 158
+        "ms": 1566
       },
       {
         "circuits": "registerAccount",
-        "ms": 126
+        "ms": 124
       },
       {
-        "circuits": "mintShieldedTo+depositShielded",
-        "ms": 3836
+        "circuits": "depositShielded+mintShieldedTo",
+        "ms": 6117
       },
       {
         "circuits": "mintShieldedTo",
-        "ms": 987
+        "ms": 996
       },
       {
-        "circuits": "mintUnshieldedTo+depositUnshielded",
-        "ms": 656
+        "circuits": "depositUnshielded+mintUnshieldedTo",
+        "ms": 652
       },
       {
         "circuits": "mintUnshieldedTo",
-        "ms": 492
+        "ms": 489
       },
       {
         "circuits": "transferInternal",
-        "ms": 667
+        "ms": 625
       },
       {
         "circuits": "depositShielded",
-        "ms": 4971
+        "ms": 5501
       },
       {
         "circuits": "withdrawShielded",
-        "ms": 4511
+        "ms": 4443
       },
       {
         "circuits": "transferInternal",
-        "ms": 627
+        "ms": 617
       },
       {
         "circuits": "depositUnshielded",
-        "ms": 184
+        "ms": 186
       },
       {
         "circuits": "withdrawUnshielded",
-        "ms": 665
+        "ms": 609
       },
       {
         "circuits": "depositShielded",
-        "ms": 6208
+        "ms": 6197
       },
       {
         "circuits": "withdrawShielded",
-        "ms": 4392
+        "ms": 4145
       },
       {
         "circuits": "depositUnshielded",
-        "ms": 182
+        "ms": 221
       },
       {
         "circuits": "withdrawUnshielded",
-        "ms": 610
+        "ms": 619
       },
       {
         "circuits": "selfSendShielded",
-        "ms": 2763
+        "ms": 2627
       },
       {
         "circuits": "selfSendUnshielded",
-        "ms": 627
+        "ms": 611
       }
     ],
     "transactions": [
       {
         "label": "feePayer/minter",
-        "bytes": 12258
+        "bytes": 12257
       },
       {
         "label": "feePayer/manager",
@@ -151,11 +151,11 @@
       },
       {
         "label": "feePayer/minter",
-        "bytes": 8169
+        "bytes": 8170
       },
       {
         "label": "feePayer/manager",
-        "bytes": 6732
+        "bytes": 6730
       },
       {
         "label": "feePayer/manager",
@@ -166,16 +166,16 @@
         "bytes": 6756
       },
       {
-        "label": "feePayer/minter",
-        "bytes": 19029
+        "label": "feePayer/manager",
+        "bytes": 19025
       },
       {
         "label": "feePayer/minter",
         "bytes": 13836
       },
       {
-        "label": "feePayer/minter",
-        "bytes": 12393
+        "label": "feePayer/manager",
+        "bytes": 12392
       },
       {
         "label": "feePayer/minter",
@@ -187,43 +187,43 @@
       },
       {
         "label": "ownerN/manager",
-        "bytes": 37350
+        "bytes": 34341
       },
       {
         "label": "feePayer/manager",
-        "bytes": 24526
+        "bytes": 24524
       },
       {
         "label": "feePayer/manager",
-        "bytes": 8576
+        "bytes": 8575
       },
       {
         "label": "ownerN/manager",
-        "bytes": 10414
+        "bytes": 7399
       },
       {
         "label": "feePayer/manager",
-        "bytes": 9315
+        "bytes": 9314
       },
       {
         "label": "ownerM/manager",
-        "bytes": 34340
+        "bytes": 34336
       },
       {
         "label": "feePayer/manager",
-        "bytes": 24532
+        "bytes": 24524
       },
       {
         "label": "ownerM/manager",
-        "bytes": 7395
+        "bytes": 7394
       },
       {
         "label": "feePayer/manager",
-        "bytes": 9322
+        "bytes": 9312
       },
       {
         "label": "feePayer/manager",
-        "bytes": 19101
+        "bytes": 19102
       },
       {
         "label": "feePayer/manager",
@@ -252,7 +252,7 @@
     },
     "pool": {
       "value": "10",
-      "nonce": "a40cc158897547c85852cf1aef69e37fb312472986b9932af29ddb62e6244f00",
+      "nonce": "c4c651a534477e79461a9f4e2974c67ae245f58cb75b078d4b7f0088a236a800",
       "hasPool": true
     },
     "accountsShielded": {
@@ -267,18 +267,18 @@
     "coins": {
       "OwnerN": [
         {
-          "nonce": "d49f9a7c3e03da80b49f5077ac675323f54b347f964055e70c4cd1ce7c32f600",
+          "nonce": "2d7eaa5574c80e50545ffc8bb4c11a548071f1af0c7461979339a46675def900",
           "value": "5",
-          "commitment": "bdba97aec3493e6f220f55f1077ac92c788f1993329bccd63ef8604926bd084f",
-          "nullifier": "91815e6b8f1d542c4e0aaea4e89b9a6edf7823e27a514b0f2b04331edd8c6cb2"
+          "commitment": "203944645c0d18a9ee1417f34f27066e19699686620411762a9204729f6d180b",
+          "nullifier": "c9f3ff2054ab164da58b05031384af767b946ce1137285a2d49aad65c5e657ff"
         }
       ],
       "OwnerM": [
         {
-          "nonce": "bd67929b92a5fc8a872a7e4d61ec6338020cb571cdf06f404d86b4a7ee42820f",
+          "nonce": "d8a118d4d4e73cffddf90cdfff9950d34ddfb93cb55109515e4c92e547e1c000",
           "value": "5",
-          "commitment": "b52758c8634c2525acc35dd902145bfe239be01a68ede700c5c6466fd2bac160",
-          "nullifier": "c63d6b4fc7ede8827c5ac8d85e73c2ac53cff74097b73ad21880409949d9f7fc"
+          "commitment": "56b6c9ba7c04cb2958f6489d58f1ec711c4ab78492d037c2394c59322e577743",
+          "nullifier": "433e6484707d1f6ac12ea80cdcd798e19b07b6287b4e1abe560f22af948db6da"
         }
       ]
     },
@@ -286,14 +286,14 @@
       "OwnerN": [
         {
           "value": "5",
-          "intentHash": "9865fc5e93a4820b52614802dba6c4996cf405217393b6f68f2b444fbd4557e0",
+          "intentHash": "626462252a14d631072c5a4e56897c17e6999743373f9544fd06579e5b04de28",
           "outputNo": "0"
         }
       ],
       "OwnerM": [
         {
           "value": "5",
-          "intentHash": "654feb27da55ec415a5b638d8e169693dac0d2ce56b7c0450564720701dd819e",
+          "intentHash": "260d306d466f378b124c0840ff21a659bba6a9a6bb10ae6505d83e208a4eebb1",
           "outputNo": "0"
         }
       ]
@@ -320,7 +320,7 @@
     },
     "pool": {
       "value": "10",
-      "nonce": "07d6c3f1d1fcdb8669cee8bc0c542146b7bcf3226f2959a9c0277497678e3b00",
+      "nonce": "bb9e3d5ce419284e14935d9eb41bfaa6200e69ca84e95d1e3550eb0e52654200",
       "hasPool": true
     },
     "accountsShielded": {
@@ -335,24 +335,24 @@
     "coins": {
       "OwnerN": [
         {
-          "nonce": "d49f9a7c3e03da80b49f5077ac675323f54b347f964055e70c4cd1ce7c32f600",
+          "nonce": "2d7eaa5574c80e50545ffc8bb4c11a548071f1af0c7461979339a46675def900",
           "value": "5",
-          "commitment": "bdba97aec3493e6f220f55f1077ac92c788f1993329bccd63ef8604926bd084f",
-          "nullifier": "91815e6b8f1d542c4e0aaea4e89b9a6edf7823e27a514b0f2b04331edd8c6cb2"
+          "commitment": "203944645c0d18a9ee1417f34f27066e19699686620411762a9204729f6d180b",
+          "nullifier": "c9f3ff2054ab164da58b05031384af767b946ce1137285a2d49aad65c5e657ff"
         }
       ],
       "OwnerM": [
         {
-          "nonce": "c7f8d48938f878aa971a5b3a42243b9368030d1eeabc00084924642e7496b97b",
+          "nonce": "62b8891dbf5444d7499e105172428260bf3708906a7fdb4edda37aeb89efabf7",
           "value": "2",
-          "commitment": "2ea14e63d4e3fd9a490dacd07b903cfd03fa085dac8f1d6147ebe85edab99613",
-          "nullifier": "73c2aaedca4a518c7137b73d95f2038f5bcdeb5ef2be126e790bac9cd40c3a44"
+          "commitment": "f52c30876fc53fcab4cc56abe88bf98bb7101300e62c355e78fce03daff4f954",
+          "nullifier": "ea35b129778d47d4e3d3a634bfd30f5287ffb0ae3955264cf9a391a2e95ccc21"
         },
         {
-          "nonce": "19cdfc2d054347a2bacf72a3ef6775596bfcf0332336a7714e024c7462a6cdfd",
+          "nonce": "b0b1435a07e52dc7807d5609be39ade7857256e660fd2dd83d68056286f951a4",
           "value": "3",
-          "commitment": "8424b202f658e56d1f26866ea83d98aef26df61771e00c54e282c1cae6cc61df",
-          "nullifier": "9db4200e57622254f001e5dcb82213df2dd910afbcb926ba29320a3cf88d0478"
+          "commitment": "ff5612971f417600828e731d95d248c26256a2693a9be1570367ceea28f47ed4",
+          "nullifier": "a6de899b65e745225373502c961cad89500ddce3829d9c572543f3cd9c9bfebd"
         }
       ]
     },
@@ -360,19 +360,19 @@
       "OwnerN": [
         {
           "value": "5",
-          "intentHash": "9865fc5e93a4820b52614802dba6c4996cf405217393b6f68f2b444fbd4557e0",
+          "intentHash": "626462252a14d631072c5a4e56897c17e6999743373f9544fd06579e5b04de28",
           "outputNo": "0"
         }
       ],
       "OwnerM": [
         {
           "value": "2",
-          "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+          "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
           "outputNo": "0"
         },
         {
           "value": "3",
-          "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+          "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
           "outputNo": "1"
         }
       ]

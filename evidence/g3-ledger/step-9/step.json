@@ -2,7 +2,7 @@
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
   "step": 9,
   "action": "Self-send round: OwnerM self-sends both families; the pool self-sends both families",
-  "utc": "2026-08-18T12:19:30.953Z",
+  "utc": "2026-08-18T13:00:12.994Z",
   "expected": {
     "AA_A": {
       "shielded": "5",
@@ -42,7 +42,7 @@
     },
     "pool": {
       "value": "10",
-      "nonce": "07d6c3f1d1fcdb8669cee8bc0c542146b7bcf3226f2959a9c0277497678e3b00",
+      "nonce": "bb9e3d5ce419284e14935d9eb41bfaa6200e69ca84e95d1e3550eb0e52654200",
       "hasPool": true
     },
     "accountsShielded": {
@@ -57,24 +57,24 @@
     "coins": {
       "OwnerN": [
         {
-          "nonce": "d49f9a7c3e03da80b49f5077ac675323f54b347f964055e70c4cd1ce7c32f600",
+          "nonce": "2d7eaa5574c80e50545ffc8bb4c11a548071f1af0c7461979339a46675def900",
           "value": "5",
-          "commitment": "bdba97aec3493e6f220f55f1077ac92c788f1993329bccd63ef8604926bd084f",
-          "nullifier": "91815e6b8f1d542c4e0aaea4e89b9a6edf7823e27a514b0f2b04331edd8c6cb2"
+          "commitment": "203944645c0d18a9ee1417f34f27066e19699686620411762a9204729f6d180b",
+          "nullifier": "c9f3ff2054ab164da58b05031384af767b946ce1137285a2d49aad65c5e657ff"
         }
       ],
       "OwnerM": [
         {
-          "nonce": "c7f8d48938f878aa971a5b3a42243b9368030d1eeabc00084924642e7496b97b",
+          "nonce": "62b8891dbf5444d7499e105172428260bf3708906a7fdb4edda37aeb89efabf7",
           "value": "2",
-          "commitment": "2ea14e63d4e3fd9a490dacd07b903cfd03fa085dac8f1d6147ebe85edab99613",
-          "nullifier": "73c2aaedca4a518c7137b73d95f2038f5bcdeb5ef2be126e790bac9cd40c3a44"
+          "commitment": "f52c30876fc53fcab4cc56abe88bf98bb7101300e62c355e78fce03daff4f954",
+          "nullifier": "ea35b129778d47d4e3d3a634bfd30f5287ffb0ae3955264cf9a391a2e95ccc21"
         },
         {
-          "nonce": "19cdfc2d054347a2bacf72a3ef6775596bfcf0332336a7714e024c7462a6cdfd",
+          "nonce": "b0b1435a07e52dc7807d5609be39ade7857256e660fd2dd83d68056286f951a4",
           "value": "3",
-          "commitment": "8424b202f658e56d1f26866ea83d98aef26df61771e00c54e282c1cae6cc61df",
-          "nullifier": "9db4200e57622254f001e5dcb82213df2dd910afbcb926ba29320a3cf88d0478"
+          "commitment": "ff5612971f417600828e731d95d248c26256a2693a9be1570367ceea28f47ed4",
+          "nullifier": "a6de899b65e745225373502c961cad89500ddce3829d9c572543f3cd9c9bfebd"
         }
       ]
     },
@@ -82,19 +82,19 @@
       "OwnerN": [
         {
           "value": "5",
-          "intentHash": "9865fc5e93a4820b52614802dba6c4996cf405217393b6f68f2b444fbd4557e0",
+          "intentHash": "626462252a14d631072c5a4e56897c17e6999743373f9544fd06579e5b04de28",
           "outputNo": "0"
         }
       ],
       "OwnerM": [
         {
           "value": "2",
-          "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+          "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
           "outputNo": "0"
         },
         {
           "value": "3",
-          "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+          "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
           "outputNo": "1"
         }
       ]
@@ -108,7 +108,7 @@
     {
       "label": "OwnerM self-send shielded 2 of 5",
       "txs": [
-        "0008b3f3e108ea950e7ad5ec06c2b5f5cec9525e3f47646b45a4c4ac5abf13eac2"
+        "00a692f516cc5798c3a75478bf6b10320c85446f1033be52979b6e7d4ed112a249"
       ],
       "level": "wallet",
       "before": {
@@ -132,7 +132,7 @@
         },
         "pool": {
           "value": "10",
-          "nonce": "a40cc158897547c85852cf1aef69e37fb312472986b9932af29ddb62e6244f00",
+          "nonce": "c4c651a534477e79461a9f4e2974c67ae245f58cb75b078d4b7f0088a236a800",
           "hasPool": true
         },
         "accountsShielded": {
@@ -147,18 +147,18 @@
         "coins": {
           "OwnerN": [
             {
-              "nonce": "d49f9a7c3e03da80b49f5077ac675323f54b347f964055e70c4cd1ce7c32f600",
+              "nonce": "2d7eaa5574c80e50545ffc8bb4c11a548071f1af0c7461979339a46675def900",
               "value": "5",
-              "commitment": "bdba97aec3493e6f220f55f1077ac92c788f1993329bccd63ef8604926bd084f",
-              "nullifier": "91815e6b8f1d542c4e0aaea4e89b9a6edf7823e27a514b0f2b04331edd8c6cb2"
+              "commitment": "203944645c0d18a9ee1417f34f27066e19699686620411762a9204729f6d180b",
+              "nullifier": "c9f3ff2054ab164da58b05031384af767b946ce1137285a2d49aad65c5e657ff"
             }
           ],
           "OwnerM": [
             {
-              "nonce": "bd67929b92a5fc8a872a7e4d61ec6338020cb571cdf06f404d86b4a7ee42820f",
+              "nonce": "d8a118d4d4e73cffddf90cdfff9950d34ddfb93cb55109515e4c92e547e1c000",
               "value": "5",
-              "commitment": "b52758c8634c2525acc35dd902145bfe239be01a68ede700c5c6466fd2bac160",
-              "nullifier": "c63d6b4fc7ede8827c5ac8d85e73c2ac53cff74097b73ad21880409949d9f7fc"
+              "commitment": "56b6c9ba7c04cb2958f6489d58f1ec711c4ab78492d037c2394c59322e577743",
+              "nullifier": "433e6484707d1f6ac12ea80cdcd798e19b07b6287b4e1abe560f22af948db6da"
             }
           ]
         },
@@ -166,14 +166,14 @@
           "OwnerN": [
             {
               "value": "5",
-              "intentHash": "9865fc5e93a4820b52614802dba6c4996cf405217393b6f68f2b444fbd4557e0",
+              "intentHash": "626462252a14d631072c5a4e56897c17e6999743373f9544fd06579e5b04de28",
               "outputNo": "0"
             }
           ],
           "OwnerM": [
             {
               "value": "5",
-              "intentHash": "654feb27da55ec415a5b638d8e169693dac0d2ce56b7c0450564720701dd819e",
+              "intentHash": "260d306d466f378b124c0840ff21a659bba6a9a6bb10ae6505d83e208a4eebb1",
               "outputNo": "0"
             }
           ]
@@ -200,7 +200,7 @@
         },
         "pool": {
           "value": "10",
-          "nonce": "a40cc158897547c85852cf1aef69e37fb312472986b9932af29ddb62e6244f00",
+          "nonce": "c4c651a534477e79461a9f4e2974c67ae245f58cb75b078d4b7f0088a236a800",
           "hasPool": true
         },
         "accountsShielded": {
@@ -215,24 +215,24 @@
         "coins": {
           "OwnerN": [
             {
-              "nonce": "d49f9a7c3e03da80b49f5077ac675323f54b347f964055e70c4cd1ce7c32f600",
+              "nonce": "2d7eaa5574c80e50545ffc8bb4c11a548071f1af0c7461979339a46675def900",
               "value": "5",
-              "commitment": "bdba97aec3493e6f220f55f1077ac92c788f1993329bccd63ef8604926bd084f",
-              "nullifier": "91815e6b8f1d542c4e0aaea4e89b9a6edf7823e27a514b0f2b04331edd8c6cb2"
+              "commitment": "203944645c0d18a9ee1417f34f27066e19699686620411762a9204729f6d180b",
+              "nullifier": "c9f3ff2054ab164da58b05031384af767b946ce1137285a2d49aad65c5e657ff"
             }
           ],
           "OwnerM": [
             {
-              "nonce": "c7f8d48938f878aa971a5b3a42243b9368030d1eeabc00084924642e7496b97b",
+              "nonce": "62b8891dbf5444d7499e105172428260bf3708906a7fdb4edda37aeb89efabf7",
               "value": "2",
-              "commitment": "2ea14e63d4e3fd9a490dacd07b903cfd03fa085dac8f1d6147ebe85edab99613",
-              "nullifier": "73c2aaedca4a518c7137b73d95f2038f5bcdeb5ef2be126e790bac9cd40c3a44"
+              "commitment": "f52c30876fc53fcab4cc56abe88bf98bb7101300e62c355e78fce03daff4f954",
+              "nullifier": "ea35b129778d47d4e3d3a634bfd30f5287ffb0ae3955264cf9a391a2e95ccc21"
             },
             {
-              "nonce": "19cdfc2d054347a2bacf72a3ef6775596bfcf0332336a7714e024c7462a6cdfd",
+              "nonce": "b0b1435a07e52dc7807d5609be39ade7857256e660fd2dd83d68056286f951a4",
               "value": "3",
-              "commitment": "8424b202f658e56d1f26866ea83d98aef26df61771e00c54e282c1cae6cc61df",
-              "nullifier": "9db4200e57622254f001e5dcb82213df2dd910afbcb926ba29320a3cf88d0478"
+              "commitment": "ff5612971f417600828e731d95d248c26256a2693a9be1570367ceea28f47ed4",
+              "nullifier": "a6de899b65e745225373502c961cad89500ddce3829d9c572543f3cd9c9bfebd"
             }
           ]
         },
@@ -240,14 +240,14 @@
           "OwnerN": [
             {
               "value": "5",
-              "intentHash": "9865fc5e93a4820b52614802dba6c4996cf405217393b6f68f2b444fbd4557e0",
+              "intentHash": "626462252a14d631072c5a4e56897c17e6999743373f9544fd06579e5b04de28",
               "outputNo": "0"
             }
           ],
           "OwnerM": [
             {
               "value": "5",
-              "intentHash": "654feb27da55ec415a5b638d8e169693dac0d2ce56b7c0450564720701dd819e",
+              "intentHash": "260d306d466f378b124c0840ff21a659bba6a9a6bb10ae6505d83e208a4eebb1",
               "outputNo": "0"
             }
           ]
@@ -256,24 +256,24 @@
       "detail": {
         "coinsBefore": [
           {
-            "nonce": "bd67929b92a5fc8a872a7e4d61ec6338020cb571cdf06f404d86b4a7ee42820f",
+            "nonce": "d8a118d4d4e73cffddf90cdfff9950d34ddfb93cb55109515e4c92e547e1c000",
             "value": "5",
-            "commitment": "b52758c8634c2525acc35dd902145bfe239be01a68ede700c5c6466fd2bac160",
-            "nullifier": "c63d6b4fc7ede8827c5ac8d85e73c2ac53cff74097b73ad21880409949d9f7fc"
+            "commitment": "56b6c9ba7c04cb2958f6489d58f1ec711c4ab78492d037c2394c59322e577743",
+            "nullifier": "433e6484707d1f6ac12ea80cdcd798e19b07b6287b4e1abe560f22af948db6da"
           }
         ],
         "coinsAfter": [
           {
-            "nonce": "c7f8d48938f878aa971a5b3a42243b9368030d1eeabc00084924642e7496b97b",
+            "nonce": "62b8891dbf5444d7499e105172428260bf3708906a7fdb4edda37aeb89efabf7",
             "value": "2",
-            "commitment": "2ea14e63d4e3fd9a490dacd07b903cfd03fa085dac8f1d6147ebe85edab99613",
-            "nullifier": "73c2aaedca4a518c7137b73d95f2038f5bcdeb5ef2be126e790bac9cd40c3a44"
+            "commitment": "f52c30876fc53fcab4cc56abe88bf98bb7101300e62c355e78fce03daff4f954",
+            "nullifier": "ea35b129778d47d4e3d3a634bfd30f5287ffb0ae3955264cf9a391a2e95ccc21"
           },
           {
-            "nonce": "19cdfc2d054347a2bacf72a3ef6775596bfcf0332336a7714e024c7462a6cdfd",
+            "nonce": "b0b1435a07e52dc7807d5609be39ade7857256e660fd2dd83d68056286f951a4",
             "value": "3",
-            "commitment": "8424b202f658e56d1f26866ea83d98aef26df61771e00c54e282c1cae6cc61df",
-            "nullifier": "9db4200e57622254f001e5dcb82213df2dd910afbcb926ba29320a3cf88d0478"
+            "commitment": "ff5612971f417600828e731d95d248c26256a2693a9be1570367ceea28f47ed4",
+            "nullifier": "a6de899b65e745225373502c961cad89500ddce3829d9c572543f3cd9c9bfebd"
           }
         ]
       }
@@ -281,7 +281,7 @@
     {
       "label": "OwnerM self-send unshielded 2 of 5",
       "txs": [
-        "0019d4c01f5c78829e191cb903e0bee5a82dd36f84ca9176d8b51b0952a5d0b471"
+        "006605e5205a05660adcf595a0e986fe4ac4de8357ad2f2248f4231ae0c3586cd7"
       ],
       "level": "wallet",
       "before": {
@@ -305,7 +305,7 @@
         },
         "pool": {
           "value": "10",
-          "nonce": "a40cc158897547c85852cf1aef69e37fb312472986b9932af29ddb62e6244f00",
+          "nonce": "c4c651a534477e79461a9f4e2974c67ae245f58cb75b078d4b7f0088a236a800",
           "hasPool": true
         },
         "accountsShielded": {
@@ -320,24 +320,24 @@
         "coins": {
           "OwnerN": [
             {
-              "nonce": "d49f9a7c3e03da80b49f5077ac675323f54b347f964055e70c4cd1ce7c32f600",
+              "nonce": "2d7eaa5574c80e50545ffc8bb4c11a548071f1af0c7461979339a46675def900",
               "value": "5",
-              "commitment": "bdba97aec3493e6f220f55f1077ac92c788f1993329bccd63ef8604926bd084f",
-              "nullifier": "91815e6b8f1d542c4e0aaea4e89b9a6edf7823e27a514b0f2b04331edd8c6cb2"
+              "commitment": "203944645c0d18a9ee1417f34f27066e19699686620411762a9204729f6d180b",
+              "nullifier": "c9f3ff2054ab164da58b05031384af767b946ce1137285a2d49aad65c5e657ff"
             }
           ],
           "OwnerM": [
             {
-              "nonce": "c7f8d48938f878aa971a5b3a42243b9368030d1eeabc00084924642e7496b97b",
+              "nonce": "62b8891dbf5444d7499e105172428260bf3708906a7fdb4edda37aeb89efabf7",
               "value": "2",
-              "commitment": "2ea14e63d4e3fd9a490dacd07b903cfd03fa085dac8f1d6147ebe85edab99613",
-              "nullifier": "73c2aaedca4a518c7137b73d95f2038f5bcdeb5ef2be126e790bac9cd40c3a44"
+              "commitment": "f52c30876fc53fcab4cc56abe88bf98bb7101300e62c355e78fce03daff4f954",
+              "nullifier": "ea35b129778d47d4e3d3a634bfd30f5287ffb0ae3955264cf9a391a2e95ccc21"
             },
             {
-              "nonce": "19cdfc2d054347a2bacf72a3ef6775596bfcf0332336a7714e024c7462a6cdfd",
+              "nonce": "b0b1435a07e52dc7807d5609be39ade7857256e660fd2dd83d68056286f951a4",
               "value": "3",
-              "commitment": "8424b202f658e56d1f26866ea83d98aef26df61771e00c54e282c1cae6cc61df",
-              "nullifier": "9db4200e57622254f001e5dcb82213df2dd910afbcb926ba29320a3cf88d0478"
+              "commitment": "ff5612971f417600828e731d95d248c26256a2693a9be1570367ceea28f47ed4",
+              "nullifier": "a6de899b65e745225373502c961cad89500ddce3829d9c572543f3cd9c9bfebd"
             }
           ]
         },
@@ -345,14 +345,14 @@
           "OwnerN": [
             {
               "value": "5",
-              "intentHash": "9865fc5e93a4820b52614802dba6c4996cf405217393b6f68f2b444fbd4557e0",
+              "intentHash": "626462252a14d631072c5a4e56897c17e6999743373f9544fd06579e5b04de28",
               "outputNo": "0"
             }
           ],
           "OwnerM": [
             {
               "value": "5",
-              "intentHash": "654feb27da55ec415a5b638d8e169693dac0d2ce56b7c0450564720701dd819e",
+              "intentHash": "260d306d466f378b124c0840ff21a659bba6a9a6bb10ae6505d83e208a4eebb1",
               "outputNo": "0"
             }
           ]
@@ -379,7 +379,7 @@
         },
         "pool": {
           "value": "10",
-          "nonce": "a40cc158897547c85852cf1aef69e37fb312472986b9932af29ddb62e6244f00",
+          "nonce": "c4c651a534477e79461a9f4e2974c67ae245f58cb75b078d4b7f0088a236a800",
           "hasPool": true
         },
         "accountsShielded": {
@@ -394,24 +394,24 @@
         "coins": {
           "OwnerN": [
             {
-              "nonce": "d49f9a7c3e03da80b49f5077ac675323f54b347f964055e70c4cd1ce7c32f600",
+              "nonce": "2d7eaa5574c80e50545ffc8bb4c11a548071f1af0c7461979339a46675def900",
               "value": "5",
-              "commitment": "bdba97aec3493e6f220f55f1077ac92c788f1993329bccd63ef8604926bd084f",
-              "nullifier": "91815e6b8f1d542c4e0aaea4e89b9a6edf7823e27a514b0f2b04331edd8c6cb2"
+              "commitment": "203944645c0d18a9ee1417f34f27066e19699686620411762a9204729f6d180b",
+              "nullifier": "c9f3ff2054ab164da58b05031384af767b946ce1137285a2d49aad65c5e657ff"
             }
           ],
           "OwnerM": [
             {
-              "nonce": "c7f8d48938f878aa971a5b3a42243b9368030d1eeabc00084924642e7496b97b",
+              "nonce": "62b8891dbf5444d7499e105172428260bf3708906a7fdb4edda37aeb89efabf7",
               "value": "2",
-              "commitment": "2ea14e63d4e3fd9a490dacd07b903cfd03fa085dac8f1d6147ebe85edab99613",
-              "nullifier": "73c2aaedca4a518c7137b73d95f2038f5bcdeb5ef2be126e790bac9cd40c3a44"
+              "commitment": "f52c30876fc53fcab4cc56abe88bf98bb7101300e62c355e78fce03daff4f954",
+              "nullifier": "ea35b129778d47d4e3d3a634bfd30f5287ffb0ae3955264cf9a391a2e95ccc21"
             },
             {
-              "nonce": "19cdfc2d054347a2bacf72a3ef6775596bfcf0332336a7714e024c7462a6cdfd",
+              "nonce": "b0b1435a07e52dc7807d5609be39ade7857256e660fd2dd83d68056286f951a4",
               "value": "3",
-              "commitment": "8424b202f658e56d1f26866ea83d98aef26df61771e00c54e282c1cae6cc61df",
-              "nullifier": "9db4200e57622254f001e5dcb82213df2dd910afbcb926ba29320a3cf88d0478"
+              "commitment": "ff5612971f417600828e731d95d248c26256a2693a9be1570367ceea28f47ed4",
+              "nullifier": "a6de899b65e745225373502c961cad89500ddce3829d9c572543f3cd9c9bfebd"
             }
           ]
         },
@@ -419,19 +419,19 @@
           "OwnerN": [
             {
               "value": "5",
-              "intentHash": "9865fc5e93a4820b52614802dba6c4996cf405217393b6f68f2b444fbd4557e0",
+              "intentHash": "626462252a14d631072c5a4e56897c17e6999743373f9544fd06579e5b04de28",
               "outputNo": "0"
             }
           ],
           "OwnerM": [
             {
               "value": "2",
-              "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+              "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
               "outputNo": "0"
             },
             {
               "value": "3",
-              "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+              "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
               "outputNo": "1"
             }
           ]
@@ -441,19 +441,19 @@
         "utxosBefore": [
           {
             "value": "5",
-            "intentHash": "654feb27da55ec415a5b638d8e169693dac0d2ce56b7c0450564720701dd819e",
+            "intentHash": "260d306d466f378b124c0840ff21a659bba6a9a6bb10ae6505d83e208a4eebb1",
             "outputNo": "0"
           }
         ],
         "utxosAfter": [
           {
             "value": "2",
-            "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+            "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
             "outputNo": "0"
           },
           {
             "value": "3",
-            "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+            "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
             "outputNo": "1"
           }
         ]
@@ -462,7 +462,7 @@
     {
       "label": "pool self-send shielded",
       "txs": [
-        "00231ac50fa8c55026a7f3e63804ddf1fdf7f64e8a389ea3d13c8ddcf83d2dd750"
+        "005feb4dd26b63667f8c0868c7767eba78c3d7dd920c8a0eaa406539244074386f"
       ],
       "level": "SDK",
       "before": {
@@ -486,7 +486,7 @@
         },
         "pool": {
           "value": "10",
-          "nonce": "a40cc158897547c85852cf1aef69e37fb312472986b9932af29ddb62e6244f00",
+          "nonce": "c4c651a534477e79461a9f4e2974c67ae245f58cb75b078d4b7f0088a236a800",
           "hasPool": true
         },
         "accountsShielded": {
@@ -501,24 +501,24 @@
         "coins": {
           "OwnerN": [
             {
-              "nonce": "d49f9a7c3e03da80b49f5077ac675323f54b347f964055e70c4cd1ce7c32f600",
+              "nonce": "2d7eaa5574c80e50545ffc8bb4c11a548071f1af0c7461979339a46675def900",
               "value": "5",
-              "commitment": "bdba97aec3493e6f220f55f1077ac92c788f1993329bccd63ef8604926bd084f",
-              "nullifier": "91815e6b8f1d542c4e0aaea4e89b9a6edf7823e27a514b0f2b04331edd8c6cb2"
+              "commitment": "203944645c0d18a9ee1417f34f27066e19699686620411762a9204729f6d180b",
+              "nullifier": "c9f3ff2054ab164da58b05031384af767b946ce1137285a2d49aad65c5e657ff"
             }
           ],
           "OwnerM": [
             {
-              "nonce": "c7f8d48938f878aa971a5b3a42243b9368030d1eeabc00084924642e7496b97b",
+              "nonce": "62b8891dbf5444d7499e105172428260bf3708906a7fdb4edda37aeb89efabf7",
               "value": "2",
-              "commitment": "2ea14e63d4e3fd9a490dacd07b903cfd03fa085dac8f1d6147ebe85edab99613",
-              "nullifier": "73c2aaedca4a518c7137b73d95f2038f5bcdeb5ef2be126e790bac9cd40c3a44"
+              "commitment": "f52c30876fc53fcab4cc56abe88bf98bb7101300e62c355e78fce03daff4f954",
+              "nullifier": "ea35b129778d47d4e3d3a634bfd30f5287ffb0ae3955264cf9a391a2e95ccc21"
             },
             {
-              "nonce": "19cdfc2d054347a2bacf72a3ef6775596bfcf0332336a7714e024c7462a6cdfd",
+              "nonce": "b0b1435a07e52dc7807d5609be39ade7857256e660fd2dd83d68056286f951a4",
               "value": "3",
-              "commitment": "8424b202f658e56d1f26866ea83d98aef26df61771e00c54e282c1cae6cc61df",
-              "nullifier": "9db4200e57622254f001e5dcb82213df2dd910afbcb926ba29320a3cf88d0478"
+              "commitment": "ff5612971f417600828e731d95d248c26256a2693a9be1570367ceea28f47ed4",
+              "nullifier": "a6de899b65e745225373502c961cad89500ddce3829d9c572543f3cd9c9bfebd"
             }
           ]
         },
@@ -526,19 +526,19 @@
           "OwnerN": [
             {
               "value": "5",
-              "intentHash": "9865fc5e93a4820b52614802dba6c4996cf405217393b6f68f2b444fbd4557e0",
+              "intentHash": "626462252a14d631072c5a4e56897c17e6999743373f9544fd06579e5b04de28",
               "outputNo": "0"
             }
           ],
           "OwnerM": [
             {
               "value": "2",
-              "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+              "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
               "outputNo": "0"
             },
             {
               "value": "3",
-              "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+              "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
               "outputNo": "1"
             }
           ]
@@ -565,7 +565,7 @@
         },
         "pool": {
           "value": "10",
-          "nonce": "07d6c3f1d1fcdb8669cee8bc0c542146b7bcf3226f2959a9c0277497678e3b00",
+          "nonce": "bb9e3d5ce419284e14935d9eb41bfaa6200e69ca84e95d1e3550eb0e52654200",
           "hasPool": true
         },
         "accountsShielded": {
@@ -580,24 +580,24 @@
         "coins": {
           "OwnerN": [
             {
-              "nonce": "d49f9a7c3e03da80b49f5077ac675323f54b347f964055e70c4cd1ce7c32f600",
+              "nonce": "2d7eaa5574c80e50545ffc8bb4c11a548071f1af0c7461979339a46675def900",
               "value": "5",
-              "commitment": "bdba97aec3493e6f220f55f1077ac92c788f1993329bccd63ef8604926bd084f",
-              "nullifier": "91815e6b8f1d542c4e0aaea4e89b9a6edf7823e27a514b0f2b04331edd8c6cb2"
+              "commitment": "203944645c0d18a9ee1417f34f27066e19699686620411762a9204729f6d180b",
+              "nullifier": "c9f3ff2054ab164da58b05031384af767b946ce1137285a2d49aad65c5e657ff"
             }
           ],
           "OwnerM": [
             {
-              "nonce": "c7f8d48938f878aa971a5b3a42243b9368030d1eeabc00084924642e7496b97b",
+              "nonce": "62b8891dbf5444d7499e105172428260bf3708906a7fdb4edda37aeb89efabf7",
               "value": "2",
-              "commitment": "2ea14e63d4e3fd9a490dacd07b903cfd03fa085dac8f1d6147ebe85edab99613",
-              "nullifier": "73c2aaedca4a518c7137b73d95f2038f5bcdeb5ef2be126e790bac9cd40c3a44"
+              "commitment": "f52c30876fc53fcab4cc56abe88bf98bb7101300e62c355e78fce03daff4f954",
+              "nullifier": "ea35b129778d47d4e3d3a634bfd30f5287ffb0ae3955264cf9a391a2e95ccc21"
             },
             {
-              "nonce": "19cdfc2d054347a2bacf72a3ef6775596bfcf0332336a7714e024c7462a6cdfd",
+              "nonce": "b0b1435a07e52dc7807d5609be39ade7857256e660fd2dd83d68056286f951a4",
               "value": "3",
-              "commitment": "8424b202f658e56d1f26866ea83d98aef26df61771e00c54e282c1cae6cc61df",
-              "nullifier": "9db4200e57622254f001e5dcb82213df2dd910afbcb926ba29320a3cf88d0478"
+              "commitment": "ff5612971f417600828e731d95d248c26256a2693a9be1570367ceea28f47ed4",
+              "nullifier": "a6de899b65e745225373502c961cad89500ddce3829d9c572543f3cd9c9bfebd"
             }
           ]
         },
@@ -605,19 +605,19 @@
           "OwnerN": [
             {
               "value": "5",
-              "intentHash": "9865fc5e93a4820b52614802dba6c4996cf405217393b6f68f2b444fbd4557e0",
+              "intentHash": "626462252a14d631072c5a4e56897c17e6999743373f9544fd06579e5b04de28",
               "outputNo": "0"
             }
           ],
           "OwnerM": [
             {
               "value": "2",
-              "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+              "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
               "outputNo": "0"
             },
             {
               "value": "3",
-              "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+              "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
               "outputNo": "1"
             }
           ]
@@ -626,11 +626,11 @@
       "detail": {
         "poolBefore": {
           "value": "10",
-          "nonce": "a40cc158897547c85852cf1aef69e37fb312472986b9932af29ddb62e6244f00"
+          "nonce": "c4c651a534477e79461a9f4e2974c67ae245f58cb75b078d4b7f0088a236a800"
         },
         "poolAfter": {
           "value": "10",
-          "nonce": "07d6c3f1d1fcdb8669cee8bc0c542146b7bcf3226f2959a9c0277497678e3b00"
+          "nonce": "bb9e3d5ce419284e14935d9eb41bfaa6200e69ca84e95d1e3550eb0e52654200"
         },
         "accountMapByteIdentical": true
       }
@@ -638,7 +638,7 @@
     {
       "label": "pool self-send unshielded",
       "txs": [
-        "00cf15e008a2778dac37ef52a5b16ee582e2285f095cf4c8caf7afe6e1790b1f5b"
+        "005e09c4f3eba61cd6f138dacad62e07cebf5217bc97b2998a5b655b2cc5fa8657"
       ],
       "level": "SDK",
       "before": {
@@ -662,7 +662,7 @@
         },
         "pool": {
           "value": "10",
-          "nonce": "07d6c3f1d1fcdb8669cee8bc0c542146b7bcf3226f2959a9c0277497678e3b00",
+          "nonce": "bb9e3d5ce419284e14935d9eb41bfaa6200e69ca84e95d1e3550eb0e52654200",
           "hasPool": true
         },
         "accountsShielded": {
@@ -677,24 +677,24 @@
         "coins": {
           "OwnerN": [
             {
-              "nonce": "d49f9a7c3e03da80b49f5077ac675323f54b347f964055e70c4cd1ce7c32f600",
+              "nonce": "2d7eaa5574c80e50545ffc8bb4c11a548071f1af0c7461979339a46675def900",
               "value": "5",
-              "commitment": "bdba97aec3493e6f220f55f1077ac92c788f1993329bccd63ef8604926bd084f",
-              "nullifier": "91815e6b8f1d542c4e0aaea4e89b9a6edf7823e27a514b0f2b04331edd8c6cb2"
+              "commitment": "203944645c0d18a9ee1417f34f27066e19699686620411762a9204729f6d180b",
+              "nullifier": "c9f3ff2054ab164da58b05031384af767b946ce1137285a2d49aad65c5e657ff"
             }
           ],
           "OwnerM": [
             {
-              "nonce": "c7f8d48938f878aa971a5b3a42243b9368030d1eeabc00084924642e7496b97b",
+              "nonce": "62b8891dbf5444d7499e105172428260bf3708906a7fdb4edda37aeb89efabf7",
               "value": "2",
-              "commitment": "2ea14e63d4e3fd9a490dacd07b903cfd03fa085dac8f1d6147ebe85edab99613",
-              "nullifier": "73c2aaedca4a518c7137b73d95f2038f5bcdeb5ef2be126e790bac9cd40c3a44"
+              "commitment": "f52c30876fc53fcab4cc56abe88bf98bb7101300e62c355e78fce03daff4f954",
+              "nullifier": "ea35b129778d47d4e3d3a634bfd30f5287ffb0ae3955264cf9a391a2e95ccc21"
             },
             {
-              "nonce": "19cdfc2d054347a2bacf72a3ef6775596bfcf0332336a7714e024c7462a6cdfd",
+              "nonce": "b0b1435a07e52dc7807d5609be39ade7857256e660fd2dd83d68056286f951a4",
               "value": "3",
-              "commitment": "8424b202f658e56d1f26866ea83d98aef26df61771e00c54e282c1cae6cc61df",
-              "nullifier": "9db4200e57622254f001e5dcb82213df2dd910afbcb926ba29320a3cf88d0478"
+              "commitment": "ff5612971f417600828e731d95d248c26256a2693a9be1570367ceea28f47ed4",
+              "nullifier": "a6de899b65e745225373502c961cad89500ddce3829d9c572543f3cd9c9bfebd"
             }
           ]
         },
@@ -702,19 +702,19 @@
           "OwnerN": [
             {
               "value": "5",
-              "intentHash": "9865fc5e93a4820b52614802dba6c4996cf405217393b6f68f2b444fbd4557e0",
+              "intentHash": "626462252a14d631072c5a4e56897c17e6999743373f9544fd06579e5b04de28",
               "outputNo": "0"
             }
           ],
           "OwnerM": [
             {
               "value": "2",
-              "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+              "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
               "outputNo": "0"
             },
             {
               "value": "3",
-              "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+              "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
               "outputNo": "1"
             }
           ]
@@ -741,7 +741,7 @@
         },
         "pool": {
           "value": "10",
-          "nonce": "07d6c3f1d1fcdb8669cee8bc0c542146b7bcf3226f2959a9c0277497678e3b00",
+          "nonce": "bb9e3d5ce419284e14935d9eb41bfaa6200e69ca84e95d1e3550eb0e52654200",
           "hasPool": true
         },
         "accountsShielded": {
@@ -756,24 +756,24 @@
         "coins": {
           "OwnerN": [
             {
-              "nonce": "d49f9a7c3e03da80b49f5077ac675323f54b347f964055e70c4cd1ce7c32f600",
+              "nonce": "2d7eaa5574c80e50545ffc8bb4c11a548071f1af0c7461979339a46675def900",
               "value": "5",
-              "commitment": "bdba97aec3493e6f220f55f1077ac92c788f1993329bccd63ef8604926bd084f",
-              "nullifier": "91815e6b8f1d542c4e0aaea4e89b9a6edf7823e27a514b0f2b04331edd8c6cb2"
+              "commitment": "203944645c0d18a9ee1417f34f27066e19699686620411762a9204729f6d180b",
+              "nullifier": "c9f3ff2054ab164da58b05031384af767b946ce1137285a2d49aad65c5e657ff"
             }
           ],
           "OwnerM": [
             {
-              "nonce": "c7f8d48938f878aa971a5b3a42243b9368030d1eeabc00084924642e7496b97b",
+              "nonce": "62b8891dbf5444d7499e105172428260bf3708906a7fdb4edda37aeb89efabf7",
               "value": "2",
-              "commitment": "2ea14e63d4e3fd9a490dacd07b903cfd03fa085dac8f1d6147ebe85edab99613",
-              "nullifier": "73c2aaedca4a518c7137b73d95f2038f5bcdeb5ef2be126e790bac9cd40c3a44"
+              "commitment": "f52c30876fc53fcab4cc56abe88bf98bb7101300e62c355e78fce03daff4f954",
+              "nullifier": "ea35b129778d47d4e3d3a634bfd30f5287ffb0ae3955264cf9a391a2e95ccc21"
             },
             {
-              "nonce": "19cdfc2d054347a2bacf72a3ef6775596bfcf0332336a7714e024c7462a6cdfd",
+              "nonce": "b0b1435a07e52dc7807d5609be39ade7857256e660fd2dd83d68056286f951a4",
               "value": "3",
-              "commitment": "8424b202f658e56d1f26866ea83d98aef26df61771e00c54e282c1cae6cc61df",
-              "nullifier": "9db4200e57622254f001e5dcb82213df2dd910afbcb926ba29320a3cf88d0478"
+              "commitment": "ff5612971f417600828e731d95d248c26256a2693a9be1570367ceea28f47ed4",
+              "nullifier": "a6de899b65e745225373502c961cad89500ddce3829d9c572543f3cd9c9bfebd"
             }
           ]
         },
@@ -781,19 +781,19 @@
           "OwnerN": [
             {
               "value": "5",
-              "intentHash": "9865fc5e93a4820b52614802dba6c4996cf405217393b6f68f2b444fbd4557e0",
+              "intentHash": "626462252a14d631072c5a4e56897c17e6999743373f9544fd06579e5b04de28",
               "outputNo": "0"
             }
           ],
           "OwnerM": [
             {
               "value": "2",
-              "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+              "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
               "outputNo": "0"
             },
             {
               "value": "3",
-              "intentHash": "ee2c0e75e6de752edaafd205214f7b42b93692ee63fbcecade68afb514cb3e93",
+              "intentHash": "0c722dd0056a62dae2d6cb2d9b1bab42fbe2ee9ed2ab5911fd90e4630356e5ed",
               "outputNo": "1"
             }
           ]

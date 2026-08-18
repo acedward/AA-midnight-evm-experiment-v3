@@ -1,0 +1,133 @@
+# G3 STEP LEDGER — steps 0-9 — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-18T12:47:14.057Z
+[2026-08-18T12:47:14.180Z] wallets open; syncing genesis …
+2026-08-18 08:47:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 08:47:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 08:47:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 08:47:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 08:47:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 08:47:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+[2026-08-18T12:47:14.877Z] genesis: NIGHT=250000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+2026-08-18 08:47:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+2026-08-18 08:47:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:36444/: 1000:: Normal Closure
+[2026-08-18T12:47:14.978Z]   funding feePayer with 1000000000000 NIGHT from genesis
+[2026-08-18T12:47:30.843Z]   submitted tx 002b7230adc3983e71f10ea33a8f2660666fc0011ceb63368915a3b78d8c4777cd (hash d29707ca4bdd5ddd1c8f70c1a986056193a85a3818aedf137045e8854750664e)
+[2026-08-18T12:47:30.843Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-18T12:47:30.994Z]   waiting for genesis to see its change (NIGHT back to 249000000000000) …
+[2026-08-18T12:47:49.396Z]   feePayer: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T12:48:06.895Z]   feePayer: DUST registration tx 00aeee2bf97bd40b342fc75515bdc19d4d0c61cb55e768d9a03267ad59429ee34b
+[2026-08-18T12:48:06.895Z]   waiting for feePayer NIGHT utxos to show registeredForDustGeneration=true …
+[2026-08-18T12:48:19.645Z]   funding ownerN with 200000000000 NIGHT from feePayer
+[2026-08-18T12:48:37.597Z]   submitted tx 002168feaf4130fc2d65e040522be1e233e0cc340e4ffa205ae91164f1fb2895ea (hash e5db53e27cbe2369b8cda886faeafe04b9e5eabc3d3b78a520f4a2b9ec59dbee)
+[2026-08-18T12:48:37.597Z]   waiting for ownerN NIGHT to arrive …
+[2026-08-18T12:48:37.751Z]   waiting for feePayer to see its change (NIGHT back to 800000000000) …
+[2026-08-18T12:48:45.754Z]   funding ownerM with 200000000000 NIGHT from feePayer
+[2026-08-18T12:49:01.624Z]   submitted tx 0027bac1f450b2a688a9b9636c043149c99dfe9569678ce3374408179b5f9a2cac (hash 8f385b2db5da3613cf91cf7fd8bb1ca4aef2536b843911457ca89df23b1edba2)
+[2026-08-18T12:49:01.624Z]   waiting for ownerM NIGHT to arrive …
+[2026-08-18T12:49:01.772Z]   waiting for feePayer to see its change (NIGHT back to 600000000000) …
+[2026-08-18T12:49:01.777Z]   ownerN: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T12:49:18.981Z]   ownerN: DUST registration tx 00623c641f0870e97761c2f3a71304a98155e295aa4bd33095b025f860f2c04fbb
+[2026-08-18T12:49:18.981Z]   waiting for ownerN NIGHT utxos to show registeredForDustGeneration=true …
+[2026-08-18T12:50:30.470Z]   ownerM: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T12:50:49.760Z]   ownerM: DUST registration tx 00fbc0121dc465526cabcf3fa36b871b77b9c32ddf38f897f2fe8262835488d2e1
+[2026-08-18T12:50:49.761Z]   waiting for ownerM NIGHT utxos to show registeredForDustGeneration=true …
+[2026-08-18T12:50:49.916Z] feePayer: NIGHT=600000000000 DUST=0 utxos=1 unregisteredNightUtxos=0
+[2026-08-18T12:50:49.919Z] ownerN: NIGHT=200000000000 DUST=0 utxos=1 unregisteredNightUtxos=0
+[2026-08-18T12:51:00.195Z] ownerM: NIGHT=200000000000 DUST=0 utxos=1 unregisteredNightUtxos=0
+[2026-08-18T12:51:00.198Z] deploying Minter …
+[2026-08-18T12:51:20.202Z] Minter  b0a96ac61f4bc71de1627657dc934b11aefab199a50dc73a115b0fcc041a28ad
+[2026-08-18T12:51:20.202Z] deploying Manager …
+[2026-08-18T12:51:38.948Z] Manager 1d838367033c26ea83bcfde405851aeec45057390dd364ca6632299d6c39e183
+[2026-08-18T12:52:14.878Z] colours: shielded 7178f8449769f38ece84415349504bdf39b9deab8b158f23d5cf96d60cd3a478 / unshielded de7966d6923a3c3a5cb07c90991ea2d530c74584b57b87f168f9722774d07426
+[2026-08-18T12:53:08.335Z] AA_A dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331 / AA_B bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c registered
+
+## STEP 0 — deploy Minter + Manager; register AA_A (OwnerA), AA_B (OwnerB)
+[2026-08-18T12:53:08.469Z]   evidence -> evidence/g3-ledger/step-0/
+STEP 0 ASSERTED — AA_A=0/0  OwnerN=0/0  AA_B=0/0  OwnerM=0/0; pool = AA_A + AA_B = 0 in both families
+
+## STEP 1 — mint shielded 10 -> AA_A (paired receive+credit) and 10 -> OwnerN
+[2026-08-18T12:53:31.288Z]   mint shielded -> AA_A: tx 0067f1f51f53250735484f4c64f4b932eeca3769e4d33e66c7b078ea900ffed7f2 (one intent, segment 50114)
+  CELL GREEN mint-shielded-account — Mint shielded → manager account (paired Manager receive+credit in the same tx)
+[2026-08-18T12:53:49.969Z]   mint shielded -> OwnerN: tx 000802036ff2a325f1a367f27d295edc0547cde468df3d94a3f92c3d36673aa22a
+  CELL GREEN mint-shielded-user — Mint shielded → user
+[2026-08-18T12:53:52.051Z]   evidence -> evidence/g3-ledger/step-1/
+STEP 1 ASSERTED — AA_A=10/0  OwnerN=10/0  AA_B=0/0  OwnerM=0/0
+
+## STEP 2 — mint unshielded 10 -> AA_A and 10 -> OwnerN
+[2026-08-18T12:54:13.993Z]   mint unshielded -> AA_A: tx 0051b5ea962ab7d7d393066d9153c1ca385530b5a2986e6ad2ea52c9477fc4ee02 (one intent, segment 59326)
+  CELL GREEN mint-unshielded-account — Mint unshielded → manager account
+[2026-08-18T12:54:31.341Z]   mint unshielded -> OwnerN: tx 00386c9b07abfc21ddf610caab1029a5e03a9264b8479ef399cc18c615c3d938e2
+  CELL GREEN mint-unshielded-user — Mint unshielded → user
+[2026-08-18T12:54:33.431Z]   evidence -> evidence/g3-ledger/step-2/
+STEP 2 ASSERTED — AA_A=10/10  OwnerN=10/10  AA_B=0/0  OwnerM=0/0
+
+## STEP 3 — shielded half: OwnerN -5-> OwnerM; AA_A -5-> AA_B (internal)
+[2026-08-18T12:54:55.359Z]   OwnerN -5-> OwnerM shielded: tx 00251e6da2e81dc7fa0496c812e3828d0968e916e0c70d2926356d589c6e19fca2
+  CELL GREEN send-shielded-user-user — Send shielded user→user
+  CELL GREEN split-shielded-user-change — Split: shielded user wallet change (OwnerN)
+[2026-08-18T12:55:12.700Z]   AA_A -5-> AA_B internal (shielded): tx 0027122ab1bc8c1e61c46bccdc66159efeae59476b0f63285bda350e77de2a1146
+  CELL GREEN internal-shielded — Shielded account→account internal ownership transfer, no ledger movement
+[2026-08-18T12:55:14.775Z]   evidence -> evidence/g3-ledger/step-3/
+STEP 3 ASSERTED — AA_A=5/10  OwnerN=5/10  AA_B=5/0  OwnerM=5/0
+
+## STEP 4 — shielded crossed: OwnerN -5-> AA_B (deposit); AA_A -5-> OwnerM (payout)
+[2026-08-18T12:55:36.717Z]   OwnerN -5-> AA_B deposit: tx 00840033b61dae10cea6dbd9af3637bb69b3463ddee2069231367f10e9acac00be
+  CELL GREEN send-shielded-user-account — Send shielded user→account (deposit credited to AA_B)
+  CELL GREEN merge-pool-deposit — Merge: pool combines the deposited coin with the held coin
+[2026-08-18T12:56:00.728Z]   AA_A -5-> OwnerM payout: tx 00dbe07636c98b82e7a8910de56f24e12b3ee7f711bb1772e485991a5aa9834351
+  CELL GREEN send-shielded-account-user — Send shielded account→user (pool pays OwnerM)
+  CELL GREEN split-shielded-contract-change — Split: shielded contract change coin retained in the pool
+[2026-08-18T12:56:02.815Z]   evidence -> evidence/g3-ledger/step-4/
+STEP 4 ASSERTED — AA_A=0/10  OwnerN=0/10  AA_B=10/0  OwnerM=10/0
+
+## STEP 5 — unshielded half: OwnerN -5-> OwnerM (UTXO split); AA_A -5-> AA_B (internal)
+[2026-08-18T12:56:19.415Z]   OwnerN -5-> OwnerM unshielded: tx 006014fa982cadce175b0fe63b569f1982d04aa2a667b3d2eae137a3bc9f9f3706
+  CELL GREEN send-unshielded-user-user — Send unshielded user→user
+  CELL GREEN split-unshielded-user-utxo — Split: unshielded user UTXO split into sent + change (OwnerN)
+[2026-08-18T12:56:36.756Z]   AA_A -5-> AA_B internal (unshielded): tx 00d790d6eda6036dda9858164d60ba43db9c470eee636e9b70978f649b41734985
+  CELL GREEN internal-unshielded — Unshielded account→account internal ownership transfer, no ledger movement
+[2026-08-18T12:56:38.841Z]   evidence -> evidence/g3-ledger/step-5/
+STEP 5 ASSERTED — AA_A=0/5  OwnerN=0/5  AA_B=10/5  OwnerM=10/5
+
+## STEP 6 — unshielded crossed: OwnerN -5-> AA_B; AA_A -5-> OwnerM
+[2026-08-18T12:56:55.436Z]   OwnerN -5-> AA_B deposit (unshielded): tx 00d355860b50d061506ded0910f1c25642f43a94b5a54056e7641d699433234e88
+  CELL GREEN send-unshielded-user-account — Send unshielded user→account
+[2026-08-18T12:57:12.784Z]   AA_A -5-> OwnerM (unshielded payout): tx 0036eca8f6375d9004cf6ee219002530e91f61fd2c6db1eadc5a84377528d31aaf
+  CELL GREEN send-unshielded-account-user — Send unshielded account→user
+  CELL GREEN split-unshielded-partial-pool — Split: unshielded partial pooled-balance spend
+[2026-08-18T12:57:14.879Z]   evidence -> evidence/g3-ledger/step-6/
+STEP 6 ASSERTED — AA_A=0/0  OwnerN=0/0  AA_B=10/10  OwnerM=10/10
+
+## STEP 7 — provenance (shielded): OwnerM -5-> AA_A; AA_B -5-> OwnerN
+[2026-08-18T12:57:36.793Z]   OwnerM -5-> AA_A (re-spending AA-originated coins): tx 009e72100fcfeb95fb3dba5c79a80ba1bdfc9fa3f59ee6188ac2a6886dbdd3201b
+  CELL GREEN provenance-user-resends-shielded — Provenance: user re-sends AA-originated shielded coins
+[2026-08-18T12:58:00.811Z]   AA_B -5-> OwnerN (account re-spends user-deposited value): tx 000d138dc876a51acb3cd8ebd69572f171da6e4698ee7adcc0a0ea755332763d13
+  CELL GREEN provenance-account-resends-shielded — Provenance: AA account re-sends user-originated shielded value
+[2026-08-18T12:58:02.911Z]   evidence -> evidence/g3-ledger/step-7/
+STEP 7 ASSERTED — AA_A=5/0  OwnerN=5/0  AA_B=5/10  OwnerM=5/10
+
+## STEP 8 — provenance (unshielded): OwnerM -5-> AA_A; AA_B -5-> OwnerN
+[2026-08-18T12:58:19.497Z]   OwnerM -5-> AA_A (unshielded, AA-originated): tx 008a159ecf14df721a79ba52c12a2c555ec1896a99fb8287dab8e76e45c3f3593e
+  CELL GREEN provenance-user-resends-unshielded — Provenance: user re-sends AA-originated unshielded tokens
+[2026-08-18T12:58:36.852Z]   AA_B -5-> OwnerN (unshielded, user-originated): tx 001c9cdf26b00b74d437fc59f8012f35e8f46b2f5afbb2ee81dce911d93c8bfb2f
+  CELL GREEN provenance-account-resends-unshielded — Provenance: AA account re-sends user-originated unshielded tokens
+[2026-08-18T12:58:38.955Z]   evidence -> evidence/g3-ledger/step-8/
+STEP 8 ASSERTED — AA_A=5/5  OwnerN=5/5  AA_B=5/5  OwnerM=5/5 — every party at 5/5
+
+## STEP 9 — self-send round: OwnerM shielded + unshielded; pool both families
+[2026-08-18T12:59:00.861Z]   OwnerM self-send shielded 2 of 5: tx 00a692f516cc5798c3a75478bf6b10320c85446f1033be52979b6e7d4ed112a249
+  CELL GREEN selfsend-user-shielded — Self-send: user shielded to own key
+[2026-08-18T12:59:19.541Z]   OwnerM self-send unshielded 2 of 5: tx 006605e5205a05660adcf595a0e986fe4ac4de8357ad2f2248f4231ae0c3586cd7
+  CELL GREEN selfsend-user-unshielded — Self-send: user unshielded UTXO self-split
+[2026-08-18T12:59:43.562Z]   pool self-send shielded (authorized by OwnerB): tx 005feb4dd26b63667f8c0868c7767eba78c3d7dd920c8a0eaa406539244074386f
+  CELL GREEN selfsend-pool-shielded — Self-send: pool shielded to `kernel.self()` via auto-receive
+[2026-08-18T13:00:00.910Z]   pool self-send unshielded (authorized by OwnerB): tx 005e09c4f3eba61cd6f138dacad62e07cebf5217bc97b2998a5b655b2cc5fa8657
+  CELL GREEN selfsend-pool-unshielded — Self-send: pool unshielded to self via auto-receive
+[2026-08-18T13:00:12.994Z]   evidence -> evidence/g3-ledger/step-9/
+STEP 9 ASSERTED — AA_A=5/5  OwnerN=5/5  AA_B=5/5  OwnerM=5/5 — balance-neutral, identifiers changed
+  CELL GREEN invariant-pool-equals-accounts — Invariant: `pooled holdings = AA_A + AA_B` per family, after EVERY step
+
+## RESULT
+all ten step rows asserted live; 26 matrix cells recorded
+final table: AA_A=5/5  OwnerN=5/5  AA_B=5/5  OwnerM=5/5
+minter_address:  b0a96ac61f4bc71de1627657dc934b11aefab199a50dc73a115b0fcc041a28ad
+manager_address: 1d838367033c26ea83bcfde405851aeec45057390dd364ca6632299d6c39e183

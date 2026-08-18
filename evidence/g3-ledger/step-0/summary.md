@@ -16,4 +16,4 @@ Indexer reconstruction of user unshielded balances (independent of the wallet): 
 
 ## Operations
 
-- **deploy + configure + register** (SDK) — tx `00ea00184ec88a73d8c5cadb72f2580ce623d5d2184c00cae9c422e47f9955d937`, `00cf69f7d9a33310a6f660c8fbcc8b21c4174651a734e69036a1ce4c76c9c31559`
+- **deploy + configure + register** (SDK) — tx `00f038253f2c7097d6c7be13d50c843930687f8d608063b4e34f875295bbf59612`, `00bdf42529603919899dabc5f8fd9ebbb2365066183c73ff21c6f7f02721f08897`

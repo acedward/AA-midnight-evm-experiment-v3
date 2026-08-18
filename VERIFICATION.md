@@ -587,3 +587,61 @@ of `harness/src/g3/ledger-compose.ts`.
 Recorded honestly: **the first ordered step-ledger run (steps 0–9, all asserted) predates this
 fix**, and passed only because neither of its composed mints exercised the merge branch. The
 retained G3 gate run is produced after the fix, so the run of record uses the corrected carrier.
+
+---
+
+## 2026-08-18 — **G3 GREEN**: the whole step ledger on a fresh stack, exit 0 including teardown
+
+**Label:** `EXPERIMENTAL_LANE` / `LANE-DEV-1`.
+
+| Command | `./scripts/g3/verify-g3-ledger.sh` |
+|---|---|
+| cwd | `/Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody` |
+| Started (UTC) | `2026-08-18T12:46:06Z` |
+| Finished (UTC) | `2026-08-18T13:13:26Z` (27m20s) |
+| **final_exit** | **0** — including teardown |
+| Compose project | `aa00003-g3-20260818124606-78662` — unique to this run, random free ports >10000 |
+| Run log | `evidence/g3-ledger/run.log` |
+
+The wrapper owns the complete lifecycle from nothing: probe ports → pull → **assert the three
+pinned image digests** → boot → host health checks → install → compile (fast **and** full ZK) →
+the ordered ledger → negative controls → atomicity probes → render `CELLS.md` → teardown. Nothing
+was carried over from the development stack; the chain, the contracts and the wallets are new.
+
+| Step | s | exit |
+|---|---|---|
+| 01-probe-ports | 1 | 0 |
+| 02-pull | 1 | 0 |
+| 03-assert-digests | 0 | 0 |
+| 04-boot | 6 | 0 |
+| 05-health | 3 | 0 |
+| 06-install | 0 | 0 |
+| 07-compile-fast | 1 | 0 |
+| 08-compile-zk | 54 | 0 |
+| **09-step-ledger** | **781** | 0 |
+| **10-negative-controls** | **337** | 0 |
+| **11-atomicity** | **454** | 0 |
+| 12-render-cells | 1 | 0 |
+
+### Results of record
+
+- **All ten ordered step rows (0–9) asserted live**, halt-on-divergence never triggered; the run
+  ends with all four parties at `5/5`.
+- **26 of 26 combination-matrix cells GREEN, 0 RED, no gaps** —
+  `evidence/g3-ledger/CELLS.md`. The renderer exits nonzero on a missing cell or a RED, so the
+  count is enforced rather than asserted in prose.
+- **5 of 5 negative controls GREEN**, each with state and funds byte-identical before and after:
+  omitted claim ×2, wrong-owner witness, unregistered witness, per-account overdraw with a
+  sufficient pool.
+- **2 of 2 atomicity probes GREEN**: neither the token effect nor the account-state change
+  survived.
+- The standing invariant `pool = AA_A + AA_B` held in **both families after every step**.
+
+### Measured metrics (contract-call transactions only)
+
+Proof latency (ms) over 23 `proveTx` calls: min 1, median 625, mean 1644, max 6197.
+Submitted transaction size (bytes) over 23 submissions: min 6730, median 9312, mean 14250,
+max 34341. Plain wallet-to-wallet transfers are proven and submitted inside the wallet SDK and are
+deliberately not instrumented, so these are not whole-run averages.
+
+**Gate G3 is GREEN.**

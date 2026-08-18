@@ -1,0 +1,110 @@
+# G3 run log
+started_utc: 2026-08-18T12:46:06Z
+argv: ./scripts/g3/verify-g3-ledger.sh 
+cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+host: Darwin arm64
+docker: Docker version 29.1.3, build f52814d
+compose: 2.40.3-desktop.1
+label: EXPERIMENTAL_LANE
+--- step: 01-probe-ports
+    utc_start: 2026-08-18T12:46:06Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_probe_ports
+    utc_end: 2026-08-18T12:46:07Z
+    duration_s: 1
+    exit: 0
+    output: 01-probe-ports.out
+--- step: 02-pull
+    utc_start: 2026-08-18T12:46:07Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_pull
+    utc_end: 2026-08-18T12:46:08Z
+    duration_s: 1
+    exit: 0
+    output: 02-pull.out
+--- step: 03-assert-digests
+    utc_start: 2026-08-18T12:46:08Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_assert_digests
+    utc_end: 2026-08-18T12:46:08Z
+    duration_s: 0
+    exit: 0
+    output: 03-assert-digests.out
+--- step: 04-boot
+    utc_start: 2026-08-18T12:46:08Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_boot
+    utc_end: 2026-08-18T12:46:14Z
+    duration_s: 6
+    exit: 0
+    output: 04-boot.out
+--- step: 05-health
+    utc_start: 2026-08-18T12:46:14Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_health
+    utc_end: 2026-08-18T12:46:17Z
+    duration_s: 3
+    exit: 0
+    output: 05-health.out
+--- step: 06-install
+    utc_start: 2026-08-18T12:46:17Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_install
+    utc_end: 2026-08-18T12:46:17Z
+    duration_s: 0
+    exit: 0
+    output: 06-install.out
+--- step: 07-compile-fast
+    utc_start: 2026-08-18T12:46:17Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_compile_fast
+    utc_end: 2026-08-18T12:46:18Z
+    duration_s: 1
+    exit: 0
+    output: 07-compile-fast.out
+--- step: 08-compile-zk
+    utc_start: 2026-08-18T12:46:18Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_compile_zk
+    utc_end: 2026-08-18T12:47:12Z
+    duration_s: 54
+    exit: 0
+    output: 08-compile-zk.out
+--- step: 09-step-ledger
+    utc_start: 2026-08-18T12:47:12Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_step_ledger
+    utc_end: 2026-08-18T13:00:13Z
+    duration_s: 781
+    exit: 0
+    output: 09-step-ledger.out
+--- step: 10-negative-controls
+    utc_start: 2026-08-18T13:00:13Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_negative_controls
+    utc_end: 2026-08-18T13:05:50Z
+    duration_s: 337
+    exit: 0
+    output: 10-negative-controls.out
+--- step: 11-atomicity
+    utc_start: 2026-08-18T13:05:50Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_atomicity
+    utc_end: 2026-08-18T13:13:24Z
+    duration_s: 454
+    exit: 0
+    output: 11-atomicity.out
+--- step: 12-render-cells
+    utc_start: 2026-08-18T13:13:24Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody
+    argv: step_render_cells
+    utc_end: 2026-08-18T13:13:25Z
+    duration_s: 1
+    exit: 0
+    output: 12-render-cells.out
+--- teardown
+    utc: 2026-08-18T13:13:25Z
+    argv: docker compose --env-file /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody/docker/.env -f /Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody/docker/compose.yml down -v --remove-orphans
+    exit: 0
+finished_utc: 2026-08-18T13:13:26Z
+final_exit: 0

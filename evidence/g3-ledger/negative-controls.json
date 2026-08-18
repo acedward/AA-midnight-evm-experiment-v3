@@ -1,8 +1,8 @@
 {
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
-  "utc": "2026-08-18T12:42:08.102Z",
-  "minterAddress": "22eaaabba716088be4ff7286634fc44f8dca04bf9b9c5b3d49053434eb736429",
-  "managerAddress": "733cb23c838f42d8c8f0d6d4ecc75f8d3dd5d00995734ccfee4c930e17bd86ef",
+  "utc": "2026-08-18T13:05:50.357Z",
+  "minterAddress": "89380ef09910e99e28d003e908748eaad4eafa6785d7ba607e5efe35daa76842",
+  "managerAddress": "a7ef32d6c798513f548bb13a11a617a6e91ff75379253c6dab8ec202d796e362",
   "accounts": {
     "idA": "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331",
     "idB": "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c"

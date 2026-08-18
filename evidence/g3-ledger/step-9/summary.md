@@ -9,14 +9,14 @@
 | AA_B | 5/5 | 5/5 |
 | OwnerM | 5/5 | 5/5 |
 
-Manager pooled shielded coin: **10** (nonce `07d6c3f1d1fcdb8669cee8bc0c542146b7bcf3226f2959a9c0277497678e3b00`)
+Manager pooled shielded coin: **10** (nonce `bb9e3d5ce419284e14935d9eb41bfaa6200e69ca84e95d1e3550eb0e52654200`)
 Manager unshielded ledger balance: **10**
 Invariant `pool = AA_A + AA_B` asserted in BOTH families.
 Indexer reconstruction of user unshielded balances (independent of the wallet): OwnerN=5, OwnerM=5.
 
 ## Operations
 
-- **OwnerM self-send shielded 2 of 5** (wallet) — tx `0008b3f3e108ea950e7ad5ec06c2b5f5cec9525e3f47646b45a4c4ac5abf13eac2`
-- **OwnerM self-send unshielded 2 of 5** (wallet) — tx `0019d4c01f5c78829e191cb903e0bee5a82dd36f84ca9176d8b51b0952a5d0b471`
-- **pool self-send shielded** (SDK) — tx `00231ac50fa8c55026a7f3e63804ddf1fdf7f64e8a389ea3d13c8ddcf83d2dd750`
-- **pool self-send unshielded** (SDK) — tx `00cf15e008a2778dac37ef52a5b16ee582e2285f095cf4c8caf7afe6e1790b1f5b`
+- **OwnerM self-send shielded 2 of 5** (wallet) — tx `00a692f516cc5798c3a75478bf6b10320c85446f1033be52979b6e7d4ed112a249`
+- **OwnerM self-send unshielded 2 of 5** (wallet) — tx `006605e5205a05660adcf595a0e986fe4ac4de8357ad2f2248f4231ae0c3586cd7`
+- **pool self-send shielded** (SDK) — tx `005feb4dd26b63667f8c0868c7767eba78c3d7dd920c8a0eaa406539244074386f`
+- **pool self-send unshielded** (SDK) — tx `005e09c4f3eba61cd6f138dacad62e07cebf5217bc97b2998a5b655b2cc5fa8657`

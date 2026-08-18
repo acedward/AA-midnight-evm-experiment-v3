@@ -189,12 +189,27 @@ export const registerForDust = async (p: Party): Promise<string> => {
   return hash;
 };
 
-/** Fund `to` with NIGHT from `from`, waiting for a strict INCREASE so reruns never pass instantly. */
+/**
+ * Fund `to` with NIGHT from `from`, waiting for a strict INCREASE so reruns never pass instantly.
+ *
+ * It also waits for the SENDER to settle. On a freshly booted chain a wallet can hold exactly one
+ * NIGHT UTXO, so a transfer consumes it and the remainder comes back as change; issuing the next
+ * transfer before that change is visible fails with `Wallet.InsufficientFunds` even though the
+ * wallet is nowhere near short of funds. Fees are paid in DUST, never NIGHT, so the sender's
+ * settled NIGHT balance is exactly `before - amount` — a precise condition to wait on rather than
+ * a sleep.
+ */
 export const fundWithNight = async (from: Party, to: Party, amount: bigint): Promise<string> => {
-  const before = nightBalance(await syncedState(to));
+  const beforeTo = nightBalance(await syncedState(to));
+  const beforeFrom = nightBalance(await syncedState(from));
   const address = await (to.wallet as any).unshielded.getAddress();
   log(`  funding ${to.name} with ${amount} NIGHT from ${from.name}`);
   const hash = await withDustRetry(from, `fund ${to.name}`, () => sendUnshielded(from, address, amount));
-  await waitFor(to, (s) => nightBalance(s) >= before + amount, `${to.name} NIGHT to arrive`);
+  await waitFor(to, (s) => nightBalance(s) >= beforeTo + amount, `${to.name} NIGHT to arrive`);
+  await waitFor(
+    from,
+    (s) => nightBalance(s) === beforeFrom - amount,
+    `${from.name} to see its change (NIGHT back to ${beforeFrom - amount})`,
+  );
   return hash;
 };

@@ -9,12 +9,12 @@
 | AA_B | 10/5 | 10/5 |
 | OwnerM | 10/5 | 10/5 |
 
-Manager pooled shielded coin: **10** (nonce `9ff6eef0e2c327d3dd0eac2ad93344c20ba3d2877908731b4bc1101b1e238900`)
+Manager pooled shielded coin: **10** (nonce `e18edd0a3e453388eaf033544e345202a4dd43f223bc515ebf9ded9f34723700`)
 Manager unshielded ledger balance: **10**
 Invariant `pool = AA_A + AA_B` asserted in BOTH families.
 Indexer reconstruction of user unshielded balances (independent of the wallet): OwnerN=5, OwnerM=5.
 
 ## Operations
 
-- **OwnerN -5-> OwnerM (unshielded)** (wallet) — tx `000bc261150d906f1eb0684e2db12b90690dc8cbbfad704eb3fec56e07473509d1`
-- **AA_A -5-> AA_B (internal, unshielded)** (SDK) — tx `0073d02d7b0076a2e3d5ef9f229467cf2b03f3d8358e45f349cc5555c46c00026f`
+- **OwnerN -5-> OwnerM (unshielded)** (wallet) — tx `006014fa982cadce175b0fe63b569f1982d04aa2a667b3d2eae137a3bc9f9f3706`
+- **AA_A -5-> AA_B (internal, unshielded)** (SDK) — tx `00d790d6eda6036dda9858164d60ba43db9c470eee636e9b70978f649b41734985`
