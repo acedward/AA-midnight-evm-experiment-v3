@@ -1,0 +1,65 @@
+# G5 ADDENDUM A1 — multi-input coin selection — EXPERIMENTAL_LANE / LANE-DEV-1 / ADDENDUM-A1 — 2026-08-18T18:38:01.863Z
+[2026-08-18T18:38:01.980Z] wallets open; syncing genesis …
+2026-08-18 14:38:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21781/: 1000:: Normal Closure
+2026-08-18 14:38:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21781/: 1000:: Normal Closure
+2026-08-18 14:38:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21781/: 1000:: Normal Closure
+2026-08-18 14:38:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21781/: 1000:: Normal Closure
+2026-08-18 14:38:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21781/: 1000:: Normal Closure
+2026-08-18 14:38:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21781/: 1000:: Normal Closure
+2026-08-18 14:38:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21781/: 1000:: Normal Closure
+2026-08-18 14:38:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:21781/: 1000:: Normal Closure
+[2026-08-18T18:38:02.780Z] genesis: NIGHT=250000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+[2026-08-18T18:38:02.786Z]   funding feePayer with 1000000000000 NIGHT from genesis
+[2026-08-18T18:38:19.579Z]   submitted tx 00fcf7187e675cab2560e6446302b96d1201f046e5909899151b96eb2a38cfc772 (hash f5a4c24251e4cfb09d18094561386d901f02b80c33bf8dfbdd2eaf1f20129854)
+[2026-08-18T18:38:19.580Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-18T18:38:19.691Z]   waiting for genesis to see its change (NIGHT back to 249000000000000) …
+[2026-08-18T18:38:32.995Z]   feePayer: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T18:38:48.939Z]   feePayer: DUST registration tx 008855142653d2a357aab4d147629b86c88ceb64621d60319a39085a3d44430f8e
+[2026-08-18T18:38:48.939Z]   waiting for feePayer NIGHT utxos to show registeredForDustGeneration=true …
+[2026-08-18T18:39:02.994Z]   funding ownerN with 200000000000 NIGHT from feePayer
+[2026-08-18T18:39:19.648Z]   submitted tx 00c57ce1dfcec307c491139c49ddf0bb556e2948cc18a4cba5fc265128567f9339 (hash 61254c3685df029d4b5788a7e7de91910edb2c06ee7234c5213bf190ae130366)
+[2026-08-18T18:39:19.648Z]   waiting for ownerN NIGHT to arrive …
+[2026-08-18T18:39:19.766Z]   waiting for feePayer to see its change (NIGHT back to 800000000000) …
+[2026-08-18T18:39:27.139Z]   funding ownerM with 200000000000 NIGHT from feePayer
+[2026-08-18T18:39:43.687Z]   submitted tx 004d25d39129e69003320e66b5bb248d9c49c2bc5d7051c6d20b367b265d49a647 (hash 5f89e2de2ac6cd62ed795a3d1ed11d48a6ce18951b47b88c20eb4f146c29a84f)
+[2026-08-18T18:39:43.687Z]   waiting for ownerM NIGHT to arrive …
+[2026-08-18T18:39:43.837Z]   waiting for feePayer to see its change (NIGHT back to 600000000000) …
+[2026-08-18T18:39:43.842Z]   ownerN: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T18:40:01.041Z]   ownerN: DUST registration tx 002407a2077d1887265f256b31338de0fc624d2909b93f1014594c0458c9102fc2
+[2026-08-18T18:40:01.041Z]   waiting for ownerN NIGHT utxos to show registeredForDustGeneration=true …
+[2026-08-18T18:41:31.065Z]   ownerM: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-18T18:41:49.198Z]   ownerM: DUST registration tx 00cf2cff27e7cf4e7e0ddbffb32127a663a1290b8ff05ef3f4f844b07c59090935
+[2026-08-18T18:41:49.198Z]   waiting for ownerM NIGHT utxos to show registeredForDustGeneration=true …
+[2026-08-18T18:41:49.371Z] feePayer: NIGHT=600000000000 DUST=0 utxos=1 unregisteredNightUtxos=0
+[2026-08-18T18:41:49.373Z] ownerN: NIGHT=200000000000 DUST=0 utxos=1 unregisteredNightUtxos=0
+[2026-08-18T18:42:05.249Z] ownerM: NIGHT=200000000000 DUST=0 utxos=1 unregisteredNightUtxos=0
+[2026-08-18T18:42:05.252Z] deploying Minter …
+[2026-08-18T18:42:26.348Z] Minter  f3ada46ed9aeb1d3321b874324cae5ccd4a0c547c680c9a4008c8dc8d3d9bdd2
+[2026-08-18T18:42:26.348Z] deploying Manager …
+[2026-08-18T18:42:45.085Z] Manager b8e75f5a6e9138b16f20e0c77d3ce64fdef04a245af3d2982831e04315316752
+[2026-08-18T18:43:21.027Z] colours: shielded ece9f715163ab2badab6424b78dccd414b92e137ddc3c01e4e22ed2fc133871e / unshielded 3802ab79e74ce527e17d32fd254715ad19b9301a4357c843386cb86b85bca5ae
+[2026-08-18T18:44:14.461Z] AA_A dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331 / AA_B bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c registered
+
+## SHIELDED — multi-input probe (mint 2 + 3 to OwnerN, send 4)
+[2026-08-18T18:44:30.763Z]   mint 2 shielded -> OwnerN: tx 0059379d1ba7f26cdf02416ad6429ce939c9f511564dce343ca760b76ae296b890
+[2026-08-18T18:44:49.450Z]   mint 3 shielded -> OwnerN: tx 00320a55e23bc0b51a3d4965b51319cb4866d623e1ed75566c369f96d5d72764b4
+[2026-08-18T18:44:51.517Z]   OwnerN holds {2, 3} = 5; ids ["7d5490f546deb07b0322ee3d01e8d7e8a372b27a9195bf77ca468e3cc43c9e45","78c6dde171a0c223fed33665414d762110f3a5fca9f00a4a0d5cb17dd1519e9a"]
+[2026-08-18T18:44:51.517Z]   pre-send table asserted — AA_A=0/0  OwnerN=5/0  AA_B=0/0  OwnerM=0/0
+[2026-08-18T18:45:13.482Z]   OwnerN -4-> OwnerM (shielded): tx 0054c8910ff9e96064f0f0140bc36180b9bcfc4abf9e377e861486279521b5b81b
+[2026-08-18T18:45:15.549Z]   after: OwnerN {1}, OwnerM {4}
+[2026-08-18T18:45:15.549Z]   PROVEN (shielded): OwnerN held {2, 3} — no single piece covers 4 — and ONE transaction (0054c8910ff9e96064f0f0140bc36180b9bcfc4abf9e377e861486279521b5b81b) consumed BOTH inputs, paid 4 to OwnerM and returned 1 as change under a NEW identifier
+
+## UNSHIELDED — multi-input probe (mint 2 + 3 to OwnerN, send 4)
+[2026-08-18T18:45:30.838Z]   mint 2 unshielded -> OwnerN: tx 00a34f1019283168bf86bf47e8ce4f608cf10679ac307a4612016bd022a6fb9627
+[2026-08-18T18:45:49.530Z]   mint 3 unshielded -> OwnerN: tx 00bcd5a65ed9215b20ec925d31321e3d6868408922467bad9cad48c71bf3fdc103
+[2026-08-18T18:45:51.595Z]   OwnerN holds {2, 3} = 5; ids ["97651bd59eec96936c85d794ef6120ff3eb1e4627ef3435740bc57e205f4b785:0","0ac49a3f7cb4e3492760a56528b4310863c4c8f5d0b0e8c72036dc5131e69c76:0"]
+[2026-08-18T18:45:51.595Z]   pre-send table asserted — AA_A=0/0  OwnerN=1/5  AA_B=0/0  OwnerM=4/0
+[2026-08-18T18:46:06.882Z]   OwnerN -4-> OwnerM (unshielded): tx 009476730b2806a4f7d1fdb5d7df2c8115936be259848f3cade7afc494a960c903
+[2026-08-18T18:46:08.956Z]   after: OwnerN {1}, OwnerM {4}
+[2026-08-18T18:46:08.965Z]   PROVEN (unshielded): OwnerN held {2, 3} — no single piece covers 4 — and ONE transaction (009476730b2806a4f7d1fdb5d7df2c8115936be259848f3cade7afc494a960c903) consumed BOTH inputs, paid 4 to OwnerM and returned 1 as change under a NEW identifier
+
+## RESULT
+  PROVEN shielded — PROVEN (shielded): OwnerN held {2, 3} — no single piece covers 4 — and ONE transaction (0054c8910ff9e96064f0f0140bc36180b9bcfc4abf9e377e861486279521b5b81b) consumed BOTH inputs, paid 4 to OwnerM and returned 1 as change under a NEW identifier
+  PROVEN unshielded — PROVEN (unshielded): OwnerN held {2, 3} — no single piece covers 4 — and ONE transaction (009476730b2806a4f7d1fdb5d7df2c8115936be259848f3cade7afc494a960c903) consumed BOTH inputs, paid 4 to OwnerM and returned 1 as change under a NEW identifier
+
+evidence -> evidence/g5-multi-input/ (summary.md, shielded.json, unshielded.json, result.json)

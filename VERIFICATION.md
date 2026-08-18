@@ -741,3 +741,81 @@ volumes** matching the project. Nothing belonging to any other project on this s
 touched.
 
 **Gate G4 is GREEN.** All four gates — G1, G2, G3, G4 — are GREEN.
+
+---
+
+## G5 — Addendum A1: multi-input coin selection
+
+**Label:** `EXPERIMENTAL_LANE` / `LANE-DEV-1` / **`ADDENDUM-A1`**
+
+Authorized by owner decision **R9** (2026-08-18). This gate is an **addendum**: it claims none of
+the 26 combination-matrix cells, the approved specification is **unchanged** (SHA-256 still
+`b707fc43…7c86d9`), and nothing under `evidence/g1-lane`, `evidence/g2-contracts`,
+`evidence/g3-ledger` or `evidence/g4-closeout` is modified.
+
+**The question.** The ordered ledger never forced a sender to COMBINE pieces — every amount it
+sent was coverable by a single held coin/UTXO. Can the pinned wallet SDK select **two or more
+inputs** of a contract-minted colour in ONE transaction?
+
+### Phase 1 — probe harness
+
+| UTC | Command | cwd | Exit | Result |
+|---|---|---|---|---|
+| 2026-08-18T18:36:39Z | `npx tsc --noEmit --strict src/g5/multi-input.ts` | `harness/` | 2 | new probe module typechecks clean under `--strict`; the single reported error is pre-existing in `src/wallet.ts` (untouched by this addendum) |
+
+### Phase 2 — gate wrapper run (fresh stack, from nothing)
+
+| UTC | Command | cwd | Exit | Result |
+|---|---|---|---|---|
+| 2026-08-18T18:36:47Z | `scripts/g5/verify-g5-multi-input.sh` (started) | product clone root | — | fresh unique compose project, random verified-free ports >10000, pinned digests re-asserted; running |
+| 2026-08-18T18:46:10Z | `scripts/g5/verify-g5-multi-input.sh` (finished) | product clone root | **0** | **GREEN** — 9 steps + teardown in **9m16s**; compose project `aa00003-g5-20260818183655-77457`, ports node 21781 / indexer 24507 / prover 27233 (all >10000, verified free); three pinned digests re-asserted; **0 containers and 0 volumes** remain |
+
+| Step | s | exit |
+|---|---|---|
+| 01-probe-ports | 0 | 0 |
+| 02-pull | 3 | 0 |
+| 03-assert-digests | 0 | 0 |
+| 04-boot | 10 | 0 |
+| 05-health | 2 | 0 |
+| 06-install | 1 | 0 |
+| 07-compile-fast | 1 | 0 |
+| 08-compile-zk | 47 | 0 |
+| **09-multi-input** | **490** | 0 |
+| teardown | 1 | 0 |
+
+### Phase 3 — the answer
+
+**Both families PROVEN.** The pinned wallet SDK **does** combine multiple inputs of a
+contract-minted colour in ONE transaction.
+
+Deployment of record: Minter `f3ada46e…d3d9bdd2`, Manager `b8e75f5a…15316752` (deployed by the
+shared bootstrap; **its accounts stayed unused** — the addendum is entirely wallet-side).
+
+| family | held set before | send | result | one tx |
+|---|---|---|---|---|
+| shielded | `{2, 3}` — two coins, distinct nonces `7d5490f5…` / `78c6dde1…` | 4 → OwnerM | OwnerN `{1}` under NEW nonce `4f0913c1…`, OwnerM `{4}` under NEW nonce `7ffe5c9b…` | `0054c8910f…b5b81b` |
+| unshielded | `{2, 3}` — two UTXOs, distinct intent hashes `97651bd5…:0` / `0ac49a3f…:0` | 4 → OwnerM | OwnerN `{1}`, OwnerM `{4}`, both under the NEW intent hash `a688f342…` | `009476730b…60c903` |
+
+The claim is made on **identifier sets**, not balances: for both families
+`bothGoneFromOwnerN`, `changeIdIsNew` and `ownerMIdsAreNew` are all `true`.
+
+Two independent observation points per family:
+
+- **shielded** — (1) the wallet SDK's synced per-coin state; (2) the ledger conservation
+  identity, which holds exactly: minted `5` = pool `0` + OwnerN `1` + OwnerM `4`.
+- **unshielded** — (1) the wallet SDK's synced per-UTXO state; (2) the indexer's own records.
+  The indexer reports **both** consumed outputs spent at the **same** transaction
+  `9ead2eb5…d771a065b`, which **is** the send transaction's own hash, and that transaction
+  creating exactly `1` → OwnerN and `4` → OwnerM under one new intent hash. The indexer's
+  independent UTXO reconstruction agrees with both wallets (OwnerN 1, OwnerM 4).
+
+**Why the ordered ledger never saw this.** The pinned balancer
+(`wallet-sdk-capabilities` `Balancer.ts`) is an accumulation loop that adds one input per pass
+until the imbalance is covered, and its default picker `chooseCoin` takes the **smallest** coin of
+the type regardless of the amount needed. In G3 steps 7/8 OwnerM held two 5-pieces and sent 5, so
+one smallest coin already covered it — which is exactly why a single piece was spent and the
+survivor kept its identifier. Nothing was wrong; the case was simply never forced.
+
+No RED, no finding, and no work-around: the single-input control and the funds-unchanged path
+exist in the harness for the RED branch and were not needed.
+

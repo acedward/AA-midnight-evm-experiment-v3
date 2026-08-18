@@ -1,0 +1,10 @@
+== node RPC
+{"jsonrpc":"2.0","id":1,"result":"2.0.0-d9729c13"}
+== proof server
+prover version: 9.0.0-rc.3
+== indexer
+{"data":{"block":{"height":0,"hash":"bbb72bbbb3f32d2f2ffe1194d09c301ae167a804eda089c433cb76a4ac4e6cbb","protocolVersion":2000000}}}
+== running image digests
+node          sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e
+indexer       sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a
+proof-server  sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f
