@@ -90,27 +90,72 @@ step_reproduce_g2() { (cd "$CLONE" && ./scripts/g2/verify-g2-contracts.sh); }
 step_reproduce_g3() { (cd "$CLONE" && ./scripts/g3/verify-g3-ledger.sh); }
 
 # --- Phase 1: compare the reproduced cell results with the originals ---------------------------------
+#
+# Retained evidence is COMMITTED, so `git clone` carries the original run's `evidence/` into the
+# clone, and the clone's own run then overwrites it. A comparison that only checked verdicts could
+# therefore pass against the very files it was supposed to reproduce. This step first proves the
+# clone's evidence is genuinely its own — a different chain, a different deployment, and no
+# transaction id in common — and only then compares what the specification actually asserts.
 step_compare_cells() {
-  python3 - "$ROOT/evidence/g3-ledger/cells.json" "$CLONE/evidence/g3-ledger/cells.json" <<'PY'
-import json, sys
-orig = {c['id']: c for c in json.load(open(sys.argv[1]))['cells']}
-repro = {c['id']: c for c in json.load(open(sys.argv[2]))['cells']}
+  python3 - "$ROOT/evidence/g3-ledger" "$CLONE/evidence/g3-ledger" <<'PY'
+import json, os, sys
+
+orig_dir, repro_dir = sys.argv[1], sys.argv[2]
+load = lambda d, f: json.load(open(os.path.join(d, f)))
+
+octx, rctx = load(orig_dir, 'run-context.json'), load(repro_dir, 'run-context.json')
+orig = {c['id']: c for c in load(orig_dir, 'cells.json')['cells']}
+repro = {c['id']: c for c in load(repro_dir, 'cells.json')['cells']}
+
+problems = []
+
+# --- freshness: the reproduction must not be the original's evidence wearing a new hat ----------
+print(f"original   Minter/Manager: {octx['minterAddress']} / {octx['managerAddress']}")
+print(f"reproduced Minter/Manager: {rctx['minterAddress']} / {rctx['managerAddress']}")
+if octx['minterAddress'] == rctx['minterAddress'] or octx['managerAddress'] == rctx['managerAddress']:
+    problems.append('the reproduction reports the SAME contract addresses as the original — '
+                    'its evidence is the committed original, not a fresh run')
+
+otx = {t for c in orig.values() for t in c['txs']}
+rtx = {t for c in repro.values() for t in c['txs']}
+shared = otx & rtx
+print(f"transaction ids: {len(otx)} original, {len(rtx)} reproduced, {len(shared)} in common")
+if shared:
+    problems.append(f'{len(shared)} transaction id(s) appear in BOTH runs; a fresh chain cannot '
+                    f'reproduce them: {sorted(shared)[:3]}')
+
+# --- what the specification actually asserts: the verdict, the step, the composition level -------
 missing = sorted(set(orig) - set(repro))
-extra   = sorted(set(repro) - set(orig))
-differ  = sorted(i for i in set(orig) & set(repro)
-                 if (orig[i]['status'], orig[i]['level'], orig[i]['step'])
-                 != (repro[i]['status'], repro[i]['level'], repro[i]['step']))
+extra = sorted(set(repro) - set(orig))
+differ = sorted(i for i in set(orig) & set(repro)
+                if (orig[i]['status'], orig[i]['level'], orig[i]['step'])
+                != (repro[i]['status'], repro[i]['level'], repro[i]['step']))
+
 print(f"original cells:   {len(orig)}")
 print(f"reproduced cells: {len(repro)}")
-# Transaction ids MUST differ (a fresh chain), so only the verdict, the composition level and the
-# step are compared — those are what the specification asserts.
-for i in sorted(orig):
-    if i in repro:
-        print(f"  {repro[i]['status']:5} {i}  step {repro[i]['step']}  level {repro[i]['level']}")
-if missing: print("MISSING in reproduction:", missing)
-if extra:   print("EXTRA in reproduction:", extra)
-if differ:  print("DIVERGENT verdicts:", differ)
-sys.exit(1 if (missing or extra or differ) else 0)
+for i in sorted(repro):
+    print(f"  {repro[i]['status']:5} {i}  step {repro[i]['step']}  level {repro[i]['level']}")
+if missing:
+    problems.append(f'MISSING in reproduction: {missing}')
+if extra:
+    problems.append(f'EXTRA in reproduction: {extra}')
+if differ:
+    problems.append(f'DIVERGENT verdicts: {differ}')
+
+# --- the controls and probes must reproduce too ---------------------------------------------------
+for name, key in (('negative-controls.json', 'controls'), ('atomicity.json', 'probes')):
+    o = {c.get('id', c.get('family')): c['status'] for c in load(orig_dir, name)[key]}
+    r = {c.get('id', c.get('family')): c['status'] for c in load(repro_dir, name)[key]}
+    print(f"{name}: original {o}, reproduced {r}")
+    if o != r:
+        problems.append(f'{name} verdicts differ: {o} vs {r}')
+
+if problems:
+    print('\nREPRODUCTION FAILED:')
+    for p in problems:
+        print(f'  - {p}')
+    sys.exit(1)
+print('\nreproduction matches the original cell for cell, on a demonstrably different chain')
 PY
 }
 

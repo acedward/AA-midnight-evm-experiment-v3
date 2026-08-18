@@ -1,0 +1,28 @@
+original cells:   26
+reproduced cells: 26
+  GREEN internal-shielded  step 3  level SDK
+  GREEN internal-unshielded  step 5  level SDK
+  GREEN invariant-pool-equals-accounts  step 9  level derived
+  GREEN merge-pool-deposit  step 4  level SDK
+  GREEN mint-shielded-account  step 1  level LEDGER
+  GREEN mint-shielded-user  step 1  level SDK
+  GREEN mint-unshielded-account  step 2  level LEDGER
+  GREEN mint-unshielded-user  step 2  level SDK
+  GREEN provenance-account-resends-shielded  step 7  level SDK
+  GREEN provenance-account-resends-unshielded  step 8  level SDK
+  GREEN provenance-user-resends-shielded  step 7  level SDK
+  GREEN provenance-user-resends-unshielded  step 8  level SDK
+  GREEN selfsend-pool-shielded  step 9  level SDK
+  GREEN selfsend-pool-unshielded  step 9  level SDK
+  GREEN selfsend-user-shielded  step 9  level wallet
+  GREEN selfsend-user-unshielded  step 9  level wallet
+  GREEN send-shielded-account-user  step 4  level SDK
+  GREEN send-shielded-user-account  step 4  level SDK
+  GREEN send-shielded-user-user  step 3  level wallet
+  GREEN send-unshielded-account-user  step 6  level SDK
+  GREEN send-unshielded-user-account  step 6  level SDK
+  GREEN send-unshielded-user-user  step 5  level wallet
+  GREEN split-shielded-contract-change  step 4  level SDK
+  GREEN split-shielded-user-change  step 3  level wallet
+  GREEN split-unshielded-partial-pool  step 6  level SDK
+  GREEN split-unshielded-user-utxo  step 5  level wallet

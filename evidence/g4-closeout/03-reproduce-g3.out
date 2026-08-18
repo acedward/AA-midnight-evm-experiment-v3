@@ -1,0 +1,16 @@
+[G3] EXPERIMENTAL_LANE / LANE-DEV-1 — running the whole step ledger on a fresh stack (aa00003-g3-20260818131624-88684)
+[G3] ok: 01-probe-ports (1s)
+[G3] ok: 02-pull (1663s)
+[G3] ok: 03-assert-digests (0s)
+[G3] ok: 04-boot (6s)
+[G3] ok: 05-health (2s)
+[G3] ok: 06-install (0s)
+[G3] ok: 07-compile-fast (2s)
+[G3] ok: 08-compile-zk (45s)
+[G3] ok: 09-step-ledger (796s)
+[G3] ok: 10-negative-controls (379s)
+[G3] ok: 11-atomicity (394s)
+[G3] ok: 12-render-cells (0s)
+[G3] all steps passed; teardown runs next and must also succeed
+[G3] teardown: docker compose --env-file /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00003-g4-bbNhku/clone/docker/.env -f /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00003-g4-bbNhku/clone/docker/compose.yml down -v --remove-orphans
+[G3] GREEN

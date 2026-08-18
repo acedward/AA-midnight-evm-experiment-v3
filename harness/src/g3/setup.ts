@@ -5,7 +5,7 @@
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import { NetworkId } from '@midnightntwrk/wallet-sdk-abstractions';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { SEEDS } from '../lane.js';
@@ -51,6 +51,14 @@ export const bootstrap = async (): Promise<Rig> => {
   const opened: Party[] = [];
   const close = async () => {
     for (const p of opened) await closeParty(p);
+    // The private-state store is disposable per-run state in the OS temp directory. Removing it
+    // here keeps a shared machine from accumulating one directory per run; a failure to remove it
+    // must never mask the run's real result.
+    try {
+      rmSync(psDir, { recursive: true, force: true });
+    } catch {
+      /* teardown must not mask the real result */
+    }
   };
 
   try {

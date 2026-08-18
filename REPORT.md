@@ -195,7 +195,20 @@ Per-circuit verifier-key hashes and sizes: [`evidence/g2-contracts/ARTIFACTS.md`
 
 ## Reproduction from a clean clone (SC-004)
 
-_Not yet reproduced: run `./scripts/g4/verify-g4-closeout.sh`, which regenerates this section._
+The G4 wrapper clones this repository into a fresh temporary directory — carrying **no**
+generated artifacts, **no** `docker/.env` and **no** `node_modules`, all of which are
+asserted absent — then runs the G2 and G3 gate wrappers inside that clone against a fresh
+stack of its own, and compares the results cell for cell.
+
+| | Original run | Clean-clone reproduction |
+|---|---|---|
+| Cells GREEN | 26/26 | 26/26 |
+| Minter | `b0a96ac61f4bc71de1627657dc934b11aefab199a50dc73a115b0fcc041a28ad` | `4eaea84a1ad4fa4fff5a5f7609d7730266fb8ca8defaebdaf914fe3fa69c48ca` |
+| Manager | `1d838367033c26ea83bcfde405851aeec45057390dd364ca6632299d6c39e183` | `aa641ff51dee1f4e09b371c8532c7d9c40f2cbd8b28704eafc8692fe0edc22f5` |
+
+Addresses and transaction ids necessarily differ — the reproduction runs on a brand-new
+chain — so the comparison is over what the specification actually asserts: each cell's
+verdict, its step, and its composition level.
 
 ## How to reproduce
 
