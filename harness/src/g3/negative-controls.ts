@@ -12,6 +12,11 @@
 //   5. per-account overdraw       — an account may not spend more than it owns even when the pool
 //                                   holds more (the ownership-integrity case)
 //
+// They run in that logical order except that the two omitted-claim controls go LAST: they are the
+// only ones whose transaction actually reaches the node, and a rejected submission leaves the fee
+// wallet's view of its own coins unsettled, which would otherwise surface as a spurious failure
+// while building a later control's fixture.
+//
 // Where a control is rejected matters and is recorded per control: an omitted claim survives local
 // construction and is refused when the transaction is assembled/submitted, whereas an owner or
 // balance guard is a circuit `assert` and refuses at circuit execution, so no transaction is ever
@@ -69,7 +74,11 @@ const expectRejection = async (
     reason = `NOT REJECTED — the operation was accepted and returned tx ${txId}`;
   } catch (e) {
     rejected = true;
-    reason = e instanceof Error ? e.message : String(e);
+    // Some SDK errors carry the substance in `cause` rather than `message`
+    // ("Transaction submission error" alone says nothing), so both are recorded.
+    const err = e as any;
+    const cause = err?.cause ? ` | cause: ${String(err.cause?.message ?? err.cause)}` : '';
+    reason = `${e instanceof Error ? e.message : String(e)}${cause}`;
   }
 
   // Give the chain a chance to apply anything that might (wrongly) have gone through, so
@@ -133,28 +142,6 @@ const main = async () => {
       () => accountWithdrawShielded(ctx, unshieldedSeedOf(SEEDS.ownerN), 1n, rig!.ownerM, rig!.fee),
     );
 
-    // --- 1. omitted claim, shielded ----------------------------------------------------------------
-    // The stdlib auto-receives only for kernel.self(), so a mint INTO the Manager without the
-    // Manager's paired receive call has no one to claim the coin.
-    await expectRejection(
-      deps,
-      'omitted-claim-shielded',
-      'Mint shielded into the Manager with the receive call omitted',
-      'rejected as imbalanced; no account credited and the pool untouched',
-      'transaction assembly / submission',
-      () => mintToManagerWithoutClaim(ctx, 'shielded', 10n),
-    );
-
-    // --- 2. omitted claim, unshielded ---------------------------------------------------------------
-    await expectRejection(
-      deps,
-      'omitted-claim-unshielded',
-      'Mint unshielded into the Manager with the receive call omitted',
-      'rejected as imbalanced; no account credited and the ledger balance untouched',
-      'transaction assembly / submission',
-      () => mintToManagerWithoutClaim(ctx, 'unshielded', 10n),
-    );
-
     // --- 5. per-account overdraw with a SUFFICIENT pool ----------------------------------------------
     // Credit AA_B too, so the pool holds 20 while AA_A still owns only 10. A 15 withdrawal by
     // OwnerA is well within the pool and must still be refused by the per-account guard.
@@ -174,6 +161,31 @@ const main = async () => {
       "rejected with 'account shielded balance too low' — AA_A owns 10, requested 15, pool holds 20",
       'circuit execution (no transaction built)',
       () => accountWithdrawShielded(ctx, raw.secretA, 15n, rig!.ownerM, rig!.fee),
+    );
+
+    // --- 1 and 2. the omitted-claim controls, deliberately LAST ----------------------------------
+    // These are the only controls whose transaction actually reaches the node, and the fee wallet's
+    // view of its own coins is left unsettled by a rejected submission. Running them after every
+    // fixture has been built keeps that from being mistaken for a failure of a later control.
+    //
+    // The stdlib auto-receives only for kernel.self(), so a mint INTO the Manager without the
+    // Manager's paired receive call has no one to claim the coin.
+    await expectRejection(
+      deps,
+      'omitted-claim-shielded',
+      'Mint shielded into the Manager with the receive call omitted',
+      'rejected as imbalanced; no account credited and the pool untouched',
+      'transaction assembly / submission',
+      () => mintToManagerWithoutClaim(ctx, 'shielded', 10n),
+    );
+
+    await expectRejection(
+      deps,
+      'omitted-claim-unshielded',
+      'Mint unshielded into the Manager with the receive call omitted',
+      'rejected as imbalanced; no account credited and the ledger balance untouched',
+      'transaction assembly / submission',
+      () => mintToManagerWithoutClaim(ctx, 'unshielded', 10n),
     );
 
     // --- report ---------------------------------------------------------------------------------------

@@ -1,0 +1,62 @@
+{
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-18T12:42:08.102Z",
+  "minterAddress": "22eaaabba716088be4ff7286634fc44f8dca04bf9b9c5b3d49053434eb736429",
+  "managerAddress": "733cb23c838f42d8c8f0d6d4ecc75f8d3dd5d00995734ccfee4c930e17bd86ef",
+  "accounts": {
+    "idA": "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331",
+    "idB": "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c"
+  },
+  "controls": [
+    {
+      "id": "wrong-owner-witness",
+      "label": "Wrong-owner witness: OwnerB's key cannot spend AA_A's balance",
+      "expectation": "rejected with 'account shielded balance too low' — AA_B owns 0 while the pool holds 10",
+      "rejectedAt": "circuit execution (no transaction built)",
+      "reason": "failed assert: account shielded balance too low | cause: Error executing circuit 'withdrawShielded'",
+      "stateUnchanged": true,
+      "fundsUnchanged": true,
+      "status": "GREEN"
+    },
+    {
+      "id": "unregistered-witness",
+      "label": "A witness that opens no registered account is refused",
+      "expectation": "rejected with 'caller\\'s owner witness matches no registered account'",
+      "rejectedAt": "circuit execution (no transaction built)",
+      "reason": "failed assert: caller's owner witness matches no registered account | cause: Error executing circuit 'withdrawShielded'",
+      "stateUnchanged": true,
+      "fundsUnchanged": true,
+      "status": "GREEN"
+    },
+    {
+      "id": "per-account-overdraw",
+      "label": "Per-account overdraw while the pool holds MORE than the requested amount",
+      "expectation": "rejected with 'account shielded balance too low' — AA_A owns 10, requested 15, pool holds 20",
+      "rejectedAt": "circuit execution (no transaction built)",
+      "reason": "failed assert: account shielded balance too low | cause: Error executing circuit 'withdrawShielded'",
+      "stateUnchanged": true,
+      "fundsUnchanged": true,
+      "status": "GREEN"
+    },
+    {
+      "id": "omitted-claim-shielded",
+      "label": "Mint shielded into the Manager with the receive call omitted",
+      "expectation": "rejected as imbalanced; no account credited and the pool untouched",
+      "rejectedAt": "transaction assembly / submission",
+      "reason": "Transaction submission error",
+      "stateUnchanged": true,
+      "fundsUnchanged": true,
+      "status": "GREEN"
+    },
+    {
+      "id": "omitted-claim-unshielded",
+      "label": "Mint unshielded into the Manager with the receive call omitted",
+      "expectation": "rejected as imbalanced; no account credited and the ledger balance untouched",
+      "rejectedAt": "transaction assembly / submission",
+      "reason": "Transaction submission error",
+      "stateUnchanged": true,
+      "fundsUnchanged": true,
+      "status": "GREEN"
+    }
+  ]
+}

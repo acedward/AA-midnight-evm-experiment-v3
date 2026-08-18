@@ -12,8 +12,8 @@
 Manager pooled shielded coin: **0** (nonce `0000000000000000000000000000000000000000000000000000000000000000`)
 Manager unshielded ledger balance: **0**
 Invariant `pool = AA_A + AA_B` asserted in BOTH families.
-Indexer cross-check of user unshielded balances: OwnerN=0, OwnerM=0.
+Indexer reconstruction of user unshielded balances (independent of the wallet): OwnerN=0, OwnerM=0.
 
 ## Operations
 
-- **deploy + configure + register** (SDK) — tx `00d46b333626e3249aef8c7adb164051138fad15196397b3bca7246f484216f96d`, `003dedb993f280c87f21467e1dace802f945d84c46a8626dfdc40cc0ebc6dd5194`
+- **deploy + configure + register** (SDK) — tx `00ea00184ec88a73d8c5cadb72f2580ce623d5d2184c00cae9c422e47f9955d937`, `00cf69f7d9a33310a6f660c8fbcc8b21c4174651a734e69036a1ce4c76c9c31559`

@@ -27,6 +27,7 @@ import {
 import {
   assertAll,
   observe,
+  withIndexerCheck,
   renderTable,
   row,
   snapshot,
@@ -147,8 +148,8 @@ class StepEvidence {
       `Manager pooled shielded coin: **${observed.manager.poolValue}** (nonce \`${observed.manager.poolNonce}\`)`,
       `Manager unshielded ledger balance: **${observed.managerUnshieldedLedger}**`,
       `Invariant \`pool = AA_A + AA_B\` asserted in BOTH families.`,
-      `Indexer cross-check of user unshielded balances: OwnerN=${observed.indexerUnshielded.OwnerN}, ` +
-        `OwnerM=${observed.indexerUnshielded.OwnerM}.`,
+      `Indexer reconstruction of user unshielded balances (independent of the wallet): ` +
+        `OwnerN=${observed.indexerUnshielded?.OwnerN}, OwnerM=${observed.indexerUnshielded?.OwnerM}.`,
       '',
       '## Operations',
       '',
@@ -172,13 +173,28 @@ const main = async () => {
     rig = await bootstrap();
     const { ctx, deps, raw, ids } = rig;
     const settle = async (pred: (o: Observation) => boolean, what: string) => waitUntil(deps, pred, what);
+    /**
+     * Every submitted transaction is logged here, because observation point 2 for user unshielded
+     * holdings is a replay of exactly these through the indexer (see `withIndexerCheck`). A
+     * transaction that moved value but was never logged would silently weaken that check, so the
+     * recording happens at the single place each id is first seen.
+     */
+    const tx = <T extends string>(id: T): T => {
+      deps.submittedTxs.push(id);
+      return id;
+    };
+    // The deploy transactions create no unshielded outputs, but replaying them costs nothing and
+    // keeps "every transaction this run submitted" literally true.
+    tx(rig.deployTxs.minter);
+    tx(rig.deployTxs.manager);
+    for (const id of Object.values(rig.fundingTxs)) if (/^[0-9a-f]{6,}$/i.test(id)) tx(id);
 
     // =========================================================================================
     // STEP 0 — deploy, register, empty table
     // =========================================================================================
     console.log('\n## STEP 0 — deploy Minter + Manager; register AA_A (OwnerA), AA_B (OwnerB)');
     const e0 = new StepEvidence(0, 'Deploy Minter + Manager; register AA_A and AA_B; create OwnerN, OwnerM');
-    let o = await waitForTable(deps, EXPECTED[0]!, '0');
+    let o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[0]!, '0'));
     if (!o.manager.configured) throw new Error('STEP 0 DIVERGENCE — Manager is not configured');
     if (o.manager.accounts.length !== 2) {
       throw new Error(`STEP 0 DIVERGENCE — expected 2 registered accounts, saw ${o.manager.accounts.length}`);
@@ -205,6 +221,7 @@ const main = async () => {
     let before = o;
 
     const m1a = await mintShieldedToAccount(ctx, 10n, raw.idA, rig.fee);
+    tx(m1a.txId);
     minted.shielded += 10n;
     log(`  mint shielded -> AA_A: tx ${m1a.txId} (one intent, segment ${m1a.segment})`);
     let after = await settle((x) => x.table.AA_A.shielded === 10n && x.manager.poolValue === 10n, 'AA_A credited 10');
@@ -226,7 +243,7 @@ const main = async () => {
     });
 
     before = after;
-    const m1b = await mintShieldedToUser(ctx, 10n, rig.ownerN, rig.fee);
+    const m1b = tx(await mintShieldedToUser(ctx, 10n, rig.ownerN, rig.fee));
     minted.shielded += 10n;
     log(`  mint shielded -> OwnerN: tx ${m1b}`);
     after = await settle((x) => x.table.OwnerN.shielded === 10n, 'OwnerN credited 10 shielded');
@@ -242,7 +259,7 @@ const main = async () => {
       evidence: 'evidence/g3-ledger/step-1/step.json',
     });
 
-    o = await waitForTable(deps, EXPECTED[1]!, '1');
+    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[1]!, '1'));
     assertAll(o, EXPECTED[1]!, '1', minted);
     e1.write(EXPECTED[1]!, o);
     console.log(`STEP 1 ASSERTED — ${renderTable(o.table)}`);
@@ -255,6 +272,7 @@ const main = async () => {
     before = o;
 
     const m2a = await mintUnshieldedToAccount(ctx, 10n, raw.idA, rig.fee);
+    tx(m2a.txId);
     minted.unshielded += 10n;
     log(`  mint unshielded -> AA_A: tx ${m2a.txId} (one intent, segment ${m2a.segment})`);
     after = await settle((x) => x.table.AA_A.unshielded === 10n, 'AA_A credited 10 unshielded');
@@ -275,7 +293,7 @@ const main = async () => {
     });
 
     before = after;
-    const m2b = await mintUnshieldedToUser(ctx, 10n, rig.ownerN, rig.fee);
+    const m2b = tx(await mintUnshieldedToUser(ctx, 10n, rig.ownerN, rig.fee));
     minted.unshielded += 10n;
     log(`  mint unshielded -> OwnerN: tx ${m2b}`);
     after = await settle((x) => x.table.OwnerN.unshielded === 10n, 'OwnerN credited 10 unshielded');
@@ -291,7 +309,7 @@ const main = async () => {
       evidence: 'evidence/g3-ledger/step-2/step.json',
     });
 
-    o = await waitForTable(deps, EXPECTED[2]!, '2');
+    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[2]!, '2'));
     assertAll(o, EXPECTED[2]!, '2', minted);
     e2.write(EXPECTED[2]!, o);
     console.log(`STEP 2 ASSERTED — ${renderTable(o.table)}`);
@@ -303,7 +321,7 @@ const main = async () => {
     const e3 = new StepEvidence(3, 'Send shielded half: OwnerN→OwnerM (wallet split); AA_A→AA_B (internal)');
     before = o;
 
-    const s3a = await userSend(rig.ownerN, rig.ownerM, 'shielded', rig.colors.shielded, 5n);
+    const s3a = tx(await userSend(rig.ownerN, rig.ownerM, 'shielded', rig.colors.shielded, 5n));
     log(`  OwnerN -5-> OwnerM shielded: tx ${s3a}`);
     after = await settle(
       (x) => x.table.OwnerN.shielded === 5n && x.table.OwnerM.shielded === 5n,
@@ -338,7 +356,7 @@ const main = async () => {
 
     before = after;
     const poolBefore3 = { value: before.manager.poolValue, nonce: before.manager.poolNonce };
-    const s3b = await transferInternal(ctx, raw.secretA, raw.idB, true, 5n, rig.fee);
+    const s3b = tx(await transferInternal(ctx, raw.secretA, raw.idB, true, 5n, rig.fee));
     log(`  AA_A -5-> AA_B internal (shielded): tx ${s3b}`);
     after = await settle(
       (x) => x.table.AA_A.shielded === 5n && x.table.AA_B.shielded === 5n,
@@ -369,7 +387,7 @@ const main = async () => {
       note: `pool ${poolBefore3.value}@${poolBefore3.nonce} unchanged — FR-005 forward case`,
     });
 
-    o = await waitForTable(deps, EXPECTED[3]!, '3');
+    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[3]!, '3'));
     assertAll(o, EXPECTED[3]!, '3', minted);
     e3.write(EXPECTED[3]!, o);
     console.log(`STEP 3 ASSERTED — ${renderTable(o.table)}`);
@@ -384,6 +402,7 @@ const main = async () => {
     // Deposit FIRST, so the pool has a held coin to MERGE the deposited coin with.
     const poolBefore4 = { value: before.manager.poolValue, nonce: before.manager.poolNonce };
     const d4 = await userDepositShielded(ctx, rig.ownerN, rig.managerN, 5n, raw.idB);
+    tx(d4.txId);
     log(`  OwnerN -5-> AA_B deposit: tx ${d4.txId}`);
     after = await settle((x) => x.table.AA_B.shielded === 10n && x.manager.poolValue === 15n, 'AA_B 10, pool 15');
     e4.op('OwnerN -5-> AA_B (shielded deposit, merged into the pool)', [d4.txId], 'SDK', before, after, {
@@ -417,7 +436,7 @@ const main = async () => {
 
     before = after;
     const poolBeforeW4 = { value: before.manager.poolValue, nonce: before.manager.poolNonce };
-    const w4 = await accountWithdrawShielded(ctx, raw.secretA, 5n, rig.ownerM, rig.fee);
+    const w4 = tx(await accountWithdrawShielded(ctx, raw.secretA, 5n, rig.ownerM, rig.fee));
     log(`  AA_A -5-> OwnerM payout: tx ${w4}`);
     after = await settle(
       (x) => x.table.AA_A.shielded === 0n && x.table.OwnerM.shielded === 10n,
@@ -451,7 +470,7 @@ const main = async () => {
       note: 'sendShielded returned a non-empty change arm; the Manager wrote the change coin back to itself.',
     });
 
-    o = await waitForTable(deps, EXPECTED[4]!, '4');
+    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[4]!, '4'));
     assertAll(o, EXPECTED[4]!, '4', minted);
     e4.write(EXPECTED[4]!, o);
     console.log(`STEP 4 ASSERTED — ${renderTable(o.table)}`);
@@ -463,7 +482,7 @@ const main = async () => {
     const e5 = new StepEvidence(5, 'Send unshielded half: OwnerN→OwnerM (UTXO split); AA_A→AA_B (internal)');
     before = o;
 
-    const s5a = await userSend(rig.ownerN, rig.ownerM, 'unshielded', rig.colors.unshielded, 5n);
+    const s5a = tx(await userSend(rig.ownerN, rig.ownerM, 'unshielded', rig.colors.unshielded, 5n));
     log(`  OwnerN -5-> OwnerM unshielded: tx ${s5a}`);
     after = await settle(
       (x) => x.table.OwnerN.unshielded === 5n && x.table.OwnerM.unshielded === 5n,
@@ -498,7 +517,7 @@ const main = async () => {
 
     before = after;
     const ledgerBefore5 = before.managerUnshieldedLedger;
-    const s5b = await transferInternal(ctx, raw.secretA, raw.idB, false, 5n, rig.fee);
+    const s5b = tx(await transferInternal(ctx, raw.secretA, raw.idB, false, 5n, rig.fee));
     log(`  AA_A -5-> AA_B internal (unshielded): tx ${s5b}`);
     after = await settle(
       (x) => x.table.AA_A.unshielded === 5n && x.table.AA_B.unshielded === 5n,
@@ -525,7 +544,7 @@ const main = async () => {
       evidence: 'evidence/g3-ledger/step-5/step.json',
     });
 
-    o = await waitForTable(deps, EXPECTED[5]!, '5');
+    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[5]!, '5'));
     assertAll(o, EXPECTED[5]!, '5', minted);
     e5.write(EXPECTED[5]!, o);
     console.log(`STEP 5 ASSERTED — ${renderTable(o.table)}`);
@@ -537,7 +556,7 @@ const main = async () => {
     const e6 = new StepEvidence(6, 'Send unshielded remaining half crossed: OwnerN→AA_B; AA_A→OwnerM');
     before = o;
 
-    const d6 = await userDepositUnshielded(ctx, rig.ownerN, rig.managerN, 5n, raw.idB);
+    const d6 = tx(await userDepositUnshielded(ctx, rig.ownerN, rig.managerN, 5n, raw.idB));
     log(`  OwnerN -5-> AA_B deposit (unshielded): tx ${d6}`);
     after = await settle((x) => x.table.AA_B.unshielded === 10n && x.table.OwnerN.unshielded === 0n, 'AA_B 10 unshielded');
     e6.op('OwnerN -5-> AA_B (unshielded deposit)', [d6], 'SDK', before, after, {
@@ -557,7 +576,7 @@ const main = async () => {
 
     before = after;
     const ledgerBeforeW6 = before.managerUnshieldedLedger;
-    const w6 = await accountWithdrawUnshielded(ctx, raw.secretA, 5n, rig.ownerM, rig.fee);
+    const w6 = tx(await accountWithdrawUnshielded(ctx, raw.secretA, 5n, rig.ownerM, rig.fee));
     log(`  AA_A -5-> OwnerM (unshielded payout): tx ${w6}`);
     after = await settle(
       (x) => x.table.AA_A.unshielded === 0n && x.table.OwnerM.unshielded === 10n,
@@ -589,7 +608,7 @@ const main = async () => {
       evidence: 'evidence/g3-ledger/step-6/step.json',
     });
 
-    o = await waitForTable(deps, EXPECTED[6]!, '6');
+    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[6]!, '6'));
     assertAll(o, EXPECTED[6]!, '6', minted);
     e6.write(EXPECTED[6]!, o);
     console.log(`STEP 6 ASSERTED — ${renderTable(o.table)}`);
@@ -602,6 +621,7 @@ const main = async () => {
     before = o;
 
     const p7a = await userDepositShielded(ctx, rig.ownerM, rig.managerM, 5n, raw.idA);
+    tx(p7a.txId);
     log(`  OwnerM -5-> AA_A (re-spending AA-originated coins): tx ${p7a.txId}`);
     after = await settle((x) => x.table.AA_A.shielded === 5n && x.table.OwnerM.shielded === 5n, 'AA_A 5, OwnerM 5');
     e7.op('OwnerM -5-> AA_A (shielded, AA-originated coins)', [p7a.txId], 'SDK', before, after, {
@@ -621,7 +641,7 @@ const main = async () => {
     });
 
     before = after;
-    const p7b = await accountWithdrawShielded(ctx, raw.secretB, 5n, rig.ownerN, rig.fee);
+    const p7b = tx(await accountWithdrawShielded(ctx, raw.secretB, 5n, rig.ownerN, rig.fee));
     log(`  AA_B -5-> OwnerN (account re-spends user-deposited value): tx ${p7b}`);
     after = await settle((x) => x.table.AA_B.shielded === 5n && x.table.OwnerN.shielded === 5n, 'AA_B 5, OwnerN 5');
     e7.op('AA_B -5-> OwnerN (shielded, user-originated value)', [p7b], 'SDK', before, after, {
@@ -639,7 +659,7 @@ const main = async () => {
       evidence: 'evidence/g3-ledger/step-7/step.json',
     });
 
-    o = await waitForTable(deps, EXPECTED[7]!, '7');
+    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[7]!, '7'));
     assertAll(o, EXPECTED[7]!, '7', minted);
     e7.write(EXPECTED[7]!, o);
     console.log(`STEP 7 ASSERTED — ${renderTable(o.table)}`);
@@ -651,7 +671,7 @@ const main = async () => {
     const e8 = new StepEvidence(8, 'Provenance re-send, unshielded: OwnerM→AA_A; AA_B→OwnerN');
     before = o;
 
-    const p8a = await userDepositUnshielded(ctx, rig.ownerM, rig.managerM, 5n, raw.idA);
+    const p8a = tx(await userDepositUnshielded(ctx, rig.ownerM, rig.managerM, 5n, raw.idA));
     log(`  OwnerM -5-> AA_A (unshielded, AA-originated): tx ${p8a}`);
     after = await settle((x) => x.table.AA_A.unshielded === 5n && x.table.OwnerM.unshielded === 5n, 'AA_A 5 unshielded');
     e8.op('OwnerM -5-> AA_A (unshielded, AA-originated)', [p8a], 'SDK', before, after, {
@@ -670,7 +690,7 @@ const main = async () => {
     });
 
     before = after;
-    const p8b = await accountWithdrawUnshielded(ctx, raw.secretB, 5n, rig.ownerN, rig.fee);
+    const p8b = tx(await accountWithdrawUnshielded(ctx, raw.secretB, 5n, rig.ownerN, rig.fee));
     log(`  AA_B -5-> OwnerN (unshielded, user-originated): tx ${p8b}`);
     after = await settle((x) => x.table.AA_B.unshielded === 5n && x.table.OwnerN.unshielded === 5n, 'AA_B 5 unshielded');
     e8.op('AA_B -5-> OwnerN (unshielded, user-originated)', [p8b], 'SDK', before, after, {
@@ -688,7 +708,7 @@ const main = async () => {
       evidence: 'evidence/g3-ledger/step-8/step.json',
     });
 
-    o = await waitForTable(deps, EXPECTED[8]!, '8');
+    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[8]!, '8'));
     assertAll(o, EXPECTED[8]!, '8', minted);
     e8.write(EXPECTED[8]!, o);
     console.log(`STEP 8 ASSERTED — ${renderTable(o.table)} — every party at 5/5`);
@@ -703,7 +723,7 @@ const main = async () => {
 
     // --- OwnerM shielded self-send (2 of 5) ---------------------------------------------------
     const beforeCoinsM = before.coins.OwnerM.map((c) => c.commitment).join(',');
-    const s9a = await userSend(rig.ownerM, rig.ownerM, 'shielded', rig.colors.shielded, 2n);
+    const s9a = tx(await userSend(rig.ownerM, rig.ownerM, 'shielded', rig.colors.shielded, 2n));
     log(`  OwnerM self-send shielded 2 of 5: tx ${s9a}`);
     after = await settle(
       (x) => x.table.OwnerM.shielded === 5n && x.coins.OwnerM.map((c) => c.commitment).join(',') !== beforeCoinsM,
@@ -727,7 +747,7 @@ const main = async () => {
     // --- OwnerM unshielded self-send (2 of 5) --------------------------------------------------
     before = after;
     const beforeUtxosM = JSON.stringify(before.utxos.OwnerM);
-    const s9b = await userSend(rig.ownerM, rig.ownerM, 'unshielded', rig.colors.unshielded, 2n);
+    const s9b = tx(await userSend(rig.ownerM, rig.ownerM, 'unshielded', rig.colors.unshielded, 2n));
     log(`  OwnerM self-send unshielded 2 of 5: tx ${s9b}`);
     after = await settle(
       (x) => x.table.OwnerM.unshielded === 5n && JSON.stringify(x.utxos.OwnerM) !== beforeUtxosM,
@@ -752,7 +772,7 @@ const main = async () => {
     before = after;
     const poolNonceBefore9 = before.manager.poolNonce;
     const accountsBefore9 = JSON.stringify(before.manager.shieldedOf, bigints);
-    const s9c = await poolSelfSendShielded(ctx, raw.secretB, rig.fee);
+    const s9c = tx(await poolSelfSendShielded(ctx, raw.secretB, rig.fee));
     log(`  pool self-send shielded (authorized by OwnerB): tx ${s9c}`);
     after = await settle(
       (x) => x.manager.poolNonce !== poolNonceBefore9,
@@ -782,7 +802,7 @@ const main = async () => {
     before = after;
     const unshieldedAccountsBefore9 = JSON.stringify(before.manager.unshieldedOf, bigints);
     const ledgerBefore9 = before.managerUnshieldedLedger;
-    const s9d = await poolSelfSendUnshielded(ctx, raw.secretB, 5n, rig.fee);
+    const s9d = tx(await poolSelfSendUnshielded(ctx, raw.secretB, 5n, rig.fee));
     log(`  pool self-send unshielded (authorized by OwnerB): tx ${s9d}`);
     // Nothing observable may change, so wait for the transaction to be applied by watching the
     // Manager's state for the block, then assert byte-identity.
@@ -814,7 +834,7 @@ const main = async () => {
       note: 'sendUnshielded to kernel.self() takes the auto-receive branch (incUnshieldedInputs), so the contract balance nets to zero.',
     });
 
-    o = await waitForTable(deps, EXPECTED[9]!, '9');
+    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[9]!, '9'));
     assertAll(o, EXPECTED[9]!, '9', minted);
     e9.write(EXPECTED[9]!, o);
     console.log(`STEP 9 ASSERTED — ${renderTable(o.table)} — balance-neutral, identifiers changed`);

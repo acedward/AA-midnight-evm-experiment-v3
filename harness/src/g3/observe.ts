@@ -14,6 +14,7 @@
 //     1. the wallet SDK's own synced state
 //     2. the indexer, queried directly over GraphQL (independent of the wallet's view)
 import * as ledger from '@midnightntwrk/ledger-v9';
+import { MidnightBech32m } from '@midnightntwrk/wallet-sdk-address-format';
 import { endpoints, readLaneEnv } from '../lane.js';
 
 // @ts-ignore — generated artifact
@@ -60,22 +61,57 @@ export const readManager = async (providers: any, address: string): Promise<Mana
   };
 };
 
-/** Observation point 2 for user-held value: ask the indexer directly, not the wallet. */
-export const indexerUnshieldedBalance = async (addressHex: string, color: string): Promise<bigint> => {
+/**
+ * Observation point 2 for USER-held unshielded value: the unshielded UTXO set reconstructed from
+ * the INDEXER'S OWN TRANSACTION HISTORY, independent of the wallet SDK.
+ *
+ * NOTE (recorded as Finding G3-4): the pinned indexer `v4.4.0-rc.1` exposes NO per-address
+ * unshielded-balance query — schema introspection shows no `unshieldedUtxos` field on `Query` at
+ * all. What it does expose is, per transaction, `unshieldedCreatedOutputs` with each output's
+ * owner, token type, value and (crucially) whether it has since been spent. Since every movement
+ * of the Minter's colours happens in a transaction this harness submitted, replaying those
+ * transactions' created outputs and keeping the unspent ones reconstructs each party's UTXO set
+ * from chain data alone.
+ *
+ * @param txIdentifiers every transaction this run has submitted, in any order
+ * @param color the unshielded colour under test
+ * @returns owner address (hex) -> unspent value of that colour
+ */
+export const indexerUnshieldedByOwner = async (
+  txIdentifiers: readonly string[],
+  color: string,
+): Promise<Map<string, bigint>> => {
   const ep = endpoints(readLaneEnv());
-  const res = await fetch(ep.indexerHttpUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query: `query($a: HexEncoded!) { unshieldedUtxos(address: $a) { value tokenType } }`,
-      variables: { a: addressHex },
-    }),
-  });
-  const json: any = await res.json();
-  const utxos = json?.data?.unshieldedUtxos ?? [];
-  return utxos
-    .filter((u: any) => String(u.tokenType).toLowerCase() === color.toLowerCase())
-    .reduce((acc: bigint, u: any) => acc + BigInt(u.value), 0n);
+  const byOwner = new Map<string, bigint>();
+  const seen = new Set<string>();
+
+  for (const identifier of txIdentifiers) {
+    const res = await fetch(ep.indexerHttpUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query:
+          'query($i: HexEncoded!) { transactions(offset: {identifier: $i}) { ' +
+          'unshieldedCreatedOutputs { owner tokenType value intentHash outputIndex spentAtTransaction { hash } } } }',
+        variables: { i: identifier },
+      }),
+    });
+    const json: any = await res.json();
+    for (const tx of json?.data?.transactions ?? []) {
+      for (const utxo of tx?.unshieldedCreatedOutputs ?? []) {
+        if (String(utxo.tokenType).toLowerCase() !== color.toLowerCase()) continue;
+        // One transaction can be returned under more than one identifier, so outputs are keyed by
+        // their own identity rather than counted per response.
+        const key = `${utxo.intentHash}:${utxo.outputIndex}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        if (utxo.spentAtTransaction) continue;
+        const owner = MidnightBech32m.parse(String(utxo.owner)).data.toString('hex');
+        byOwner.set(owner, (byOwner.get(owner) ?? 0n) + BigInt(utxo.value));
+      }
+    }
+  }
+  return byOwner;
 };
 
 /** The spec's standing invariant, asserted after every step. */

@@ -509,3 +509,81 @@ account bookkeeping). The unshielded half of the standing invariant is therefore
 cross-check, not a self-comparison.
 
 Recorded as a lane observation rather than a defect of this project. It affects no cell.
+
+---
+
+## 2026-08-18 — G3: Finding G3-4 — the pinned indexer has no per-address unshielded-balance query
+
+**Label:** `EXPERIMENTAL_LANE` / `LANE-DEV-1`.
+
+The next ordered run halted at step 2 with:
+
+```
+STEP 2 DIVERGENCE — OwnerN unshielded: wallet says 10, indexer says 0
+```
+
+Cause: the harness's second observation point for user unshielded holdings queried
+`unshieldedUtxos(address:)`, and **that field does not exist** on indexer `v4.4.0-rc.1`. Schema
+introspection of `Query` confirms it: there is `block`, `transactions`, `contractAction`,
+`contract`, `contractEvents`, the DUST and bridge queries — and no per-address unshielded balance
+or UTXO query at all.
+
+**This is worth stating plainly:** the helper was written before this ledger existed and, because
+it read `json?.data?.unshieldedUtxos ?? []`, it had been silently returning **0 for every address**
+rather than failing. Nothing had depended on it until now. It was a latent hole in the
+two-observation-point discipline, and the ordered ledger's assertion is what exposed it.
+
+**Resolution — no RED, and a stronger check than before.** The indexer *does* expose, per
+transaction, `unshieldedCreatedOutputs { owner tokenType value intentHash outputIndex
+spentAtTransaction }`. Every movement of the Minter's colours happens in a transaction this
+harness submits, so replaying those transactions and keeping the outputs the indexer reports as
+**unspent** reconstructs each party's UTXO set from chain data alone
+(`indexerUnshieldedByOwner`). Owner addresses come back bech32m-encoded and are decoded with the
+pinned `MidnightBech32m` codec, verified against the wallet's own hex address.
+
+That reconstruction is genuinely independent of the wallet SDK — it is the indexer's record of what
+the chain did — and it is now asserted equal to the wallet's reported balance for OwnerN and OwnerM
+after **every** step. It runs only at assertion points, never inside the polling loops that wait
+for finality, since it costs one query per submitted transaction.
+
+---
+
+## 2026-08-18 — G3: Finding G3-5 — ledger-level composition must carry the MANAGER's transaction
+
+**Label:** `EXPERIMENTAL_LANE` / `LANE-DEV-1`.
+
+The negative-control fixture mints shielded 10 into AA_A and then a second 10 into AA_B, so the
+pool holds 20 while AA_A owns only 10. The **second** composed mint failed:
+
+```
+FAILED: Transaction submission error
+```
+
+Cause — a real defect in the first cut of `composeOneIntent`, found by exercising a case the
+ordered ledger happens never to reach. Ledger-level composition keeps exactly ONE call's
+transaction whole (with its zswap offers) and grafts the other calls in as prototypes only. The
+first implementation kept the **Minter's** mint transaction. That is a superset of what is needed
+only while the pool is EMPTY:
+
+| pool state | what `depositShielded` does | zswap parts it needs |
+|---|---|---|
+| empty | `pool.writeCoin(c, self)` | just the received coin's output — which the mint also declares |
+| non-empty | `mergeCoinImmediate(pool, c)` | **also** an INPUT spending the held pool coin and an OUTPUT for the merged coin |
+
+Those merge parts exist only in the **Manager's** own transaction, and that transaction was being
+discarded — so the composed transaction was missing them and the node refused it.
+
+Why the ordered ledger never hit this: its two composed mints are step 1 (shielded, into an *empty*
+pool) and step 2 (*unshielded*, which needs no zswap parts at all). The defect was reachable only
+by a second shielded mint into a non-empty pool.
+
+**Fix.** The carrier is now always the **Manager's** call. Its transaction is a superset in both
+families: `mintShieldedToken` and `receiveShielded` declare the *same* output for the *same* coin
+to the *same* recipient — the ledger needs exactly one of it, claimed as a spend by the Minter and
+as a receive by the Manager, which is the `token_vault_shielded.rs` shape — and the Manager's
+transaction additionally carries the merge input/output when there is one. Documented at the head
+of `harness/src/g3/ledger-compose.ts`.
+
+Recorded honestly: **the first ordered step-ledger run (steps 0–9, all asserted) predates this
+fix**, and passed only because neither of its composed mints exercised the merge branch. The
+retained G3 gate run is produced after the fix, so the run of record uses the corrected carrier.

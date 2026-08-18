@@ -1,0 +1,199 @@
+{
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-18T12:30:30.544Z",
+  "method": "deferred failure: a full-balance withdrawal is prepared against a state where the account holds the funds, the account is then emptied by an internal transfer submitted from a different wallet, and the stale withdrawal is submitted. Its recorded balance read no longer matches the chain, so the assertion fails on replay.",
+  "minterAddress": "6d7eca371a017ffbee23e392b1181b01462a2e8dcdd744802ff7baa3d7abf197",
+  "managerAddress": "66007aada15ab61bec1b45bde474a69d4981015a988b4e035df254449f30c138",
+  "probes": [
+    {
+      "family": "shielded",
+      "preparedFor": "withdrawShielded(10) authorized by OwnerA, prepared while AA_A held 10",
+      "displacingTx": "0015036f28b754f02450607b8d8840bad87f1be5890000fcfd3f1e2bb63d2bda82",
+      "submission": {
+        "accepted": false,
+        "txIdOrError": "Transaction submission error"
+      },
+      "stateUnchanged": true,
+      "before": {
+        "table": {
+          "AA_A": {
+            "shielded": "0",
+            "unshielded": "0"
+          },
+          "OwnerN": {
+            "shielded": "0",
+            "unshielded": "0"
+          },
+          "AA_B": {
+            "shielded": "10",
+            "unshielded": "0"
+          },
+          "OwnerM": {
+            "shielded": "0",
+            "unshielded": "0"
+          }
+        },
+        "pool": {
+          "value": "10",
+          "nonce": "9cdc34b78e99663c46a8726fa15735eecc4131b1fc3f92e9080c84defa1d7e1e",
+          "hasPool": true
+        },
+        "accountsShielded": {
+          "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331": "0",
+          "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c": "10"
+        },
+        "accountsUnshielded": {
+          "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331": "0",
+          "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c": "0"
+        },
+        "managerUnshieldedLedger": "0",
+        "coins": {
+          "OwnerN": [],
+          "OwnerM": []
+        },
+        "utxos": {
+          "OwnerN": [],
+          "OwnerM": []
+        }
+      },
+      "after": {
+        "table": {
+          "AA_A": {
+            "shielded": "0",
+            "unshielded": "0"
+          },
+          "OwnerN": {
+            "shielded": "0",
+            "unshielded": "0"
+          },
+          "AA_B": {
+            "shielded": "10",
+            "unshielded": "0"
+          },
+          "OwnerM": {
+            "shielded": "0",
+            "unshielded": "0"
+          }
+        },
+        "pool": {
+          "value": "10",
+          "nonce": "9cdc34b78e99663c46a8726fa15735eecc4131b1fc3f92e9080c84defa1d7e1e",
+          "hasPool": true
+        },
+        "accountsShielded": {
+          "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331": "0",
+          "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c": "10"
+        },
+        "accountsUnshielded": {
+          "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331": "0",
+          "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c": "0"
+        },
+        "managerUnshieldedLedger": "0",
+        "coins": {
+          "OwnerN": [],
+          "OwnerM": []
+        },
+        "utxos": {
+          "OwnerN": [],
+          "OwnerM": []
+        }
+      },
+      "status": "GREEN"
+    },
+    {
+      "family": "unshielded",
+      "preparedFor": "withdrawUnshielded(10) authorized by OwnerA, prepared while AA_A held 10",
+      "displacingTx": "0005bfec8d6a9c1e6f2c77305f56866c2e113d72a5138d1cebc2c879aee7dfaf86",
+      "submission": {
+        "accepted": false,
+        "txIdOrError": "Transaction submission error"
+      },
+      "stateUnchanged": true,
+      "before": {
+        "table": {
+          "AA_A": {
+            "shielded": "0",
+            "unshielded": "0"
+          },
+          "OwnerN": {
+            "shielded": "0",
+            "unshielded": "0"
+          },
+          "AA_B": {
+            "shielded": "10",
+            "unshielded": "10"
+          },
+          "OwnerM": {
+            "shielded": "0",
+            "unshielded": "0"
+          }
+        },
+        "pool": {
+          "value": "10",
+          "nonce": "9cdc34b78e99663c46a8726fa15735eecc4131b1fc3f92e9080c84defa1d7e1e",
+          "hasPool": true
+        },
+        "accountsShielded": {
+          "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331": "0",
+          "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c": "10"
+        },
+        "accountsUnshielded": {
+          "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331": "0",
+          "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c": "10"
+        },
+        "managerUnshieldedLedger": "10",
+        "coins": {
+          "OwnerN": [],
+          "OwnerM": []
+        },
+        "utxos": {
+          "OwnerN": [],
+          "OwnerM": []
+        }
+      },
+      "after": {
+        "table": {
+          "AA_A": {
+            "shielded": "0",
+            "unshielded": "0"
+          },
+          "OwnerN": {
+            "shielded": "0",
+            "unshielded": "0"
+          },
+          "AA_B": {
+            "shielded": "10",
+            "unshielded": "10"
+          },
+          "OwnerM": {
+            "shielded": "0",
+            "unshielded": "0"
+          }
+        },
+        "pool": {
+          "value": "10",
+          "nonce": "9cdc34b78e99663c46a8726fa15735eecc4131b1fc3f92e9080c84defa1d7e1e",
+          "hasPool": true
+        },
+        "accountsShielded": {
+          "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331": "0",
+          "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c": "10"
+        },
+        "accountsUnshielded": {
+          "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331": "0",
+          "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c": "10"
+        },
+        "managerUnshieldedLedger": "10",
+        "coins": {
+          "OwnerN": [],
+          "OwnerM": []
+        },
+        "utxos": {
+          "OwnerN": [],
+          "OwnerM": []
+        }
+      },
+      "status": "GREEN"
+    }
+  ]
+}

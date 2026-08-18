@@ -244,7 +244,10 @@ const main = () => {
     const tb = metrics.transactionBytes;
     out.push('Measured during the retained step-ledger run, at the point each thing actually happens:');
     out.push('`proveTx` is timed by wrapping the proof provider, and each submitted transaction is measured');
-    out.push('by serializing it.');
+    out.push('by serializing it. **These cover the contract-call transactions**, which are the ones this');
+    out.push('harness proves and submits itself. The plain wallet-to-wallet transfers (the user→user and');
+    out.push('user self-send cells) are proven and submitted inside the wallet SDK and are therefore not');
+    out.push('instrumented here — the figures are not a whole-run average.');
     out.push('');
     out.push('| Metric | count | min | median | mean | max |');
     out.push('|---|---|---|---|---|---|');

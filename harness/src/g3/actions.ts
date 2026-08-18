@@ -101,26 +101,28 @@ export const mintShieldedToAccount = async (
   payer?: Party,
 ): Promise<{ txId: string; nonce: Uint8Array; segment: number }> => {
   const nonce = randomBytes(32);
+  // The MANAGER's call is the carrier: its transaction holds every zswap part the composed
+  // transaction needs, including the merge input/output when the pool already holds a coin.
   const composed = await composeOneIntent(
     {
-      providers: c.minterProviders,
-      compiledContract: c.compiledMinter(),
-      contractAddress: c.minterAddress,
-      circuitId: 'mintShieldedTo',
-      args: [value, nonce, shieldedToContract(c.managerAddress)],
+      providers: c.managerFee,
+      compiledContract: c.compiledManager(),
+      contractAddress: c.managerAddress,
+      circuitId: 'depositShielded',
+      args: [{ nonce, color: c.shieldedColor, value }, accountId],
+      privateStateId: 'manager',
     },
     [
       {
-        providers: c.managerFee,
-        compiledContract: c.compiledManager(),
-        contractAddress: c.managerAddress,
-        circuitId: 'depositShielded',
-        args: [{ nonce, color: c.shieldedColor, value }, accountId],
-        privateStateId: 'manager',
+        providers: c.minterProviders,
+        compiledContract: c.compiledMinter(),
+        contractAddress: c.minterAddress,
+        circuitId: 'mintShieldedTo',
+        args: [value, nonce, shieldedToContract(c.managerAddress)],
       },
     ],
   );
-  const run = () => proveBalanceSubmit(composed.tx, c.composedProof, c.minterProviders);
+  const run = () => proveBalanceSubmit(composed.tx, c.composedProof, c.managerFee);
   const txId = payer ? await withDustRetry(payer, 'mintShieldedToAccount', run) : await run();
   return { txId, nonce, segment: composed.segment };
 };
@@ -132,26 +134,28 @@ export const mintUnshieldedToAccount = async (
   accountId: Uint8Array,
   payer?: Party,
 ): Promise<{ txId: string; segment: number }> => {
+  // Carrier discipline as above; the unshielded side needs no zswap parts at all, but keeping the
+  // same shape in both families means one rule to reason about rather than two.
   const composed = await composeOneIntent(
     {
-      providers: c.minterProviders,
-      compiledContract: c.compiledMinter(),
-      contractAddress: c.minterAddress,
-      circuitId: 'mintUnshieldedTo',
-      args: [amount, unshieldedToContract(c.managerAddress)],
+      providers: c.managerFee,
+      compiledContract: c.compiledManager(),
+      contractAddress: c.managerAddress,
+      circuitId: 'depositUnshielded',
+      args: [c.unshieldedColor, amount, accountId],
+      privateStateId: 'manager',
     },
     [
       {
-        providers: c.managerFee,
-        compiledContract: c.compiledManager(),
-        contractAddress: c.managerAddress,
-        circuitId: 'depositUnshielded',
-        args: [c.unshieldedColor, amount, accountId],
-        privateStateId: 'manager',
+        providers: c.minterProviders,
+        compiledContract: c.compiledMinter(),
+        contractAddress: c.minterAddress,
+        circuitId: 'mintUnshieldedTo',
+        args: [amount, unshieldedToContract(c.managerAddress)],
       },
     ],
   );
-  const run = () => proveBalanceSubmit(composed.tx, c.composedProof, c.minterProviders);
+  const run = () => proveBalanceSubmit(composed.tx, c.composedProof, c.managerFee);
   const txId = payer ? await withDustRetry(payer, 'mintUnshieldedToAccount', run) : await run();
   return { txId, segment: composed.segment };
 };

@@ -26,12 +26,25 @@
 // transcript still come from executing the compiled circuit through midnight-js, so nothing about
 // the contracts is reimplemented off-chain.
 //
-// WHY A "CARRIER". Both `mintShieldedToken` and `receiveShielded` call `createZswapOutput` for the
-// *same* coin to the *same* recipient, and the ledger unifies them: the transaction needs exactly
-// ONE contract-owned zswap output, claimed as a spend by the Minter and as a receive by the
-// Manager (`token_vault_shielded.rs` builds precisely that shape). So the transaction of the call
-// that creates the coin — the carrier — is kept whole, with its offers, and the other calls are
-// grafted into its intent as prototypes. Their own transactions are discarded.
+// WHY A "CARRIER", AND WHICH CALL IT MUST BE. Only ONE of the calls' transactions is kept whole,
+// with its zswap offers; the others contribute only their call prototypes and their own
+// transactions are discarded. The carrier must therefore be the call whose transaction already
+// carries EVERY zswap part the composed transaction needs.
+//
+// That call is the Manager's receive, not the Minter's mint:
+//
+//   * `mintShieldedToken` and `receiveShielded` both `createZswapOutput` the *same* coin to the
+//     *same* recipient, so the two declare an identical output and the ledger needs exactly one of
+//     it — claimed as a spend by the Minter and as a receive by the Manager, which is the shape
+//     `token_vault_shielded.rs` builds. Either side's offer covers that one output.
+//   * But when the pool is NOT empty, `depositShielded` also merges: `mergeCoinImmediate` spends
+//     the held pool coin (a zswap INPUT) and writes a merged coin (another OUTPUT). Those parts
+//     exist only in the Manager's own transaction. Carrying the mint instead and discarding the
+//     Manager's offer drops them, and the node refuses the transaction — which is exactly what
+//     happened the first time a second mint landed on a non-empty pool.
+//
+// The Manager's transaction is a superset in both families (the unshielded side needs no zswap
+// parts at all), so it is always the carrier.
 import * as ledger from '@midnightntwrk/ledger-v9';
 import { encodeContractKeyLocation, hashVerifierKey } from '@midnight-ntwrk/midnight-js-types';
 import { buildCall, type CallSpec } from './compose.js';
@@ -58,9 +71,10 @@ export type ComposedTx = {
 /**
  * Execute `carrier` and every `graft`, then assemble ONE intent containing all of their calls.
  *
- * @param carrier the call that creates the value (the Minter mint). Its transaction — and
- *                therefore its zswap offer — is kept.
- * @param grafts  calls whose prototypes join the carrier's intent (the Manager receive/credit).
+ * @param carrier the call whose transaction — and therefore whose zswap offer — is kept whole.
+ *                For a mint into the Manager this is the MANAGER's receive/credit call; see the
+ *                note above for why it cannot be the mint.
+ * @param grafts  calls whose prototypes join the carrier's intent (the Minter's mint).
  */
 export const composeOneIntent = async (carrier: CallSpec, grafts: CallSpec[]): Promise<ComposedTx> => {
   const carrierBuilt = await buildCall(carrier);

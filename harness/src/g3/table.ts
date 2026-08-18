@@ -16,7 +16,10 @@
 //
 //   OwnerN / OwnerM  (user-held)
 //     unshielded — 1. the wallet SDK's synced state
-//                  2. the INDEXER queried directly over GraphQL, independent of the wallet
+//                  2. the UTXO set RECONSTRUCTED from the indexer's own transaction history —
+//                     every created output of the colour, minus those the indexer reports as
+//                     spent. Independent of the wallet's bookkeeping. (The pinned indexer has no
+//                     per-address balance query at all — Finding G3-4.)
 //     shielded   — 1. the wallet SDK's synced state
 //                  2. the LEDGER CONSERVATION IDENTITY: the Minter's total minted supply of the
 //                     colour equals the Manager's pooled holdings plus every user's holdings.
@@ -25,7 +28,7 @@
 //                     coin is private by construction — the indexer cannot attribute it to an
 //                     owner — so this ledger-side identity, not an indexer balance query, is the
 //                     honest second point for shielded user holdings.
-import { indexerUnshieldedBalance, type ManagerView } from './observe.js';
+import { indexerUnshieldedByOwner, type ManagerView } from './observe.js';
 import type { Party } from '../wallet.js';
 import * as rx from 'rxjs';
 
@@ -44,8 +47,12 @@ export type Observation = {
   manager: ManagerView;
   /** Manager's unshielded ledger balance of the Minter colour — observation point 2. */
   managerUnshieldedLedger: bigint;
-  /** OwnerN / OwnerM unshielded balances as reported by the INDEXER — observation point 2. */
-  indexerUnshielded: { OwnerN: bigint; OwnerM: bigint };
+  /**
+   * OwnerN / OwnerM unshielded balances reconstructed from the indexer — observation point 2.
+   * Filled in only at assertion points: it costs one query per submitted transaction, so the
+   * polling loops that wait for finality deliberately skip it.
+   */
+  indexerUnshielded?: { OwnerN: bigint; OwnerM: bigint };
   /** Individual shielded coins per user wallet: the coin-level detail FR-004 asks for. */
   coins: { OwnerN: CoinDetail[]; OwnerM: CoinDetail[] };
   /** Individual unshielded UTXOs per user wallet. */
@@ -93,6 +100,10 @@ export type ObserveDeps = {
   ownerM: Party;
   readManager: (providers: any, address: string) => Promise<ManagerView>;
   managerUnshieldedLedger: (providers: any, address: string, color: string) => Promise<bigint>;
+  /** Unshielded addresses (hex) of the two user wallets, for the indexer reconstruction. */
+  addresses: { OwnerN: string; OwnerM: string };
+  /** Every transaction identifier this run has submitted; grows as the run proceeds. */
+  submittedTxs: string[];
 };
 
 /** Read every observation point once. Never call this and assume finality — use `waitForTable`. */
@@ -101,12 +112,6 @@ export const observe = async (d: ObserveDeps): Promise<Observation> => {
   const mUnshielded = await d.managerUnshieldedLedger(d.managerProviders, d.managerAddress, d.colors.unshielded);
 
   const [sN, sM] = await Promise.all([walletState(d.ownerN), walletState(d.ownerM)]);
-  const addrN = String((await (d.ownerN.wallet as any).unshielded.getAddress()).hexString);
-  const addrM = String((await (d.ownerM.wallet as any).unshielded.getAddress()).hexString);
-  const [ixN, ixM] = await Promise.all([
-    indexerUnshieldedBalance(addrN, d.colors.unshielded),
-    indexerUnshieldedBalance(addrM, d.colors.unshielded),
-  ]);
 
   return {
     table: {
@@ -117,7 +122,6 @@ export const observe = async (d: ObserveDeps): Promise<Observation> => {
     },
     manager,
     managerUnshieldedLedger: mUnshielded,
-    indexerUnshielded: { OwnerN: ixN, OwnerM: ixM },
     coins: { OwnerN: coinDetails(sN, d.colors.shielded), OwnerM: coinDetails(sM, d.colors.shielded) },
     utxos: { OwnerN: utxoDetails(sN, d.colors.unshielded), OwnerM: utxoDetails(sM, d.colors.unshielded) },
   };
@@ -188,6 +192,21 @@ export const waitUntil = async (
 };
 
 /**
+ * Fill in observation point 2 for user unshielded holdings by replaying every transaction this
+ * run has submitted through the indexer. Called once per assertion, never in a polling loop.
+ */
+export const withIndexerCheck = async (d: ObserveDeps, o: Observation): Promise<Observation> => {
+  const byOwner = await indexerUnshieldedByOwner(d.submittedTxs, d.colors.unshielded);
+  return {
+    ...o,
+    indexerUnshielded: {
+      OwnerN: byOwner.get(d.addresses.OwnerN.toLowerCase()) ?? 0n,
+      OwnerM: byOwner.get(d.addresses.OwnerM.toLowerCase()) ?? 0n,
+    },
+  };
+};
+
+/**
  * Assert everything that must hold after EVERY step: the expected table, both halves of the
  * standing pool invariant, agreement between the wallet and the indexer on unshielded user
  * balances, and the shielded conservation identity.
@@ -221,15 +240,20 @@ export const assertAll = (
     );
   }
 
-  // --- observation point 2 for user unshielded holdings: the indexer ---------------------------
-  if (o.indexerUnshielded.OwnerN !== o.table.OwnerN.unshielded) {
+  // --- observation point 2 for user unshielded holdings: the indexer reconstruction -------------
+  // `withIndexerCheck` must have run; an assertion that silently skipped its second observation
+  // point would be exactly the kind of quiet gap the specification forbids.
+  if (!o.indexerUnshielded) {
+    fail('the indexer reconstruction was not performed — observation point 2 is missing');
+  }
+  if (o.indexerUnshielded!.OwnerN !== o.table.OwnerN.unshielded) {
     fail(
-      `OwnerN unshielded: wallet says ${o.table.OwnerN.unshielded}, indexer says ${o.indexerUnshielded.OwnerN}`,
+      `OwnerN unshielded: wallet says ${o.table.OwnerN.unshielded}, indexer reconstruction says ${o.indexerUnshielded!.OwnerN}`,
     );
   }
-  if (o.indexerUnshielded.OwnerM !== o.table.OwnerM.unshielded) {
+  if (o.indexerUnshielded!.OwnerM !== o.table.OwnerM.unshielded) {
     fail(
-      `OwnerM unshielded: wallet says ${o.table.OwnerM.unshielded}, indexer says ${o.indexerUnshielded.OwnerM}`,
+      `OwnerM unshielded: wallet says ${o.table.OwnerM.unshielded}, indexer reconstruction says ${o.indexerUnshielded!.OwnerM}`,
     );
   }
 

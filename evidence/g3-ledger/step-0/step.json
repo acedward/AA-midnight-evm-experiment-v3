@@ -2,7 +2,7 @@
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
   "step": 0,
   "action": "Deploy Minter + Manager; register AA_A and AA_B; create OwnerN, OwnerM",
-  "utc": "2026-08-18T11:56:38.878Z",
+  "utc": "2026-08-18T12:12:21.038Z",
   "expected": {
     "AA_A": {
       "shielded": "0",
@@ -71,8 +71,8 @@
     {
       "label": "deploy + configure + register",
       "txs": [
-        "00d46b333626e3249aef8c7adb164051138fad15196397b3bca7246f484216f96d",
-        "003dedb993f280c87f21467e1dace802f945d84c46a8626dfdc40cc0ebc6dd5194"
+        "00ea00184ec88a73d8c5cadb72f2580ce623d5d2184c00cae9c422e47f9955d937",
+        "00cf69f7d9a33310a6f660c8fbcc8b21c4174651a734e69036a1ce4c76c9c31559"
       ],
       "level": "SDK",
       "before": {
@@ -160,21 +160,21 @@
         }
       },
       "detail": {
-        "minterAddress": "e3b73ebe7fa1b59ba9cc2d95828acc043979fc028e752b039e9318493b23b557",
-        "managerAddress": "dcdc5d12c232c7dd8d28e3d372bbc5bcd777145d3be1ebb409d67ad7be047cbe",
+        "minterAddress": "714b91e890473b543faa22c252b5e5ec363b9d2f1949739c127bcde7cbf84584",
+        "managerAddress": "2d9e02fd4edf13fba3f939cf6827712ca86590a240cda621ccc61a1e07e3779c",
         "colors": {
-          "shielded": "cebd353ecdb77302cdfab46308ca511d8b72d149b26737d1ea8049119c7ac341",
-          "unshielded": "035499bb24e637c6ca2fb6c73ee27db99857f086ff726e6b254371b3cfaaafe8"
+          "shielded": "e12ca8d2ec41ec066787e117d236ff0c5948196b380aada851d35e4658631664",
+          "unshielded": "6cdb40587d70ea2b425904a791f57b0b71de6f2be92ddbf4d9e7d37669e7776c"
         },
         "accounts": {
           "AA_A": "dcf015b07f71ae71c6ccdae873ca9a2f67cd9bb8745ea70fb58348b6d802f331",
           "AA_B": "bcc499e63190cb1aade1ffb6cfec52ba5b0502881343a3775ce8ad50cc02317c"
         },
         "fundingTxs": {
-          "feePayer": "f0f0405871c9aa372f18b30c55cd45c8eaba168f3fc8eac19ac607b5c1d3d076",
+          "feePayer": "cd865d17da811e8559f5b8ea701052cd9899b5bc8560f091749a66d45885a37f",
           "feePayerDust": "(skipped — already registered)",
-          "ownerN": "7591468bf424caf5b8ec4b65c18307798a019d491109174492fcaa0c1245c306",
-          "ownerM": "0b7ac693db787b7f5d776212174e6421f80ac2bf8dcd45f82c5a3e33587a08ec",
+          "ownerN": "dd89327e612032482cfc6705f55a1ae022d33736323bee3e12180e03091df607",
+          "ownerM": "8732c0c40349120b08aed0609a1215a9e5af9a3b07d23e9d6ae4be3dd3b60fce",
           "ownerNDust": "(skipped — already registered)",
           "ownerMDust": "(skipped — already registered)"
         }

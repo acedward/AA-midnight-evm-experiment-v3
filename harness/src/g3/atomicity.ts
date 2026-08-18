@@ -135,7 +135,11 @@ const main = async () => {
         accepted = true;
         log(`  node accepted the transaction for inclusion: ${txIdOrError}`);
       } catch (e) {
-        txIdOrError = (e instanceof Error ? e.message : String(e)).split('\n')[0]!.slice(0, 400);
+        // The SDK's submission errors put the substance in `cause`; the bare message is just
+        // "Transaction submission error", which would make the evidence unreadable.
+        const err = e as any;
+        const cause = err?.cause ? ` | cause: ${String(err.cause?.message ?? err.cause)}` : '';
+        txIdOrError = `${e instanceof Error ? e.message : String(e)}${cause}`.split('\n')[0]!.slice(0, 400);
         log(`  rejected at submission: ${txIdOrError}`);
       }
 

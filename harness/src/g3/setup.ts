@@ -34,6 +34,7 @@ export type Rig = {
   ids: { idA: string; idB: string };
   raw: { idA: Uint8Array; idB: Uint8Array; secretA: Uint8Array; secretB: Uint8Array };
   deps: ObserveDeps;
+  addresses: { OwnerN: string; OwnerM: string };
   deployTxs: { minter: string; manager: string };
   fundingTxs: Record<string, string>;
   close: () => Promise<void>;
@@ -152,6 +153,10 @@ export const bootstrap = async (): Promise<Rig> => {
     };
 
     const colors = { shielded: hex(shieldedColor), unshielded: hex(unshieldedColor) };
+    const addresses = {
+      OwnerN: String((await (ownerN.wallet as any).unshielded.getAddress()).hexString).toLowerCase(),
+      OwnerM: String((await (ownerM.wallet as any).unshielded.getAddress()).hexString).toLowerCase(),
+    };
     const deps: ObserveDeps = {
       managerProviders: managerFee,
       managerAddress,
@@ -161,6 +166,9 @@ export const bootstrap = async (): Promise<Rig> => {
       ownerM,
       readManager,
       managerUnshieldedLedger,
+      addresses,
+      // Grows as the run submits transactions; the indexer reconstruction replays exactly these.
+      submittedTxs: [],
     };
 
     return {
@@ -176,6 +184,7 @@ export const bootstrap = async (): Promise<Rig> => {
       ids: { idA: hex(idA), idB: hex(idB) },
       raw: { idA, idB, secretA, secretB },
       deps,
+      addresses,
       deployTxs: { minter: minterDeployTx, manager: managerDeployTx },
       fundingTxs,
       close,
