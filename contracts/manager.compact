@@ -1,101 +1,114 @@
-// Manager v2 — 00004-multi-token-custody (EXPERIMENTAL_LANE / LANE-DEV-1)
+// Manager v3 — 00005-open-colour-custody (EXPERIMENTAL_LANE / LANE-DEV-1)
 //
-// ONE singleton custodian for FOUR contract-minted colours at once (owner decision Q2: "One
-// manager is critical, we mus make sure only the owner can spend"):
+// A FULLY OPEN custodian. Owner verdict on 00004's Manager v2, 2026-08-19: "I dont like we have to
+// hard code the tokens. This will not actually work, as we don't know what or how many tokens colors
+// the AA mananger will actually use." So v3 removes the colour list entirely.
 //
-//   S1, S2  shielded    — one pooled QualifiedShieldedCoinInfo PER COLOUR, in `pools`
-//   U1, U2  unshielded  — one kernel-maintained contract balance PER COLOUR
+// WHAT WAS REMOVED from v2 — and nothing else was loosened (FR-201):
 //
-// Representation is decision D-101, resolved in Plan 01 by compile probes P1(a)(b)(c) on the pinned
-// compactc 0.33.0 / language 0.25.0: COLOUR-KEYED LEDGER MAPS (FR-103's preferred form; the
-// fixed-per-colour-slot fallback is not taken).
+//   - `configure(s1, s2, u1, u2)`                     gone. There is no admin circuit of any kind.
+//   - `colourS1/S2/U1/U2`, `configured`               gone. No colour is knowable at deploy time.
+//   - `assertConfiguredShielded/Unshielded(...)`      gone from every deposit, withdrawal and
+//                                                     internal transfer.
+//   - `registerAccount`'s seeding of four zero cells  gone. Registration creates NO balance cell.
 //
-//   pools     Map<Bytes<32>, QualifiedShieldedCoinInfo>   colour            -> pooled coin
-//   balances  Map<Bytes<32>, Uint<128>>                   key(account,colour) -> owned amount
+// The Manager therefore deploys with ZERO colour information, and none can ever be registered. It is
+// deployed BEFORE any Minter exists on its chain and custodies whatever arrives.
 //
-// `balances` is the FLAT composite-key form proved by probe P1(a), chosen over P1(c)'s nested map
-// (Plan 02 Phase 2 left the choice open and asks for it to be recorded). Two reasons:
-//   1. every write stays a single-level map operation — no `default<T>` initialisation of an inner
-//      map, and no "the whole indirection chain must be written inline" restriction;
-//   2. `registerAccount` seeds ALL FOUR configured colours at zero, so the map's SIZE is itself an
-//      assertion: exactly `accounts x 4` entries and nothing else can exist. That is what lets the
-//      harness prove FR-105's "no cell moved that the step did not name" over the WHOLE table
-//      rather than over the cells it happens to look at.
+// WHAT DID NOT MOVE — the safety story is v2's, verbatim (FR-204, the critical requirement):
 //
-// Mechanics that differ from 00003's single-slot pool (Plan 01 D-101 consequences):
-//   - a map slot is NOT a Cell, so the write is `pools.insertCoin(colour, coin, recipient)`, never
-//     `writeCoin` (which exists only on a top-level `ledger x: QualifiedShieldedCoinInfo`);
-//   - `pools.member(colour)` replaces 00003's companion `hasPool: Boolean`, and a fully-spent
-//     colour is `pools.remove(colour)` rather than reset-to-default;
-//   - `receiveShielded(coin)` must still run BEFORE `insertCoin` in the same transaction, because
-//     that is what allocates the Merkle-tree index.
+//   1. the witness choke point `authenticatedAccount()`, which derives the debited account from the
+//      WITNESS and never from a caller-supplied parameter, and
+//   2. the PER-(account, colour) guard, checked BEFORE any pool or contract-ledger guard, with a
+//      MISSING CELL READ AS BALANCE 0.
 //
-// Standing invariant the harness asserts after every step, PER COLOUR c (FR-105):
-//     pool[c] (or the contract's unshielded ledger balance for c) == sum over accounts of
-//     balances[key(account, c)]
+// Opening admission does not open spending: `deposit*` may credit any REGISTERED account (credit is
+// open — spec step 10 has OwnerM deposit into AA_A — while attribution still requires registration),
+// and every debit still passes both guards above.
 //
-// FR-104 (owner-designated critical) — owner-only spend. Every debiting circuit:
-//   1. authenticates through the single witness choke point `authenticatedAccount()`, which derives
-//      the account from the WITNESS and never from a caller-supplied parameter, and
-//   2. checks the PER-ACCOUNT, PER-COLOUR balance BEFORE any pool or contract-ledger guard, so
-//      wealth held by another account — or by the same account in another colour — can never be
-//      spent, however rich the pool is.
+// --- lazy custody (FR-202) ----------------------------------------------------------------------
+//
+// Custody state is created on FIRST CREDIT ONLY: a shielded deposit creates that colour's pool and
+// the (account, colour) cell; an unshielded deposit creates the cell (the kernel maintains the
+// contract's own unshielded balance); the CREDIT SIDE of an internal transfer creates the
+// destination's cell. Nothing else creates anything. Every guard in every circuit is evaluated
+// BEFORE the first write, so a refused operation is provably state-neutral — no cell, no pool, no
+// map growth (NC-2, NC-3). A colour that is never credited is absent from every map and reads 0
+// everywhere (FR-206).
+//
+// --- family-scoped storage (FR-203) -------------------------------------------------------------
+//
+// Shielded and unshielded custody live in STRUCTURALLY SEPARATE maps, and their composite keys are
+// derived under DIFFERENT domain separators:
+//
+//   pools               Map<Bytes<32>, QualifiedShieldedCoinInfo>  colour -> pooled coin
+//   shieldedBalances    Map<Bytes<32>, Uint<128>>   shieldedKey(account, colour)   -> amount
+//   unshieldedBalances  Map<Bytes<32>, Uint<128>>   unshieldedKey(account, colour) -> amount
+//
+// Separate maps alone would already prevent aliasing; the separate key domains mean the two families
+// could not alias even if the maps were ever merged. Probe P-COLL asserts this the hard way, with a
+// MinterCollide deployment whose shielded and unshielded colours are BYTE-IDENTICAL by construction:
+// the same 32 bytes must be tracked independently per family.
+//
+// This is also why v2's single colour-generic `transferInternal` is split into
+// `transferInternalShielded` and `transferInternalUnshielded`. With byte-identical colours possible
+// across families, a circuit taking only (to, colour, amount) could not say WHICH family it meant —
+// exactly the ambiguity P-COLL exists to rule out. The spec's NC-5 and step 12 both name the
+// shielded form.
+//
+// --- the invariant the harness asserts after every step (FR-205) --------------------------------
+//
+// Per colour c, over the DYNAMICALLY DISCOVERED colour set:
+//     poolValue(c)                  == sum over accounts of shieldedBalances[shieldedKey(a, c)]
+//     kernel unshielded balance (c) == sum over accounts of unshieldedBalances[unshieldedKey(a, c)]
+// plus the EXACT size of all three maps. v2 could assert exactness because registration seeded
+// `accounts x 4` cells; v3 seeds nothing, so exactness is now a statement about lazy creation
+// itself: a map holds a cell if and only if some step credited it.
 //
 // Authorization is by witness. That is sound here because the Manager is always invoked in root
 // position (00003: project 00002's non-root-witness blocker does not apply), and nothing here uses
 // `kernel.caller()`.
 //
-// Deliberately NOT carried over from 00003: `selfSendShielded` / `selfSendUnshielded`. The spec's
-// scope section ("What this project does NOT redo") lists self-send among the per-rail mechanics
-// proven in 00003 and not re-proven here, and owner decision Q3 is "run the new ones". Dropping
-// them keeps the circuit surface — and the ZK key set — to what 00004 actually asserts.
-//
-// Derived from the pinned standard library at compactc-v0.33.0-rc.2, from the ledger prior art
-// `midnight-ledger/ledger/tests/token-vault.compact`, and from probe `p1b-map-coin.compact`.
+// Derived from the pinned standard library at compactc-v0.33.0-rc.2 and from 00004's Manager v2.
 
 import CompactStandardLibrary;
 
 export {
-  configure,
   registerAccount,
   depositShielded,
   withdrawShielded,
   depositUnshielded,
   withdrawUnshielded,
-  transferInternal,
+  transferInternalShielded,
+  transferInternalUnshielded,
   myAccount,
   isRegistered,
-  accountBalance,
-  balanceKey,
+  shieldedAccountBalance,
+  unshieldedAccountBalance,
+  shieldedKey,
+  unshieldedKey,
   poolValue,
   poolHasColour,
-  configured,
-  colourS1,
-  colourS2,
-  colourU1,
-  colourU2,
   accounts,
-  balances,
+  shieldedBalances,
+  unshieldedBalances,
   pools
 }
 
 // --- ledger state -------------------------------------------------------------------------------
+//
+// Note what is NOT here: no colour cells, no `configured` flag, no admin key. The whole of this
+// contract's colour knowledge is whatever these maps have accumulated from credits.
 
-// The four colours this Manager custodies. Set once, at configure time (FR-102). They are kept as
-// four named cells rather than a Set so that the configured set is both EXACT (configure asserts
-// all six pairwise comparisons distinct) and legible from ledger state without ordering games.
-export ledger colourS1: Bytes<32>;
-export ledger colourS2: Bytes<32>;
-export ledger colourU1: Bytes<32>;
-export ledger colourU2: Bytes<32>;
-export ledger configured: Boolean;
-
-// Pooled shielded custody, ONE merged coin per shielded colour (D-101).
+/// Pooled shielded custody, ONE merged coin per shielded colour, created on first credit.
 export ledger pools: Map<Bytes<32>, QualifiedShieldedCoinInfo>;
 
-// Internal ownership attribution, per (account, colour).
+/// Registered accounts. Registration publishes only a commitment to the owner's secret.
 export ledger accounts: Set<Bytes<32>>;
-export ledger balances: Map<Bytes<32>, Uint<128>>;
+
+/// Internal ownership attribution, per (account, colour), PER FAMILY (FR-203).
+export ledger shieldedBalances: Map<Bytes<32>, Uint<128>>;
+export ledger unshieldedBalances: Map<Bytes<32>, Uint<128>>;
 
 // --- owner authorization --------------------------------------------------------------------
 
@@ -104,98 +117,75 @@ witness localOwnerSecret(): Bytes<32>;
 /// Account identity = a commitment to the owner's secret. Registering an account publishes only the
 /// commitment; spending requires the witness that opens it.
 circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
-  return persistentCommit<Bytes<21>>("aa00004:manager:owner", disclose(sk));
+  return persistentCommit<Bytes<21>>("aa00005:manager:owner", disclose(sk));
 }
 
 /// The account of whoever supplied the witness, asserted to be registered.
-/// THE single authorization choke point for every debiting circuit (FR-104).
+/// THE single authorization choke point for every debiting circuit (FR-204). Unchanged from v2.
 circuit authenticatedAccount(): Bytes<32> {
   const acct = ownerCommitment(localOwnerSecret());
   assert(accounts.member(acct), "caller's owner witness matches no registered account");
   return acct;
 }
 
-// --- colour helpers -----------------------------------------------------------------------------
+// --- family-scoped keys -------------------------------------------------------------------------
+//
+// The two family tags are distinct CONSTANTS, so `shieldedKey(a, c)` and `unshieldedKey(a, c)` are
+// different values for every (a, c) — including the byte-identical colours probe P-COLL mints.
+//
+// EXPORTED deliberately, though nothing on-chain needs them exported: they touch no ledger state, so
+// the compiler emits no proving key for either (same as `myAccount`), and they let the harness
+// derive the key for every cell BY RUNNING THE COMPILED ARTIFACT rather than reimplementing the
+// hashing scheme off-chain. That is what makes the "exact map sizes, zero unaccounted keys"
+// assertion an enumeration of real ledger state rather than a lookup of the cells the harness
+// happened to think of.
 
-/// The `balances` map key for one (account, colour) cell. Probe P1(a) proved this exact shape.
-///
-/// EXPORTED deliberately, though nothing on-chain needs it exported: it touches no ledger state, so
-/// the compiler emits no proving key for it (same as `myAccount`), and it lets the harness derive
-/// the key for every cell BY RUNNING THE COMPILED ARTIFACT rather than reimplementing the hashing
-/// scheme off-chain. That is what makes FR-105's "every cell, every step" assertion an enumeration
-/// of real ledger state instead of a lookup of the cells the harness happened to think of.
-export circuit balanceKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
-  return persistentHash<Vector<2, Bytes<32>>>([acct, colour]);
+circuit shieldedFamilyTag(): Bytes<32> {
+  return pad(32, "aa00005:manager:shielded");
 }
 
-circuit isShieldedColour(colour: Bytes<32>): Boolean {
-  return colour == colourS1 || colour == colourS2;
+circuit unshieldedFamilyTag(): Bytes<32> {
+  return pad(32, "aa00005:manager:unshielded");
 }
 
-circuit isUnshieldedColour(colour: Bytes<32>): Boolean {
-  return colour == colourU1 || colour == colourU2;
+export circuit shieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([acct, colour, shieldedFamilyTag()]);
 }
 
-/// FR-106: a colour outside the configured four is rejected wherever it is named or carried.
-circuit assertConfiguredShielded(colour: Bytes<32>): [] {
-  assert(configured, "manager not configured");
-  assert(isShieldedColour(colour), "colour is not a configured shielded colour");
+export circuit unshieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([acct, colour, unshieldedFamilyTag()]);
 }
 
-circuit assertConfiguredUnshielded(colour: Bytes<32>): [] {
-  assert(configured, "manager not configured");
-  assert(isUnshieldedColour(colour), "colour is not a configured unshielded colour");
+/// A MISSING CELL READS AS 0 — never as an error, and never by creating the cell (FR-204, FR-206).
+/// This is the read the per-account guard uses, so refusing an unbacked spend costs no state.
+circuit shieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  const k = shieldedKey(acct, colour);
+  return shieldedBalances.member(k) ? shieldedBalances.lookup(k) : 0;
 }
 
-circuit balanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
-  const k = balanceKey(acct, colour);
-  return balances.member(k) ? balances.lookup(k) : 0;
+circuit unshieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  const k = unshieldedKey(acct, colour);
+  return unshieldedBalances.member(k) ? unshieldedBalances.lookup(k) : 0;
 }
 
 // --- setup ------------------------------------------------------------------------------------
 
-/// Bind this Manager to its four colours: two shielded, two unshielded. One-time (FR-102).
-/// All six pairwise comparisons must be distinct, so no colour can be admitted twice and no
-/// shielded colour can masquerade as an unshielded one.
-export circuit configure(s1: Bytes<32>, s2: Bytes<32>, u1: Bytes<32>, u2: Bytes<32>): [] {
-  assert(!configured, "already configured");
-  const a = disclose(s1);
-  const b = disclose(s2);
-  const c = disclose(u1);
-  const d = disclose(u2);
-  assert(a != b, "duplicate colour in configure");
-  assert(a != c, "duplicate colour in configure");
-  assert(a != d, "duplicate colour in configure");
-  assert(b != c, "duplicate colour in configure");
-  assert(b != d, "duplicate colour in configure");
-  assert(c != d, "duplicate colour in configure");
-  colourS1 = a;
-  colourS2 = b;
-  colourU1 = c;
-  colourU2 = d;
-  configured = true;
-}
-
-/// Register an account under `owner` (a commitment produced by `ownerCommitment`), seeding all four
-/// configured colours at zero. Seeding is what makes the `balances` map exactly enumerable:
-/// `balances.size() == accounts.size() * 4`, always.
+/// Register an account under `owner` (a commitment produced by `ownerCommitment`).
+///
+/// It seeds NOTHING. v2 seeded one zero cell per configured colour; v3 has no colours to seed, and
+/// that absence is directly observable: after registering both accounts, all three custody maps are
+/// still size 0. Every later cell in either map was created by a credit.
 export circuit registerAccount(owner: Bytes<32>): [] {
-  assert(configured, "manager not configured");
   const acct = disclose(owner);
   assert(!accounts.member(acct), "account already registered");
   accounts.insert(acct);
-  balances.insert(balanceKey(acct, colourS1), 0);
-  balances.insert(balanceKey(acct, colourS2), 0);
-  balances.insert(balanceKey(acct, colourU1), 0);
-  balances.insert(balanceKey(acct, colourU2), 0);
 }
 
 // --- readers -----------------------------------------------------------------------------------
 
 /// The account id (owner commitment) for the witness the caller supplies. Returns only the
 /// commitment — never the secret — so it is safe to expose: the commitment is exactly what
-/// `registerAccount` publishes. The harness uses it to learn each owner's account id without
-/// reimplementing the commitment scheme off-chain.
+/// `registerAccount` publishes.
 export circuit myAccount(): Bytes<32> {
   return ownerCommitment(localOwnerSecret());
 }
@@ -204,9 +194,16 @@ export circuit isRegistered(owner: Bytes<32>): Boolean {
   return accounts.member(disclose(owner));
 }
 
-/// One cell of the spec's 16-cell table, on the Manager side.
-export circuit accountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
-  return balanceOf(disclose(owner), disclose(colour));
+/// One cell of the dynamic table, shielded family. Returns 0 for a colour this Manager has never
+/// seen — that is the observable form of "missing cell reads 0" (FR-206).
+export circuit shieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  return shieldedBalanceOf(disclose(owner), disclose(colour));
+}
+
+/// The same cell in the OTHER family. For a P-COLL colour these two reads take the same 32-byte
+/// `colour` argument and must still answer independently.
+export circuit unshieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  return unshieldedBalanceOf(disclose(owner), disclose(colour));
 }
 
 export circuit poolValue(colour: Bytes<32>): Uint<128> {
@@ -221,6 +218,11 @@ export circuit poolHasColour(colour: Bytes<32>): Boolean {
 // --- shielded custody ---------------------------------------------------------------------------
 
 /// Claim an incoming shielded coin and credit it to `account` under the coin's OWN colour.
+///
+/// THE OPEN PATH (FR-202, FR-205): there is no colour check. Whatever colour the coin carries is
+/// custodied, including a colour minted after this Manager was deployed. The pool for that colour and
+/// the (account, colour) cell are created HERE if they do not exist, and only here.
+///
 /// The stdlib only auto-receives when the recipient is this contract itself, so a transfer into the
 /// Manager commits only if THIS circuit runs in the same transaction as the sender's operation.
 export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
@@ -229,9 +231,7 @@ export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
   const c = disclose(coin);
   const acct = disclose(account);
 
-  // FR-106: only the two configured shielded colours may enter. A real coin minted by the
-  // unconfigured control Minter is refused here (NC-4b).
-  assertConfiguredShielded(c.color);
+  // Every guard precedes every write, so a refusal creates nothing (FR-202).
   assert(c.value > 0, "deposit must be positive");
   assert(accounts.member(acct), "credit account is not registered");
 
@@ -246,14 +246,18 @@ export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
       right<ZswapCoinPublicKey, ContractAddress>(kernel.self())
     );
   } else {
+    // FIRST CREDIT of this colour — the pool is created lazily, right here.
     pools.insertCoin(c.color, c, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
   }
 
-  balances.insert(balanceKey(acct, c.color), (balanceOf(acct, c.color) + c.value) as Uint<128>);
+  shieldedBalances.insert(
+    shieldedKey(acct, c.color),
+    (shieldedBalanceOf(acct, c.color) + c.value) as Uint<128>
+  );
 }
 
 /// Pay `value` of `colour` out of that colour's pool to `recipient`, debiting the WITNESS OWNER's
-/// account. FR-104 guard order is load-bearing and is asserted by NC-2 and NC-3.
+/// account. FR-204 guard order is load-bearing and is asserted by NC-1, NC-2 and NC-3.
 export circuit withdrawShielded(
   colour: Bytes<32>,
   value: Uint<128>,
@@ -262,15 +266,13 @@ export circuit withdrawShielded(
   const col = disclose(colour);
   const val = disclose(value);
 
-  // 1. the witness choke point — the debited account is derived, never supplied.
+  // 1. the witness choke point — the debited account is derived, never supplied (NC-1).
   const acct = authenticatedAccount();
-  // 2. the colour must be one this Manager custodies (FR-106).
-  assertConfiguredShielded(col);
-  // 3. THE PER-ACCOUNT, PER-COLOUR GUARD, BEFORE any pool guard (FR-104): an account may not spend
-  //    more of a colour than it owns even when the pool holds more (NC-2), and wealth in another
-  //    colour is no help at all (NC-3).
-  assert(balanceOf(acct, col) >= val, "account colour balance too low");
-  // 4. only now, the pool.
+  // 2. THE PER-ACCOUNT, PER-COLOUR GUARD, BEFORE any pool guard (FR-204). A MISSING cell reads 0, so
+  //    a colour this account has never held is refused here without creating a cell for it — that is
+  //    NC-2 (pool rich, account absent) and NC-3 (colour dormant everywhere) in one line.
+  assert(shieldedBalanceOf(acct, col) >= val, "account colour balance too low");
+  // 3. only now, the pool.
   assert(pools.member(col), "no pooled coin for this colour");
   assert(pools.lookup(col).value >= val, "pooled colour balance too low");
 
@@ -283,24 +285,31 @@ export circuit withdrawShielded(
     pools.remove(col);
   }
 
-  balances.insert(balanceKey(acct, col), (balanceOf(acct, col) - val) as Uint<128>);
+  shieldedBalances.insert(shieldedKey(acct, col), (shieldedBalanceOf(acct, col) - val) as Uint<128>);
   return result.sent;
 }
 
-// --- unshielded custody ---------------------------------------------------------------------------
+// --- unshielded custody -------------------------------------------------------------------------
 
+/// Credit `amount` of `colour` to `account`, unshielded family.
+///
+/// No colour check, by design (FR-201). The LEDGER is what enforces honesty here: `receiveUnshielded`
+/// only increments this contract's declared unshielded inputs, so a transaction that names a colour
+/// it is not actually carrying fails to BALANCE and is refused by the node. The spec records that as
+/// an assumption to be ASSERTED by G3 evidence, not assumed.
 export circuit depositUnshielded(colour: Bytes<32>, amount: Uint<128>, account: Bytes<32>): [] {
   const col = disclose(colour);
   const amt = disclose(amount);
   const acct = disclose(account);
 
-  // FR-106: naming an unconfigured colour is refused here (NC-4a).
-  assertConfiguredUnshielded(col);
   assert(amt > 0, "deposit must be positive");
   assert(accounts.member(acct), "credit account is not registered");
 
   receiveUnshielded(col, amt);
-  balances.insert(balanceKey(acct, col), (balanceOf(acct, col) + amt) as Uint<128>);
+  unshieldedBalances.insert(
+    unshieldedKey(acct, col),
+    (unshieldedBalanceOf(acct, col) + amt) as Uint<128>
+  );
 }
 
 export circuit withdrawUnshielded(
@@ -311,37 +320,55 @@ export circuit withdrawUnshielded(
   const col = disclose(colour);
   const amt = disclose(amount);
 
+  // Same order as the shielded side: witness, then the per-(account, colour) guard reading a missing
+  // cell as 0, and only then the contract's own holdings.
   const acct = authenticatedAccount();
-  assertConfiguredUnshielded(col);
-  // PER-ACCOUNT, PER-COLOUR guard first, independent of the contract's ledger balance (FR-104).
-  assert(balanceOf(acct, col) >= amt, "account colour balance too low");
+  assert(unshieldedBalanceOf(acct, col) >= amt, "account colour balance too low");
   // Comparison guard rather than an exact-balance read (stdlib note on `unshieldedBalance`).
   assert(unshieldedBalanceGte(col, amt), "contract unshielded balance too low");
 
   sendUnshielded(col, amt, disclose(recipient));
-  balances.insert(balanceKey(acct, col), (balanceOf(acct, col) - amt) as Uint<128>);
+  unshieldedBalances.insert(unshieldedKey(acct, col), (unshieldedBalanceOf(acct, col) - amt) as Uint<128>);
 }
 
 // --- internal ownership transfer -----------------------------------------------------------------
 
-/// Move ownership of ONE colour between two accounts inside the Manager. NO token operation occurs:
-/// that colour's pooled coin and the contract's ledger balances are byte-identical before and
+/// Move ownership of ONE SHIELDED colour between two accounts inside the Manager. NO token operation
+/// occurs: that colour's pooled coin and the contract's ledger balances are byte-identical before and
 /// after, and no OTHER colour is touched at all.
-export circuit transferInternal(to: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
-  assert(configured, "manager not configured");
+///
+/// The CREDIT SIDE creates the destination's cell lazily if it does not exist (FR-202; spec step 12:
+/// the (AA_B, S1) cell comes into being through an internal transfer, not a deposit).
+export circuit transferInternalShielded(to: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
   const dst = disclose(to);
   const col = disclose(colour);
   const amt = disclose(amount);
 
   const fromAcct = authenticatedAccount();
-  assert(isShieldedColour(col) || isUnshieldedColour(col), "colour is not configured");
   assert(accounts.member(dst), "destination account is not registered");
   assert(fromAcct != dst, "internal transfer to the same account");
   assert(amt > 0, "internal transfer must be positive");
   // The per-account, per-colour guard again — NC-5 exercises it with an account that is
-  // demonstrably rich in OTHER colours.
-  assert(balanceOf(fromAcct, col) >= amt, "account colour balance too low");
+  // demonstrably rich in OTHER colours, and it refuses BEFORE the destination cell is created.
+  assert(shieldedBalanceOf(fromAcct, col) >= amt, "account colour balance too low");
 
-  balances.insert(balanceKey(fromAcct, col), (balanceOf(fromAcct, col) - amt) as Uint<128>);
-  balances.insert(balanceKey(dst, col), (balanceOf(dst, col) + amt) as Uint<128>);
+  shieldedBalances.insert(shieldedKey(fromAcct, col), (shieldedBalanceOf(fromAcct, col) - amt) as Uint<128>);
+  shieldedBalances.insert(shieldedKey(dst, col), (shieldedBalanceOf(dst, col) + amt) as Uint<128>);
+}
+
+/// The unshielded family's internal transfer. Same shape, different map and different key domain —
+/// so the same 32-byte colour moved here can never touch a shielded cell (FR-203, P-COLL).
+export circuit transferInternalUnshielded(to: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+  const dst = disclose(to);
+  const col = disclose(colour);
+  const amt = disclose(amount);
+
+  const fromAcct = authenticatedAccount();
+  assert(accounts.member(dst), "destination account is not registered");
+  assert(fromAcct != dst, "internal transfer to the same account");
+  assert(amt > 0, "internal transfer must be positive");
+  assert(unshieldedBalanceOf(fromAcct, col) >= amt, "account colour balance too low");
+
+  unshieldedBalances.insert(unshieldedKey(fromAcct, col), (unshieldedBalanceOf(fromAcct, col) - amt) as Uint<128>);
+  unshieldedBalances.insert(unshieldedKey(dst, col), (unshieldedBalanceOf(dst, col) + amt) as Uint<128>);
 }

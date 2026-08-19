@@ -1,0 +1,640 @@
+{
+  "gate": "G2",
+  "lane": "EXPERIMENTAL_LANE",
+  "deviation": "LANE-DEV-1",
+  "recorded_utc": "2026-08-19T03:32:57.167Z",
+  "verdict": "PASS",
+  "manager_address": "d6bfe91906d6351304e9f3ce2bf4688c465d5ea748d6828cd8776623b43b8697",
+  "deploy_order": {
+    "chain_tip_before_any_deploy": {
+      "height": 17,
+      "hash": "46ec13a5e26f262be5179ffa7e3f78964dd479197558a1df0e3e89fcc2060f90",
+      "timestamp": 1787109942005
+    },
+    "manager": {
+      "label": "Manager",
+      "address": "d6bfe91906d6351304e9f3ce2bf4688c465d5ea748d6828cd8776623b43b8697",
+      "sdk": {
+        "tx": {
+          "__wbg_ptr": 5537968
+        },
+        "status": "SucceedEntirely",
+        "txId": "0067a8879446df4d4c4e23a5a2313b79e765225b9b7765c7b708ce4ce08029c730",
+        "txHash": "34041db0e021b11696a29c9f3e556c5201911dbde0dce430b2262529df4b54da",
+        "identifiers": [
+          "002af17c0c1ae7eb9cdf464894c82e634f78271b43037eb615cd2c610a98c63b5d",
+          "0067a8879446df4d4c4e23a5a2313b79e765225b9b7765c7b708ce4ce08029c730"
+        ],
+        "blockHeight": 20,
+        "blockHash": "fdd05e046c36803146a5fab74dfcc2bf1be49eb3e26e0d69836f3fec3df4637f",
+        "unshielded": {
+          "created": [],
+          "spent": []
+        },
+        "blockTimestamp": 1787109960004,
+        "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+        "indexerId": 28,
+        "protocolVersion": 2000000,
+        "fees": {
+          "paidFees": "5914933807212464",
+          "estimatedFees": "5914933807212464"
+        },
+        "contractAddress": "d6bfe91906d6351304e9f3ce2bf4688c465d5ea748d6828cd8776623b43b8697",
+        "initialContractState": {
+          "__wbg_ptr": 1273632
+        }
+      },
+      "txId": 28,
+      "txHash": "34041db0e021b11696a29c9f3e556c5201911dbde0dce430b2262529df4b54da",
+      "blockHeight": 20,
+      "blockHash": "fdd05e046c36803146a5fab74dfcc2bf1be49eb3e26e0d69836f3fec3df4637f",
+      "blockTimestamp": 1787109960004
+    },
+    "minters": [
+      {
+        "label": "Minter1",
+        "address": "a83910314ca06a7d10605a828316052e6b093b26a8a2f44e3f39c808601fa50a",
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 5812720
+          },
+          "status": "SucceedEntirely",
+          "txId": "00547d726e935de6df164294061f4e7070740e6bcfbf036cbfd77d4d7a3a35686a",
+          "txHash": "3e10b620ea3ea59424665313470a7f7d66b50d1827a04a95d3013cc77f9f7dfd",
+          "identifiers": [
+            "000a27841228a9b2ae732201a45875bafeb9521ce4d6fcb31cdf8c746085c93a71",
+            "00547d726e935de6df164294061f4e7070740e6bcfbf036cbfd77d4d7a3a35686a"
+          ],
+          "blockHeight": 23,
+          "blockHash": "5aa0312e39122871fde5eb667c8187000764d05028f72d42c0cdc8241b0dc0c6",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787109978001,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 29,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2513440679047943",
+            "estimatedFees": "2513440679047943"
+          },
+          "contractAddress": "a83910314ca06a7d10605a828316052e6b093b26a8a2f44e3f39c808601fa50a",
+          "initialContractState": {
+            "__wbg_ptr": 1613712
+          }
+        },
+        "txId": 29,
+        "txHash": "3e10b620ea3ea59424665313470a7f7d66b50d1827a04a95d3013cc77f9f7dfd",
+        "blockHeight": 23,
+        "blockHash": "5aa0312e39122871fde5eb667c8187000764d05028f72d42c0cdc8241b0dc0c6",
+        "blockTimestamp": 1787109978001
+      },
+      {
+        "label": "Minter2",
+        "address": "5d3bc50e7564052c8851a5308bc3d240f79cf3b865044447415476876104109f",
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 6453280
+          },
+          "status": "SucceedEntirely",
+          "txId": "004462f806796523b0687297bc7c7a1861239a468f77e6c329c4a6b9147e18aaba",
+          "txHash": "a2fcd05f2551c6bdbe4941a4367d3f2f5719f5cbda1aefa9fc0ffac859acb016",
+          "identifiers": [
+            "00185f69a1bd8d43d96c88cf09a765fdddc3c7e42b23d3f6531abfe656ca7c55bc",
+            "004462f806796523b0687297bc7c7a1861239a468f77e6c329c4a6b9147e18aaba"
+          ],
+          "blockHeight": 32,
+          "blockHash": "bf612213afae42791388f5d446bd5147ebdb25582f60ae3dae3caab84149e0da",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787110032002,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 32,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2572993863407204",
+            "estimatedFees": "2572993863407204"
+          },
+          "contractAddress": "5d3bc50e7564052c8851a5308bc3d240f79cf3b865044447415476876104109f",
+          "initialContractState": {
+            "__wbg_ptr": 1820928
+          }
+        },
+        "txId": 32,
+        "txHash": "a2fcd05f2551c6bdbe4941a4367d3f2f5719f5cbda1aefa9fc0ffac859acb016",
+        "blockHeight": 32,
+        "blockHash": "bf612213afae42791388f5d446bd5147ebdb25582f60ae3dae3caab84149e0da",
+        "blockTimestamp": 1787110032002
+      },
+      {
+        "label": "Minter3",
+        "address": "3849c9b8372b77d561bb9955c9fbac89926f5310a62663537121d40c80e50a45",
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 5972336
+          },
+          "status": "SucceedEntirely",
+          "txId": "006fac6ccfda93c478a68b03926a487b7cc3cddb41df990e0822b62924aa49b5be",
+          "txHash": "3444de1c690873350eb37822624dd52001e8dbb84669b5b9f88d2988d438747c",
+          "identifiers": [
+            "0072cdd4299b6328b1120eaff1abd0743feb8fa3d975a598e7c96068e14d157856",
+            "006fac6ccfda93c478a68b03926a487b7cc3cddb41df990e0822b62924aa49b5be"
+          ],
+          "blockHeight": 41,
+          "blockHash": "61841f49c28e462c32fdd04eb6293cb521ee9b1e5179b42c25b1e1555df23b7d",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787110086001,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 35,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2633474137517562",
+            "estimatedFees": "2633474137517562"
+          },
+          "contractAddress": "3849c9b8372b77d561bb9955c9fbac89926f5310a62663537121d40c80e50a45",
+          "initialContractState": {
+            "__wbg_ptr": 1988160
+          }
+        },
+        "txId": 35,
+        "txHash": "3444de1c690873350eb37822624dd52001e8dbb84669b5b9f88d2988d438747c",
+        "blockHeight": 41,
+        "blockHash": "61841f49c28e462c32fdd04eb6293cb521ee9b1e5179b42c25b1e1555df23b7d",
+        "blockTimestamp": 1787110086001
+      },
+      {
+        "label": "MinterCollide",
+        "address": "da4971c6231593598e2576416ca519aa35b44069e9599f701659cd619e00ff82",
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 6426176
+          },
+          "status": "SucceedEntirely",
+          "txId": "00bec487ce9e0f896049531ff78eb315e4feb0644afc3be8d17e740f640ad95abd",
+          "txHash": "440e54a57b0a1d09928a384b435ecf569aefe4e7074ce2962efb80f20f228a3d",
+          "identifiers": [
+            "00fa399d12360c267a539ecb3c63e1f46ac5ab69d0bb07d12e0579b514ad3b9b08",
+            "00bec487ce9e0f896049531ff78eb315e4feb0644afc3be8d17e740f640ad95abd"
+          ],
+          "blockHeight": 50,
+          "blockHash": "a2dc1045db36a043b8b9ea327a271629819362ea229530bca1b4c7327cb662b1",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787110140003,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 38,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2193550754968594",
+            "estimatedFees": "2193550754968594"
+          },
+          "contractAddress": "da4971c6231593598e2576416ca519aa35b44069e9599f701659cd619e00ff82",
+          "initialContractState": {
+            "__wbg_ptr": 1513928
+          }
+        },
+        "txId": 38,
+        "txHash": "440e54a57b0a1d09928a384b435ecf569aefe4e7074ce2962efb80f20f228a3d",
+        "blockHeight": 50,
+        "blockHash": "a2dc1045db36a043b8b9ea327a271629819362ea229530bca1b4c7327cb662b1",
+        "blockTimestamp": 1787110140003
+      }
+    ],
+    "rows": [
+      {
+        "contract": "Minter1",
+        "address": "a83910314ca06a7d10605a828316052e6b093b26a8a2f44e3f39c808601fa50a",
+        "deployBlock": 23,
+        "managerBlock": 20,
+        "strictlyLater": true,
+        "actionAtManagerBlock": null,
+        "absentAtManagerBlock": true,
+        "absentAtManagerBlockAtOrBefore": true,
+        "contractQueryError": null
+      },
+      {
+        "contract": "Minter2",
+        "address": "5d3bc50e7564052c8851a5308bc3d240f79cf3b865044447415476876104109f",
+        "deployBlock": 32,
+        "managerBlock": 20,
+        "strictlyLater": true,
+        "actionAtManagerBlock": null,
+        "absentAtManagerBlock": true,
+        "absentAtManagerBlockAtOrBefore": true,
+        "contractQueryError": null
+      },
+      {
+        "contract": "Minter3",
+        "address": "3849c9b8372b77d561bb9955c9fbac89926f5310a62663537121d40c80e50a45",
+        "deployBlock": 41,
+        "managerBlock": 20,
+        "strictlyLater": true,
+        "actionAtManagerBlock": null,
+        "absentAtManagerBlock": true,
+        "absentAtManagerBlockAtOrBefore": true,
+        "contractQueryError": null
+      },
+      {
+        "contract": "MinterCollide",
+        "address": "da4971c6231593598e2576416ca519aa35b44069e9599f701659cd619e00ff82",
+        "deployBlock": 50,
+        "managerBlock": 20,
+        "strictlyLater": true,
+        "actionAtManagerBlock": null,
+        "absentAtManagerBlock": true,
+        "absentAtManagerBlockAtOrBefore": true,
+        "contractQueryError": null
+      }
+    ],
+    "manager_present_at_own_deploy_block": true,
+    "manager_control_at_or_before": true,
+    "claim": "the Manager was deployed in a strictly earlier block than every minting contract, and at the Manager's deploy block the indexer reports NO contract action for any of their addresses — asked both through `contractAction(address, blockOffset)` and through `contract(address, offset)`, whose documented semantics are \"at or before that block\""
+  },
+  "minters": [
+    {
+      "label": "Minter1",
+      "kind": "minter",
+      "tagText": "TOKA",
+      "tagIn": "544f4b4100000000000000000000000000000000000000000000000000000000",
+      "address": "a83910314ca06a7d10605a828316052e6b093b26a8a2f44e3f39c808601fa50a",
+      "ledgerTag": "544f4b4100000000000000000000000000000000000000000000000000000000",
+      "shieldedSep": "f0d01ad6d6ebe86a154ad08351017bb8bcce8d0431ccffa29f5ecb4c15bcce2e",
+      "unshieldedSep": "20712f5ad7c47b300147ad7a92d9d606575a12d46dc00c6991758a596c9d4ac6",
+      "simShieldedSep": "f0d01ad6d6ebe86a154ad08351017bb8bcce8d0431ccffa29f5ecb4c15bcce2e",
+      "simUnshieldedSep": "20712f5ad7c47b300147ad7a92d9d606575a12d46dc00c6991758a596c9d4ac6",
+      "shieldedColour": "95a4192f764a73a8b217a20f05bfca9f95eae9d67dd3fc0a0e9659ccfc227387",
+      "unshieldedColour": "f8771e96c3a7ce116696038d0f391def0abfa4bc003a9049a75905b92ac7ddc2",
+      "deploy": {
+        "label": "Minter1",
+        "address": "a83910314ca06a7d10605a828316052e6b093b26a8a2f44e3f39c808601fa50a",
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 5812720
+          },
+          "status": "SucceedEntirely",
+          "txId": "00547d726e935de6df164294061f4e7070740e6bcfbf036cbfd77d4d7a3a35686a",
+          "txHash": "3e10b620ea3ea59424665313470a7f7d66b50d1827a04a95d3013cc77f9f7dfd",
+          "identifiers": [
+            "000a27841228a9b2ae732201a45875bafeb9521ce4d6fcb31cdf8c746085c93a71",
+            "00547d726e935de6df164294061f4e7070740e6bcfbf036cbfd77d4d7a3a35686a"
+          ],
+          "blockHeight": 23,
+          "blockHash": "5aa0312e39122871fde5eb667c8187000764d05028f72d42c0cdc8241b0dc0c6",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787109978001,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 29,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2513440679047943",
+            "estimatedFees": "2513440679047943"
+          },
+          "contractAddress": "a83910314ca06a7d10605a828316052e6b093b26a8a2f44e3f39c808601fa50a",
+          "initialContractState": {
+            "__wbg_ptr": 1613712
+          }
+        },
+        "txId": 29,
+        "txHash": "3e10b620ea3ea59424665313470a7f7d66b50d1827a04a95d3013cc77f9f7dfd",
+        "blockHeight": 23,
+        "blockHash": "5aa0312e39122871fde5eb667c8187000764d05028f72d42c0cdc8241b0dc0c6",
+        "blockTimestamp": 1787109978001
+      }
+    },
+    {
+      "label": "Minter2",
+      "kind": "minter",
+      "tagText": "TOKB",
+      "tagIn": "544f4b4200000000000000000000000000000000000000000000000000000000",
+      "address": "5d3bc50e7564052c8851a5308bc3d240f79cf3b865044447415476876104109f",
+      "ledgerTag": "544f4b4200000000000000000000000000000000000000000000000000000000",
+      "shieldedSep": "f3940770d5517d6ca314ced3be429137cbf5813aed8a6a16d25e951cbf15aeaa",
+      "unshieldedSep": "074e16e697ad8b0b62a37692da4a00d63d5e284ead62fd691e3507ec23ddb509",
+      "simShieldedSep": "f3940770d5517d6ca314ced3be429137cbf5813aed8a6a16d25e951cbf15aeaa",
+      "simUnshieldedSep": "074e16e697ad8b0b62a37692da4a00d63d5e284ead62fd691e3507ec23ddb509",
+      "shieldedColour": "97b8b1289225726d3122ca85c763a04c0bfddcd824ff8b4495105621c04f5f92",
+      "unshieldedColour": "04e92f9e66320014bc18caa4f4f3b382dffd4506b869c736a470f70237b27940",
+      "deploy": {
+        "label": "Minter2",
+        "address": "5d3bc50e7564052c8851a5308bc3d240f79cf3b865044447415476876104109f",
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 6453280
+          },
+          "status": "SucceedEntirely",
+          "txId": "004462f806796523b0687297bc7c7a1861239a468f77e6c329c4a6b9147e18aaba",
+          "txHash": "a2fcd05f2551c6bdbe4941a4367d3f2f5719f5cbda1aefa9fc0ffac859acb016",
+          "identifiers": [
+            "00185f69a1bd8d43d96c88cf09a765fdddc3c7e42b23d3f6531abfe656ca7c55bc",
+            "004462f806796523b0687297bc7c7a1861239a468f77e6c329c4a6b9147e18aaba"
+          ],
+          "blockHeight": 32,
+          "blockHash": "bf612213afae42791388f5d446bd5147ebdb25582f60ae3dae3caab84149e0da",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787110032002,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 32,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2572993863407204",
+            "estimatedFees": "2572993863407204"
+          },
+          "contractAddress": "5d3bc50e7564052c8851a5308bc3d240f79cf3b865044447415476876104109f",
+          "initialContractState": {
+            "__wbg_ptr": 1820928
+          }
+        },
+        "txId": 32,
+        "txHash": "a2fcd05f2551c6bdbe4941a4367d3f2f5719f5cbda1aefa9fc0ffac859acb016",
+        "blockHeight": 32,
+        "blockHash": "bf612213afae42791388f5d446bd5147ebdb25582f60ae3dae3caab84149e0da",
+        "blockTimestamp": 1787110032002
+      }
+    },
+    {
+      "label": "Minter3",
+      "kind": "minter",
+      "tagText": "TOKC",
+      "tagIn": "544f4b4300000000000000000000000000000000000000000000000000000000",
+      "address": "3849c9b8372b77d561bb9955c9fbac89926f5310a62663537121d40c80e50a45",
+      "ledgerTag": "544f4b4300000000000000000000000000000000000000000000000000000000",
+      "shieldedSep": "43c395dfd73f970e3276d2fec3bef618203008f990c84a972fc6f201eb48b60e",
+      "unshieldedSep": "08ffdfbb93a13cf953af7a4263f4b210e2418654cb581b078a968575265475c9",
+      "simShieldedSep": "43c395dfd73f970e3276d2fec3bef618203008f990c84a972fc6f201eb48b60e",
+      "simUnshieldedSep": "08ffdfbb93a13cf953af7a4263f4b210e2418654cb581b078a968575265475c9",
+      "shieldedColour": "0eb106d06c632d557cc44bb3a96407f885c5a4c6cb579588dade6b9647d57376",
+      "unshieldedColour": "c7e6e79acaad11d957647fa381a07d6b47b0ae7e5fc841f00aeff26e92a63fcd",
+      "deploy": {
+        "label": "Minter3",
+        "address": "3849c9b8372b77d561bb9955c9fbac89926f5310a62663537121d40c80e50a45",
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 5972336
+          },
+          "status": "SucceedEntirely",
+          "txId": "006fac6ccfda93c478a68b03926a487b7cc3cddb41df990e0822b62924aa49b5be",
+          "txHash": "3444de1c690873350eb37822624dd52001e8dbb84669b5b9f88d2988d438747c",
+          "identifiers": [
+            "0072cdd4299b6328b1120eaff1abd0743feb8fa3d975a598e7c96068e14d157856",
+            "006fac6ccfda93c478a68b03926a487b7cc3cddb41df990e0822b62924aa49b5be"
+          ],
+          "blockHeight": 41,
+          "blockHash": "61841f49c28e462c32fdd04eb6293cb521ee9b1e5179b42c25b1e1555df23b7d",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787110086001,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 35,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2633474137517562",
+            "estimatedFees": "2633474137517562"
+          },
+          "contractAddress": "3849c9b8372b77d561bb9955c9fbac89926f5310a62663537121d40c80e50a45",
+          "initialContractState": {
+            "__wbg_ptr": 1988160
+          }
+        },
+        "txId": 35,
+        "txHash": "3444de1c690873350eb37822624dd52001e8dbb84669b5b9f88d2988d438747c",
+        "blockHeight": 41,
+        "blockHash": "61841f49c28e462c32fdd04eb6293cb521ee9b1e5179b42c25b1e1555df23b7d",
+        "blockTimestamp": 1787110086001
+      }
+    },
+    {
+      "label": "MinterCollide",
+      "kind": "minter-collide",
+      "tagText": "TOKX",
+      "tagIn": "544f4b5800000000000000000000000000000000000000000000000000000000",
+      "address": "da4971c6231593598e2576416ca519aa35b44069e9599f701659cd619e00ff82",
+      "ledgerTag": "544f4b5800000000000000000000000000000000000000000000000000000000",
+      "shieldedSep": "e0f7cbe09ceba1dac6fbec7df9eb00c5f872960fb8108fd4988199f5bf41dd75",
+      "unshieldedSep": "e0f7cbe09ceba1dac6fbec7df9eb00c5f872960fb8108fd4988199f5bf41dd75",
+      "simShieldedSep": "e0f7cbe09ceba1dac6fbec7df9eb00c5f872960fb8108fd4988199f5bf41dd75",
+      "simUnshieldedSep": "e0f7cbe09ceba1dac6fbec7df9eb00c5f872960fb8108fd4988199f5bf41dd75",
+      "shieldedColour": "6c4727ed9db047e54e085a297867b6d033c29514a4cdaadfe2d9bf207ffa03d4",
+      "unshieldedColour": "6c4727ed9db047e54e085a297867b6d033c29514a4cdaadfe2d9bf207ffa03d4",
+      "deploy": {
+        "label": "MinterCollide",
+        "address": "da4971c6231593598e2576416ca519aa35b44069e9599f701659cd619e00ff82",
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 6426176
+          },
+          "status": "SucceedEntirely",
+          "txId": "00bec487ce9e0f896049531ff78eb315e4feb0644afc3be8d17e740f640ad95abd",
+          "txHash": "440e54a57b0a1d09928a384b435ecf569aefe4e7074ce2962efb80f20f228a3d",
+          "identifiers": [
+            "00fa399d12360c267a539ecb3c63e1f46ac5ab69d0bb07d12e0579b514ad3b9b08",
+            "00bec487ce9e0f896049531ff78eb315e4feb0644afc3be8d17e740f640ad95abd"
+          ],
+          "blockHeight": 50,
+          "blockHash": "a2dc1045db36a043b8b9ea327a271629819362ea229530bca1b4c7327cb662b1",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787110140003,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 38,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2193550754968594",
+            "estimatedFees": "2193550754968594"
+          },
+          "contractAddress": "da4971c6231593598e2576416ca519aa35b44069e9599f701659cd619e00ff82",
+          "initialContractState": {
+            "__wbg_ptr": 1513928
+          }
+        },
+        "txId": 38,
+        "txHash": "440e54a57b0a1d09928a384b435ecf569aefe4e7074ce2962efb80f20f228a3d",
+        "blockHeight": 50,
+        "blockHash": "a2dc1045db36a043b8b9ea327a271629819362ea229530bca1b4c7327cb662b1",
+        "blockTimestamp": 1787110140003
+      }
+    }
+  ],
+  "colours": {
+    "minter": {
+      "Minter1(TOKA).shielded": "95a4192f764a73a8b217a20f05bfca9f95eae9d67dd3fc0a0e9659ccfc227387",
+      "Minter1(TOKA).unshielded": "f8771e96c3a7ce116696038d0f391def0abfa4bc003a9049a75905b92ac7ddc2",
+      "Minter2(TOKB).shielded": "97b8b1289225726d3122ca85c763a04c0bfddcd824ff8b4495105621c04f5f92",
+      "Minter2(TOKB).unshielded": "04e92f9e66320014bc18caa4f4f3b382dffd4506b869c736a470f70237b27940",
+      "Minter3(TOKC).shielded": "0eb106d06c632d557cc44bb3a96407f885c5a4c6cb579588dade6b9647d57376",
+      "Minter3(TOKC).unshielded": "c7e6e79acaad11d957647fa381a07d6b47b0ae7e5fc841f00aeff26e92a63fcd"
+    },
+    "minter_collide": {
+      "shielded": "6c4727ed9db047e54e085a297867b6d033c29514a4cdaadfe2d9bf207ffa03d4",
+      "unshielded": "6c4727ed9db047e54e085a297867b6d033c29514a4cdaadfe2d9bf207ffa03d4",
+      "byte_identical": true
+    }
+  },
+  "distinctness": {
+    "comparisons": 15,
+    "distinct": 15,
+    "collisions": []
+  },
+  "registration": {
+    "accounts": [
+      "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904"
+    ],
+    "map_sizes_after_registration": {
+      "pools": 0,
+      "shieldedCells": 0,
+      "unshieldedCells": 0
+    },
+    "map_sizes_final": {
+      "pools": 0,
+      "shieldedCells": 0,
+      "unshieldedCells": 0
+    },
+    "seeded": false
+  },
+  "accounts": {
+    "AA_A": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "AA_B": "755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904"
+  },
+  "family_keys_for_colliding_colour": {
+    "shielded": "26656c86bda379df57e789070873ce379baa57eea24cc9d4da0ee09c4c141deb",
+    "unshielded": "0cd2d46273c6a21ab847ef06b2fa7e05b0cbbdf8ad0070a58e5de40725d51d10",
+    "differ": true
+  },
+  "circuit_reads": {
+    "isRegistered(AA_A)": true,
+    "shieldedAccountBalance(AA_A, S1)": "0",
+    "unshieldedAccountBalance(AA_B, U1)": "0",
+    "poolHasColour(S1)": false
+  },
+  "negatives": [
+    {
+      "id": "duplicate-registration",
+      "label": "Registering an account id that already exists is refused",
+      "expectation": "rejected with 'account already registered'; the account set is unchanged and no custody cell was created",
+      "rejectedAt": "circuit execution (no transaction built)",
+      "reason": "Unexpected error executing scoped transaction '<unnamed>': Error: failed assert: account already registered | cause: failed assert: account already registered",
+      "expectedMessage": "/account already registered/",
+      "messageMatched": true,
+      "stateUnchanged": true,
+      "mapSizesUnchanged": true,
+      "mapSizesBefore": {
+        "pools": 0,
+        "shieldedCells": 0,
+        "unshieldedCells": 0
+      },
+      "mapSizesAfter": {
+        "pools": 0,
+        "shieldedCells": 0,
+        "unshieldedCells": 0
+      },
+      "status": "GREEN"
+    },
+    {
+      "id": "unregistered-witness",
+      "label": "NC-1 shape: a witness that opens no registered account is refused at the choke point",
+      "expectation": "rejected with \"caller's owner witness matches no registered account\" before any balance or pool guard is reached",
+      "rejectedAt": "circuit execution (no transaction built)",
+      "reason": "Unexpected error executing scoped transaction '<unnamed>': Error: failed assert: caller's owner witness matches no registered account | cause: failed assert: caller's owner witness matches no registered account",
+      "expectedMessage": "/matches no registered account/",
+      "messageMatched": true,
+      "stateUnchanged": true,
+      "mapSizesUnchanged": true,
+      "mapSizesBefore": {
+        "pools": 0,
+        "shieldedCells": 0,
+        "unshieldedCells": 0
+      },
+      "mapSizesAfter": {
+        "pools": 0,
+        "shieldedCells": 0,
+        "unshieldedCells": 0
+      },
+      "status": "GREEN"
+    },
+    {
+      "id": "unregistered-credit",
+      "label": "NC-4 shape: a deposit naming an unregistered account commitment is refused",
+      "expectation": "rejected with 'credit account is not registered'; credit is open to REGISTERED accounts only, and the refusal creates no pool and no cell",
+      "rejectedAt": "circuit execution (no transaction built)",
+      "reason": "Unexpected error executing scoped transaction '<unnamed>': Error: failed assert: credit account is not registered | cause: failed assert: credit account is not registered",
+      "expectedMessage": "/credit account is not registered/",
+      "messageMatched": true,
+      "stateUnchanged": true,
+      "mapSizesUnchanged": true,
+      "mapSizesBefore": {
+        "pools": 0,
+        "shieldedCells": 0,
+        "unshieldedCells": 0
+      },
+      "mapSizesAfter": {
+        "pools": 0,
+        "shieldedCells": 0,
+        "unshieldedCells": 0
+      },
+      "status": "GREEN"
+    },
+    {
+      "id": "unknown-colour-withdraw",
+      "label": "v3-specific: withdrawing a colour the Manager has NEVER SEEN is refused by the per-account guard reading the absent cell as 0",
+      "expectation": "rejected with 'account colour balance too low' — not with a colour-configuration error, because there is no colour configuration; and NO cell or pool is created for that colour",
+      "rejectedAt": "circuit execution (no transaction built)",
+      "reason": "Unexpected error executing scoped transaction '<unnamed>': Error: failed assert: account colour balance too low | cause: failed assert: account colour balance too low",
+      "expectedMessage": "/account colour balance too low/",
+      "messageMatched": true,
+      "stateUnchanged": true,
+      "mapSizesUnchanged": true,
+      "mapSizesBefore": {
+        "pools": 0,
+        "shieldedCells": 0,
+        "unshieldedCells": 0
+      },
+      "mapSizesAfter": {
+        "pools": 0,
+        "shieldedCells": 0,
+        "unshieldedCells": 0
+      },
+      "status": "GREEN"
+    },
+    {
+      "id": "unknown-colour-withdraw-unshielded",
+      "label": "FR-206 shape: withdrawing a DORMANT unshielded colour is refused, and the colour stays absent from every map",
+      "expectation": "rejected with 'account colour balance too low'; all three map sizes remain 0",
+      "rejectedAt": "circuit execution (no transaction built)",
+      "reason": "Unexpected error executing scoped transaction '<unnamed>': Error: failed assert: account colour balance too low | cause: failed assert: account colour balance too low",
+      "expectedMessage": "/account colour balance too low/",
+      "messageMatched": true,
+      "stateUnchanged": true,
+      "mapSizesUnchanged": true,
+      "mapSizesBefore": {
+        "pools": 0,
+        "shieldedCells": 0,
+        "unshieldedCells": 0
+      },
+      "mapSizesAfter": {
+        "pools": 0,
+        "shieldedCells": 0,
+        "unshieldedCells": 0
+      },
+      "status": "GREEN"
+    }
+  ],
+  "failures": []
+}

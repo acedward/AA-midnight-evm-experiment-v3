@@ -1,12 +1,11 @@
-// Compatibility shim. The Manager state reader moved to `src/manager-view.ts` in Plan 03 (G3),
-// because G3 reads exactly the same state and both gates must use ONE definition of "what the
-// Manager holds" — otherwise the two gates could disagree about a cell without anyone noticing.
-//
-// Same promotion Plan 02 made for the compiled-contract wrappers (`src/contracts.ts`), for the same
-// reason: one definition, so two gates cannot drift apart.
+// Compatibility shim. The Manager state reader lives in `src/manager-view.ts` so that G2 and G3 read
+// exactly the same state and cannot disagree about a cell. Same promotion 00004 made for the
+// compiled-contract wrappers (`src/contracts.ts`), for the same reason: one definition.
 export {
-  balanceKeyOf,
+  shieldedKeyOf,
+  unshieldedKeyOf,
   hex,
+  mapSizes,
   readManager,
   snapshot,
   waitForManager,

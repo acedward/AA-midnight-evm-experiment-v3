@@ -83,19 +83,23 @@ export const makeProviders = (
 };
 
 /**
- * Proof provider for a transaction whose single intent spans BOTH contracts (ledger-level
+ * Proof provider for a transaction whose single intent spans SEVERAL contracts (ledger-level
  * composition — see `ledger-compose.ts`).
  *
  * A flattened "all keys in one directory" provider does NOT work: each call's key location embeds
  * the hash of its DEPLOYED verifier key, and resolution joins on that hash rather than on the
  * circuit name. `ZKConfigRegistry` is the pinned SDK's own answer — it takes one artifact source
- * per compiled contract and selects the source whose verifier key matches, which is immune to the
- * `mintShieldedTo`-style name collisions between our two contracts.
+ * per compiled contract and selects the source whose verifier key matches, which is immune to
+ * circuit-name collisions between contracts. 00005 leans on that harder than 00004 did:
+ * `minter-collide` deliberately exports `mintShieldedTo`, `mintUnshieldedTo`, `shieldedColor` and
+ * `unshieldedColor` under the same names as `minter`, so name-based resolution would be ambiguous
+ * for four circuits out of five.
  */
 export const makeComposedProofProvider = () => {
   const ep = endpoints(readLaneEnv());
   const registry = new ZKConfigRegistry([
     new NodeZkConfigProvider(zkDir('minter')),
+    new NodeZkConfigProvider(zkDir('minter-collide')),
     new NodeZkConfigProvider(zkDir('manager')),
   ]);
   return timedProofProvider(httpClientProofProvider(ep.provingServerUrl.toString(), registry as any));
