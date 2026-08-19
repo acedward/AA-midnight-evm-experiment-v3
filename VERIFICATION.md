@@ -362,4 +362,94 @@ compares what the specification asserts: every checklist verdict, the final 16-c
 figures value for value, 15/15 distinctness, two circuits in the M1 transaction, and every negative
 control's verdict, message match, funds-unchanged proof **and verbatim message text**.
 
-<!-- G4 RUN RECORD APPENDED BELOW AFTER THE RUN -->
+### Pre-validated without chain time
+
+A ~50-minute reproduction must not be lost to a defect in its own verdict step, so both non-chain
+steps were exercised standalone first:
+
+| Check | Result |
+|---|---|
+| `08-docs` run against the working tree | PASS — three documents, both lane labels in each, 3 Mermaid blocks, nothing generated tracked by git |
+| **freshness guard self-test**: the ORIGINAL fed to the comparison as its own "reproduction" | **CORRECTLY REJECTED** — same Manager address, 18 transaction ids in common, all four colours identical. A comparison that cannot fail is worthless; this one demonstrably fails when it should. |
+
+### G4 run history
+
+| Run | UTC | Outcome | Cause |
+|---|---|---|---|
+| 1 | 2026-08-18T23:41Z → 2026-08-19T00:46Z | **RED** at `03-reproduce-g1` (G1 step `05-pull`, exit 137) | **A host Docker fault, not a project defect.** `docker compose pull` printed `Pulling` for all three services and then made no progress for 63 minutes, although all three pinned digests were ALREADY present locally. Diagnosed rather than assumed: `docker info` answers normally (server 29.1.3, 12 containers, 80 images) and the registry is reachable from the host (`auth.docker.io` 200, `registry-1.docker.io/v2/` 401 — the normal unauthenticated response), but **`docker pull hello-world` hangs identically** and `docker-credential-desktop get` hangs too, so the daemon's pull path is wedged for every image, not for these pins. I killed the stuck pull rather than let it hold a shared host: G1 went RED (exit 137), G1's teardown exited 0, and G4's teardown removed the validated temporary clone and asserted **0 containers, 0 volumes, 0 networks** remaining. |
+
+| 2 | 2026-08-19T00:57Z | **RED** at `03-reproduce-g1` (G1 step `02-lane-reuse`) | My first form of the workaround was wrong, **and the lane-reuse check caught it**. Pointing `DOCKER_CONFIG` at a scratch directory hid the `docker compose` CLI *plugin* (Docker resolves plugins through the config directory), so `docker compose --env-file …` failed with `unknown flag: --env-file`. The check then refused to pass vacuously — it reported `DIGEST MISMATCH: no image references sha256:caf93d6f…` for all three services and `LANE REUSE PROOF FAILED — this is a BLOCKER. Do not edit a pin to make it pass.` A check that read "no images found" as "nothing mismatched" would be worthless. Teardown failed too (exit 125, same missing plugin), and the wrapper correctly reported RED rather than green-with-a-warning. |
+
+**Root cause, diagnosed rather than guessed: Docker Desktop's credential helper is wedged.**
+`~/.docker/config.json` sets `"credsStore": "desktop"`, and `docker-credential-desktop get` hangs
+indefinitely, so every `docker pull` blocks on that lookup before it reaches the network — which is
+why `docker info` and `docker system df` answer normally while even `hello-world` never completes.
+Disk was ruled out (143 GiB free on the host).
+
+**The workaround and its exact scope.** The gate is run with `DOCKER_CONFIG` pointing at a scratch
+directory containing `{}` (no `credsStore`) plus a symlink to the user's existing `cli-plugins`;
+under it a pull completes instantly.
+
+- It is an ENVIRONMENT VARIABLE for the gate's own child processes. `~/.docker/config.json`, Docker
+  Desktop's settings and every other project on this shared host are untouched.
+- **No pin, gate wrapper, contract or piece of evidence was changed to get past it** — in
+  particular the failing `05-pull` step was not removed.
+- Pulls therefore run anonymously. The images are public and **pinned by digest**, and the digest is
+  the identity, so the pin proof is unaffected: `lane_assert_pins_unchanged` and
+  `docker compose config --images` still assert the three digests, and `stack_health` still records
+  the image IDs that actually run. Verified before relaunching that `docker compose config --images`
+  resolves exactly `caf93d6f…`, `6c01bb43…` and `c68c25e8…` under the scratch config.
+
+Restarting Docker Desktop would also have cleared the wedge, but it would have killed an unrelated
+container that had been up for 24 hours on this shared host, so it was not done. Host state was
+restored after the diagnosis: the `hello-world` image pulled to isolate the fault was removed, and
+an empty `aa00004-p2-*` temporary directory left by an earlier probe run was cleaned up.
+
+### Run 3 — GREEN
+
+`evidence/g4-closeout/run.log`: **`final_exit: 0`**, teardown `exit: 0`, residue proof
+**0 containers, 0 volumes, 0 networks**.
+
+| Step | Duration | Result |
+|---|---|---|
+| `01-clean-clone` | 0 s | fresh `mktemp -d` clone; no generated artifacts, no `docker/.env`, no `node_modules`, no private-state store; contracts, all three wrappers and the pinned lockfile present |
+| `02-spec-hash` | 0 s | approved spec byte-identical to `e83897d46d3b2b5af3c42863d4ad49c922c374038a45dc04401ba5cc66e111f6` |
+| `03-reproduce-g1` | 253 s | G1 GREEN inside the clone; probe P2 verdict PASS, 0 failures |
+| `04-reproduce-g2` | 530 s | G2 GREEN inside the clone; deploy-configure PASS, 0 failures, **15/15** colours distinct |
+| `05-reproduce-g3` | 1151 s | G3 GREEN inside the clone; 25/25 items |
+| `06-compare` | 1 s | **the reproduction matches the original item for item** (below) |
+| `07-report` | 0 s | `REPORT.md` re-rendered with its reproduction section filled from the clone's own evidence |
+| `08-docs` | 0 s | all three documents present with both labels; Mermaid present; `archive/00003/` intact; nothing generated tracked by git |
+
+**Freshness — the reproduction is demonstrably its own run, not the committed evidence re-read:**
+
+| | Original | Clean-clone reproduction |
+|---|---|---|
+| Manager | `10ea8ca47a36e89a6534148161355156ce2b1cd372ac748502cb273b29cba901` | `e00ad0b5f46779ade510da9010c8cd2d7df59a57131ab59d30663eb97ceaff77` |
+| Minter1 (`TOKA`) | `8ff81b38627d0a611c3c558eed28b859b0b5e1b9ea88159caee4ae6bc257e692` | `22f35b2b430088d94e0fadfcc1b0a9cb0d25db1acdf4a15765d154bfa947e189` |
+| Minter2 (`TOKB`) | `4cf57bdd66fa67d51305194bf68b6611b14261f31e21cfcfee8593cee742a0a0` | `ada870b7052b6f776ceee23cad13ac4eb64a323653a91802a2b27836510f388c` |
+| Minter3 (`TOKC`) | `c4b9aec02d9d45d75ffcb7a5bc1d5223658d6130232fcdd09752ab9fa3b4b14f` | `eae07f88714e0f76bd827c90b6b30ffe001e59c860af03ead79f6d9f1566b3c5` |
+| S1 colour | `9c77d2fb6250482c9c7bff6f8ceedc71f687b8d502383b33012f9602d711d888` | `7c2035d461200993506f9bb00fd77d1c292373ae1400c5ddf59bcda368539b05` |
+| M1 transaction | `00b61d330b2a782e234dac5fdabaf8134b7be065a64cdfeb5855d513f055c7f7e6` | `006f2eacaf443f7f6158bf6dcb6ebbd73f8a0051397a3d14fc8c8e72a2d48e5470` |
+| **Transaction ids in common** | — | **0** (18 original, 18 reproduced) |
+| Pooled coin nonces | — | differ for both S1 and S2 |
+
+**What matched, exactly:** 25/25 checklist items GREEN with identical verdict, step and level; the
+final 16-cell table and all four custody figures value for value; 15/15 distinctness; the M1
+transaction carrying two circuits under the same composition shape; and all seven controls GREEN
+with `messageMatched` and `fundsUnchanged` true **and the same verbatim refusal text**.
+
+Verbatim verdict (`evidence/g4-closeout/06-compare.out`):
+
+```
+reproduction matches the original item for item, verdict for verdict, and control message for
+control message — on a demonstrably different chain, with zero transaction ids in common
+```
+
+**One hygiene observation, recorded and deliberately NOT acted on:**
+`harness/src/g1/probe-p2.ts:71` creates a private-state directory with
+`mkdtempSync(join(tmpdir(), 'aa00004-p2-'))` and never removes it, so each G1 run leaves one empty
+temp directory behind. Both leftovers (the original run's and the reproduction's) were removed by
+hand. It is not fixed in place because `probe-p2.ts` backs G1's retained evidence, which this
+reproduction has just re-run green — editing it after the fact would mean the evidence no longer
+corresponds to the code. It is a zero-byte directory, not a resource leak of consequence.

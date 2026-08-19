@@ -1,0 +1,17 @@
+[G3] EXPERIMENTAL_LANE / LANE-DEV-1 — four-colour step ledger on a fresh stack
+[G3] compose project: aa00004-g3-20260819011118-30274
+[G3] ok: 01-probe-ports (0s)
+[G3] ok: 02-lane-reuse (0s)
+[G3] ok: 03-lane-dev-1 (2s)
+[G3] ok: 04-compile-fast (1s)
+[G3] ok: 05-install (1s)
+[G3] ok: 06-unit-suites (2s)
+[G3] ok: 07-compile-zk (54s)
+[G3] ok: 08-pull (2s)
+[G3] ok: 09-boot (6s)
+[G3] ok: 10-health (2s)
+[G3] ok: 11-step-ledger (1079s)
+[G3] ok: 12-render-cells (0s)
+[G3] all steps passed; teardown runs next and must also succeed
+[G3] teardown: docker compose --env-file /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00004-g4-uxxKkh/clone/docker/.env -f /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00004-g4-uxxKkh/clone/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00004-g3-20260819011118-30274
+[G3] GREEN

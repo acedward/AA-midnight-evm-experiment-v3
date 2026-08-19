@@ -222,7 +222,7 @@ colour is unspendable in another.
 | **NC-4a** | Wrong colour / named: an unshielded deposit naming Minter3's colour, which `configure` never admitted | `failed assert: colour is not a configured unshielded colour \| cause: Error executing circuit 'depositUnshielded'` |
 | **NC-4b** | Wrong colour / carried: a REAL shielded coin minted by Minter3 offered to `depositShielded` | `failed assert: colour is not a configured shielded colour \| cause: Error executing circuit 'depositShielded'` |
 | **NC-5** | Internal transfer colour guard: AA_A moves S2 it does not hold, while holding S1 and U1 | `failed assert: account colour balance too low \| cause: Error executing circuit 'transferInternal'` |
-| **M2** | M2 — mixed-colour atomicity negative: the step-13-shaped transaction with the second leg wrong-coloured | `Unexpected error executing scoped transaction 'aa00004-mixed-colour': Error: failed assert: colour is not a configured unshielded colour \| cause: failed assert: colour is not a configured unshielded colour \| cause: Error executing circuit 'depositUnshielded'` |
+| **M2** | mixed-colour atomicity negative: the step-13-shaped transaction with the second leg wrong-coloured | `Unexpected error executing scoped transaction 'aa00004-mixed-colour': Error: failed assert: colour is not a configured unshielded colour \| cause: failed assert: colour is not a configured unshielded colour \| cause: Error executing circuit 'depositUnshielded'` |
 
 **NC-4b carries a REAL coin**, not a fabricated argument: Minter3 genuinely mints a shielded coin of
 an unconfigured colour to OwnerM, and that on-chain coin is then offered to `depositShielded`.
@@ -236,7 +236,7 @@ settle delay so "unchanged" is an observation rather than a race.
 
 All 7 are GREEN with the message matched and funds byte-identical: `NC-1`, `NC-2`, `NC-3`, `NC-4a`, `NC-4b`, `NC-5`, `M2` — [`evidence/g3-ledger/negative-controls.json`](evidence/g3-ledger/negative-controls.json).
 
-## Mixed-colour composition — M1, decision D-102, and the one unexplained refusal
+## Mixed-colour composition — M1, decision D-102, and what error 223 turned out to be
 
 Step 13 moves **two different colours in ONE transaction**: `depositShielded(S2, 2)` merging into an
 already non-empty pool AND `depositUnshielded(U2, 2)`, both crediting AA_B, under a single
@@ -352,8 +352,33 @@ the pinned digests took **673 s** once (~11 minutes) when no warm copy existed.
 
 ## Reproduction from a clean clone
 
-_Not yet reproduced in this working tree: run `./scripts/g4/verify-g4-closeout.sh`, which performs
-the clean-clone reproduction and regenerates this section from the clone's own evidence._
+The G4 wrapper clones this repository into a fresh temporary directory — carrying **no** generated
+artifacts, **no** `docker/.env` and **no** `node_modules`, all asserted absent — then runs the G1,
+G2 and G3 gate wrappers inside that clone, each against a fresh stack of its own, and compares the
+results.
+
+| | Original run | Clean-clone reproduction |
+|---|---|---|
+| Checklist GREEN | 25/25 | 25/25 |
+| Manager | `10ea8ca47a36e89a6534148161355156ce2b1cd372ac748502cb273b29cba901` | `e00ad0b5f46779ade510da9010c8cd2d7df59a57131ab59d30663eb97ceaff77` |
+| Minter1 (`TOKA`) | `8ff81b38627d0a611c3c558eed28b859b0b5e1b9ea88159caee4ae6bc257e692` | `22f35b2b430088d94e0fadfcc1b0a9cb0d25db1acdf4a15765d154bfa947e189` |
+| S1 colour | `9c77d2fb6250482c9c7bff6f8ceedc71f687b8d502383b33012f9602d711d888` | `7c2035d461200993506f9bb00fd77d1c292373ae1400c5ddf59bcda368539b05` |
+| M1 transaction | `00b61d330b2a782e234dac5fdabaf8134b7be065a64cdfeb5855d513f055c7f7e6` | `006f2eacaf443f7f6158bf6dcb6ebbd73f8a0051397a3d14fc8c8e72a2d48e5470` |
+| M1 shape | sdk-scoped batch (one transaction, one segment per call, state threaded) | sdk-scoped batch (one transaction, one segment per call, state threaded) |
+| Transaction ids in common | — | **0** |
+
+Addresses, colours and transaction ids necessarily differ — the reproduction runs on a brand-new
+chain, and the colours are address-scoped so they *cannot* repeat. What is compared is what the
+specification actually asserts: every checklist verdict, the final 16-cell table, both pools, both
+ledger balances, and every negative control's verdict and message match. Reproduced final table:
+
+|  | S1 | S2 | U1 | U2 |
+|---|---|---|---|---|
+| OwnerN | 4 | 0 | 5 | 2 |
+| OwnerM | 3 | 2 | 0 | 3 |
+| AA_A | 3 | 0 | 5 | 0 |
+| AA_B | 0 | 8 | 0 | 5 |
+| pool / ledger | poolS1=3 | poolS2=8 | ledgerU1=5 | ledgerU2=5 |
 
 ### How to reproduce
 
