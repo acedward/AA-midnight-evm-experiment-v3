@@ -1,16 +1,14 @@
 // G3 — building one unproven contract call.
 //
-// Everything the four-colour ledger does is either a SINGLE call (built here, then proved, balanced
-// and submitted by `actions.ts`) or the mixed-colour composition of step 13, which assembles two
-// calls into one ledger `Intent` (`ledger-compose.ts`).
+// Everything the 18-row ledger does is a SINGLE call, built here and then proved, balanced and
+// submitted by `actions.ts`. The one exception is probe M3, whose two calls go into ONE transaction
+// through the SDK's own `withContractScopedTransaction` — called directly from `actions.ts`, where
+// decision D-203 is documented.
 //
-// The 00003-era experiments that used to live in this file — `submitInOneIntent`,
-// `submitComposed` — are gone. They existed to explore what midnight-js could and could not compose
-// across TWO CONTRACTS; that question was answered by 00003's finding R8 and the answer is
-// implemented in `ledger-compose.ts`. Keeping dead exploration code with `aa00003` scope names in a
-// 00004 gate would have been misleading rather than merely untidy. The one SDK-level composition
-// this project still uses — `withContractScopedTransaction`, the recorded fallback shape for
-// decision D-102 — is called directly from `actions.ts`, where the decision is documented.
+// The ledger-level one-Intent composer that used to sit beside this file belongs to a question
+// 00003 and 00004 already answered (R8, then D-102: a same-address two-call Intent is refused by
+// the 223 rule, and the scoped batch is accepted). It has no caller in 00005 and was archived —
+// see `archive/00004/ARCHIVE.md`.
 import { createUnprovenCallTx } from '@midnight-ntwrk/midnight-js-contracts';
 
 export type CallSpec = {

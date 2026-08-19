@@ -1,0 +1,308 @@
+# G3 OPEN-COLOUR STEP LEDGER — steps 0-17 + NC-1..5 + P-COLL + M3 — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-19T04:53:36.021Z
+[2026-08-19T04:53:36.100Z] wallets open; syncing genesis …
+2026-08-19 00:53:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 00:53:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 00:53:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 00:53:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T04:53:36.525Z] genesis: NIGHT=250000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+[2026-08-19T04:53:36.532Z]   funding feePayer with 3000000000000 NIGHT from genesis
+[2026-08-19T04:53:36.547Z]   fund feePayer: attempt 1 — DUST not yet generated, waiting 15s
+[2026-08-19T04:54:07.205Z]   submitted tx 00f92b60245cea051b2472b5a36d05a3119b66a8a31ea966cc5a496020e0935a4d (hash 0d705e99d077d307abcc6e85302ab6b7e40c17c96e94d97e7af760253475760e)
+[2026-08-19T04:54:07.206Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-19T04:54:07.362Z]   waiting for genesis to observe its own spend (NIGHT at or below 247000000000000) …
+[2026-08-19T04:55:02.040Z]   feePayer: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-19T04:55:19.448Z]   feePayer: DUST registration tx 0046cec50002e5d9067cdf931148ddd497aa725525b27d98a509cf97da00c3f2ad
+[2026-08-19T04:55:19.448Z]   waiting for feePayer NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-19 00:55:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 00:55:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T04:55:30.398Z]   funding OwnerN-funding with 500000000000 NIGHT from feePayer
+[2026-08-19T04:55:48.860Z]   submitted tx 00491c3c1fbb0c174c2b4c0e72866d00262f318d9694dc33508b6d3d15c032e890 (hash 120c6112049bea062a3d544b6cc5178d35f41f891293b7870fc433b74b30a411)
+[2026-08-19T04:55:48.860Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-19T04:55:49.041Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2500000000000) …
+[2026-08-19T04:56:37.265Z]   OwnerN-funding: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-19T04:56:55.686Z]   OwnerN-funding: DUST registration tx 00841c8ee2cc6c476c51cb8f093100c0199c13ace59a783d9397f1b9de4b426488
+[2026-08-19T04:56:55.686Z]   waiting for OwnerN-funding NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-19 00:56:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 00:56:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T04:56:56.115Z]   funding OwnerM-funding with 500000000000 NIGHT from feePayer
+[2026-08-19T04:57:13.058Z]   submitted tx 00b735e759e2b65f23fa6833e0100f772686a0409946eb9fd78ab8ce9edc45f521 (hash e9e229de15d4174ff8af879d1a519b4b42f0f7615d3ef6ed4d3e3b5532588eb0)
+[2026-08-19T04:57:13.058Z]   waiting for OwnerM-funding NIGHT to arrive …
+[2026-08-19T04:57:13.193Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2000000000000) …
+[2026-08-19T04:57:28.990Z]   OwnerM-funding: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-19T04:57:49.164Z]   OwnerM-funding: DUST registration tx 007499baa4ad61bcffb3fc31c1579969b9e4065ca7c5e63c17d5663de38823060c
+[2026-08-19T04:57:49.164Z]   waiting for OwnerM-funding NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-19 00:57:49        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 00:57:49        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 00:57:49        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 00:57:49        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T04:57:49.799Z] chain tip before ANY contract of this demonstration: block 42
+[2026-08-19T04:57:49.800Z] deploying the Manager FIRST — no Minter exists on this chain yet …
+[2026-08-19T04:58:09.069Z]   Manager at b1f34f0469b0c29e0a61e931be21a1d335d33953367bf3fc9c633b0d8372076d — block 45
+[2026-08-19T04:58:45.126Z] AA_A 009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b / AA_B 755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904 registered; custody maps {"pools":0,"shieldedCells":0,"unshieldedCells":0} — nothing seeded
+
+## STEP 0 — Manager deployed — NO Minter exists on this chain; AA_A and AA_B registered
+[2026-08-19T04:59:02.486Z]   spot check: on-chain shieldedAccountBalance(AA_A, <a colour that does not exist>) = 0 (tx 0071ec75ecc27f9d10930a5e240a029dc93c84b6a7f8ef3691e743bb68525fb447)
+[2026-08-19T04:59:02.499Z]   evidence -> evidence/g3-ledger/step-0/
+STEP 0 ASSERTED — OwnerN=[]  OwnerM=[]  AA_A=[]  AA_B=[]    pools=0 shieldedCells=0 unshieldedCells=0
+  CELL GREEN step-0 — Step 0 — Manager deployed, NO Minter exists; AA_A and AA_B registered; all maps size 0
+
+## STEP 1 — Minters TOKA, TOKB, TOKC deployed; 6 colours read on-chain, pairwise distinct
+[2026-08-19T04:59:02.500Z] deploying Minter1 (minter) with constructor tag "TOKA" …
+[2026-08-19T04:59:55.983Z]   Minter1 at 0bb842c5b867d73242056d975699037a145c2515cc56e4883441c531691995f2: S1 af0cf3315634a046dab2734b721b8d3f923e346d878a3d414edcd2164cec8a31 / U1 df6c4aa1b76bd3b559685a2dbabd38ab5ca5250b40a9e591783ff52ef34a71b6
+[2026-08-19T04:59:55.984Z] deploying Minter2 (minter) with constructor tag "TOKB" …
+[2026-08-19T05:00:56.179Z]   Minter2 at 6b2a58fee518a9d8b37b3efe7f2f7b19d9189d8a2f48fb9f17356da2fdc665aa: S2 22d2a436b6554a4eb773a6b9222f09b2901af4e34473bb40e7f0499ca75c690d / U2 945184e96f853231a70e09a5210a252cdff6ede55f5a871c87ac0417efa24e37
+[2026-08-19T05:00:56.181Z] deploying Minter3 (minter) with constructor tag "TOKC" …
+[2026-08-19T05:01:51.028Z]   Minter3 at 398524288ec4b0e3907170d9f6bfb22445e98b467546485a29b44f8b811a98b5: S3 560e94176de2b692c51c516a7daff0ae8c13c9e244834e4296093aaa91361a90 / U3 027dcccf6a6def7577ebe335efe2a1aa1eaa0ab7a5d5d869ed3ef1cfab279ff8
+[2026-08-19T05:01:51.038Z]   Minter1        deploy block   57 > Manager 45: YES; existed at block 45: no
+[2026-08-19T05:01:51.041Z]   Minter2        deploy block   67 > Manager 45: YES; existed at block 45: no
+[2026-08-19T05:01:51.045Z]   Minter3        deploy block   76 > Manager 45: YES; existed at block 45: no
+[2026-08-19T05:02:08.456Z]   spot check: on-chain unshieldedAccountBalance(AA_A, U1) = 0 (tx 00bfc7dc36c1123eac9280876073b8ce11aa621c0937cee900c3450af21852aa5f)
+[2026-08-19T05:02:08.489Z]   evidence -> evidence/g3-ledger/step-1/
+STEP 1 ASSERTED — OwnerN=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  OwnerM=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  AA_A=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  AA_B=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  poolS1=0 poolS2=0 poolS3=0 ledgerU1=0 ledgerU2=0 ledgerU3=0  pools=0 shieldedCells=0 unshieldedCells=0
+  CELL GREEN step-1 — Step 1 — TOKA/TOKB/TOKC deployed AFTER the Manager; 6 colours distinct; Manager byte-identical
+
+## STEP 2 — mint S1 10 -> OwnerN
+[2026-08-19T05:02:24.754Z]   Minter1 minted S1 10 -> OwnerN: tx 0036fc1244c795898ae5fcd9f659262fa83c50e693177d04df8d90d16e8a044072
+[2026-08-19T05:02:44.589Z]   spot check: on-chain shieldedAccountBalance(AA_A, S2) = 0 (tx 00447e564a815d43ce6d3823727ad5a6ce9b3f82389d5db81788ca114818a311b9)
+[2026-08-19T05:02:44.619Z]   evidence -> evidence/g3-ledger/step-2/
+STEP 2 ASSERTED — OwnerN=[S1:10 S2:0 S3:0 U1:0 U2:0 U3:0]  OwnerM=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  AA_A=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  AA_B=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  poolS1=0 poolS2=0 poolS3=0 ledgerU1=0 ledgerU2=0 ledgerU3=0  pools=0 shieldedCells=0 unshieldedCells=0
+  CELL GREEN step-2 — Step 2 — mint S1 10 -> OwnerN
+
+## STEP 3 — mint U1 10 -> OwnerN
+[2026-08-19T05:03:00.870Z]   Minter1 minted U1 10 -> OwnerN: tx 00508dc138dc8f23418e3da1f30cf9e2c3a6d917150506b1205c0f59df5719bdc0
+[2026-08-19T05:03:20.709Z]   spot check: on-chain unshieldedAccountBalance(AA_A, U2) = 0 (tx 00a7d8b95e1ed4c55abec419317edbebee977bfe4faeb1fdf896f8102765b4314f)
+[2026-08-19T05:03:20.750Z]   evidence -> evidence/g3-ledger/step-3/
+STEP 3 ASSERTED — OwnerN=[S1:10 S2:0 S3:0 U1:10 U2:0 U3:0]  OwnerM=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  AA_A=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  AA_B=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  poolS1=0 poolS2=0 poolS3=0 ledgerU1=0 ledgerU2=0 ledgerU3=0  pools=0 shieldedCells=0 unshieldedCells=0
+  CELL GREEN step-3 — Step 3 — mint U1 10 -> OwnerN
+
+## STEP 4 — mint S2 10 -> OwnerM
+[2026-08-19T05:03:36.998Z]   Minter2 minted S2 10 -> OwnerM: tx 004f1b2a8e3875c680d4de24326c36e5969eb670bfe3178925c62d148a40971cc0
+[2026-08-19T05:03:56.811Z]   spot check: on-chain shieldedAccountBalance(AA_A, S3) = 0 (tx 005ff623ada75300dbec5c65c0bad01aea5fa8c8229f2cfcb1db6d2add6a4eb472)
+[2026-08-19T05:03:56.855Z]   evidence -> evidence/g3-ledger/step-4/
+STEP 4 ASSERTED — OwnerN=[S1:10 S2:0 S3:0 U1:10 U2:0 U3:0]  OwnerM=[S1:0 S2:10 S3:0 U1:0 U2:0 U3:0]  AA_A=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  AA_B=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  poolS1=0 poolS2=0 poolS3=0 ledgerU1=0 ledgerU2=0 ledgerU3=0  pools=0 shieldedCells=0 unshieldedCells=0
+  CELL GREEN step-4 — Step 4 — mint S2 10 -> OwnerM
+
+## STEP 5 — mint S3 10 -> OwnerM
+[2026-08-19T05:04:13.112Z]   Minter3 minted S3 10 -> OwnerM: tx 009c86c467fe275f88b91d79c82e0c973a3f99976380487eda8b36ee182ea58c27
+[2026-08-19T05:04:32.942Z]   spot check: on-chain unshieldedAccountBalance(AA_A, U3) = 0 (tx 009e3376f8da471bba5e01b7571eb7e5f72dd66ce4beff35dba48e835cee0c9983)
+[2026-08-19T05:04:32.983Z]   evidence -> evidence/g3-ledger/step-5/
+STEP 5 ASSERTED — OwnerN=[S1:10 S2:0 S3:0 U1:10 U2:0 U3:0]  OwnerM=[S1:0 S2:10 S3:10 U1:0 U2:0 U3:0]  AA_A=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  AA_B=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  poolS1=0 poolS2=0 poolS3=0 ledgerU1=0 ledgerU2=0 ledgerU3=0  pools=0 shieldedCells=0 unshieldedCells=0
+  CELL GREEN step-5 — Step 5 — mint S3 10 -> OwnerM
+
+## STEP 6 — mint U2 10 -> OwnerM
+[2026-08-19T05:04:49.232Z]   Minter2 minted U2 10 -> OwnerM: tx 006586549a9e7e4453fc6681b90b9441c00851ffc285c6870280a3d409e2f87fdf
+[2026-08-19T05:05:09.081Z]   spot check: on-chain shieldedAccountBalance(AA_B, S1) = 0 (tx 00e3cab5e9dd6ef0ace13b38cc9c0b59654ce2e1d28ee4fb83348e1a7a1a9066be)
+[2026-08-19T05:05:09.118Z]   evidence -> evidence/g3-ledger/step-6/
+STEP 6 ASSERTED — OwnerN=[S1:10 S2:0 S3:0 U1:10 U2:0 U3:0]  OwnerM=[S1:0 S2:10 S3:10 U1:0 U2:10 U3:0]  AA_A=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  AA_B=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  poolS1=0 poolS2=0 poolS3=0 ledgerU1=0 ledgerU2=0 ledgerU3=0  pools=0 shieldedCells=0 unshieldedCells=0
+  CELL GREEN step-6 — Step 6 — mint U2 10 -> OwnerM
+
+## STEP 7 — OwnerN deposits S1 6 -> AA_A (first pool EVER)
+2026-08-19 01:05:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 01:05:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T05:05:09.410Z]   waiting for OwnerN-spender-1-step7 to see 6 of shielded af0cf3315634… before spending it …
+[2026-08-19T05:05:37.417Z]   OwnerN deposited S1 6 -> AA_A: tx 00884ad837335921eb97601b32ce5bdb4b01a17e3b2cadd96ae6927ef85da65e4e
+[2026-08-19T05:05:55.925Z]   spot check: on-chain unshieldedAccountBalance(AA_B, U1) = 0 (tx 00fded9bb50e7e5611cd0e8f660ac0415d9e50d111df34498e97f0c3e3a804a6c4)
+[2026-08-19T05:05:55.973Z]   evidence -> evidence/g3-ledger/step-7/
+STEP 7 ASSERTED — OwnerN=[S1:4 S2:0 S3:0 U1:10 U2:0 U3:0]  OwnerM=[S1:0 S2:10 S3:10 U1:0 U2:10 U3:0]  AA_A=[S1:6 S2:0 S3:0 U1:0 U2:0 U3:0]  AA_B=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  poolS1=6 poolS2=0 poolS3=0 ledgerU1=0 ledgerU2=0 ledgerU3=0  pools=1 shieldedCells=1 unshieldedCells=0
+  CELL GREEN step-7 — Step 7 — OwnerN deposits S1 6 -> AA_A (first pool EVER)
+
+## STEP 8 — OwnerN deposits U1 5 -> AA_A
+2026-08-19 01:05:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 01:05:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T05:05:56.252Z]   waiting for OwnerN-spender-2-step8 to see 5 of unshielded df6c4aa1b76b… before spending it …
+[2026-08-19T05:06:13.602Z]   OwnerN deposited U1 5 -> AA_A: tx 0040400c7e3bae1de2b3b8c790538046dad5f8b8a71af631a98df74a0bdec7bdc4
+[2026-08-19T05:06:32.047Z]   spot check: on-chain shieldedAccountBalance(AA_B, S2) = 0 (tx 00ebaf70ce1cd439c33edc6a27be42933d51b56d6864245bf91f300c24fc9f410f)
+[2026-08-19T05:06:32.094Z]   evidence -> evidence/g3-ledger/step-8/
+STEP 8 ASSERTED — OwnerN=[S1:4 S2:0 S3:0 U1:5 U2:0 U3:0]  OwnerM=[S1:0 S2:10 S3:10 U1:0 U2:10 U3:0]  AA_A=[S1:6 S2:0 S3:0 U1:5 U2:0 U3:0]  AA_B=[S1:0 S2:0 S3:0 U1:0 U2:0 U3:0]  poolS1=6 poolS2=0 poolS3=0 ledgerU1=5 ledgerU2=0 ledgerU3=0  pools=1 shieldedCells=1 unshieldedCells=1
+  CELL GREEN step-8 — Step 8 — OwnerN deposits U1 5 -> AA_A
+
+## STEP 9 — OwnerM deposits S2 6 -> AA_B
+2026-08-19 01:06:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 01:06:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T05:06:32.398Z]   waiting for OwnerM-spender-3-step9 to see 6 of shielded 22d2a436b655… before spending it …
+[2026-08-19T05:06:55.034Z]   OwnerM deposited S2 6 -> AA_B: tx 0066922c578116c333e14e5b88d6b4461a1b9f49a1e18cc318ca99f0af3a4a07c6
+[2026-08-19T05:07:14.847Z]   spot check: on-chain unshieldedAccountBalance(AA_B, U2) = 0 (tx 00feefc09046a01dfc05ccd7160d6ad69616627d1ec6481647043e06b7532ce202)
+[2026-08-19T05:07:14.903Z]   evidence -> evidence/g3-ledger/step-9/
+STEP 9 ASSERTED — OwnerN=[S1:4 S2:0 S3:0 U1:5 U2:0 U3:0]  OwnerM=[S1:0 S2:4 S3:10 U1:0 U2:10 U3:0]  AA_A=[S1:6 S2:0 S3:0 U1:5 U2:0 U3:0]  AA_B=[S1:0 S2:6 S3:0 U1:0 U2:0 U3:0]  poolS1=6 poolS2=6 poolS3=0 ledgerU1=5 ledgerU2=0 ledgerU3=0  pools=2 shieldedCells=2 unshieldedCells=1
+  CELL GREEN step-9 — Step 9 — OwnerM deposits S2 6 -> AA_B
+
+## STEP 10 — OwnerM deposits S3 4 -> AA_A (depositor != credited owner)
+2026-08-19 01:07:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 01:07:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T05:07:15.194Z]   waiting for OwnerM-spender-4-step10 to see 4 of shielded 560e94176de2… before spending it …
+[2026-08-19T05:07:37.852Z]   OwnerM deposited S3 4 -> AA_A: tx 0006b2b4c7d8d5ef248e517c59152922e3183dd84afa6d883edb78a576b0a87de4
+[2026-08-19T05:07:56.328Z]   spot check: on-chain shieldedAccountBalance(AA_B, S3) = 0 (tx 0088fee397a03b3aced057a8ca87b18bf45b3e9aa555455270a9a74e441dbbb044)
+[2026-08-19T05:07:56.391Z]   evidence -> evidence/g3-ledger/step-10/
+STEP 10 ASSERTED — OwnerN=[S1:4 S2:0 S3:0 U1:5 U2:0 U3:0]  OwnerM=[S1:0 S2:4 S3:6 U1:0 U2:10 U3:0]  AA_A=[S1:6 S2:0 S3:4 U1:5 U2:0 U3:0]  AA_B=[S1:0 S2:6 S3:0 U1:0 U2:0 U3:0]  poolS1=6 poolS2=6 poolS3=4 ledgerU1=5 ledgerU2=0 ledgerU3=0  pools=3 shieldedCells=3 unshieldedCells=1
+  CELL GREEN step-10 — Step 10 — OwnerM deposits S3 4 -> AA_A (depositor != credited owner)
+
+## STEP 11 — OwnerM deposits U2 5 -> AA_B
+2026-08-19 01:07:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 01:07:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T05:07:56.690Z]   waiting for OwnerM-spender-5-step11 to see 5 of unshielded 945184e96f85… before spending it …
+[2026-08-19T05:08:13.971Z]   OwnerM deposited U2 5 -> AA_B: tx 003ea0637e2197236bf16fbc182a45810a9f6d8f57ca12e73fb4a3c5b3db3fbe5a
+[2026-08-19T05:08:37.799Z]   spot check: on-chain unshieldedAccountBalance(AA_B, U3) = 0 (tx 0026bf1cd5d0bcd47dafabd6b581341c6832116541a242d4f9edaf0073c13176b8)
+[2026-08-19T05:08:37.864Z]   evidence -> evidence/g3-ledger/step-11/
+STEP 11 ASSERTED — OwnerN=[S1:4 S2:0 S3:0 U1:5 U2:0 U3:0]  OwnerM=[S1:0 S2:4 S3:6 U1:0 U2:5 U3:0]  AA_A=[S1:6 S2:0 S3:4 U1:5 U2:0 U3:0]  AA_B=[S1:0 S2:6 S3:0 U1:0 U2:5 U3:0]  poolS1=6 poolS2=6 poolS3=4 ledgerU1=5 ledgerU2=5 ledgerU3=0  pools=3 shieldedCells=3 unshieldedCells=2
+  CELL GREEN step-11 — Step 11 — OwnerM deposits U2 5 -> AA_B
+
+## STEP 12 — internal transfer S1 3: AA_A -> AA_B (credit-side lazy cell; pool UNCHANGED)
+[2026-08-19T05:08:55.431Z]   internal transfer S1 3: AA_A -> AA_B: tx 00f9be9a8b26c7da1a49e0f475e7de1f34c0552d2e3e116ebba984f2ead3b728a9
+[2026-08-19T05:09:13.903Z]   spot check: on-chain shieldedAccountBalance(AA_A, S1) = 3 (tx 00cad2368f00adc03dd907ea01735067baf4d8a3d4fd6b926b30e36c512faeaa1f)
+[2026-08-19T05:09:13.969Z]   evidence -> evidence/g3-ledger/step-12/
+STEP 12 ASSERTED — OwnerN=[S1:4 S2:0 S3:0 U1:5 U2:0 U3:0]  OwnerM=[S1:0 S2:4 S3:6 U1:0 U2:5 U3:0]  AA_A=[S1:3 S2:0 S3:4 U1:5 U2:0 U3:0]  AA_B=[S1:3 S2:6 S3:0 U1:0 U2:5 U3:0]  poolS1=6 poolS2=6 poolS3=4 ledgerU1=5 ledgerU2=5 ledgerU3=0  pools=3 shieldedCells=4 unshieldedCells=2
+  CELL GREEN step-12 — Step 12 — internal transfer S1 3: AA_A -> AA_B (credit-side lazy cell; pool UNCHANGED)
+
+## STEP 13 — AA_B withdraws S2 2 -> OwnerN
+[2026-08-19T05:09:36.885Z]   AA_B withdrew S2 2 -> OwnerN: tx 00d65f7a9c3000bd786a74c907032f70084a6fe263e7b3e4fbd48d8b7e220a101d
+[2026-08-19T05:09:56.696Z]   spot check: on-chain unshieldedAccountBalance(AA_A, U1) = 5 (tx 0093f8b4563b08f24b48bde46efa6122134681cd25467bf4cff5211dee305c4ac4)
+[2026-08-19T05:09:56.746Z]   evidence -> evidence/g3-ledger/step-13/
+STEP 13 ASSERTED — OwnerN=[S1:4 S2:2 S3:0 U1:5 U2:0 U3:0]  OwnerM=[S1:0 S2:4 S3:6 U1:0 U2:5 U3:0]  AA_A=[S1:3 S2:0 S3:4 U1:5 U2:0 U3:0]  AA_B=[S1:3 S2:4 S3:0 U1:0 U2:5 U3:0]  poolS1=6 poolS2=4 poolS3=4 ledgerU1=5 ledgerU2=5 ledgerU3=0  pools=3 shieldedCells=4 unshieldedCells=2
+  CELL GREEN step-13 — Step 13 — AA_B withdraws S2 2 -> OwnerN
+
+## STEP 14 — AA_A withdraws U1 2 -> OwnerM
+[2026-08-19T05:10:13.003Z]   AA_A withdrew U1 2 -> OwnerM: tx 007f4b71e7eb49371ef6982b7202ef5970f1fc81dc58a949d63fb11cc92507dcd2
+[2026-08-19T05:10:32.810Z]   spot check: on-chain shieldedAccountBalance(AA_A, S2) = 0 (tx 00e523a5406463e7568adc9eac7ae5c221bca06bd25f7c26d80b0692483099c603)
+[2026-08-19T05:10:32.873Z]   evidence -> evidence/g3-ledger/step-14/
+STEP 14 ASSERTED — OwnerN=[S1:4 S2:2 S3:0 U1:5 U2:0 U3:0]  OwnerM=[S1:0 S2:4 S3:6 U1:2 U2:5 U3:0]  AA_A=[S1:3 S2:0 S3:4 U1:3 U2:0 U3:0]  AA_B=[S1:3 S2:4 S3:0 U1:0 U2:5 U3:0]  poolS1=6 poolS2=4 poolS3=4 ledgerU1=3 ledgerU2=5 ledgerU3=0  pools=3 shieldedCells=4 unshieldedCells=2
+  CELL GREEN step-14 — Step 14 — AA_A withdraws U1 2 -> OwnerM
+
+## STEP 15 — TOKD deployed MID-LEDGER; mint S4 7 -> OwnerN, U4 4 -> OwnerM
+[2026-08-19T05:10:32.874Z] deploying Minter4 (minter) with constructor tag "TOKD" …
+[2026-08-19T05:11:26.232Z]   Minter4 at 24319339d7d1886f9d780f873f1c22e1c9127de9115e6a24fa2f8c4b89df72b0: S4 1830d810691419a4a0aacae99deb76d5bc59c881178d559a9be0fb674b9c5337 / U4 21472fe902aa4a4fb7b528b9d96464d7b3091b2baeed8d07ee55841af4a43d6a
+[2026-08-19T05:11:43.896Z]   Minter4 minted S4 7 -> OwnerN: tx 00b3dd19b95b1178bef9edb6c853df8e829fbc33dd951535335e8025432499a318
+[2026-08-19T05:12:01.280Z]   Minter4 minted U4 4 -> OwnerM: tx 00e3b6e3883081bb9c4ad8d9f0cbc5ce7da0b56091226eef0031ed6ecdb00c0c20
+[2026-08-19T05:12:21.094Z]   spot check: on-chain unshieldedAccountBalance(AA_B, U4) = 0 (tx 00d0a8669f22f70ddbacc7cb180baf16bfbae3d12f5d9475beba26b79ea0b3705c)
+[2026-08-19T05:12:21.180Z]   evidence -> evidence/g3-ledger/step-15/
+STEP 15 ASSERTED — OwnerN=[S1:4 S2:2 S3:0 S4:7 U1:5 U2:0 U3:0 U4:0]  OwnerM=[S1:0 S2:4 S3:6 S4:0 U1:2 U2:5 U3:0 U4:4]  AA_A=[S1:3 S2:0 S3:4 S4:0 U1:3 U2:0 U3:0 U4:0]  AA_B=[S1:3 S2:4 S3:0 S4:0 U1:0 U2:5 U3:0 U4:0]  poolS1=6 poolS2=4 poolS3=4 poolS4=0 ledgerU1=3 ledgerU2=5 ledgerU3=0 ledgerU4=0  pools=3 shieldedCells=4 unshieldedCells=2
+  CELL GREEN step-15 — Step 15 — TOKD deployed MID-LEDGER; mint S4 7 -> OwnerN, U4 4 -> OwnerM
+
+## STEP 16 — OwnerN deposits S4 7 -> AA_A — HEADLINE: custody of a colour that did not exist at deploy
+2026-08-19 01:12:21        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 01:12:21        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T05:12:21.524Z]   waiting for OwnerN-spender-6-step16 to see 7 of shielded 1830d8106914… before spending it …
+[2026-08-19T05:12:42.748Z]   OwnerN deposited S4 7 -> AA_A: tx 000b61ae6a4a78f81cbbb13e03fa8833c2ad9439cfcde7fe8f4ae8ea910eb48cbd
+[2026-08-19T05:13:02.579Z]   spot check: on-chain shieldedAccountBalance(AA_A, S1) = 3 (tx 00a301045965db6d20cd1636478ddb6478f96255a7720d4305843136cc79670d8e)
+[2026-08-19T05:13:02.667Z]   evidence -> evidence/g3-ledger/step-16/
+STEP 16 ASSERTED — OwnerN=[S1:4 S2:2 S3:0 S4:0 U1:5 U2:0 U3:0 U4:0]  OwnerM=[S1:0 S2:4 S3:6 S4:0 U1:2 U2:5 U3:0 U4:4]  AA_A=[S1:3 S2:0 S3:4 S4:7 U1:3 U2:0 U3:0 U4:0]  AA_B=[S1:3 S2:4 S3:0 S4:0 U1:0 U2:5 U3:0 U4:0]  poolS1=6 poolS2=4 poolS3=4 poolS4=7 ledgerU1=3 ledgerU2=5 ledgerU3=0 ledgerU4=0  pools=4 shieldedCells=5 unshieldedCells=2
+  CELL GREEN step-16 — Step 16 — HEADLINE: custody of a colour that did not exist when the Manager was deployed
+
+## STEP 17 — OwnerM deposits U4 4 -> AA_B
+2026-08-19 01:13:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 01:13:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T05:13:03.021Z]   waiting for OwnerM-spender-7-step17 to see 4 of unshielded 21472fe902aa… before spending it …
+[2026-08-19T05:13:18.866Z]   OwnerM deposited U4 4 -> AA_B: tx 000ebd3bf2d2aa10df4b313b956d88e3f3619601073691179a83aa9f1563f58880
+[2026-08-19T05:13:38.672Z]   spot check: on-chain unshieldedAccountBalance(AA_A, U1) = 3 (tx 005c53613dbd07d4e169e6fbf3e557d8bc2f9346a958851555ad4329c167eafa52)
+[2026-08-19T05:13:38.754Z]   evidence -> evidence/g3-ledger/step-17/
+STEP 17 ASSERTED — OwnerN=[S1:4 S2:2 S3:0 S4:0 U1:5 U2:0 U3:0 U4:0]  OwnerM=[S1:0 S2:4 S3:6 S4:0 U1:2 U2:5 U3:0 U4:0]  AA_A=[S1:3 S2:0 S3:4 S4:7 U1:3 U2:0 U3:0 U4:0]  AA_B=[S1:3 S2:4 S3:0 S4:0 U1:0 U2:5 U3:0 U4:4]  poolS1=6 poolS2=4 poolS3=4 poolS4=7 ledgerU1=3 ledgerU2=5 ledgerU3=0 ledgerU4=4  pools=4 shieldedCells=5 unshieldedCells=3
+  CELL GREEN step-17 — Step 17 — OwnerM deposits U4 4 -> AA_B
+
+## FINAL TABLE
+|  | S1 | S2 | S3 | S4 | U1 | U2 | U3 | U4 |
+|---|---|---|---|---|---|---|---|---|
+| OwnerN | 4 | 2 | 0 | 0 | 5 | 0 | 0 | 0 |
+| OwnerM | 0 | 4 | 6 | 0 | 2 | 5 | 0 | 0 |
+| AA_A | 3 | 0 | 4 | 7 | 3 | 0 | 0 | 0 |
+| AA_B | 3 | 4 | 0 | 0 | 0 | 5 | 0 | 4 |
+| pool / ledger | 6 | 4 | 4 | 7 | 3 | 5 | 0 | 4 |
+map sizes: pools=4 shieldedCells=5 unshieldedCells=3
+  CELL GREEN invariant-per-colour — Invariant — `custody[c] == AA_A[c] + AA_B[c]` for every DISCOVERED colour, after EVERY step
+  CELL GREEN map-sizes — Exact map sizes after EVERY step, and ZERO unaccounted keys over the dynamic colour set
+  CELL GREEN dormant-U3 — FR-206 — U3 is minted by no one, deposited by no one, and absent from EVERY map at every row
+
+## NEGATIVE CONTROLS — against the post-step-17 state (the spec's final table)
+  GREEN NC-1 — failed assert: caller's owner witness matches no registered account | cause: Error executing circuit 'withdrawShielded'
+        map sizes {"pools":4,"shieldedCells":5,"unshieldedCells":3} -> {"pools":4,"shieldedCells":5,"unshieldedCells":3}
+        no cell was created for the unregistered witness: accounts still 2, map sizes {"pools":4,"shieldedCells":5,"unshieldedCells":3}
+  GREEN NC-2 — failed assert: account colour balance too low | cause: Error executing circuit 'withdrawShielded'
+        map sizes {"pools":4,"shieldedCells":5,"unshieldedCells":3} -> {"pools":4,"shieldedCells":5,"unshieldedCells":3}
+        (AA_B,S3) cell absent before: yes
+        (AA_B,S3) cell absent after: yes
+  GREEN NC-3 — failed assert: account colour balance too low | cause: Error executing circuit 'withdrawUnshielded'
+        map sizes {"pools":4,"shieldedCells":5,"unshieldedCells":3} -> {"pools":4,"shieldedCells":5,"unshieldedCells":3}
+        U3 absent from every map before: yes
+        U3 absent from every map after: yes
+2026-08-19 01:14:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 01:14:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+  GREEN NC-4 — failed assert: credit account is not registered | cause: Error executing circuit 'depositShielded'
+        map sizes {"pools":4,"shieldedCells":5,"unshieldedCells":3} -> {"pools":4,"shieldedCells":5,"unshieldedCells":3}
+        account set unchanged: yes
+        no cell for the bogus account, no pool for the colour: yes ({"pools":4,"shieldedCells":5,"unshieldedCells":3})
+  GREEN NC-5 — failed assert: account colour balance too low | cause: Error executing circuit 'transferInternalShielded'
+        map sizes {"pools":4,"shieldedCells":5,"unshieldedCells":3} -> {"pools":4,"shieldedCells":5,"unshieldedCells":3}
+        (AA_A,S2) cell absent before: yes
+        (AA_A,S2) cell absent after: yes
+        poolS2 unchanged: yes (4)
+[2026-08-19T05:14:40.036Z]   5/5 negative controls GREEN
+  CELL GREEN NC-1 — Unregistered witness: OwnerN's witness opens no Manager account
+  CELL GREEN NC-2 — Missing-cell spend: OwnerB withdraws S3, which AA_B has never held, from a pool that covers it
+  CELL GREEN NC-3 — Dormant colour: OwnerA withdraws U3, a colour no one ever minted or deposited
+  CELL GREEN NC-4 — Unregistered credit: a deposit naming an account commitment that was never registered
+  CELL GREEN NC-5 — Internal transfer of an unheld colour: AA_A moves S2 it does not hold, while rich in others
+
+## PROBE SETUP — TOKE (M3 issuer) and MinterCollide (P-COLL fixture)
+[2026-08-19T05:14:40.037Z] deploying Minter5 (minter) with constructor tag "TOKE" …
+[2026-08-19T05:15:32.347Z]   Minter5 at 4dd07d275346219ceda9e918ee70b7c226fe759e9d7450e95aba6fa6983e9fa4: S5 5646230bed383e0dffae1c1442f2152118cffa8761a3f0b347cdf017c9a7300e / U5 cd56842f5052d16b8b220698637f5d54d7bd7d72539a85034fc5eb98641b3a50
+[2026-08-19T05:15:32.348Z] deploying MinterCollide (minter-collide) with constructor tag "TOKX" …
+[2026-08-19T05:16:25.854Z]   MinterCollide at 91d2f65440db34c57dd5f7b3538d759fa798519d94932fe3b9b699cb596c7b67: XS 9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd / XU 9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd
+PROBE STEP ASSERTED (probe-setup (two more issuers exist; the Manager is untouched)) — OwnerN=[S1:4 S2:2 S3:0 S4:0 U1:5 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  OwnerM=[S1:0 S2:4 S3:6 S4:0 U1:2 U2:5 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  AA_A=[S1:3 S2:0 S3:4 S4:7 U1:3 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  AA_B=[S1:3 S2:4 S3:0 S4:0 U1:0 U2:5 U3:0 U4:4 S5:0 U5:0 XS:0 XU:0]  poolS1=6 poolS2=4 poolS3=4 poolS4=7 ledgerU1=3 ledgerU2=5 ledgerU3=0 ledgerU4=4 poolS5=0 ledgerU5=0 poolXS=0 ledgerXU=0  pools=4 shieldedCells=5 unshieldedCells=3
+[2026-08-19T05:16:25.945Z]   evidence -> evidence/g3-ledger/step-probe-probe-setup-two-more-issuers-exist-the-Manager-is-untouched-/
+
+## DISTINCTNESS — 45 pairwise comparisons over TOKA–TOKE, from on-chain reads
+[2026-08-19T05:16:25.945Z]   45/45 distinct over 10 colours; MinterCollide byte-equal: true
+  CELL GREEN distinctness — Distinctness — 45/45 pairwise over TOKA–TOKE, plus the INVERTED MinterCollide equality
+
+## P-COLL — a byte-identical colour deposited into BOTH families of AA_B
+[2026-08-19T05:16:25.945Z]   colliding colour 9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd
+[2026-08-19T05:16:25.945Z]   (AA_B,X) shielded key 10e27aacb3f07384fc2a97bbb9056abc4c051798583374b79523a393fc771fb1
+[2026-08-19T05:16:25.945Z]   (AA_B,X) unshielded key 92903947a5d86664fb6b677db7681fc2a6da9618652c1db97346a91bb343ac3f  — differ: true
+PROBE STEP ASSERTED (P-COLL mints (3 shielded + 2 unshielded of one colour to OwnerM)) — OwnerN=[S1:4 S2:2 S3:0 S4:0 U1:5 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  OwnerM=[S1:0 S2:4 S3:6 S4:0 U1:2 U2:5 U3:0 U4:0 S5:0 U5:0 XS:3 XU:2]  AA_A=[S1:3 S2:0 S3:4 S4:7 U1:3 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  AA_B=[S1:3 S2:4 S3:0 S4:0 U1:0 U2:5 U3:0 U4:4 S5:0 U5:0 XS:0 XU:0]  poolS1=6 poolS2=4 poolS3=4 poolS4=7 ledgerU1=3 ledgerU2=5 ledgerU3=0 ledgerU4=4 poolS5=0 ledgerU5=0 poolXS=0 ledgerXU=0  pools=4 shieldedCells=5 unshieldedCells=3
+[2026-08-19T05:17:03.179Z]   evidence -> evidence/g3-ledger/step-probe-P-COLL-mints-3-shielded-2-unshielded-of-one-colour-to-OwnerM/
+2026-08-19 01:17:03        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 01:17:03        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T05:17:03.553Z]   waiting for OwnerM-spender-9-pcoll-shielded to see 3 of shielded 9d27bcf49db7… before spending it …
+PROBE STEP ASSERTED (P-COLL shielded deposit 3 -> AA_B) — OwnerN=[S1:4 S2:2 S3:0 S4:0 U1:5 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  OwnerM=[S1:0 S2:4 S3:6 S4:0 U1:2 U2:5 U3:0 U4:0 S5:0 U5:0 XS:0 XU:2]  AA_A=[S1:3 S2:0 S3:4 S4:7 U1:3 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  AA_B=[S1:3 S2:4 S3:0 S4:0 U1:0 U2:5 U3:0 U4:4 S5:0 U5:0 XS:3 XU:0]  poolS1=6 poolS2=4 poolS3=4 poolS4=7 ledgerU1=3 ledgerU2=5 ledgerU3=0 ledgerU4=4 poolS5=0 ledgerU5=0 poolXS=3 ledgerXU=0  pools=5 shieldedCells=6 unshieldedCells=3
+[2026-08-19T05:17:27.246Z]   evidence -> evidence/g3-ledger/step-probe-P-COLL-shielded-deposit-3-AA-B/
+2026-08-19 01:17:27        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 01:17:27        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T05:17:27.620Z]   waiting for OwnerM-spender-10-pcoll-unshielded to see 2 of unshielded 9d27bcf49db7… before spending it …
+PROBE STEP ASSERTED (P-COLL unshielded deposit 2 -> AA_B) — OwnerN=[S1:4 S2:2 S3:0 S4:0 U1:5 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  OwnerM=[S1:0 S2:4 S3:6 S4:0 U1:2 U2:5 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  AA_A=[S1:3 S2:0 S3:4 S4:7 U1:3 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  AA_B=[S1:3 S2:4 S3:0 S4:0 U1:0 U2:5 U3:0 U4:4 S5:0 U5:0 XS:3 XU:2]  poolS1=6 poolS2=4 poolS3=4 poolS4=7 ledgerU1=3 ledgerU2=5 ledgerU3=0 ledgerU4=4 poolS5=0 ledgerU5=0 poolXS=3 ledgerXU=2  pools=5 shieldedCells=6 unshieldedCells=4
+[2026-08-19T05:17:51.312Z]   evidence -> evidence/g3-ledger/step-probe-P-COLL-unshielded-deposit-2-AA-B/
+[2026-08-19T05:17:51.312Z]   pool(X) = 3   contract ledger balance(X) = 2   cells 3 / 2
+PROBE STEP ASSERTED (P-COLL shielded withdrawal 1 (the unshielded side must not move)) — OwnerN=[S1:4 S2:2 S3:0 S4:0 U1:5 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  OwnerM=[S1:0 S2:4 S3:6 S4:0 U1:2 U2:5 U3:0 U4:0 S5:0 U5:0 XS:1 XU:0]  AA_A=[S1:3 S2:0 S3:4 S4:7 U1:3 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  AA_B=[S1:3 S2:4 S3:0 S4:0 U1:0 U2:5 U3:0 U4:4 S5:0 U5:0 XS:2 XU:2]  poolS1=6 poolS2=4 poolS3=4 poolS4=7 ledgerU1=3 ledgerU2=5 ledgerU3=0 ledgerU4=4 poolS5=0 ledgerU5=0 poolXS=2 ledgerXU=2  pools=5 shieldedCells=6 unshieldedCells=4
+[2026-08-19T05:18:15.356Z]   evidence -> evidence/g3-ledger/step-probe-P-COLL-shielded-withdrawal-1-the-unshielded-side-must-not-mo/
+PROBE STEP ASSERTED (P-COLL unshielded withdrawal 1 (the shielded side must not move)) — OwnerN=[S1:4 S2:2 S3:0 S4:0 U1:5 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  OwnerM=[S1:0 S2:4 S3:6 S4:0 U1:2 U2:5 U3:0 U4:0 S5:0 U5:0 XS:1 XU:1]  AA_A=[S1:3 S2:0 S3:4 S4:7 U1:3 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  AA_B=[S1:3 S2:4 S3:0 S4:0 U1:0 U2:5 U3:0 U4:4 S5:0 U5:0 XS:2 XU:1]  poolS1=6 poolS2=4 poolS3=4 poolS4=7 ledgerU1=3 ledgerU2=5 ledgerU3=0 ledgerU4=4 poolS5=0 ledgerU5=0 poolXS=2 ledgerXU=1  pools=5 shieldedCells=6 unshieldedCells=4
+[2026-08-19T05:18:39.435Z]   evidence -> evidence/g3-ledger/step-probe-P-COLL-unshielded-withdrawal-1-the-shielded-side-must-not-mo/
+[2026-08-19T05:19:14.486Z]   ON-CHAIN, same 32-byte argument: shieldedAccountBalance(AA_B, X) = 2, unshieldedAccountBalance(AA_B, X) = 1
+  CELL GREEN P-COLL — P-COLL — one byte-identical colour, both families, tracked independently
+
+## M3 — first deposits of TWO brand-new colours in ONE transaction
+PROBE STEP ASSERTED (M3 mints (S5 3 and U5 3 to OwnerM)) — OwnerN=[S1:4 S2:2 S3:0 S4:0 U1:5 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  OwnerM=[S1:0 S2:4 S3:6 S4:0 U1:2 U2:5 U3:0 U4:0 S5:3 U5:3 XS:1 XU:1]  AA_A=[S1:3 S2:0 S3:4 S4:7 U1:3 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  AA_B=[S1:3 S2:4 S3:0 S4:0 U1:0 U2:5 U3:0 U4:4 S5:0 U5:0 XS:2 XU:1]  poolS1=6 poolS2=4 poolS3=4 poolS4=7 ledgerU1=3 ledgerU2=5 ledgerU3=0 ledgerU4=4 poolS5=0 ledgerU5=0 poolXS=2 ledgerXU=1  pools=5 shieldedCells=6 unshieldedCells=4
+[2026-08-19T05:19:51.777Z]   evidence -> evidence/g3-ledger/step-probe-M3-mints-S5-3-and-U5-3-to-OwnerM-/
+2026-08-19 01:19:52        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 01:19:52        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T05:19:52.189Z]   waiting for OwnerM-spender-11-m3-compose-try1 to see 3 of shielded 5646230bed38… before spending it …
+[2026-08-19T05:19:52.190Z]   waiting for OwnerM-spender-11-m3-compose-try1 to see 3 of unshielded cd56842f5052… before spending it …
+2026-08-19 01:19:58        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 01:19:58        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-19T05:19:58.555Z]   M3 composition attempt 1 REFUSED — verbatim: Unexpected error submitting scoped transaction 'aa00005-double-lazy-init': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 01:19:58        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+2026-08-19 01:19:58        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:11024/: 1000:: Normal Closure
+[2026-08-19T05:19:58.941Z]   waiting for OwnerM-spender-12-m3-compose-try2 to see 3 of shielded 5646230bed38… before spending it …
+[2026-08-19T05:19:58.942Z]   waiting for OwnerM-spender-12-m3-compose-try2 to see 3 of unshielded cd56842f5052… before spending it …
+[2026-08-19T05:20:20.087Z]   M3 composition ACCEPTED on attempt 2: ONE transaction 00202436c94913c2b9b1556d064ebbe1d055c48ed0aa0983e66b43f8fc0f150c2a
+PROBE STEP ASSERTED (M3 double lazy-init) — OwnerN=[S1:4 S2:2 S3:0 S4:0 U1:5 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  OwnerM=[S1:0 S2:4 S3:6 S4:0 U1:2 U2:5 U3:0 U4:0 S5:0 U5:0 XS:1 XU:1]  AA_A=[S1:3 S2:0 S3:4 S4:7 U1:3 U2:0 U3:0 U4:0 S5:0 U5:0 XS:0 XU:0]  AA_B=[S1:3 S2:4 S3:0 S4:0 U1:0 U2:5 U3:0 U4:4 S5:3 U5:3 XS:2 XU:1]  poolS1=6 poolS2=4 poolS3=4 poolS4=7 ledgerU1=3 ledgerU2=5 ledgerU3=0 ledgerU4=4 poolS5=3 ledgerU5=3 poolXS=2 ledgerXU=1  pools=6 shieldedCells=7 unshieldedCells=5
+[2026-08-19T05:20:20.224Z]   evidence -> evidence/g3-ledger/step-probe-M3-double-lazy-init/
+[2026-08-19T05:20:56.279Z]   ON-CHAIN: shieldedAccountBalance(AA_B, S5) = 3, unshieldedAccountBalance(AA_B, U5) = 3
+[2026-08-19T05:20:56.279Z]   M3 shape: sdk-scoped batch (one transaction, one segment per call, state threaded); transaction id(s): 00202436c94913c2b9b1556d064ebbe1d055c48ed0aa0983e66b43f8fc0f150c2a
+[2026-08-19T05:20:56.279Z]   map sizes {"pools":5,"shieldedCells":6,"unshieldedCells":4} -> {"pools":6,"shieldedCells":7,"unshieldedCells":5} (one new pool + one new shielded cell + one new unshielded cell)
+  CELL GREEN M3-lazy-init — M3 — first deposits of TWO brand-new colours create exactly one pool and two cells
+  CELL GREEN M3-composition — M3 — BOTH first deposits under ONE transaction id (FR-207, decision D-203)
+
+## RESULT
+18/18 step rows asserted live; 30 records written
+final walk table: OwnerN=[S1:4 S2:2 S3:0 S4:0 U1:5 U2:0 U3:0 U4:0]  OwnerM=[S1:0 S2:4 S3:6 S4:0 U1:2 U2:5 U3:0 U4:0]  AA_A=[S1:3 S2:0 S3:4 S4:7 U1:3 U2:0 U3:0 U4:0]  AA_B=[S1:3 S2:4 S3:0 S4:0 U1:0 U2:5 U3:0 U4:4]
+                  poolS1=6 poolS2=4 poolS3=4 poolS4=7 ledgerU1=3 ledgerU2=5 ledgerU3=0 ledgerU4=4
+end-state map sizes: pools=4 shieldedCells=5 unshieldedCells=3 (spec: pools=4 shieldedCells=5 unshieldedCells=3)
+manager_address: b1f34f0469b0c29e0a61e931be21a1d335d33953367bf3fc9c633b0d8372076d
+M3 transaction(s): 00202436c94913c2b9b1556d064ebbe1d055c48ed0aa0983e66b43f8fc0f150c2a — sdk-scoped batch (one transaction, one segment per call, state threaded)

@@ -1,0 +1,10 @@
+# host port probe — 2026-08-19T04:52:16Z
+# rule: random, >10000, verified free, bound to 127.0.0.1 only
+checked node_rpc: candidate 11024 -> FREE (attempt 1) 11024
+checked indexer: candidate 13750 -> FREE (attempt 1) 13750
+checked proof_server: candidate 16476 -> FREE (attempt 1) 16476
+selected node_rpc:      11024
+selected indexer:       13750
+selected proof_server:  16476
+compose project name:   aa00005-g3-20260819045216-99788
+APP_INFRA_SECRET:       <generated, 32 bytes hex, not retained in evidence>
