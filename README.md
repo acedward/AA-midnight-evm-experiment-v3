@@ -145,33 +145,33 @@ flowchart LR
     B -- "11 · withdraw S1 3" --> OM
     A -- "12 · withdraw U2 2" --> N
 
-    OM == "13 · M1 — S2 2 AND U2 2, ONE transaction" ==> B
-    M3 -. "NC-4b · a REAL coin of an unconfigured colour — REFUSED" .-> B
+    OM ==>|"13 · M1 — S2 2 AND U2 2, ONE transaction"| B
+    M3 -.->|"NC-4b · a REAL coin of an unconfigured colour — REFUSED"| B
 ```
 
 What the Manager is actually holding while all of that happens — the point of the whole project:
 
 ```mermaid
 flowchart TB
-    subgraph mgr["Manager contract, one deployment"]
-        subgraph shielded["pools: Map&lt;colour, QualifiedShieldedCoinInfo&gt;"]
-            P1(("pool S1 = 3<br/>one merged coin"))
-            P2(("pool S2 = 8<br/>one merged coin"))
+    subgraph mgr["ONE Manager contract, one deployment"]
+        subgraph shielded["ledger map: pools — one merged coin per shielded colour"]
+            P1(("pool S1<br/>value 3"))
+            P2(("pool S2<br/>value 8"))
         end
-        subgraph unshielded["the ledger KERNEL's own balances"]
-            K1[["U1 = 5"]]
-            K2[["U2 = 5"]]
+        subgraph unshielded["held by the ledger KERNEL, per unshielded colour"]
+            K1[["U1 balance 5"]]
+            K2[["U2 balance 5"]]
         end
-        subgraph bal["balances: Map&lt;hash of account+colour, value&gt; — exactly accounts x 4 entries"]
-            R1["AA_A: S1=3  S2=0  U1=5  U2=0"]
-            R2["AA_B: S1=0  S2=8  U1=0  U2=5"]
+        subgraph bal["ledger map: balances — key is hash of account + colour, exactly accounts x 4 entries"]
+            R1["AA_A · S1 3 · S2 0 · U1 5 · U2 0"]
+            R2["AA_B · S1 0 · S2 8 · U1 0 · U2 5"]
         end
     end
 
-    P1 -- "invariant: 3 == 3 + 0" --> bal
-    P2 -- "invariant: 8 == 0 + 8" --> bal
-    K1 -- "invariant: 5 == 5 + 0" --> bal
-    K2 -- "invariant: 5 == 0 + 5" --> bal
+    P1 -- "invariant · 3 = 3 + 0" --> bal
+    P2 -- "invariant · 8 = 0 + 8" --> bal
+    K1 -- "invariant · 5 = 5 + 0" --> bal
+    K2 -- "invariant · 5 = 0 + 5" --> bal
 ```
 
 The ledger as **observed** (each party cell is `S1/S2/U1/U2`; every row was asserted equal to the

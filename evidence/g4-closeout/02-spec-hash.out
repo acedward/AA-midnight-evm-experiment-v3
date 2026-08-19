@@ -1,0 +1,4 @@
+expected SHA-256 (recorded in the organizer project-summary): e83897d46d3b2b5af3c42863d4ad49c922c374038a45dc04401ba5cc66e111f6
+spec path: /Users/edwardalvarado/todo/AA/.claude/worktrees/contract-token-custody-6d6cd3/AA/spec/00004-multi-token-custody.md
+actual   SHA-256: e83897d46d3b2b5af3c42863d4ad49c922c374038a45dc04401ba5cc66e111f6
+RESULT: byte-identical to the approved, owner-signed specification.

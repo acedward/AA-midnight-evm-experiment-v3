@@ -288,7 +288,9 @@ const main = () => {
   for (const id of ['NC-4a', 'NC-4b', 'NC-5', 'M2']) {
     const c = byId.get(id);
     if (!c) continue;
-    p(`| **${id}** | ${c.label} | \`${String(c.reason).replace(/\|/g, '\\|')}\` |`);
+    // Some labels already lead with their own id; do not print it twice.
+    const label = String(c.label).replace(new RegExp(`^${id} — `), '');
+    p(`| **${id}** | ${label} | \`${String(c.reason).replace(/\|/g, '\\|')}\` |`);
   }
   p('');
   p('**NC-4b carries a REAL coin**, not a fabricated argument: Minter3 genuinely mints a shielded coin of');
@@ -309,7 +311,7 @@ const main = () => {
   p('');
 
   // --- M1 / D-102 ---------------------------------------------------------------------------------
-  p('## Mixed-colour composition — M1, decision D-102, and the one unexplained refusal');
+  p('## Mixed-colour composition — M1, decision D-102, and what error 223 turned out to be');
   p('');
   p(`Step 13 moves **two different colours in ONE transaction**: \`depositShielded(S2, 2)\` merging into an`);
   p('already non-empty pool AND `depositUnshielded(U2, 2)`, both crediting AA_B, under a single');

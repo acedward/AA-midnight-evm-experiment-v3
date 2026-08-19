@@ -1,0 +1,8 @@
+removing temporary clone parent: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00004-g4-2ySPY6
+temporary clone removed
+-- bringing down this project's development stack (no-op if absent)
+time="2026-08-18T20:46:05-04:00" level=warning msg="Warning: No resource found to remove for project \"aa00004-multi-token-custody\"."
+-- containers matching this project:
+-- volumes matching this project:
+-- networks matching this project:
+remaining containers: 0, volumes: 0, networks: 0
