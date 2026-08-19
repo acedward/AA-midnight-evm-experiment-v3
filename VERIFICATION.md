@@ -318,4 +318,91 @@ matching `aa00005`, and no `aa00005-dockercfg-*` scratch directory left in `$TMP
 
 **Wrapper:** `scripts/g4/verify-g4-closeout.sh` · **Evidence:** `evidence/g4-closeout/`
 
-_This section is completed when the gate runs; see the run record below._
+### The freshness guard, proven non-vacuous before it is trusted
+
+Retained evidence is COMMITTED, so `git clone` carries the original run's `evidence/` into the clone
+and the clone's own gates then overwrite it. A comparison that only checked verdicts would therefore
+pass against the very files it was meant to reproduce. Gate step `04-freshness-selftest` feeds the
+ORIGINAL evidence back in as its own "reproduction" — through the fresh clone, which is carrying it
+committed and has run nothing yet — and requires `scripts/g4/compare-runs.py` to REJECT it:
+
+| `compare-runs.py` exit | Meaning | What the gate does |
+|---|---|---|
+| `0` | accepted | **self-test FAILS**: "the freshness guard is vacuous and every reproduction claim made with it is worthless" |
+| `1` | substantive divergence | **self-test FAILS as INCONCLUSIVE**: the retained evidence does not satisfy its own checks |
+| `2` | freshness rejection, every substantive check having passed | **self-test PASSES** — the only outcome the gate accepts |
+
+Observed: **exit 2**. All 30 checklist items, all 18 rows of observed values and exact map sizes,
+both probes and all five controls matched — and the guard still raised 27 freshness objections: the
+same Manager address, all six issuer addresses, all twelve colours, all four pooled-coin nonces, the
+P-COLL colliding colour and shielded family key, the M3 transaction id, and **45 transaction ids in
+common**. That is precisely the fake this guard exists to catch, and it caught it.
+
+### Run record
+
+| Run | UTC | Outcome |
+|---|---|---|
+| 1 | 2026-08-19T05:44:53Z → 06:49:57Z | **VOID — not RED on merit.** The HOST WENT TO SLEEP mid-run |
+| 2 | 2026-08-19T07:17:23Z → 07:37:01Z | **RED**, `final_exit: 1` — the clone's `pnpm install` exited 0 having produced an INCOMPLETE dependency tree |
+| 3 | 2026-08-19T08:13:02Z → … | in progress |
+
+**Run 1 is void, and the distinction matters.** It was not a project failure and not a lane finding:
+the machine slept during step `07-reproduce-g3`, which SIGTERM'd the gate. Everything the fail-safe
+contract promises then happened, which is why this can be stated rather than guessed:
+
+- `07-reproduce-g3.out` ends `Terminated: 15` / `[G4] INTERRUPTED` — the signal is recorded, not
+  swallowed;
+- the EXIT trap ran the teardown hook (`removing temporary clone parent: …/aa00005-g4-nN7AuQ`);
+- `run.log` has **no `final_exit:` line at all**, so the run cannot be mistaken for a green one —
+  a gate here is green only on exit 0, and this run has no exit code to offer;
+- the clone's own G3 wrapper took its stack down on the same signal: the host afterwards showed
+  **0 containers, 0 volumes, 0 networks** matching `aa00005`.
+
+Four temporary directories under `$TMPDIR` outlived the kill, because the teardown was itself
+interrupted mid-`rm`: two `aa00005-dockercfg-*` W-1 scratch configs, an empty `aa00005-g3-*`
+private-state directory, and the partially removed clone parent. All four were removed by hand after
+a path check, and the host was re-verified clean before run 2 started. The empty `aa00005-g3-*`
+directory is the same class of hygiene observation 00004 recorded for its `aa00004-p2-*` leftovers:
+a zero-byte directory the harness creates and does not remove, not a resource leak of consequence.
+
+**Run 1's partial results are NOT reused.** G1 and G2 had reproduced GREEN inside its clone (105 s
+and 615 s), and the freshness self-test had passed — but a reproduction claim has to come from ONE
+uninterrupted gate run, so run 2 starts again from a fresh clean clone. Run 1's figures appear here
+only as the record of what was interrupted.
+
+**Run 2 is RED, and the cause was chased down rather than retried blindly.** The clone's G1 ran
+`pnpm install --frozen-lockfile` in **3 s, exit 0**; G2's install step then found nothing to do
+(0 s, exit 0); and G2's `07-unit-suites` died before a single test ran:
+
+```
+Error: Cannot find package '…/.pnpm/vitest@4.1.9_…/node_modules/pathe/index.js'
+       imported from …/.pnpm/vitest@4.1.9_…/node_modules/vitest/dist/cli.js
+  code: 'ERR_MODULE_NOT_FOUND'
+```
+
+so pnpm reported success over a dependency tree that was not actually complete. The gate did the
+right thing with it — RED at `06-reproduce-g2`, `final_exit: 1`, teardown `exit: 0`, host clean.
+
+Three hypotheses were checked against evidence rather than argued:
+
+| Hypothesis | Verdict |
+|---|---|
+| the pinned `pathe` package is broken | **NO** — its content is byte-for-byte the same in the healthy parent tree; it legitimately ships no `index.js` (it declares `main: ./dist/index.cjs` plus `exports`), and the parent runs 56/56 |
+| the branch cannot install from a clean clone (a real reproducibility defect) | **NO** — a throwaway clone of the same commit, given an uninterrupted install, then `scripts/g2/compile.sh --skip-zk`, runs **56/56 green**. The branch is sound |
+| `node` differs between the launch contexts | **NO** — `v24.9.0` in both, from the same nvm path |
+
+What is left is the environment: the host was at **load average 6.5–9.4** with another project's
+stacks running throughout, and pnpm links from a **shared global store** that other work on this
+machine touches concurrently. A 3-second "successful" install of this dependency set, followed by a
+tree missing a package's contents, is that contention showing through. It is recorded as an
+environmental flake, **not** as a lane finding and **not** as a defect in this branch — the clean-clone
+test above is what licenses that distinction.
+
+One false step of mine is recorded too: the first diagnostic clone was tested WITHOUT running
+`scripts/g2/compile.sh --skip-zk` first, so it failed on missing `generated/manager/contract/index.js`
+— the artifacts the gate compiles at step `05` before it tests anything. That was my diagnostic being
+wrong, not the clone, and it is noted so the log is not read as two independent failures.
+
+No gate wrapper was changed in response. Making the install step verify itself would be legitimate
+hardening, but it would leave the retained G1–G3 evidence no longer corresponding to the committed
+scripts — the exact mismatch this project re-ran G1 to avoid.

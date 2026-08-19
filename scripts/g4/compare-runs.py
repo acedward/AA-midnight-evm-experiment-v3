@@ -29,8 +29,19 @@ POOLED = ['S1', 'S2', 'S3', 'S4']
 SPEC_END_SIZES = {'pools': 4, 'shieldedCells': 5, 'unshieldedCells': 3}
 CONTROL_IDS = ['NC-1', 'NC-2', 'NC-3', 'NC-4', 'NC-5']
 
+# FR-207 states M3's acceptance as a DISJUNCTION: "M3 GREEN (or refused-composition recorded
+# verbatim with lazy-init proven separately, per FR-207)". Plan 03 implemented that by making
+# `M3-composition` the ONLY checklist id permitted to carry the `RECORDED` status. This comparison
+# therefore accepts either verdict for that ONE id — and when the two runs DISAGREE it says so
+# loudly, as a finding about the lane, instead of passing it over in silence. Every other id must
+# match exactly and be GREEN, `M3-lazy-init` INCLUDED: the lazy-init half is not covered by the
+# disjunction, and conflating the two halves is exactly what FR-207 forbids.
+COMPOSITION_ID = 'M3-composition'
+COMPOSITION_OK = {'GREEN', 'RECORDED'}
+
 freshness: list[str] = []
 problems: list[str] = []
+findings: list[str] = []
 
 
 def load(base: str, *parts: str):
@@ -149,13 +160,21 @@ def main() -> int:
     missing = sorted(set(ocells) - set(rcells))
     extra = sorted(set(rcells) - set(ocells))
     differ = sorted(i for i in set(ocells) & set(rcells)
-                    if (ocells[i]['status'], ocells[i]['level'], ocells[i]['step'])
+                    if i != COMPOSITION_ID
+                    and (ocells[i]['status'], ocells[i]['level'], ocells[i]['step'])
                     != (rcells[i]['status'], rcells[i]['level'], rcells[i]['step']))
     for c in rcells_doc['cells']:
-        print(f"  {c['status']:6} {c['id']:22} step {str(c['step']):12} level {c['level']}")
+        print(f"  {c['status']:8} {c['id']:22} step {str(c['step']):12} level {c['level']}")
     green = sum(1 for c in rcells.values() if c['status'] == 'GREEN')
     print(f'  original {len(ocells)} items, reproduced {len(rcells)} items, {green} GREEN')
-    notgreen = sorted(i for i, c in rcells.items() if c['status'] != 'GREEN')
+    notgreen = sorted(i for i, c in rcells.items()
+                      if c['status'] != 'GREEN' and i != COMPOSITION_ID)
+    # …and the one exempt id still has to hold to FR-207's own alternatives.
+    for label, doc in (('original', ocells), ('reproduction', rcells)):
+        st = doc.get(COMPOSITION_ID, {}).get('status')
+        if st not in COMPOSITION_OK:
+            problems.append(f'{COMPOSITION_ID} in the {label} is "{st}" — FR-207 allows only '
+                            f'{sorted(COMPOSITION_OK)}')
     if missing:
         problems.append(f'MISSING in the reproduction: {missing}')
     if extra:
@@ -243,22 +262,59 @@ def main() -> int:
         problems.append(f'P-COLL on-chain circuit reads differ: original {o_reads}, repro {r_reads}')
 
     om, rm = octx['probes']['m3'], rctx['probes']['m3']
-    print(f"  M3 composed in one transaction: {rm['composedInOneTransaction']}; tx {rm['txIds']}")
-    print(f"  M3 shape: {rm['shape']}")
+    for label, m in (('original', om), ('repro   ', rm)):
+        print(f"  M3 {label}: composedInOneTransaction={m['composedInOneTransaction']}, "
+              f"{len(m['txIds'])} tx id(s), shape: {m['shape']}")
+        for a in m.get('attempts', []):
+            verdict = 'ACCEPTED' if a['ok'] else 'refused'
+            print(f"      attempt {a['attempt']}: {verdict}")
+            if a.get('error'):
+                # Keep the node's verbatim refusal in THIS gate's evidence: the clone is deleted at
+                # teardown, so if it is not printed here it is gone (finding F-202's lesson applied).
+                print(f"        {a['error'][:400]}")
     print(f"  M3 map sizes {json.dumps(rm['mapSizesBefore'], sort_keys=True)} -> "
-          f"{json.dumps(rm['mapSizesAfter'], sort_keys=True)}; attempts: "
-          f"{[(a['attempt'], a['ok']) for a in rm.get('attempts', [])]}")
-    if not rm['composedInOneTransaction']:
-        problems.append('M3 did not compose both first deposits into one transaction in the reproduction '
-                        "— FR-207's fallback fired, which is a DIFFERENT outcome from the original")
-    if len(rm['txIds']) != 1:
-        problems.append(f"M3 carried {len(rm['txIds'])} transaction ids in the reproduction, not 1")
-    if sorted(rm['circuits']) != sorted(om['circuits']):
-        problems.append('M3 carried different circuits in the two runs')
+          f"{json.dumps(rm['mapSizesAfter'], sort_keys=True)}")
+
+    # The LAZY-INIT half is not optional and must reproduce exactly, whichever way the composition
+    # went: one new pool and two new cells, for two colours that were brand new beforehand.
     if (om['mapSizesBefore'], om['mapSizesAfter']) != (rm['mapSizesBefore'], rm['mapSizesAfter']):
         problems.append('M3 lazy-init map-size transition differs between the runs')
-    if om['txIds'] and om['txIds'] == rm['txIds']:
-        freshness.append('the M3 transaction id is identical in both runs')
+    if sorted(rm['circuits']) != sorted(om['circuits']):
+        problems.append('M3 carried different circuits in the two runs')
+    for key, want in (('pool for S5 exists', 'false'), ('(AA_B,S5) cell exists', 'false'),
+                      ('(AA_B,U5) cell exists', 'false'), ('kernel holds U5', 'false')):
+        if str(rm['brandNewBefore'].get(key)).lower() != want:
+            problems.append(f'M3: "{key}" was not {want} before the reproduction\'s first deposits — '
+                            f'the colours were not brand new, so this is not a lazy-init proof')
+
+    # The COMPOSITION half is FR-207's disjunction. Either outcome is permitted; a refusal must be
+    # recorded verbatim, and a DISAGREEMENT between the runs is a finding about the lane.
+    if not rm['composedInOneTransaction']:
+        errs = [a for a in rm.get('attempts', []) if not a['ok']]
+        if not errs or not all(a.get('error') for a in errs):
+            problems.append("M3's composition was refused in the reproduction but the verbatim error "
+                            'was not recorded for every failed attempt — FR-207 requires it')
+        if len(rm['txIds']) != 2:
+            problems.append(f"M3 fell back but carried {len(rm['txIds'])} transaction ids, not the 2 "
+                            'the separate-transaction fallback must produce')
+    elif len(rm['txIds']) != 1:
+        problems.append(f"M3 composed in one transaction but recorded {len(rm['txIds'])} tx ids")
+
+    if om['composedInOneTransaction'] != rm['composedInOneTransaction']:
+        findings.append(
+            'M3 COMPOSITION IS NOT RELIABLY REPRODUCIBLE ON THIS LANE.\n'
+            f"      original:      composed in ONE transaction  (attempts: "
+            f"{[('ok' if a['ok'] else 'refused') for a in om.get('attempts', [])]})\n"
+            f"      reproduction:  {rm['shape']}  (attempts: "
+            f"{[('ok' if a['ok'] else 'refused') for a in rm.get('attempts', [])]})\n"
+            '      Both outcomes satisfy FR-207, which states M3 as a disjunction, and the LAZY-INIT\n'
+            '      half reproduced identically either way — one new pool and two new cells for two\n'
+            '      brand-new colours. What does NOT reproduce is the composition itself, so decision\n'
+            "      D-203's 'the scoped batch is the proven legal composition' is an EXISTENCE result,\n"
+            '      not a reliability one. This strengthens finding F-203.')
+
+    if om['txIds'] and set(om['txIds']) & set(rm['txIds']):
+        freshness.append('an M3 transaction id is identical in both runs')
 
     # ------------------------------------------------------------------ negative controls
     print('== negative controls — verdict, verbatim message, funds AND no-state-created')
@@ -283,6 +339,15 @@ def main() -> int:
             print(f'         no state created — {key}: {value}')
 
     # ------------------------------------------------------------------ verdict
+    # Findings are printed BEFORE the verdict, and on every path, so a green run cannot bury one.
+    if findings:
+        print('\n' + '=' * 78)
+        print('FINDINGS — the reproduction differs from the original in a way the SPECIFICATION')
+        print('permits. Recorded here so it is reported, not passed over:')
+        for x in findings:
+            print(f'  ** {x}')
+        print('=' * 78)
+
     if problems:
         print('\nREPRODUCTION FAILED:')
         for x in problems:
@@ -300,6 +365,9 @@ def main() -> int:
     print('\nreproduction matches the original item for item, verdict for verdict, map size for map size')
     print('and control message for control message — on a demonstrably different chain, with zero')
     print('transaction ids in common')
+    if findings:
+        print('…with the FINDING above, which the specification permits and this gate reports rather')
+        print('than hides: read it before quoting this verdict.')
     return 0
 
 

@@ -7,7 +7,7 @@ of any kind, and still let only the owning account spend? This repo answers that
 The Manager is deployed in **block 45**, when the chain tip is **42** and *nothing that can mint a
 token exists on the chain at all*. Eighteen rows later it holds four shielded pools and three
 unshielded ledger balances — for colours it discovered as they arrived, one of them issued by a
-contract deployed in **block 172**, after the Manager had already worked through fourteen rows.
+contract deployed in **block 172**, after the Manager had already worked through rows 0–14.
 
 > **`EXPERIMENTAL_LANE`.** Everything here runs on a pinned **prerelease** component slot
 > (node `2.0.0-rc.4`, ledger `9.1.0.0-rc.3`, `midnight-js v5.0.0-beta.6`, wallet-sdk
@@ -128,12 +128,12 @@ flowchart LR
     N["OwnerN wallet"]
     OM["OwnerM wallet"]
 
-    subgraph mgr["the SAME Manager, which was told none of this"]
+    subgraph custody["the SAME Manager, which was told none of this"]
         A["AA_A"]
         B["AA_B"]
     end
 
-    MGR ==>|"rows 0 to 6 · deploy, register, mint · ALL THREE MAPS STILL SIZE 0"| mgr
+    MGR ==>|"rows 0 to 6 · deploy, register, mint · ALL THREE MAPS STILL SIZE 0"| custody
 
     M1 -->|"2 · mint S1 10"| N
     M1 -->|"3 · mint U1 10"| N
@@ -162,13 +162,13 @@ row 6 and at row 17 — the difference is entirely what arrived:
 
 ```mermaid
 flowchart TB
-    subgraph before["after row 6 · deployed, both accounts registered, five colours minted"]
+    subgraph stateA["after row 6 · deployed, both accounts registered, five colours minted"]
         Z1["pools · size 0"]
         Z2["shieldedBalances · size 0"]
         Z3["unshieldedBalances · size 0"]
     end
 
-    subgraph after["after row 17 · four colours custodied, none of them ever configured"]
+    subgraph stateB["after row 17 · four colours custodied, none of them ever configured"]
         subgraph pools["ledger map pools · one merged coin per shielded colour"]
             P1(("S1 · 6"))
             P2(("S2 · 4"))
@@ -186,7 +186,7 @@ flowchart TB
         end
     end
 
-    before ==>|"eleven rows of credits and spends"| after
+    stateA ==>|"eleven rows of credits and spends"| stateB
     P1 -->|"invariant · 6 = 3 + 3"| cells
     P4 -->|"invariant · 7 = 7 + 0"| cells
     K2 -->|"invariant · 5 = 0 + 5"| cells
@@ -243,7 +243,7 @@ a refused operation on a colour the contract has never seen leaves no trace that
 
 ```mermaid
 flowchart TB
-    X["MinterCollide TOKX<br/>ONE separator, both mint calls<br/>colour 9d27bcf49db7cd1b… in BOTH families"]
+    TOKX["MinterCollide TOKX<br/>ONE separator, both mint calls<br/>colour 9d27bcf49db7cd1b… in BOTH families"]
 
     subgraph mgr2["the same Manager, the same 32 bytes, twice"]
         SP(("shielded pool<br/>value 3, then 2"))
@@ -252,8 +252,8 @@ flowchart TB
         KU["unshieldedKey AA_B X = 92903947…"]
     end
 
-    X -->|"mint 3 shielded to OwnerM, deposited to AA_B"| SP
-    X -->|"mint 2 unshielded to OwnerM, deposited to AA_B"| UL
+    TOKX -->|"mint 3 shielded to OwnerM, deposited to AA_B"| SP
+    TOKX -->|"mint 2 unshielded to OwnerM, deposited to AA_B"| UL
     SP -->|"withdraw 1 · the unshielded side must not move"| KS
     UL -->|"withdraw 1 · the shielded side must not move"| KU
 ```

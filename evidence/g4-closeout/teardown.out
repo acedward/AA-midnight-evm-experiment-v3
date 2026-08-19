@@ -1,0 +1,15 @@
+removing temporary clone parent: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00005-g4-nN7AuQ
+removing temporary clone parent: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00005-g4-ZTFVPm
+temporary clone removed
+-- containers matching this project:
+-- volumes matching this project:
+-- networks matching this project:
+remaining containers: 0, volumes: 0, networks: 0
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00005-dockercfg-VhQIbT)
+removing temporary clone parent: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00005-g4-w5HW7o
+temporary clone removed
+-- containers matching this project:
+-- volumes matching this project:
+-- networks matching this project:
+remaining containers: 0, volumes: 0, networks: 0
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00005-dockercfg-P3uN1p)

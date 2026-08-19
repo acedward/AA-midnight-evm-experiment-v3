@@ -573,8 +573,8 @@ const main = () => {
     p('_Proof-latency and transaction-size metrics were not captured in the retained run._');
     p('');
   }
-  p('Wall-clock on a shared host, retained runs: G1 155 s, G2 610 s (deploy-order 527 s), G3 1722 s');
-  p('(the live step-ledger half 1643 s). Gate step durations are in each gate\'s `run.log`.');
+  p('Wall-clock on a shared host, retained runs: G1 155 s, G2 612 s (deploy-order 527 s), G3 1723 s');
+  p("(the live step-ledger half 1643 s). Gate step durations are in each gate's `run.log`.");
   p('');
 
   // --- reproduction ---------------------------------------------------------------------------
