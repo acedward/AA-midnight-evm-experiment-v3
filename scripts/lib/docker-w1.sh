@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# W-1 — inherited HOST workaround, adopted by every 00005 gate from the start.
+# W-1 — inherited HOST workaround, adopted by every 00006 gate from the start.
 #
 # THE FAULT (diagnosed by 00004 at G4, not guessed): this host's `~/.docker/config.json` sets
 # `"credsStore": "desktop"`, and `docker-credential-desktop get` can hang indefinitely. Every
@@ -46,7 +46,7 @@ w1_enable() {
     return 1
   fi
 
-  W1_SCRATCH_DIR="$(mktemp -d "${TMPDIR:-/tmp}/aa00005-dockercfg-XXXXXX")"
+  W1_SCRATCH_DIR="$(mktemp -d "${TMPDIR:-/tmp}/aa00006-dockercfg-XXXXXX")"
   printf '{}\n' > "$W1_SCRATCH_DIR/config.json"
   ln -s "$src/cli-plugins" "$W1_SCRATCH_DIR/cli-plugins"
   export DOCKER_CONFIG="$W1_SCRATCH_DIR"
