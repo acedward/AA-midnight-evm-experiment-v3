@@ -37,7 +37,7 @@ dormant: minted by nobody, deposited by nobody, **absent from every map at every
 | **No state on a refusal** (FR-202/206) | every control asserts all three map sizes unchanged AND names the exact cell still absent afterwards | NC-1..5 |
 | **Family-scoped storage** (FR-203) | ONE 32-byte colour, minted in both families, custodied as pool `3` and contract ledger balance `2` at the same time; two on-chain circuit calls taking the IDENTICAL argument answered `2` and `1` | P-COLL |
 | **Owner-only spend** (FR-204, carried critical) | the witness choke point and the per-(account, colour) guard, which reads a MISSING cell as 0 and refuses BEFORE any pool guard | NC-1, NC-2, NC-3, NC-5 |
-| **Atomic double lazy-init** (FR-207) | ONE transaction id `00202436c94913c2b9b1556d064ebbe1d055c48ed0aa0983e66b43f8fc0f150c2a` carried the FIRST deposits of two brand-new colours: 5/6/4 → 6/7/5 | M3 |
+| **Atomic double lazy-init** (FR-207) | ONE transaction id `00202436c94913c2b9b1556d064ebbe1d055c48ed0aa0983e66b43f8fc0f150c2a` carried the FIRST deposits of two brand-new colours: 5/6/4 → 6/7/5. **The composition is an existence result, not a reliable one** — its first attempt is refused every time, and one G4 reproduction never landed it and used FR-207's fallback; the lazy-init half reproduces identically either way | M3 |
 
 **30 of 30 checklist items GREEN**, 0 RED, no gaps, nothing RECORDED.
 
@@ -322,23 +322,43 @@ fallback (assert FR-203 with distinct-value colours plus an impossibility note) 
 | Map sizes across the ONE transaction | {"pools":5,"shieldedCells":6,"unshieldedCells":4} → {"pools":6,"shieldedCells":7,"unshieldedCells":5} |
 | Confirmed a second way | on-chain circuit calls: `shieldedAccountBalance(AA_B,S5)` = 3, `unshieldedAccountBalance(AA_B,U5)` = 3 |
 
-**D-203 is RESOLVED as proposed: RESOLVED — SDK contract-scoped batch; one transaction id carried both first deposits**. One new pool and two new
-cells came into existence under a single transaction id. FR-207's fallback (prove lazy-init with
-separate transactions and report the composition half separately) was implemented literally and
-armed — the two halves are SEPARATE checklist rows, `M3-lazy-init` and `M3-composition`, so a
-composition refusal could never be conflated with a lazy-init failure — but it was not needed.
-
-**It very nearly was reported the other way round.** The composition is attempted twice, each on
-its own fresh spender wallet:
+**D-203 resolved to the shape proposed: RESOLVED — SDK contract-scoped batch; one transaction id carried both first deposits**. One new pool and
+two new cells came into existence under a single transaction id. The composition is attempted
+twice, each on its own fresh spender wallet:
 
 | Attempt | Result |
 |---|---|
 | 1 | refused: `Unexpected error submitting scoped transaction 'aa00005-double-lazy-init': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } \| cause: Transaction submission error` |
 | 2 | **ACCEPTED** — both first deposits under one transaction id |
 
-The first attempt was refused by the node with a bare code; the IDENTICAL composition, retried on
-another fresh wallet moments later, was accepted. That is finding **F-203** below, and it is why a
-single attempt is not evidence of a ledger rule.
+### …and it is an EXISTENCE result, not a reliability one
+
+**Read this before quoting D-203.** Across the FOUR times this project has run probe M3, the
+composition landed in two of them and fell back to two separate transactions in the other two —
+and **the very first attempt was refused in all four**, always with
+`1010: Invalid Transaction: Custom error: 104`. The retry is what makes it land, and the retry
+does not always work: the G4 run-3 reproduction was refused on both of its attempts and used the
+fallback. The run-by-run ledger is in [`VERIFICATION.md`](VERIFICATION.md).
+
+| | Retained G3 run | This clean-clone reproduction |
+|---|---|---|
+| composition attempts | 1 refused, **2 accepted** | 1 refused, **2 accepted** |
+| outcome | ONE transaction id | ONE transaction id |
+| `M3-composition` | `GREEN` | `GREEN` |
+| `M3-lazy-init` | `GREEN` | `GREEN` |
+| map sizes across it | {"pools":5,"shieldedCells":6,"unshieldedCells":4} → {"pools":6,"shieldedCells":7,"unshieldedCells":5} | **identical** |
+
+So the honest statement is: the SDK contract-scoped batch **can** carry the first deposits of two
+brand-new colours under one transaction id — that happened, and there is a transaction id to point
+at — but it does **not** do so dependably on this lane. **What reproduces every time is the
+lazy-init half**: one new pool and two new cells for two colours that were brand new beforehand,
+identical by either route.
+
+That is exactly why FR-207 states M3 as a DISJUNCTION, and why the two halves are SEPARATE
+checklist rows — `M3-lazy-init` and `M3-composition`, with only the latter permitted to carry
+`RECORDED`. Both runs satisfy the specification. Anyone reusing this harness should treat a
+composed scoped batch as **best-effort**, keep the separate-transaction fallback armed, and never
+let a single success license a claim that the shape is dependable — see finding **F-203**.
 
 ## Distinctness — and the one assertion that is inverted
 
@@ -399,6 +419,14 @@ state-neutrality is asserted DIRECTLY rather than inferred.
 **00005 G3 run 1 concluded the opposite from a single attempt** and would have reported D-203
 wrongly. Its evidence was deleted and the gate re-run, never hand-edited — see the run history.
 
+**And the G4 reproductions strengthened this into the part that generalises.** Running the
+identical probe on fresh chains, one reproduction was refused on BOTH attempts and used the
+fallback, while another was refused once and then accepted. Over the four runs of this probe the
+**first attempt has been refused every single time**, and the retry has landed it in two runs out
+of three that made one. So F-203's own remedy — "retry once on a second fresh wallet" — is
+*better* than one attempt but is **not a reliable recipe**; it is a mitigation, not a fix. Treat a
+composed scoped batch as best-effort and keep the separate-transaction fallback armed.
+
 ### Inherited, and re-confirmed here
 
 | Id | Finding | Status in 00005 |
@@ -446,13 +474,53 @@ figures are not a whole-run average.
 Slowest proof: `depositShielded` at 5945 ms.
 Largest submitted transaction: `feePayer/manager` at 26760 bytes.
 
-Wall-clock on a shared host, retained runs: G1 155 s, G2 610 s (deploy-order 527 s), G3 1722 s
+Wall-clock on a shared host, retained runs: G1 155 s, G2 612 s (deploy-order 527 s), G3 1723 s
 (the live step-ledger half 1643 s). Gate step durations are in each gate's `run.log`.
 
 ## Reproduction from a clean clone
 
-_Not yet reproduced in this working tree: run `./scripts/g4/verify-g4-closeout.sh`, which performs
-the clean-clone reproduction and regenerates this section from the clone's own evidence._
+The G4 wrapper clones this repository into a fresh temporary directory — carrying **no** generated
+artifacts, **no** `docker/.env` and **no** `node_modules`, all asserted absent — then runs the G1,
+G2 and G3 gate wrappers inside that clone, each against a fresh stack of its own, and compares the
+results.
+
+| | Original run | Clean-clone reproduction |
+|---|---|---|
+| Checklist GREEN | 30/30 | 30/30 |
+| Manager | `b1f34f0469b0c29e0a61e931be21a1d335d33953367bf3fc9c633b0d8372076d` | `010281da01cf6ef6936eb05a06b433487837b58d008d3869566df74d34ac1862` |
+| Manager deploy block (chain tip before any deploy) | 45 (42) | 28 (25) |
+| TOKD (mid-ledger issuer) deploy block | 172 | 153 |
+| S1 colour | `af0cf3315634a046dab2734b721b8d3f923e346d878a3d414edcd2164cec8a31` | `c42ddcaf75e7b64de4bd13618296555591c5ca300addc3ad0e6d6a2b48c22ec3` |
+| P-COLL colliding colour | `9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd` | `b40771a64e5ab5e4453ed17bccc8bc767b66bb14f29304be4b177015e56b7ba4` |
+| M3 transaction | `00202436c94913c2b9b1556d064ebbe1d055c48ed0aa0983e66b43f8fc0f150c2a` | `000262291b122103c77bcdc6ecdc1bd6768781bc2c044b39ff45552d022f839696` |
+| M3 shape | sdk-scoped batch (one transaction, one segment per call, state threaded) | sdk-scoped batch (one transaction, one segment per call, state threaded) |
+| End-state map sizes | {"pools":4,"shieldedCells":5,"unshieldedCells":3} | {"pools":4,"shieldedCells":5,"unshieldedCells":3} |
+| M3 composition | landed in ONE transaction | landed in ONE transaction |
+| Transaction ids in common | — | **0** |
+
+**This reproduction did land the M3 composition** — refused on its first attempt, accepted on
+the retry, exactly as the retained run went. That is not a guarantee: an earlier G4
+reproduction was refused on both attempts and used FR-207's fallback. See the D-203 section
+above, and the run ledger in [`VERIFICATION.md`](VERIFICATION.md).
+
+Addresses, colours, nonces and transaction ids necessarily differ — the reproduction runs on a
+brand-new chain and the colours are address-scoped, so they *cannot* repeat. What is compared is
+what the specification asserts: every checklist verdict, the deploy-order proof, all 18 rows of
+map sizes and observed values, the final table, the exact end-state map sizes, both probes, and
+every control's verdict, no-state-created proof and verbatim message. Reproduced final table:
+
+|  | S1 | S2 | S3 | S4 | U1 | U2 | U3 | U4 |
+|---|---|---|---|---|---|---|---|---|
+| OwnerN | 4 | 2 | 0 | 0 | 5 | 0 | 0 | 0 |
+| OwnerM | 0 | 4 | 6 | 0 | 2 | 5 | 0 | 0 |
+| AA_A | 3 | 0 | 4 | 7 | 3 | 0 | 0 | 0 |
+| AA_B | 3 | 4 | 0 | 0 | 0 | 5 | 0 | 4 |
+| pool / ledger | 6 | 4 | 4 | 7 | 3 | 5 | 0 | 4 |
+
+**The freshness guard is proven non-vacuous, not merely present.** Before the reproduction runs,
+the gate feeds the ORIGINAL evidence in as its own "reproduction" and requires the comparison to
+REJECT it. Every substantive check passes on that pair — which is exactly why verdict-matching
+alone could never tell a reproduction from the committed original.
 
 ### How to reproduce
 

@@ -344,7 +344,9 @@ common**. That is precisely the fake this guard exists to catch, and it caught i
 |---|---|---|
 | 1 | 2026-08-19T05:44:53Z → 06:49:57Z | **VOID — not RED on merit.** The HOST WENT TO SLEEP mid-run |
 | 2 | 2026-08-19T07:17:23Z → 07:37:01Z | **RED**, `final_exit: 1` — the clone's `pnpm install` exited 0 having produced an INCOMPLETE dependency tree |
-| 3 | 2026-08-19T08:13:02Z → … | in progress |
+| 3 | 2026-08-19T08:13:02Z → 08:53:12Z | **RED**, `final_exit: 1` — the demonstration reproduced, but **M3's composition did not**. This is the project's most interesting negative result; see below |
+| 4 | 2026-08-19T08:56:44Z → 09:28:07Z | **RED**, `final_exit: 1` — the clone's G3 never reached row 0: a 15-minute wallet-observation stall in funding, then DUST registration refused with `Custom error: 171` |
+| 5 | 2026-08-19T09:46:31Z → 11:28:19Z (6108 s) | **GREEN**, `final_exit: 0`, teardown `exit: 0`, host clean — **RETAINED** |
 
 **Run 1 is void, and the distinction matters.** It was not a project failure and not a lane finding:
 the machine slept during step `07-reproduce-g3`, which SIGTERM'd the gate. Everything the fail-safe
@@ -406,3 +408,168 @@ wrong, not the clone, and it is noted so the log is not read as two independent 
 No gate wrapper was changed in response. Making the install step verify itself would be legitimate
 hardening, but it would leave the retained G1–G3 evidence no longer corresponding to the committed
 scripts — the exact mismatch this project re-ran G1 to avoid.
+
+### Run 3 — the demonstration reproduced; the M3 composition did not
+
+Run 3 is the one worth reading. **All three inner gates exited 0** inside the clone (G1 95 s, G2
+603 s, G3 1709 s), the reproduction was demonstrably its own chain — all six issuer addresses
+different, **12/12 colours different**, pooled-coin nonces different, **0 transaction ids in common**
+out of 45 original and 46 reproduced — and 29 of the 30 checklist items matched verdict for verdict.
+
+One item did not:
+
+| | Original (retained) | Reproduction (run 3) |
+|---|---|---|
+| M3 composition attempts | 1 refused, **2 ACCEPTED** | 1 refused, **2 refused** |
+| Outcome | one transaction id carried both first deposits | **FR-207 fallback**: two separate transactions |
+| `M3-composition` verdict | `GREEN` | `RECORDED` |
+| `M3-lazy-init` verdict | `GREEN` | `GREEN` |
+| Map sizes across it | `{5,6,4}` → `{6,7,5}` | `{5,6,4}` → `{6,7,5}` — **identical** |
+
+**This is a result, not a malfunction, and it is the sharpest evidence F-203 has produced.** The
+lazy-init half — one new pool and two new cells for two colours that were brand new beforehand —
+reproduced exactly, by both routes. What did not reproduce is the *composition*. So:
+
+> **D-203's resolution is an EXISTENCE result, not a reliability one.** The SDK contract-scoped
+> batch **can** carry the first deposits of two brand-new colours under one transaction id — that
+> happened, verifiably, with a transaction id to point at. It does **not** do so dependably: across
+> the runs of this project the composition was refused on 4 of 6 fresh-wallet attempts
+> (`1010: Invalid Transaction: Custom error: 104`), and one whole run never got it to land.
+
+FR-207 anticipated precisely this, which is why it states M3 as a **disjunction** — "M3 GREEN (or
+refused-composition recorded verbatim with lazy-init proven separately)" — and why Plan 03 made
+`M3-composition` the only checklist id permitted to carry `RECORDED`. Both runs satisfy the
+specification. What failed was **my comparison script**, which demanded `GREEN` and so was stricter
+than both the spec and the plan.
+
+**The check was corrected to the spec's own rule, and it is worth being explicit that a check was
+changed after it failed.** The correction is narrow and everything around it got *stricter*:
+
+| Change | Direction |
+|---|---|
+| `M3-composition` may be `GREEN` or `RECORDED` — FR-207's disjunction, for that ONE id | relaxed |
+| both runs' `M3-composition` verdict must lie in that permitted set | **new** |
+| `M3-lazy-init` must be GREEN in both, and is explicitly NOT covered by the disjunction | **new** |
+| all four `brandNewBefore` assertions must hold in the reproduction, or it is not a lazy-init proof | **new** |
+| a refusal must carry a verbatim error for **every** failed attempt | **new** |
+| the fallback must produce exactly 2 transaction ids; a composition exactly 1 | **new** |
+| a disagreement between the runs raises a FINDING printed **before the verdict on every path**, so a green run cannot bury it | **new** |
+| every attempt's verbatim node error is printed into *this* gate's evidence, since the clone is deleted at teardown (F-202's lesson) | **new** |
+
+The freshness self-test was re-run after the change and still rejects the original as its own
+reproduction with exit 2 — the correction did not weaken the guard.
+
+**Organizer ruling, 2026-08-19 (decision D-205).** A reproduction that lands on the FR-207 fallback
+is spec-conformant, so a comparator that fails it is a comparator bug rather than a reproduction
+divergence; the comparator must accept `{GREEN, RECORDED}` for `M3-composition`, require
+`M3-lazy-init` GREEN and the refusals recorded verbatim, and **NOTE** the divergence as composition
+nondeterminism instead of failing on it — with nothing else tuned to make a run pass. That is what
+was already implemented in `0372527`, and the ruling confirms it. Run 3's evidence is retained under
+`evidence/g4-closeout/superseded/` as a superseded-but-informative run.
+
+### Run 4 — a third distinct environmental failure, before the ledger even started
+
+Run 4's clone reproduced G1 (95 s) and G2 (604 s) GREEN, then its G3 died in the **funding phase**,
+before row 0. The shape of it:
+
+```
+09:12:38  waiting for feePayer to observe its own spend (NIGHT at or below 2000000000000) …
+09:27:51  OwnerM-funding: registering 1 NIGHT utxo(s) for DUST generation      ← 15 minutes later
+09:27:52  1010: Invalid Transaction: Custom error: 171
+```
+
+Fifteen minutes stalled waiting for a wallet to observe **its own** spend — which is F-104's
+signature, the inherited finding that a submitting wallet under-reports itself — and then the DUST
+registration built against that stale view was refused by the node with `Custom error: 171`. Same
+family of fault as F-107/F-203: a wallet whose view has not settled balances into a transaction the
+node then rejects with a bare code. The host was at load average 8.2 with another project's stacks
+running.
+
+Teardown was clean, as on every other failure: clone removed, **0 containers, 0 volumes, 0
+networks**, W-1 scratch config removed. Evidence retained at
+`evidence/g4-closeout/superseded/run4-g3-funding-failure.out`.
+
+### Where that leaves G4
+
+Four attempts, three genuinely distinct environmental failure modes, none of them a defect in the
+branch and none of them reproducible on demand:
+
+| Run | Failure | Class |
+|---|---|---|
+| 1 | host slept mid-run | host |
+| 2 | `pnpm install` exited 0 over an incomplete tree | host contention / shared pnpm store |
+| 3 | M3 composition nondeterminism + a comparator stricter than the spec | **lane finding** + my bug, both now fixed |
+| 4 | 15-minute wallet-observation stall, then `Custom error: 171` | lane (F-104 / F-107 family) under host load |
+
+Run 3 is the informative one: it demonstrated that the **substance** of the demonstration
+reproduces — all three inner gates exit 0, 29/30 checklist items identical, and **0 transaction ids
+in common** out of 45 original / 46 reproduced — with the single divergence now known to be
+spec-conformant.
+
+### Run 5 — GREEN
+
+| Step | Duration | Result |
+|---|---|---|
+| `01-w1-docker-config` | 0 s | W-1 adopted; compose plugin and daemon resolve under the scratch config |
+| `02-clean-clone` | 1 s | fresh `mktemp -d` clone at `0372527`; no generated artifacts, no `docker/.env`, no `node_modules`, no private-state store; all three contracts, all four wrappers, W-1 and the pinned lockfile present; the committed original evidence present for the self-test |
+| `03-spec-hash` | 0 s | approved spec byte-identical to `bb32e42b2ab78d0ae90d165b26b29a1fb6b568feb399622703aa634b1255a6f0` |
+| `04-freshness-selftest` | 0 s | guard **rejected the original as its own reproduction, exit 2** — non-vacuous |
+| `05-reproduce-g1` | 1067 s | G1 GREEN inside the clone |
+| `06-reproduce-g2` | 855 s | G2 GREEN inside the clone |
+| `07-reproduce-g3` | 4181 s | G3 GREEN inside the clone; `CELLS.md` 30/30 |
+| `08-compare` | 0 s | **the reproduction matches the original** (below) |
+| `09-report` | 0 s | `REPORT.md` re-rendered with its reproduction section filled from the clone's own evidence |
+| `10-docs` | 0 s | all three documents present with both labels; Mermaid present; F-201/F-202/F-203 all named in REPORT.md; both archives intact; `contracts/minter.compact` still byte-identical to `f066a09`; nothing generated tracked by git |
+
+**Freshness — the reproduction is demonstrably its own run:**
+
+| | Original | Clean-clone reproduction |
+|---|---|---|
+| Manager | `b1f34f0469b0c29e0a61e931be21a1d335d33953367bf3fc9c633b0d8372076d` | `010281da01cf6ef6936eb05a06b433487837b58d008d3869566df74d34ac1862` |
+| Manager deploy block (tip before any deploy) | 45 (42) | **28 (25)** |
+| TOKD, the mid-ledger issuer | block 172 | **block 153** |
+| S1 colour | `af0cf331…4cec8a31` | `c42ddcaf…48c22ec3` |
+| P-COLL colliding colour | `9d27bcf4…7217c2fd` | `b40771a6…e56b7ba4` |
+| M3 transaction | `00202436c9…150c2a` | `000262291b…f839696` |
+| **Transaction ids in common** | — | **0** |
+| Colours differing | — | **12 of 12** |
+| Pooled coin nonces | — | all differ |
+
+**What matched, exactly:** 30/30 checklist items GREEN with identical verdict, step and level; the
+deploy-order proof (Manager strictly earlier than all six issuers, every issuer `null` at the
+Manager's block, asked both ways, Manager present as the control); all 18 rows of observed table,
+custody figures and **exact map sizes**, with zero unaccounted keys at every row; the final table
+value for value; end-state map sizes `{4,5,3}` against the spec's separately written figures; U3
+dormant; 45/45 distinctness plus the inverted equality; P-COLL's pool `3` vs ledger `2` and its
+identical-argument circuit reads answering `2` and `1`; M3's lazy-init transition `{5,6,4}` →
+`{6,7,5}`; and all five controls GREEN with `messageMatched`, `fundsUnchanged`, `mapSizesUnchanged`
+**and the same verbatim refusal text and no-state-created proofs**.
+
+Verbatim verdict (`evidence/g4-closeout/08-compare.out`):
+
+```
+reproduction matches the original item for item, verdict for verdict, map size for map size
+and control message for control message — on a demonstrably different chain, with zero
+transaction ids in common
+```
+
+**Run 5's M3 composition landed** — refused on attempt 1, accepted on attempt 2, exactly as the
+retained run went. That is *not* a retraction of the run-3 finding: it is the third and fourth data
+points showing the same thing, that the first attempt is always refused and the retry usually but
+not always succeeds. Both `M3-composition` verdicts were `GREEN` in this pair, so D-205's permitted
+divergence was not exercised in the retained comparison; the run-3 evidence that exercises it is
+kept at `evidence/g4-closeout/superseded/run3-08-compare.out`.
+
+### One disclosed correction to REPORT.md
+
+`REPORT.md` is a generated document, and after run 5 landed, two statements in the generator were
+stale: a hard-coded cross-run tally ("refused 4 times out of 6"), and a hard-coded comparison table
+that assumed the reproduction had fallen back. Both were rewritten to derive from the data, and one
+misplaced table row was moved inside its table.
+
+The clone had already been removed by teardown, so `REPORT.md` could not simply be re-rendered
+without losing its reproduction section. The identical corrections were therefore applied to the
+artifact by hand, and the two were then **checked against each other**: re-running the generator with
+no clone root and diffing shows the files identical everywhere except the clone-derived cells, which
+correctly render as `—` when there is no clone. Generator and artifact agree; the next G4 run
+regenerates the file from evidence as usual.

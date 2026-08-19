@@ -264,7 +264,7 @@ identical 32-byte argument** answer differently: `shieldedAccountBalance(AA_B, X
 **45/45 pairwise distinct** — every comparison in the project asserts inequality except this one,
 which asserts equality on purpose.
 
-### Two brand-new colours, one transaction
+### Two brand-new colours, one transaction — and the honest caveat
 
 Probe **M3** performs the **first** deposits of two colours that exist nowhere in the Manager —
 one shielded, one unshielded — inside a single SDK contract-scoped transaction. One transaction id
@@ -275,6 +275,18 @@ It took two attempts on two fresh wallets. The first was refused by the node wit
 was accepted. That is finding **F-203** in the report — and the reason the probe attempts the
 composition twice before it is allowed to report a refusal at all. An earlier run that tried once
 concluded the opposite, and it was **wrong**.
+
+**Do not read that as "the shape works", though.** One clean-clone reproduction ran the identical
+probe on a fresh chain and was refused on *both* attempts, so the specification's fallback fired and
+proved the same lazy-init with two separate transactions instead. Over the four runs of this probe
+the **first attempt has been refused every single time**, and the retry has landed it in two runs
+out of the three that made one. So this is an **existence
+result**: the scoped batch *can* carry both first deposits under one transaction id — there is a
+transaction id to point at — but it does **not** do so dependably on this lane. What reproduces
+every single time is the **lazy-init half**: one new pool and two new cells for two brand-new
+colours, identical whichever route it takes. FR-207 was written as a disjunction for exactly this
+reason, which is why the two halves are separate checklist rows and only the composition half may
+be recorded rather than green.
 
 ### Proving it can fail — and fails clean
 

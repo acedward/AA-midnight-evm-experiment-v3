@@ -1,5 +1,5 @@
 # G4 run log
-started_utc: 2026-08-19T09:46:33Z
+started_utc: 2026-08-19T05:44:53Z
 argv: ./scripts/g4/verify-g4-closeout.sh 
 cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
 host: Darwin arm64
@@ -7,88 +7,57 @@ docker: Docker version 29.1.3, build f52814d
 compose: 2.40.3-desktop.1
 label: EXPERIMENTAL_LANE
 --- step: 01-w1-docker-config
-    utc_start: 2026-08-19T09:46:33Z
+    utc_start: 2026-08-19T05:44:53Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
     argv: step_w1
-    utc_end: 2026-08-19T09:46:33Z
-    duration_s: 0
+    utc_end: 2026-08-19T05:44:54Z
+    duration_s: 1
     exit: 0
     output: 01-w1-docker-config.out
 --- step: 02-clean-clone
-    utc_start: 2026-08-19T09:46:33Z
+    utc_start: 2026-08-19T05:44:54Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
     argv: step_clean_clone
-    utc_end: 2026-08-19T09:46:34Z
-    duration_s: 1
+    utc_end: 2026-08-19T05:44:54Z
+    duration_s: 0
     exit: 0
     output: 02-clean-clone.out
 --- step: 03-spec-hash
-    utc_start: 2026-08-19T09:46:34Z
+    utc_start: 2026-08-19T05:44:54Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
     argv: step_spec_hash
-    utc_end: 2026-08-19T09:46:34Z
+    utc_end: 2026-08-19T05:44:54Z
     duration_s: 0
     exit: 0
     output: 03-spec-hash.out
 --- step: 04-freshness-selftest
-    utc_start: 2026-08-19T09:46:34Z
+    utc_start: 2026-08-19T05:44:54Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
     argv: step_freshness_selftest
-    utc_end: 2026-08-19T09:46:34Z
+    utc_end: 2026-08-19T05:44:54Z
     duration_s: 0
     exit: 0
     output: 04-freshness-selftest.out
 --- step: 05-reproduce-g1
-    utc_start: 2026-08-19T09:46:34Z
+    utc_start: 2026-08-19T05:44:54Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
     argv: step_reproduce_g1
-    utc_end: 2026-08-19T10:04:21Z
-    duration_s: 1067
+    utc_end: 2026-08-19T05:46:39Z
+    duration_s: 105
     exit: 0
     output: 05-reproduce-g1.out
 --- step: 06-reproduce-g2
-    utc_start: 2026-08-19T10:04:21Z
+    utc_start: 2026-08-19T05:46:39Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
     argv: step_reproduce_g2
-    utc_end: 2026-08-19T10:18:36Z
-    duration_s: 855
+    utc_end: 2026-08-19T05:56:54Z
+    duration_s: 615
     exit: 0
     output: 06-reproduce-g2.out
 --- step: 07-reproduce-g3
-    utc_start: 2026-08-19T10:18:36Z
+    utc_start: 2026-08-19T05:56:54Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
     argv: step_reproduce_g3
-    utc_end: 2026-08-19T11:28:17Z
-    duration_s: 4181
-    exit: 0
-    output: 07-reproduce-g3.out
---- step: 08-compare
-    utc_start: 2026-08-19T11:28:17Z
-    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
-    argv: step_compare
-    utc_end: 2026-08-19T11:28:17Z
-    duration_s: 0
-    exit: 0
-    output: 08-compare.out
---- step: 09-report
-    utc_start: 2026-08-19T11:28:17Z
-    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
-    argv: step_report
-    utc_end: 2026-08-19T11:28:17Z
-    duration_s: 0
-    exit: 0
-    output: 09-report.out
---- step: 10-docs
-    utc_start: 2026-08-19T11:28:17Z
-    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
-    argv: step_docs
-    utc_end: 2026-08-19T11:28:17Z
-    duration_s: 0
-    exit: 0
-    output: 10-docs.out
 --- teardown
-    utc: 2026-08-19T11:28:17Z
+    utc: 2026-08-19T06:49:57Z
     argv: step_teardown
-    exit: 0
-finished_utc: 2026-08-19T11:28:19Z
-final_exit: 0

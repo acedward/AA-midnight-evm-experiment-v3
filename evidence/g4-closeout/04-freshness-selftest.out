@@ -1,6 +1,6 @@
 feeding the ORIGINAL evidence back in as its own 'reproduction' — this MUST be rejected
 original: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
-'repro':  /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00005-g4-w5HW7o/clone  (still carrying the committed original evidence, nothing run yet)
+'repro':  /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00005-g4-k5Qm0N/clone  (still carrying the committed original evidence, nothing run yet)
 
 == freshness — is the "reproduction" a different chain at all?
   Manager      original b1f34f0469b0c29e0a61e931be21a1d335d33953367bf3fc9c633b0d8372076d
@@ -31,36 +31,36 @@ original: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
   Minter5        block   213 strictlyLater=True absentAtManagerBlock=True/True
   MinterCollide  block   222 strictlyLater=True absentAtManagerBlock=True/True
 == checklist
-  GREEN  step-0                 step 0            level SDK
-  GREEN  step-1                 step 1            level SDK
-  GREEN  step-2                 step 2            level SDK
-  GREEN  step-3                 step 3            level SDK
-  GREEN  step-4                 step 4            level SDK
-  GREEN  step-5                 step 5            level SDK
-  GREEN  step-6                 step 6            level SDK
-  GREEN  step-7                 step 7            level SDK
-  GREEN  step-8                 step 8            level SDK
-  GREEN  step-9                 step 9            level SDK
-  GREEN  step-10                step 10           level SDK
-  GREEN  step-11                step 11           level SDK
-  GREEN  step-12                step 12           level SDK
-  GREEN  step-13                step 13           level SDK
-  GREEN  step-14                step 14           level SDK
-  GREEN  step-15                step 15           level SDK
-  GREEN  step-16                step 16           level SDK
-  GREEN  step-17                step 17           level SDK
-  GREEN  invariant-per-colour   step 0-17 + probes level derived
-  GREEN  map-sizes              step 0-17 + probes level derived
-  GREEN  dormant-U3             step 0-17         level derived
-  GREEN  NC-1                   step NC-1         level SDK
-  GREEN  NC-2                   step NC-2         level SDK
-  GREEN  NC-3                   step NC-3         level SDK
-  GREEN  NC-4                   step NC-4         level SDK
-  GREEN  NC-5                   step NC-5         level SDK
-  GREEN  distinctness           step probe        level SDK
-  GREEN  P-COLL                 step probe        level SDK
-  GREEN  M3-lazy-init           step probe        level SDK
-  GREEN  M3-composition         step probe        level SDK
+  GREEN    step-0                 step 0            level SDK
+  GREEN    step-1                 step 1            level SDK
+  GREEN    step-2                 step 2            level SDK
+  GREEN    step-3                 step 3            level SDK
+  GREEN    step-4                 step 4            level SDK
+  GREEN    step-5                 step 5            level SDK
+  GREEN    step-6                 step 6            level SDK
+  GREEN    step-7                 step 7            level SDK
+  GREEN    step-8                 step 8            level SDK
+  GREEN    step-9                 step 9            level SDK
+  GREEN    step-10                step 10           level SDK
+  GREEN    step-11                step 11           level SDK
+  GREEN    step-12                step 12           level SDK
+  GREEN    step-13                step 13           level SDK
+  GREEN    step-14                step 14           level SDK
+  GREEN    step-15                step 15           level SDK
+  GREEN    step-16                step 16           level SDK
+  GREEN    step-17                step 17           level SDK
+  GREEN    invariant-per-colour   step 0-17 + probes level derived
+  GREEN    map-sizes              step 0-17 + probes level derived
+  GREEN    dormant-U3             step 0-17         level derived
+  GREEN    NC-1                   step NC-1         level SDK
+  GREEN    NC-2                   step NC-2         level SDK
+  GREEN    NC-3                   step NC-3         level SDK
+  GREEN    NC-4                   step NC-4         level SDK
+  GREEN    NC-5                   step NC-5         level SDK
+  GREEN    distinctness           step probe        level SDK
+  GREEN    P-COLL                 step probe        level SDK
+  GREEN    M3-lazy-init           step probe        level SDK
+  GREEN    M3-composition         step probe        level SDK
   original 30 items, reproduced 30 items, 30 GREEN
 == final table, custody and the EXACT end-state map sizes
   |  | S1 | S2 | S3 | S4 | U1 | U2 | U3 | U4 |
@@ -97,9 +97,15 @@ original: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
   distinctness: original 45/45, repro 45/45, collisions 0
   P-COLL after both deposits: pool 3 vs ledger 2; after independent withdrawals: pool 2 vs ledger 1
   P-COLL on-chain circuit reads of the IDENTICAL 32-byte argument: {'note': 'the SAME 32-byte colour argument, handed to two circuits on the deployed Manager — a proved transaction each, independent of the state decode', 'shieldedAccountBalance(AA_B, X)': '2', 'unshieldedAccountBalance(AA_B, X)': '1', 'txs': ['00914bc9365a8aa8f929785f3b0e98e2b10e0488fe1262f698f949c700646a9705', '00e9c2c04ca46d19cd8ef6af4df3b1a17de026a6982cee7f75976eb2cc0cb04c19']}
-  M3 composed in one transaction: True; tx ['00202436c94913c2b9b1556d064ebbe1d055c48ed0aa0983e66b43f8fc0f150c2a']
-  M3 shape: sdk-scoped batch (one transaction, one segment per call, state threaded)
-  M3 map sizes {"pools": 5, "shieldedCells": 6, "unshieldedCells": 4} -> {"pools": 6, "shieldedCells": 7, "unshieldedCells": 5}; attempts: [(1, False), (2, True)]
+  M3 original: composedInOneTransaction=True, 1 tx id(s), shape: sdk-scoped batch (one transaction, one segment per call, state threaded)
+      attempt 1: refused
+        Unexpected error submitting scoped transaction 'aa00005-double-lazy-init': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+      attempt 2: ACCEPTED
+  M3 repro   : composedInOneTransaction=True, 1 tx id(s), shape: sdk-scoped batch (one transaction, one segment per call, state threaded)
+      attempt 1: refused
+        Unexpected error submitting scoped transaction 'aa00005-double-lazy-init': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+      attempt 2: ACCEPTED
+  M3 map sizes {"pools": 5, "shieldedCells": 6, "unshieldedCells": 4} -> {"pools": 6, "shieldedCells": 7, "unshieldedCells": 5}
 == negative controls — verdict, verbatim message, funds AND no-state-created
   GREEN  NC-1   message-matched=True funds-unchanged=True map-sizes-unchanged=True
          no state created — no cell was created for the unregistered witness: accounts still 2, map sizes {"pools":4,"shieldedCells":5,"unshieldedCells":3}
@@ -144,7 +150,7 @@ FRESHNESS GUARD REJECTED THIS PAIR — the two roots describe the SAME chain:
   - pooled coin nonce for S4 is identical in both runs
   - 45 transaction id(s) appear in BOTH runs; a fresh chain cannot reproduce them: ['0006b2b4c7d8d5ef248e517c59152922e3183dd84afa6d883edb78a576b0a87de4', '000b61ae6a4a78f81cbbb13e03fa8833c2ad9439cfcde7fe8f4ae8ea910eb48cbd', '000ebd3bf2d2aa10df4b313b956d88e3f3619601073691179a83aa9f1563f58880']
   - the P-COLL shielded family key is identical in both runs
-  - the M3 transaction id is identical in both runs
+  - an M3 transaction id is identical in both runs
 
 Every substantive comparison passed, which is exactly why the freshness guard has to
 exist: verdict-matching alone cannot tell a reproduction from the committed original.

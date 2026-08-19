@@ -84,6 +84,12 @@ const main = () => {
   const red = cellsDoc.cells.filter((c: any) => c.status !== 'GREEN');
   const byId = new Map<string, any>(controlsDoc.controls.map((c: any) => [c.id, c]));
 
+  // The clean-clone reproduction's own evidence, when this render was given one. Read once, here,
+  // because the M3 section compares against it long before the reproduction section is written.
+  const reproCtxPath = cloneRoot ? join(cloneRoot, 'evidence', 'g3-ledger', 'run-context.json') : '';
+  const reproCtx = cloneRoot && existsSync(reproCtxPath) ? readJson(reproCtxPath) : null;
+  const reproM3 = reproCtx ? reproCtx.probes.m3 : null;
+
   const out: string[] = [];
   const p = (...lines: string[]) => out.push(...lines);
 
@@ -133,7 +139,7 @@ const main = () => {
     '| **Owner-only spend** (FR-204, carried critical) | the witness choke point and the per-(account, colour) guard, which reads a MISSING cell as 0 and refuses BEFORE any pool guard | NC-1, NC-2, NC-3, NC-5 |',
   );
   p(
-    `| **Atomic double lazy-init** (FR-207) | ONE transaction id \`${m3.txIds[0]}\` carried the FIRST deposits of two brand-new colours: ${sizes(m3.mapSizesBefore)} → ${sizes(m3.mapSizesAfter)} | M3 |`,
+    `| **Atomic double lazy-init** (FR-207) | ONE transaction id \`${m3.txIds[0]}\` carried the FIRST deposits of two brand-new colours: ${sizes(m3.mapSizesBefore)} → ${sizes(m3.mapSizesAfter)}. **The composition is an existence result, not a reliable one** — its first attempt is refused every time, and one G4 reproduction never landed it and used FR-207's fallback; the lazy-init half reproduces identically either way | M3 |`,
   );
   p('');
   p(`**${green} of ${cellsDoc.cells.length} checklist items GREEN**${red.length ? `, ${red.length} RED` : ', 0 RED'}, no gaps, nothing RECORDED.`);
@@ -417,14 +423,9 @@ const main = () => {
   p(`| Map sizes across the ONE transaction | ${JSON.stringify(m3.mapSizesBefore)} → ${JSON.stringify(m3.mapSizesAfter)} |`);
   p(`| Confirmed a second way | on-chain circuit calls: \`shieldedAccountBalance(AA_B,S5)\` = ${m3.onChainCircuitReads['shieldedAccountBalance(AA_B, S5)']}, \`unshieldedAccountBalance(AA_B,U5)\` = ${m3.onChainCircuitReads['unshieldedAccountBalance(AA_B, U5)']} |`);
   p('');
-  p(`**D-203 is RESOLVED as proposed: ${m3.decisionD203}**. One new pool and two new`);
-  p("cells came into existence under a single transaction id. FR-207's fallback (prove lazy-init with");
-  p('separate transactions and report the composition half separately) was implemented literally and');
-  p('armed — the two halves are SEPARATE checklist rows, `M3-lazy-init` and `M3-composition`, so a');
-  p('composition refusal could never be conflated with a lazy-init failure — but it was not needed.');
-  p('');
-  p('**It very nearly was reported the other way round.** The composition is attempted twice, each on');
-  p('its own fresh spender wallet:');
+  p(`**D-203 resolved to the shape proposed: ${m3.decisionD203}**. One new pool and`);
+  p('two new cells came into existence under a single transaction id. The composition is attempted');
+  p('twice, each on its own fresh spender wallet:');
   p('');
   p('| Attempt | Result |');
   p('|---|---|');
@@ -432,9 +433,50 @@ const main = () => {
     p(`| ${a.attempt} | ${a.ok ? '**ACCEPTED** — both first deposits under one transaction id' : `refused: \`${esc(a.error)}\``} |`);
   }
   p('');
-  p('The first attempt was refused by the node with a bare code; the IDENTICAL composition, retried on');
-  p('another fresh wallet moments later, was accepted. That is finding **F-203** below, and it is why a');
-  p('single attempt is not evidence of a ledger rule.');
+  p('### …and it is an EXISTENCE result, not a reliability one');
+  p('');
+  p('**Read this before quoting D-203.** Across the FOUR times this project has run probe M3, the');
+  p('composition landed in two of them and fell back to two separate transactions in the other two —');
+  p('and **the very first attempt was refused in all four**, always with');
+  p('`1010: Invalid Transaction: Custom error: 104`. The retry is what makes it land, and the retry');
+  p('does not always work: the G4 run-3 reproduction was refused on both of its attempts and used the');
+  p("fallback. The run-by-run ledger is in [`VERIFICATION.md`](VERIFICATION.md).");
+  p('');
+  const attemptSummary = (m: any): string => {
+    const a = m.attempts ?? [];
+    if (!a.length) return 'not recorded';
+    return a
+      .map((x: any) => (x.ok ? `**${x.attempt} accepted**` : `${x.attempt} refused`))
+      .join(', ');
+  };
+  p('| | Retained G3 run | This clean-clone reproduction |');
+  p('|---|---|---|');
+  p(`| composition attempts | ${attemptSummary(m3)} | ${reproM3 ? attemptSummary(reproM3) : '—'} |`);
+  p(
+    `| outcome | ${m3.composedInOneTransaction ? 'ONE transaction id' : 'FR-207 fallback — two separate transactions'} | ` +
+      `${reproM3 ? (reproM3.composedInOneTransaction ? 'ONE transaction id' : 'FR-207 fallback — two separate transactions') : '—'} |`,
+  );
+  p(
+    `| \`M3-composition\` | \`${m3.composedInOneTransaction ? 'GREEN' : 'RECORDED'}\` | ` +
+      `${reproM3 ? `\`${reproM3.composedInOneTransaction ? 'GREEN' : 'RECORDED'}\`` : '—'} |`,
+  );
+  p('| `M3-lazy-init` | `GREEN` | `GREEN` |');
+  p(
+    `| map sizes across it | ${JSON.stringify(m3.mapSizesBefore)} → ${JSON.stringify(m3.mapSizesAfter)} | ` +
+      `${reproM3 && JSON.stringify(reproM3.mapSizesAfter) === JSON.stringify(m3.mapSizesAfter) ? '**identical**' : '—'} |`,
+  );
+  p('');
+  p('So the honest statement is: the SDK contract-scoped batch **can** carry the first deposits of two');
+  p('brand-new colours under one transaction id — that happened, and there is a transaction id to point');
+  p('at — but it does **not** do so dependably on this lane. **What reproduces every time is the');
+  p('lazy-init half**: one new pool and two new cells for two colours that were brand new beforehand,');
+  p('identical by either route.');
+  p('');
+  p('That is exactly why FR-207 states M3 as a DISJUNCTION, and why the two halves are SEPARATE');
+  p('checklist rows — `M3-lazy-init` and `M3-composition`, with only the latter permitted to carry');
+  p('`RECORDED`. Both runs satisfy the specification. Anyone reusing this harness should treat a');
+  p('composed scoped batch as **best-effort**, keep the separate-transaction fallback armed, and never');
+  p('let a single success license a claim that the shape is dependable — see finding **F-203**.');
   p('');
 
   // --- distinctness ---------------------------------------------------------------------------
@@ -504,6 +546,14 @@ const main = () => {
   p('');
   p('**00005 G3 run 1 concluded the opposite from a single attempt** and would have reported D-203');
   p('wrongly. Its evidence was deleted and the gate re-run, never hand-edited — see the run history.');
+  p('');
+  p('**And the G4 reproductions strengthened this into the part that generalises.** Running the');
+  p('identical probe on fresh chains, one reproduction was refused on BOTH attempts and used the');
+  p('fallback, while another was refused once and then accepted. Over the four runs of this probe the');
+  p('**first attempt has been refused every single time**, and the retry has landed it in two runs out');
+  p("of three that made one. So F-203's own remedy — \"retry once on a second fresh wallet\" — is");
+  p('*better* than one attempt but is **not a reliable recipe**; it is a mitigation, not a fix. Treat a');
+  p('composed scoped batch as best-effort and keep the separate-transaction fallback armed.');
   p('');
   p('### Inherited, and re-confirmed here');
   p('');
@@ -583,7 +633,6 @@ const main = () => {
   const reproCells = cloneRoot ? join(cloneRoot, 'evidence', 'g3-ledger', 'cells.json') : '';
   if (cloneRoot && existsSync(reproCells)) {
     const repro = readJson(reproCells);
-    const reproCtx = readJson(join(cloneRoot, 'evidence', 'g3-ledger', 'run-context.json'));
     const reproGreen = repro.cells.filter((c: any) => c.status === 'GREEN').length;
     const otx = new Set<string>(cellsDoc.cells.flatMap((c: any) => c.txs));
     const rtx = new Set<string>(repro.cells.flatMap((c: any) => c.txs));
@@ -604,8 +653,27 @@ const main = () => {
     p(`| M3 transaction | \`${ctx.probes.m3.txIds[0]}\` | \`${reproCtx.probes.m3.txIds[0]}\` |`);
     p(`| M3 shape | ${ctx.probes.m3.shape} | ${reproCtx.probes.m3.shape} |`);
     p(`| End-state map sizes | ${JSON.stringify(ctx.endStateMapSizes)} | ${JSON.stringify(reproCtx.endStateMapSizes)} |`);
+    p(
+      `| M3 composition | ${m3.composedInOneTransaction ? 'landed in ONE transaction' : 'FR-207 fallback'} | ` +
+        `${reproM3.composedInOneTransaction ? 'landed in ONE transaction' : '**FR-207 fallback — refused on both attempts**'} |`,
+    );
     p(`| Transaction ids in common | — | **${sharedTx.length}** |`);
     p('');
+    if (m3.composedInOneTransaction !== reproM3.composedInOneTransaction) {
+      p('**The reproduction differs on exactly one item, and it is reported rather than smoothed over:**');
+      p('`M3-composition`. The composition was refused on both of the reproduction\'s fresh-wallet');
+      p("attempts, so FR-207's fallback proved the same lazy-init with two separate transactions. The");
+      p('specification states M3 as a disjunction precisely so that this is a recorded outcome and not a');
+      p('failure — and the **lazy-init half reproduced identically**, one new pool and two new cells for');
+      p('two brand-new colours. See the D-203 section above: the composition is an existence result.');
+      p('');
+    } else if (m3.composedInOneTransaction) {
+      p('**This reproduction did land the M3 composition** — refused on its first attempt, accepted on');
+      p('the retry, exactly as the retained run went. That is not a guarantee: an earlier G4');
+      p("reproduction was refused on both attempts and used FR-207's fallback. See the D-203 section");
+      p('above, and the run ledger in [`VERIFICATION.md`](VERIFICATION.md).');
+      p('');
+    }
     p('Addresses, colours, nonces and transaction ids necessarily differ — the reproduction runs on a');
     p('brand-new chain and the colours are address-scoped, so they *cannot* repeat. What is compared is');
     p('what the specification asserts: every checklist verdict, the deploy-order proof, all 18 rows of');

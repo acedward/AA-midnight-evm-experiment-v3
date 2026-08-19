@@ -1,16 +1,16 @@
 [G1] EXPERIMENTAL_LANE / LANE-DEV-1 — verifying the INHERITED rc4 lane for 00005
-[G1] compose project: aa00005-g1-20260819081303-43940
+[G1] compose project: aa00005-g1-20260819094634-61211
 [G1] ok: 01-w1-docker-config (0s)
 [G1] ok: 02-probe-ports (1s)
-[G1] ok: 03-lane-reuse (0s)
-[G1] ok: 04-lane-dev-1 (1s)
+[G1] ok: 03-lane-reuse (1s)
+[G1] ok: 04-lane-dev-1 (2s)
 [G1] ok: 05-pull (2s)
-[G1] ok: 06-boot (6s)
+[G1] ok: 06-boot (10s)
 [G1] ok: 07-health (2s)
 [G1] ok: 08-install (3s)
-[G1] ok: 09-wallets (5s)
-[G1] ok: 10-funding (74s)
-[G1] ok: 11-record-lane (0s)
+[G1] ok: 09-wallets (964s)
+[G1] ok: 10-funding (80s)
+[G1] ok: 11-record-lane (1s)
 [G1] all steps passed; teardown runs next and must also succeed
-[G1] teardown: docker compose --env-file /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00005-g4-w5HW7o/clone/docker/.env -f /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00005-g4-w5HW7o/clone/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00005-g1-20260819081303-43940 && w1_cleanup
+[G1] teardown: docker compose --env-file /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00005-g4-k5Qm0N/clone/docker/.env -f /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00005-g4-k5Qm0N/clone/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00005-g1-20260819094634-61211 && w1_cleanup
 [G1] GREEN
