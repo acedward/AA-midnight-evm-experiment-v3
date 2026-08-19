@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared fail-safe gate-wrapper helpers for 00004-multi-token-custody.
+# Shared fail-safe gate-wrapper helpers for 00005-open-colour-custody (inherited from 00004).
 #
 # Contract (master plan "Testing and evidence policy"):
 #   - record exact argv / cwd / UTC timestamps and input commit+image hashes before each command

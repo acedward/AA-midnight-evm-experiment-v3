@@ -1,9 +1,9 @@
 {
-  "name": "aa00004-multi-token-custody-harness",
+  "name": "aa00005-open-colour-custody-harness",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Step-ledger harness for 00004-multi-token-custody (EXPERIMENTAL_LANE, v2.0.0-rc.4 slot)",
+  "description": "Open-colour custody harness for 00005-open-colour-custody (EXPERIMENTAL_LANE, v2.0.0-rc.4 slot)",
   "engines": {
     "node": ">=22"
   },

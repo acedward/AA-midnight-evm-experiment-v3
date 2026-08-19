@@ -1,7 +1,7 @@
-# Compact compiler toolchain image — 00004-multi-token-custody (EXPERIMENTAL_LANE)
+# Compact compiler toolchain image — 00005-open-colour-custody (EXPERIMENTAL_LANE)
 #
-# REUSED VERBATIM from 00003 (@ a8ebff9); the archive pin is asserted unchanged by
-# scripts/lib/lane-pins.sh.
+# REUSED VERBATIM from 00003 (@ a8ebff9) through 00004 (@ f066a09); the archive pin is asserted
+# unchanged at both commits by scripts/lib/lane-pins.sh.
 #
 # LANE-DEV-1 (owner-approved 2026-08-17): the spec pins `compactc-v0.33.0-rc.2`, but that tag has
 # no published binary — GitHub has no release for it and the `compact` CLI installs only from

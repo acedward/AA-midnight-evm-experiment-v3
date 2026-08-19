@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Pinned Compact compiler image — one definition shared by the G1 probes and the G2 build.
 #
-# LANE-DEV-1 (owner-approved 2026-08-17, inherited by 00004): the lane pins
+# LANE-DEV-1 (owner-approved 2026-08-17, inherited by 00004 and again by 00005): the lane pins
 # `compactc-v0.33.0-rc.2`, which has no published binary; the released `compactc-v0.33.0` is used
 # instead and verified empirically. The archive is pinned by SHA-256 in docker/compactc.Dockerfile.
 set -euo pipefail
 
-COMPACTC_IMAGE="aa00004-compactc:0.33.0"
+COMPACTC_IMAGE="aa00005-compactc:0.33.0"
 
 # compactc_ensure_image <repo-root> — idempotent build of the pinned compiler image.
 compactc_ensure_image() {

@@ -1,31 +1,36 @@
 # LANE MANIFEST — `EXPERIMENTAL_LANE` / `LANE-DEV-1`
 
-**Project:** 00004-multi-token-custody
+**Project:** 00005-open-colour-custody
 **Slot:** Midnight v2.0.0-rc.4 experimental prerelease lane
-**Recorded (UTC):** 2026-08-18T20:24:50Z
+**Recorded (UTC):** 2026-08-19T03:36:01Z
 **Host:** Darwin arm64, Docker 29.1.3, build f52814d, Compose 2.40.3-desktop.1
-**Compose project (disposable, this run only):** `aa00004-g1-20260818201730-16867`
+**Compose project (disposable, this run only):** `aa00005-g1-20260819033327-74669`
 
-> **This project PINS NOTHING.** It reuses the lane pinned and verified by project 00003
-> and proves the reuse mechanically — see `02-lane-reuse.out`. The authoritative pin
-> rationale, including findings L-1..L-5 and the LANE-DEV-1 approval, is 00003's manifest,
-> preserved verbatim at `archive/00003/evidence/g1-lane/LANE.md`.
+> **This project PINS NOTHING.** It inherits the lane pinned and verified by project 00003
+> and re-proved by project 00004, and proves the inheritance mechanically — see
+> `03-lane-reuse.out`. The authoritative pin rationale, including findings L-1..L-5 and
+> the LANE-DEV-1 approval, is 00003's manifest, preserved verbatim at
+> `archive/00003/evidence/g1-lane/LANE.md`.
 
 > `EXPERIMENTAL_LANE`: the official compatibility matrix lists no supported coherent 2.x
 > application bundle; rc4 is a published prerelease for fresh ledger-9 development networks
 > only. **No result from this project may be extrapolated to a supported or production lane.**
 
-## Reuse proof
+## Inheritance proof
 
-Base commit: `a8ebff9614b4d2a811d90b1956c6f1d969160dd6` (00003 merged head, PR #1 — owner decision Q4).
+Base commit: `f066a09adc4bc2fd47dc045083530aab519f65c2` (00004 head; PR #2 deliberately held OPEN, so 00005
+stacks on the branch rather than on a merge).
+
+Origin commit: `a8ebff9614b4d2a811d90b1956c6f1d969160dd6` (00003 merged head — the original pinning act).
 
 | Check | Evidence |
 |---|---|
-| Pin values in `docker/compose.yml` unchanged since base | `02-lane-reuse.out` |
-| Compactc archive URL + SHA-256 unchanged since base | `02-lane-reuse.out` |
-| `harness/pnpm-lock.yaml` byte-identical to base | `02-lane-reuse.out` |
-| `harness/package.json` dependency versions unchanged | `02-lane-reuse.out` |
-| Images compose resolves == pinned digests | `02-lane-reuse.out` |
+| Pins identical at BOTH ancestors (00004 did not re-pin what 00003 set) | `03-lane-reuse.out` |
+| Pin values in `docker/compose.yml` unchanged since base | `03-lane-reuse.out` |
+| Compactc archive URL + SHA-256 unchanged since base | `03-lane-reuse.out` |
+| `harness/pnpm-lock.yaml` byte-identical to base | `03-lane-reuse.out` |
+| `harness/package.json` dependency versions unchanged | `03-lane-reuse.out` |
+| Images compose resolves == pinned digests | `03-lane-reuse.out` |
 
 ## Container images — pinned by digest
 
@@ -58,20 +63,33 @@ proof-server  sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573e
 The lane pins `compactc-v0.33.0-rc.2`, which has no published binary (00003 finding L-4).
 The released `compactc-v0.33.0` is used instead, pinned by SHA-256
 `3aa23812b0b086dbce07da3931a40dcb01bec9676b1ceed7f2d0be370ab2dc46` in `docker/compactc.Dockerfile`.
-**Every piece of 00004 evidence carries `LANE-DEV-1` in addition to `EXPERIMENTAL_LANE`.**
+**Every piece of 00005 evidence carries `LANE-DEV-1` in addition to `EXPERIMENTAL_LANE`.**
 
-Verification status of the deviation's own checklist (00003 left the first two UNTICKED;
-this G1 run closes them — see `03-lane-dev-1.out`):
+Verification status of the deviation's own checklist, re-proven in THIS run
+(see `04-lane-dev-1.out`) rather than inherited on paper:
 
 - [x] Installed `compactc` reports compiler version `0.33.0`.
 - [x] Installed `compactc` reports language version `0.25.0`.
-- [x] Artifacts compiled by it are accepted on-chain by the pinned `ledger-9.1.0.0-rc.3` node
-      — re-proven in THIS run by the probe P2 deployments (`11-probe-p2.out`,
-      `probes/p2-deploy.json`), not merely inherited from 00003.
+- [x] Artifacts compiled by it are accepted on-chain by the pinned `ledger-9.1.0.0-rc.3`
+      node — re-proven by G2's Manager v3 / MinterCollide deployments on a stack of their own.
 - [x] Binary pinned by SHA-256 in `docker/compactc.Dockerfile`.
 
-## Compile probes P1 / P2
+## `W-1` — inherited HOST workaround (not a lane change)
 
-See `probes/VERDICTS.md` for the verdict table, `probes/*.out` for verbatim compiler
-output, and `probes/p2-deploy.json` for the P2 deploy half. Decision D-101 is recorded in
-the master plan.
+This host's `docker-credential-desktop` can hang, wedging every `docker pull` (00004 G4
+run 1 lost 63 minutes to it). Every 00005 gate therefore runs with `DOCKER_CONFIG` pointed
+at a scratch directory holding `{}` plus a symlink to the user's real `cli-plugins` — see
+`01-w1-docker-config.out` and `scripts/lib/docker-w1.sh`.
+
+- It is an ENVIRONMENT VARIABLE for the gate's own child processes. `~/.docker/config.json`,
+  Docker Desktop's settings and every other project on this shared host are untouched.
+- No pin, wrapper step, contract or piece of evidence was changed to accommodate it; the
+  `pull` step is still run and still asserted.
+- Pulls run anonymously. The images are public and **pinned by digest**, and the digest is
+  the identity, so the pin proof is unaffected.
+
+## Compile probes
+
+None. 00005 introduces no new Compact shape: colour-keyed maps (00004 probes P1a/P1b),
+constructor arguments (P2) and the SDK scoped batch (00004 M1) are all already answered.
+The probes are preserved at `archive/00004/contracts-probes/` with 00004's verdict table.

@@ -1,22 +1,32 @@
 #!/usr/bin/env bash
-# Lane pins for 00004-multi-token-custody — EXPERIMENTAL_LANE, deviation LANE-DEV-1.
+# Lane pins for 00005-open-colour-custody — EXPERIMENTAL_LANE, deviation LANE-DEV-1.
 #
-# THIS PROJECT DOES NOT PIN ANYTHING. It REUSES the lane that project 00003 pinned and verified,
-# and proves the reuse. The values below are transcribed from the 00003 lane manifest
-# (`archive/00003/evidence/g1-lane/LANE.md`, recorded 2026-08-17) and are asserted three ways by
-# `lane_assert_pins_unchanged`:
+# THIS PROJECT DOES NOT PIN ANYTHING. It REUSES the lane that project 00003 pinned and verified and
+# that project 00004 re-proved, and it proves the reuse again. The values below are transcribed from
+# the 00003 lane manifest (`archive/00003/evidence/g1-lane/LANE.md`, recorded 2026-08-17) and were
+# carried through 00004 unchanged; they are asserted three ways by `lane_assert_pins_unchanged`:
 #
-#   1. the digests written in THIS tree's docker/ files equal the digests at the 00003 base commit
-#      `a8ebff9` (comment edits allowed, pin edits not);
-#   2. the harness lockfile is byte-identical to `a8ebff9` (npm pins therefore identical);
+#   1. the digests written in THIS tree's docker/ files equal the digests at the 00004 base commit
+#      `f066a09` (comment edits allowed, pin edits not);
+#   2. the harness lockfile is byte-identical to `f066a09` (npm pins therefore identical);
 #   3. the images docker compose will actually run reference exactly these digests.
+#
+# The base moved from 00003's `a8ebff9` to 00004's `f066a09`, which is a strictly stronger claim
+# about the SAME pins: 00004's own G1 proved `f066a09`'s pins byte-identical to `a8ebff9`'s, so a
+# chain of two independent byte-identity proofs now separates this tree from the original pinning
+# act — and `lane_show_inheritance_chain` re-walks that chain here rather than asserting it.
 #
 # Any mismatch is a BLOCKER, never something to fix by editing a pin.
 
 set -euo pipefail
 
-# The 00003 merged head this branch is based on (owner decision Q4).
-LANE_BASE_COMMIT="a8ebff9614b4d2a811d90b1956c6f1d969160dd6"
+# The 00004 head this branch is based on. PR #2 is deliberately held OPEN (owner decision
+# 2026-08-19: 00005 stacks on it), so the base is a branch head, not a merge commit.
+LANE_BASE_COMMIT="f066a09adc4bc2fd47dc045083530aab519f65c2"
+
+# The 00003 merged head 00004 was itself based on — the ORIGINAL pinning act. Used only by
+# `lane_show_inheritance_chain`, which proves the pins are identical at BOTH ancestors.
+LANE_ORIGIN_COMMIT="a8ebff9614b4d2a811d90b1956c6f1d969160dd6"
 
 # Container images — index (manifest-list) digests, as referenced by docker/compose.yml.
 LANE_PIN_NODE="sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e"
@@ -53,12 +63,46 @@ _lane_digests() { grep -oE 'sha256:[0-9a-f]{64}' | sort -u; }
 lane_assert_pins_unchanged() {
   local root="$1" rc=0 f base_d now_d
 
-  echo "== lane reuse proof — base commit ${LANE_BASE_COMMIT} (00003 merged head)"
+  echo "== lane inheritance proof — base commit ${LANE_BASE_COMMIT} (00004 head; PR #2 held OPEN)"
   if ! git -C "$root" cat-file -e "${LANE_BASE_COMMIT}^{commit}" 2>/dev/null; then
     echo "FATAL: base commit ${LANE_BASE_COMMIT} not present in this clone"
     return 1
   fi
   echo "base commit present: $(git -C "$root" log -1 --format='%h %s' "$LANE_BASE_COMMIT")"
+
+  # (0) The INHERITANCE CHAIN. 00005 is two projects removed from the act that pinned this lane, so
+  # "unchanged since my base" is checked against BOTH ancestors: the 00003 merged head that pinned
+  # the digests and the 00004 head this branch forks from. If 00004 had silently re-pinned anything,
+  # a check against 00004 alone would happily pass.
+  echo
+  echo "== (0) inheritance chain: 00003 ${LANE_ORIGIN_COMMIT:0:7} -> 00004 ${LANE_BASE_COMMIT:0:7} -> here"
+  if git -C "$root" cat-file -e "${LANE_ORIGIN_COMMIT}^{commit}" 2>/dev/null; then
+    local origin_d base_d2
+    origin_d="$(git -C "$root" show "${LANE_ORIGIN_COMMIT}:docker/compose.yml" | _lane_digests || true)"
+    base_d2="$(git -C "$root" show "${LANE_BASE_COMMIT}:docker/compose.yml" | _lane_digests || true)"
+    if [ -n "$origin_d" ] && [ "$origin_d" = "$base_d2" ]; then
+      echo "image digests identical at BOTH ancestors — 00004 did not re-pin"
+    else
+      echo "PIN DRIFT BETWEEN ANCESTORS: 00004 changed a pin 00003 had set"
+      echo "  00003:"; echo "$origin_d" | sed 's/^/    /'
+      echo "  00004:"; echo "$base_d2"  | sed 's/^/    /'
+      rc=1
+    fi
+    origin_d="$(git -C "$root" show "${LANE_ORIGIN_COMMIT}:docker/compactc.Dockerfile" | grep -E '^ARG COMPACTC_(URL|SHA256)=' | sort)"
+    base_d2="$(git -C "$root" show "${LANE_BASE_COMMIT}:docker/compactc.Dockerfile" | grep -E '^ARG COMPACTC_(URL|SHA256)=' | sort)"
+    if [ "$origin_d" = "$base_d2" ]; then
+      echo "compactc archive pin identical at BOTH ancestors"
+    else
+      echo "COMPACTC PIN DRIFT BETWEEN ANCESTORS"; rc=1
+    fi
+    if git -C "$root" diff --quiet "$LANE_ORIGIN_COMMIT" "$LANE_BASE_COMMIT" -- harness/pnpm-lock.yaml; then
+      echo "harness/pnpm-lock.yaml identical at BOTH ancestors"
+    else
+      echo "LOCKFILE DRIFT BETWEEN ANCESTORS: 00004 changed the lockfile 00003 pinned"; rc=1
+    fi
+  else
+    echo "NOTE: the 00003 origin commit is not present in this clone; chain check skipped"
+  fi
 
   echo
   echo "== (1) pin values in docker/ are unchanged since the base commit"
