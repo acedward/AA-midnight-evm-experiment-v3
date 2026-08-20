@@ -1,21 +1,17 @@
-feeding the ORIGINAL evidence back in as its own 'reproduction' — this MUST be rejected
-original: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
-'repro':  /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-g4-88MwCz/clone  (still carrying the committed original evidence, nothing run yet)
-
 original:     /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
 reproduction: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-g4-88MwCz/clone
 
 == freshness — is the "reproduction" a different chain at all?
-  Manager addresses: 10 original, 10 reproduced, 10 IN COMMON
-  colours: 12 original, 12 reproduced, 12 IN COMMON (colours are issuer-address-scoped and CANNOT repeat on a new chain)
-  pooled coin nonces: 8 original, 8 reproduced, 8 IN COMMON
-  transaction ids: 97 original, 97 reproduced, 97 IN COMMON
+  Manager addresses: 10 original, 10 reproduced, 0 IN COMMON
+  colours: 12 original, 12 reproduced, 0 IN COMMON (colours are issuer-address-scoped and CANNOT repeat on a new chain)
+  pooled coin nonces: 8 original, 8 reproduced, 0 IN COMMON
+  transaction ids: 97 original, 106 reproduced, 0 IN COMMON
   (account commitments come from deterministic dev seeds and are expected to match: 0 shared, not a freshness signal)
 
 == the swap step ledger (D-307: three stages, three fresh Managers, one chain)
 -- stage A: original GREEN, reproduction GREEN (12 / 12 rows)
    carries: rows 0–6, row 10 (NC-304), NC-305, P-F310
-   Manager: original 1f8f7b515d8da4614829…  repro 1f8f7b515d8da4614829…
+   Manager: original 1f8f7b515d8da4614829…  repro ab8b2ce76d350a1051ba…
    PASS      row-0            4/4      Manager v4 deployed; AA_A and AA_B registered
    PASS      row-1            10/10    Minters TOKA/TOKB deployed; S_A 10 → OwnerN, S_B 10 → OwnerT
    PASS      row-2            11/11    OwnerN deposits S_A 6 → AA_A
@@ -30,17 +26,17 @@ reproduction: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-g4-88MwC
    PASS      row-10           7/7      Tamper: OFFER-1's retained bytes, one byte flipped, taken — NC-3
    MEASURED  p-f310           7/7      D-307's evidence: the spec's LITERAL row 7, attempted here at TW
    PASS      closing          13/13    Stage A closing state, both observation points
-   the HEADLINE v1 settlement (spec row 5): ONE tx id = True  ['00a3036cec400892e7094212b30796f7fec39982859dfcead5604cb4cee6e73bcb']
+   the HEADLINE v1 settlement (spec row 5): ONE tx id = True  ['00b917f91daaad575d082753019d47df8a21d8cc50a56b9d7d347214229109e987']
 -- stage B: original GREEN, reproduction GREEN (3 / 3 rows)
    carries: rows 7–8 (P-OPEN — the owner-REQUIRED open offer)
-   Manager: original 95fb94dc5df1d640705f…  repro 95fb94dc5df1d640705f…
+   Manager: original 95fb94dc5df1d640705f…  repro eddac280e7eaece621d9…
    PASS      setup            13/13    fresh Manager; mint; OwnerN deposits S_A 2 → AA_A
    PASS      row-7            13/13    OFFER-2 built (v2 OPEN — floating surplus): give S_A 2 to no one
    PASS      row-8            18/18    OwnerT — whose keys the maker never knew — takes OFFER-2
-   the OPEN offer settling for a stranger (spec rows 7-8, FR-308): ONE tx id = True  ['00f642666cfa697ea6e802c243423b440d7ee572a7e900fcb0f2614826de411164']
+   the OPEN offer settling for a stranger (spec rows 7-8, FR-308): ONE tx id = True  ['003929da6f91ef0112ee71dd8e9e3ce23111213c833e884e96c0bc9b7cd88d7d5f']
 -- stage C: original GREEN, reproduction GREEN (8 / 8 rows)
    carries: rows 9 (NC-303), 11 (P-104), 12 (P-CXL, both forms), NC-306, P-F310 replication
-   Manager: original f6eb885f4760142781e6…  repro f6eb885f4760142781e6…
+   Manager: original f6eb885f4760142781e6…  repro bb527a748ec2a1ab6540…
    PASS      setup            10/10    fresh Manager; mint; OwnerN deposits S_A 6 → AA_A
    PASS      row-9            9/9      Expiry: OFFER-3 held past its TTL, then taken — NC-303
       node refusal code(s): original ['228'], reproduction ['228']
@@ -60,14 +56,14 @@ reproduction: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-g4-88MwC
    D-306 published artifact form: original {"choice": "UNBOUND (`pre-binding`)", "reason": "the unbound form round-trips by, repro {"choice": "UNBOUND (`pre-binding`)", "reason": "the unbound form round-trips by
 -- S2 segment order / node code 104 (a lane investigation, MEASURED)
    original:     CONFIRMED — but the POST-HOC fix is REFUTED AS IMPLEMENTED
-   reproduction: CONFIRMED — but the POST-HOC fix is REFUTED AS IMPLEMENTED
+   reproduction: CONFIRMED + FIX DEMONSTRATED
 
 == G2 spikes
 -- FR-308 OPENNESS (owner-REQUIRED): original GREEN via floating-surplus (v2a, the preferred shape)
                                      repro    GREEN via floating-surplus (v2a, the preferred shape)
 -- S6 the maker pays nothing (v1 named taker): original GREEN, repro GREEN
    maker intent dust spends: original 0, repro 0
-   settlement fee (SPECKs):  original 965879907293241, repro 965879907293241
+   settlement fee (SPECKs):  original 965879907293241, repro 965776551660961
    fee vs a plain transfer:  original 3.03, repro 3.03
 -- S5 staleness / TTL (FR-311, MEASURED)
    original:     MEASURED — as FR-311 predicted
@@ -77,25 +73,14 @@ reproduction: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-g4-88MwC
    reproduction: MEASURED — the publishability boundary lies between step 1 (pools 1, cells 1) and step 2 (pools 1, cells 2)
    boundary: original (1, 2), reproduction (1, 2)
 
-FRESHNESS GUARD REJECTED THIS PAIR — the two roots describe the SAME chain:
-  - Manager address 1f8f7b515d8da46148290b4a… appears in BOTH runs
-  - Manager address 2a14b204a02d053a2501a0e3… appears in BOTH runs
-  - Manager address 421a5911d99cbe5d31130ff3… appears in BOTH runs
-  - Manager address 8578b30cab8f7870fad00e96… appears in BOTH runs
-  - Manager address 95fb94dc5df1d640705fee41… appears in BOTH runs
-  - Manager address a153baf99839fb2b71238c88… appears in BOTH runs
-  - Manager address acd08f2975952c55e97710eb… appears in BOTH runs
-  - Manager address bcc69c0ffafa2ab54c0bca00… appears in BOTH runs
-  - Manager address d2ac5d38caa4fc9d3f6c577f… appears in BOTH runs
-  - Manager address f6eb885f4760142781e668f7… appears in BOTH runs
-  - colour 162197ff0c136a5a2e4fb1ed… is identical in both runs
-  - colour 3ee0a9b91f70b37ef2bfe392… is identical in both runs
-  - … and 29 more
+==============================================================================
+FINDINGS — the reproduction differs from the original in a way the SPECIFICATION
+PERMITS. Recorded here so it is reported, not passed over:
+  ** spike S2 reached a DIFFERENT verdict in the reproduction. S2 measures accept/refuse ratios over random segment draws and feeds sibling issue 0001; the specification does not require it, so this is reported, never scored.
+==============================================================================
 
-Every substantive comparison passed, which is exactly why the freshness guard has to
-exist: verdict-matching alone cannot tell a reproduction from the committed original.
-
-compare-swap-runs.py exit code: 2 (0 = accepted, 1 = substantive divergence, 2 = freshness rejection)
-SELF-TEST PASSED: the guard rejected the original as its own reproduction, on freshness
-grounds alone — every substantive comparison passed. It is therefore not vacuous, and a
-green comparison later in this run means something.
+the reproduction matches the original row for row, verdict for verdict, pool for pool,
+cell for cell and map size for map size — on a demonstrably different chain, with ZERO
+transaction ids, Manager addresses, colours or pooled-coin nonces in common.
+…with the FINDING(s) above, which the specification permits and this gate reports rather
+than hides: read them before quoting this verdict.

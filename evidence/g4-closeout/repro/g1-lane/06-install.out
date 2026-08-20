@@ -1,0 +1,39 @@
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +219
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 219, reused 219, downloaded 0, added 214
+Progress: resolved 219, reused 219, downloaded 0, added 219, done
+.../node_modules/classic-level install$ node-gyp-build
+.../node_modules/classic-level install: Done
+
+dependencies:
++ @midnight-ntwrk/compact-runtime 0.18.0-rc.1
++ @midnight-ntwrk/midnight-js-contracts 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-http-client-proof-provider 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-indexer-public-data-provider 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-level-private-state-provider 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-network-id 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-node-zk-config-provider 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-protocol 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-types 5.0.0-beta.6
++ @midnightntwrk/ledger-v9 1.0.0-rc.3
++ @midnightntwrk/wallet-sdk 2.0.0-beta.2
++ @midnightntwrk/wallet-sdk-abstractions 3.0.0-beta.0
++ @midnightntwrk/wallet-sdk-address-format 4.0.0-beta.2
++ @midnightntwrk/wallet-sdk-capabilities 4.0.0-beta.2
++ @midnightntwrk/wallet-sdk-dust-wallet 5.0.0-beta.2
++ @midnightntwrk/wallet-sdk-facade 5.0.0-beta.2
++ @midnightntwrk/wallet-sdk-hd 3.1.0-beta.1
++ @midnightntwrk/wallet-sdk-runtime 1.0.6-beta.0
++ @midnightntwrk/wallet-sdk-shielded 4.0.0-beta.2
++ @midnightntwrk/wallet-sdk-unshielded-wallet 4.0.0-beta.2
++ rxjs 7.8.2
+
+devDependencies:
++ @types/node 24.13.2
++ tsx 4.20.6
++ typescript 5.9.3
++ vitest 4.1.9
+
+Done in 2.7s using pnpm v11.5.1

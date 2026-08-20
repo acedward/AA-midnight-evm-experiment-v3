@@ -1,0 +1,81 @@
+# DIAG deploy-probe — EXPERIMENTAL_LANE / LANE-DEV-1
+# probing: mp12, mp12b, mp13, mp14
+2026-08-20 00:57:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:14958/: 1000:: Normal Closure
+2026-08-20 00:57:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:14958/: 1000:: Normal Closure
+[2026-08-20T04:57:39.386Z]   funding feePayer with 2000000000000 NIGHT from genesis
+2026-08-20 00:57:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:14958/: 1000:: Normal Closure
+2026-08-20 00:57:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:14958/: 1000:: Normal Closure
+[2026-08-20T04:57:39.406Z]   fund feePayer: attempt 1 — DUST not yet generated, waiting 15s
+[2026-08-20T04:58:12.704Z]   submitted tx 00308c726086391237ca5ec4c29d21e33d03bad1caa274a0892abe782f15abf640 (hash 18465e7d1e5268a0d0d60db5d15e8581eec0a1a7d9931f068a92976da2249b75)
+[2026-08-20T04:58:12.704Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-20T04:58:12.824Z]   waiting for genesis to observe its own spend (NIGHT at or below 248000000000000) …
+[2026-08-20T04:59:14.017Z]   feePayer: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-20T04:59:31.697Z]   feePayer: DUST registration tx 00e9a12b083b01af61bbf1e8f57854c8e60759640bd26e9b9f9a93228e7d9dcb52
+[2026-08-20T04:59:31.697Z]   waiting for feePayer NIGHT utxos to show registeredForDustGeneration=true …
+
+## mp12 — 12 verifier keys, 22356 bytes of keys
+   DEPLOYED at 64c3f6bf4e0287b45127652608013d59242c831661353d8436eb99ab99e46e52
+   submitted bytesWritten: 27791 / 50000 = 55.6%
+[2026-08-20T04:59:50.281Z] pausing 15s so the next probe lands in a fresh block
+
+## mp12b — 12 verifier keys, 23124 bytes of keys
+   DEPLOYED at e575dff5d1c6e16adf1178c15446b6b83329988bdefe807d0413e3037a136fc5
+   submitted bytesWritten: 28562 / 50000 = 57.1%
+[2026-08-20T05:00:26.392Z] pausing 15s so the next probe lands in a fresh block
+
+## mp13 — 13 verifier keys, 24475 bytes of keys
+   DEPLOYED at c4e8c454a7311a9ca55ea4b3391040f00029428779b2cbb3010aa99221fcf3c7
+   submitted bytesWritten: 30070 / 50000 = 60.1%
+[2026-08-20T05:01:02.522Z] pausing 15s so the next probe lands in a fresh block
+
+## mp14 — 14 verifier keys, 26594 bytes of keys
+2026-08-20 01:01:18        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Transaction would exhaust the block limits
+2026-08-20 01:01:18        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Transaction would exhaust the block limits
+   REFUSED: Transaction submission error
+   submitted bytesWritten: 32356 / 50000 = 64.7%
+[2026-08-20T05:01:18.936Z] pausing 15s so the next probe lands in a fresh block
+
+## RESULT
+| contract | keys | key bytes | submitted bytesWritten | % of ceiling | deployed |
+|---|---|---|---|---|---|
+| mp12 | 12 | 22356 | 27791 | 55.6% | YES |
+| mp12b | 12 | 23124 | 28562 | 57.1% | YES |
+| mp13 | 13 | 24475 | 30070 | 60.1% | YES |
+| mp14 | 14 | 26594 | 32356 | 64.7% | **NO** |
+
+CEILING is between 60.1% (largest that deployed) and 64.7% (smallest refused).
+[
+  {
+    "name": "mp12",
+    "keys": 12,
+    "keyBytes": 22356,
+    "bytesWritten": 27791,
+    "pct": "55.6",
+    "deployed": true
+  },
+  {
+    "name": "mp12b",
+    "keys": 12,
+    "keyBytes": 23124,
+    "bytesWritten": 28562,
+    "pct": "57.1",
+    "deployed": true
+  },
+  {
+    "name": "mp13",
+    "keys": 13,
+    "keyBytes": 24475,
+    "bytesWritten": 30070,
+    "pct": "60.1",
+    "deployed": true
+  },
+  {
+    "name": "mp14",
+    "keys": 14,
+    "keyBytes": 26594,
+    "bytesWritten": 32356,
+    "pct": "64.7",
+    "deployed": false,
+    "error": "Transaction submission error"
+  }
+]

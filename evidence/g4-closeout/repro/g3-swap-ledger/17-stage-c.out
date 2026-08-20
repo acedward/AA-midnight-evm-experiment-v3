@@ -1,0 +1,273 @@
+# STAGE C — spec rows 9/11/12 + NC-306 + P-F310 replication — 2026-08-20T16:01:48.047Z
+[2026-08-20T16:01:48.119Z] wallets open; syncing genesis …
+2026-08-20 12:01:48        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:01:48        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:01:48        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:01:48        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:01:48.922Z] genesis: NIGHT=246000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+[2026-08-20T16:01:48.959Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-20T16:02:07.281Z]   submitted tx 00f1827080a4a6770be7e4309a7d87186284e6a4dd21c5fd337d3bb5f59d20d929 (hash 4058f3ac2cb1fdde15b67dd5f74e9c92b080949bab23245cbade804277935798)
+[2026-08-20T16:02:07.281Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-20T16:02:07.451Z]   waiting for genesis to observe its own spend (NIGHT at or below 244000000000000) …
+[2026-08-20T16:02:13.171Z]   feePayer: NIGHT already registered for DUST
+2026-08-20 12:02:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:02:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:02:13.617Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T16:02:31.408Z]   submitted tx 00f328a33d4908e93bf42c7dd84d04f7d5e7d59a9f3ba36bf1aea49b36752d3c0e (hash 6a69c7edba4d45eb7119d5cadae19ee4a986165bfca7415eb0507d9c20638ea4)
+[2026-08-20T16:02:31.408Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-20T16:02:31.593Z]   waiting for feePayer to observe its own spend (NIGHT at or below 3200000000000) …
+[2026-08-20T16:02:38.315Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-20 12:02:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:02:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:02:48.401Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T16:03:07.621Z]   submitted tx 0089d3edaa708d21def485a6bbff52bdcfdcf033bcc7d45505587dba7602c6112e (hash 8ce46a195dc2590c03cf6464560ab696ff6734c3c80948025841fd74ca1d44c0)
+[2026-08-20T16:03:07.621Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-20T16:03:07.797Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2800000000000) …
+[2026-08-20T16:03:10.216Z]   OwnerT-funding: NIGHT already registered for DUST
+2026-08-20 12:03:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:03:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:03:10.670Z] deploying Manager v3 (UNCHANGED from 00005) …
+[2026-08-20T16:03:32.915Z]   Manager at bb527a748ec2a1ab65401d8cca9b94a8df8b28371bbad3960710be7f20c53d65
+[2026-08-20T16:04:09.010Z] AA_A 009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b / AA_B 755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904 registered; custody maps {"pools":0,"shieldedCells":0,"unshieldedCells":0}
+2026-08-20 12:04:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:04:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:04:09.521Z]   funding OwnerA-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T16:04:25.333Z]   submitted tx 00c80af1a6c62c7c0b418c3e366a10d9c40583895d8658b341d922bab2a7889d4c (hash 288d819d99e591d24934bc723a15b61e320fb5dd5fd2eefbb77986c73491c63e)
+[2026-08-20T16:04:25.333Z]   waiting for OwnerA-funding NIGHT to arrive …
+[2026-08-20T16:04:25.444Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2400000000000) …
+[2026-08-20T16:04:36.974Z]   OwnerA-funding: NIGHT already registered for DUST
+2026-08-20 12:04:37        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:04:37        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:04:37.499Z] maker OwnerA open (funded + DUST-registered on purpose, so "paid no fees" means something)
+[2026-08-20T16:04:37.499Z] 
+=== row setup — fresh Manager; mint; OwnerN deposits S_A 6 → AA_A
+[2026-08-20T16:04:37.511Z] deploying Minter1 (TOKA) …
+[2026-08-20T16:05:32.093Z]   Minter1 at 4bf77daf03ad9332c0d471bfd4cfd00c6d12dd5574a056d8790fd4b57ad69898: shielded 9ae23435fce1f79a07fd6689eb95f2f460c326fe9ae6c35e6212eed3cd2f1422 / unshielded 1616f347f2dee298a54ab8912c6a0702fa81a4b37f554ac8f27d6369a823e2f6
+[2026-08-20T16:05:32.094Z] deploying Minter2 (TOKB) …
+[2026-08-20T16:06:25.753Z]   Minter2 at fe6e108437ca04857bcd95b736139c500d0e8d3e942ee46f0c4278da431b0fb3: shielded 99e9425a10a245c7934cae593b4a9ff3a986b2b4ed4c53802ecc1d3b899e993b / unshielded 31a85903ad5972138e1df499da3250b88c287e1f411920c200753b22bbe263b3
+[2026-08-20T16:06:43.459Z] minted 12 S_A (9ae23435fce1…) in 003ad562ef6bc49af4e0fd52f9271830c28249a988018fbc64297bfa47bbf4e51d
+[2026-08-20T16:07:00.885Z] minted 10 S_B (99e9425a10a2…) in 004c578c48c979135324ac9846eea1e00f8b1b7a9cb2ba19f05f3dffe71870ec5d
+2026-08-20 12:07:01        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:07:01        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:07:01.425Z]   waiting for OwnerN-spender-1 to see 6 of shielded 9ae23435fce1… before spending it …
+[2026-08-20T16:07:24.986Z] OwnerN deposited 6 S_A into custody in 009e09ff55473f01d0d168c346cbc5c118c051c834886427f96cce4a7e86875bdf
+2026-08-20 12:08:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:08:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:08:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:08:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:08:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:08:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:08:39.851Z] row setup (fresh Manager; mint; OwnerN deposits S_A 6 → AA_A): PASS
+[2026-08-20T16:08:39.851Z] 
+=== row row-9 — Expiry: OFFER-3 held past its TTL, then taken — NC-303
+[2026-08-20T16:08:39.852Z]   starting child process: src/swap/maker-process.ts row9-maker
+    | [2026-08-20T16:08:42.812Z] maker[named-taker]: building openSwapShielded(give 1 of 9ae23435fce1…, want 1 of 99e9425a10a2…)
+    | [2026-08-20T16:08:43.192Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+    | [2026-08-20T16:08:50.765Z] maker[named-taker]: offer proven in 7569 ms; 26820 bytes, sha256 3bcb6503fa12b247…; imbalances(0) = {"shielded:99e9425a10a245c7934cae593b4a9ff3a986b2b4ed4c53802ecc1d3b899e993b":"-1"}
+    | [2026-08-20T16:08:50.766Z] maker[OFFER-3]: published /private/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00006-g4-88MwCz/clone/evidence/g3-swap-ledger/offers/row9-maker.offer
+    | [2026-08-20T16:08:50.766Z] maker[OFFER-3]: DONE — placement ok=true
+    | --- stderr ---
+    | 2026-08-20 12:08:42        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:08:42        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:08:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:08:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:08:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:08:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:08:52        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:08:52        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:08:52.271Z] row 9: waiting 150 s for the offer to outlive its 120 s TTL
+[2026-08-20T16:11:22.276Z]   starting child process: src/swap/taker-process.ts row9-taker-local
+    | [2026-08-20T16:11:25.512Z]   waiting for Taker-row-9-local to see 1 of shielded 99e9425a10a2… before spending it …
+    | [2026-08-20T16:11:25.515Z] taker[row-9-local]: envelope ok — named-taker offer, give 1 of 9ae23435fce1…, want 1 of 99e9425a10a2…, -35 s of life left
+    | [2026-08-20T16:11:25.516Z] taker[row-9-local]: REFUSED — offer expired 35 s ago (expiresAt 2026-08-20T16:10:50.765Z); refused locally without contacting the chain
+    | [2026-08-20T16:11:25.516Z] taker[row-9-local]: REFUSED at expired
+    | --- stderr ---
+    | 2026-08-20 12:11:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:11:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:11:25.553Z]   starting child process: src/swap/taker-process.ts row9-taker-node
+    | [2026-08-20T16:11:28.124Z]   waiting for Taker-row-9-node to see 1 of shielded 99e9425a10a2… before spending it …
+    | [2026-08-20T16:11:28.127Z] taker[row-9-node]: envelope ok — named-taker offer, give 1 of 9ae23435fce1…, want 1 of 99e9425a10a2…, -37 s of life left
+    | [2026-08-20T16:11:28.140Z] taker[row-9-node]: fundable — deficits {"0/shielded:99e9425a10a245c7934cae593b4a9ff3a986b2b4ed4c53802ecc1d3b899e993b":"-1"}, surpluses {}
+    | [2026-08-20T16:11:28.148Z] taker[row-9-node]: balanceUnboundTransaction on a transaction it did not build
+    | [2026-08-20T16:11:29.615Z] taker[row-9-node]: merged transaction balances; unswept non-dust surplus {}
+    | [2026-08-20T16:11:29.615Z] taker[row-9-node]: submitting the merged transaction
+    | [2026-08-20T16:11:30.672Z] taker[row-9-node]: REFUSED at settlement (node code 228)
+    | --- stderr ---
+    | 2026-08-20 12:11:27        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:11:27        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:11:30        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 228
+    | 2026-08-20 12:11:30        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 228
+2026-08-20 12:11:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:11:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:11:31        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:11:31        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:11:31        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:11:31        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:11:32.130Z] row row-9 (Expiry: OFFER-3 held past its TTL, then taken — NC-303): PASS
+[2026-08-20T16:11:32.130Z] 
+=== row row-11 — Staleness (FR-311): a deposit lands on the offered colour, then OFFER-4 is taken
+[2026-08-20T16:11:32.130Z]   starting child process: src/swap/maker-process.ts row11-maker
+    | [2026-08-20T16:11:34.482Z] maker[named-taker]: building openSwapShielded(give 1 of 9ae23435fce1…, want 1 of 99e9425a10a2…)
+    | [2026-08-20T16:11:34.760Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+    | [2026-08-20T16:11:40.748Z] maker[named-taker]: offer proven in 5985 ms; 26878 bytes, sha256 7022f98a52c13223…; imbalances(0) = {"shielded:99e9425a10a245c7934cae593b4a9ff3a986b2b4ed4c53802ecc1d3b899e993b":"-1"}
+    | [2026-08-20T16:11:40.749Z] maker[OFFER-4]: published /private/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00006-g4-88MwCz/clone/evidence/g3-swap-ledger/offers/row11-maker.offer
+    | [2026-08-20T16:11:40.749Z] maker[OFFER-4]: DONE — placement ok=true
+    | --- stderr ---
+    | 2026-08-20 12:11:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:11:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:11:40        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:11:40        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:11:41.265Z]   waiting for OwnerN-intervene-spender-2 to see 1 of shielded 9ae23435fce1… before spending it …
+[2026-08-20T16:12:07.672Z] OwnerN-intervene deposited 1 S_A into custody in 007958a8a995e043ea1ff29db3d19df2c80e2815f77e447b62e3117693b448d9bb
+2026-08-20 12:12:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:12:11.171Z]   starting child process: src/swap/taker-process.ts row11-taker
+    | [2026-08-20T16:12:14.033Z]   waiting for Taker-row-11 to see 1 of shielded 99e9425a10a2… before spending it …
+    | [2026-08-20T16:12:14.037Z] taker[row-11]: envelope ok — named-taker offer, give 1 of 9ae23435fce1…, want 1 of 99e9425a10a2…, 3567 s of life left
+    | [2026-08-20T16:12:14.051Z] taker[row-11]: fundable — deficits {"0/shielded:99e9425a10a245c7934cae593b4a9ff3a986b2b4ed4c53802ecc1d3b899e993b":"-1"}, surpluses {}
+    | [2026-08-20T16:12:14.200Z] taker[row-11]: balanceUnboundTransaction on a transaction it did not build
+    | [2026-08-20T16:12:15.728Z] taker[row-11]: merged transaction balances; unswept non-dust surplus {}
+    | [2026-08-20T16:12:15.728Z] taker[row-11]: submitting the merged transaction
+    | [2026-08-20T16:12:16.822Z] taker[row-11]: REFUSED at settlement (node code 239)
+    | --- stderr ---
+    | 2026-08-20 12:12:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:12:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:12:16        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 239
+    | 2026-08-20 12:12:16        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 239
+2026-08-20 12:12:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:12:18.279Z] row row-11 (Staleness (FR-311): a deposit lands on the offered colour, then OFFER-4 is taken): MEASURED
+[2026-08-20T16:12:18.279Z] 
+=== row row-12a — Cancellation by WITHDRAW: the maker moves the backing pool coin — P-CXL
+[2026-08-20T16:12:18.279Z]   starting child process: src/swap/maker-process.ts row12a-maker
+    | [2026-08-20T16:12:20.737Z] maker[named-taker]: building openSwapShielded(give 1 of 9ae23435fce1…, want 1 of 99e9425a10a2…)
+    | [2026-08-20T16:12:20.981Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+    | [2026-08-20T16:12:27.168Z] maker[named-taker]: offer proven in 6183 ms; 26818 bytes, sha256 bd47e1d80e00c5ab…; imbalances(0) = {"shielded:99e9425a10a245c7934cae593b4a9ff3a986b2b4ed4c53802ecc1d3b899e993b":"-1"}
+    | [2026-08-20T16:12:27.169Z] maker[OFFER-5]: published /private/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00006-g4-88MwCz/clone/evidence/g3-swap-ledger/offers/row12a-maker.offer
+    | [2026-08-20T16:12:27.169Z] maker[OFFER-5]: DONE — placement ok=true
+    | --- stderr ---
+    | 2026-08-20 12:12:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:12:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:52        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:52        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:12:52.677Z]   starting child process: src/swap/taker-process.ts row12a-taker
+    | [2026-08-20T16:12:55.473Z]   waiting for Taker-row-12a to see 1 of shielded 99e9425a10a2… before spending it …
+    | [2026-08-20T16:12:55.476Z] taker[row-12a]: envelope ok — named-taker offer, give 1 of 9ae23435fce1…, want 1 of 99e9425a10a2…, 3572 s of life left
+    | [2026-08-20T16:12:55.490Z] taker[row-12a]: fundable — deficits {"0/shielded:99e9425a10a245c7934cae593b4a9ff3a986b2b4ed4c53802ecc1d3b899e993b":"-1"}, surpluses {}
+    | [2026-08-20T16:12:55.640Z] taker[row-12a]: balanceUnboundTransaction on a transaction it did not build
+    | [2026-08-20T16:12:57.231Z] taker[row-12a]: merged transaction balances; unswept non-dust surplus {}
+    | [2026-08-20T16:12:57.232Z] taker[row-12a]: submitting the merged transaction
+    | [2026-08-20T16:12:58.318Z] taker[row-12a]: REFUSED at settlement (node code 239)
+    | --- stderr ---
+    | 2026-08-20 12:12:55        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:12:55        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:12:58        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 239
+    | 2026-08-20 12:12:58        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 239
+2026-08-20 12:12:58        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:58        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:59        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:59        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:59        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:12:59        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:12:59.808Z] row row-12a (Cancellation by WITHDRAW: the maker moves the backing pool coin — P-CXL): MEASURED
+[2026-08-20T16:12:59.808Z] 
+=== row row-12b — Cancellation by INTERNAL TRANSFER: no token moves at all — does the offer still die? — P-CXL
+[2026-08-20T16:12:59.808Z]   starting child process: src/swap/maker-process.ts row12b-maker
+    | [2026-08-20T16:13:02.270Z] maker[named-taker]: building openSwapShielded(give 1 of 9ae23435fce1…, want 1 of 99e9425a10a2…)
+    | [2026-08-20T16:13:02.554Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+    | [2026-08-20T16:13:08.789Z] maker[named-taker]: offer proven in 6231 ms; 26818 bytes, sha256 b7be09ab35c9c4e7…; imbalances(0) = {"shielded:99e9425a10a245c7934cae593b4a9ff3a986b2b4ed4c53802ecc1d3b899e993b":"-1"}
+    | [2026-08-20T16:13:08.790Z] maker[OFFER-6]: published /private/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00006-g4-88MwCz/clone/evidence/g3-swap-ledger/offers/row12b-maker.offer
+    | [2026-08-20T16:13:08.790Z] maker[OFFER-6]: DONE — placement ok=true
+    | --- stderr ---
+    | 2026-08-20 12:13:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:13:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:27        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:27        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:27        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:27        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:28        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:28        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:13:28.787Z]   starting child process: src/swap/taker-process.ts row12b-taker
+    | [2026-08-20T16:13:31.454Z]   waiting for Taker-row-12b to see 1 of shielded 99e9425a10a2… before spending it …
+    | [2026-08-20T16:13:31.456Z] taker[row-12b]: envelope ok — named-taker offer, give 1 of 9ae23435fce1…, want 1 of 99e9425a10a2…, 3577 s of life left
+    | [2026-08-20T16:13:31.470Z] taker[row-12b]: fundable — deficits {"0/shielded:99e9425a10a245c7934cae593b4a9ff3a986b2b4ed4c53802ecc1d3b899e993b":"-1"}, surpluses {}
+    | [2026-08-20T16:13:31.624Z] taker[row-12b]: balanceUnboundTransaction on a transaction it did not build
+    | [2026-08-20T16:13:33.202Z] taker[row-12b]: merged transaction balances; unswept non-dust surplus {}
+    | [2026-08-20T16:13:33.202Z] taker[row-12b]: submitting the merged transaction
+    | [2026-08-20T16:13:34.304Z] taker[row-12b]: REFUSED at settlement (node code 104)
+    | --- stderr ---
+    | 2026-08-20 12:13:31        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:13:31        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:13:34        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+    | 2026-08-20 12:13:34        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-20 12:13:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:35        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:35        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:35        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:35        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:13:35.796Z] row row-12b (Cancellation by INTERNAL TRANSFER: no token moves at all — does the offer still die? — P-CXL): MEASURED
+[2026-08-20T16:13:35.796Z] 
+=== row nc-306 — unbacked make: AA_A asks for more S_A than its cell holds, while the pool COULD cover it
+[2026-08-20T16:13:35.796Z]   starting child process: src/swap/maker-process.ts nc306-maker
+    | [2026-08-20T16:13:38.276Z] maker[named-taker]: building openSwapShielded(give 5 of 9ae23435fce1…, want 1 of 99e9425a10a2…)
+    | [2026-08-20T16:13:38.485Z] maker[NC-306]: REFUSED (circuit-guard-refusal) — failed assert: account colour balance too low | cause: Error executing circuit 'openSwapShielded'
+    | --- stderr ---
+    | 2026-08-20 12:13:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:13:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:13:39.968Z] row nc-306 (unbacked make: AA_A asks for more S_A than its cell holds, while the pool COULD cover it): PASS
+[2026-08-20T16:13:39.968Z] 
+=== row p-f310 — P-F310 replication: a FULLY BACKED offer at two custody cells
+[2026-08-20T16:13:39.969Z]   starting child process: src/swap/maker-process.ts pf310c-armed
+    | [2026-08-20T16:13:42.431Z] maker[named-taker]: building openSwapShielded(give 2 of 9ae23435fce1…, want 1 of 99e9425a10a2…)
+    | [2026-08-20T16:13:42.739Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+    | [2026-08-20T16:13:48.856Z] maker[P-F310-armed]: REFUSED (fr302-placement-fail-closed) — FR-302 VIOLATED for named-taker offer (openSwapShielded, give 2 9ae23435fce1… / want 1 99e9425a10a2…): segments present: [0,4807] intent segments: [4807] fallible-offer segments: [4807] expected 0: {"shielded:99e9425a10a245c7934cae593b4a9ff3a986b2b4ed4c53802ecc1d3b899e993b":"-1"} observed 0: {} segment-0 exact: false other segments carrying deltas: 4807: {"shielded:99e9425a10a245c7934cae593b4a9ff3a986b2b4ed4c53802ecc1d3b899e993b":"-1"} A leg outside the guaranteed section is UNSETTLEABLE by an independent taker (balancing is per (token, segment) and a taker can only reach segment 0). This is lane issue 0003 in its designed-against form — retain this output as evidence.
+    | --- stderr ---
+    | 2026-08-20 12:13:42        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:13:42        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:13:48.904Z]   starting child process: src/swap/maker-process.ts pf310c-measured
+    | [2026-08-20T16:13:51.428Z] maker[named-taker]: building openSwapShielded(give 2 of 9ae23435fce1…, want 1 of 99e9425a10a2…)
+    | [2026-08-20T16:13:51.705Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+    | [2026-08-20T16:13:57.724Z] maker[named-taker]: offer proven in 6016 ms; 26869 bytes, sha256 1b4ab165e58cbfa8…; imbalances(0) = {}
+    | [2026-08-20T16:13:57.725Z] maker[P-F310-measured]: DONE — placement ok=false
+    | --- stderr ---
+    | 2026-08-20 12:13:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+    | 2026-08-20 12:13:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:57        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:57        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:58        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:58        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:58        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:13:58        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:13:59.246Z] row p-f310 (P-F310 replication: a FULLY BACKED offer at two custody cells): MEASURED
+[2026-08-20T16:13:59.246Z] 
+=== row closing — Stage C closing state, both observation points
+2026-08-20 12:15:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:15:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:15:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:15:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:15:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+2026-08-20 12:15:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:42147/: 1000:: Normal Closure
+[2026-08-20T16:15:16.266Z] row closing (Stage C closing state, both observation points): PASS
+[2026-08-20T16:15:16.268Z] stage C: wrote evidence, verdict GREEN
+
+## STAGE C VERDICT: GREEN
+[2026-08-20T16:15:16.278Z] stage C finished; evidence in /private/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00006-g4-88MwCz/clone/evidence/g3-swap-ledger

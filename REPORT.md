@@ -9,7 +9,7 @@ under **ONE transaction id**. Two halves are reported, never conflated: **v1**, 
 and **v2**, the OPEN offer — usable by a holder whose keys the maker never knew, which is the
 owner's REQUIRED outcome (spec FR-308, owner Q1 2026-08-19).
 
-Generated 2026-08-20T13:26:35.082Z from retained evidence in `evidence/`. Nothing in this
+Generated 2026-08-20T16:15:20.872Z from retained evidence in `evidence/`. Nothing in this
 report is restated by hand; every figure is read from the file named beside it.
 
 ## The two headline results
@@ -294,13 +294,36 @@ genuine read-after-write, ascending is accepted and descending is refused with 1
 is therefore NECESSARY, and for a dependent pair also sufficient. For a DISJOINT pair it is
 necessary but not sufficient, and refusals concentrate on attempts that create new map keys.
 
-**The post-hoc fix is REFUTED AS IMPLEMENTED (F-306):** re-keying a merged, unproven, unbound
-transaction's intents into call order is accepted by the wasm setter and then refused by the node
-with `Custom error: 235` = `MalformedZswapErrorCode::InvalidProof`, 12/12, **including on
-originally-ascending draws that would have been accepted untouched**. The zswap proofs are bound to
-the segment assignment. So **segment assignment is a BUILD-TIME decision on this lane** and the
-mitigation belongs upstream, in `midnight-js-contracts`, where each scoped call is built. 00006
-itself is not exposed: the maker transaction is a SINGLE call.
+**The post-hoc fix is UNRELIABLE — and finding that out cost two runs (F-306, amended).** Re-keying
+a merged, unproven, unbound transaction's intents into call order is accepted by the wasm setter,
+and then:
+
+- in the canonical G1 run the node **refused it 12/12** with `Custom error: 235` =
+  `MalformedZswapErrorCode::InvalidProof`, *including* on originally-ascending draws that would have
+  been accepted untouched;
+- in **this project's own clean-clone reproduction**, running the identical spike source, the node
+  **accepted it 12/12**, with five of the twelve draws descending.
+
+Both runs were internally deterministic and neither had a VOID. So "a merged transaction's segments
+cannot be rewritten" is **false as an absolute** — the rewrite is valid or fatal **depending on
+state**, which for a mitigation is worse than a clean refusal, because it passes in a small state
+and fails in a large one.
+
+**The mechanism is the SAME cost budget as F-308/F-310**, which is what makes this worth carrying:
+the re-keying helper moves the intents and, *only if they exist*, the `fallibleOffer` entries keyed
+by those segments. Zswap items in the GUARANTEED section (segment 0, which a re-key never touches)
+mean no proof moves — accepted. Items in the FALLIBLE section mean proofs bound to their segment are
+moved — `235`. Which holds is `partition_transcripts`' state-dependent decision. Circumstantial
+support from the two runs' own bookkeeping: the shape that creates a fresh pool plus two cells per
+accepted attempt landed **7 of 8** accepted before the rewrite attempts in the canonical run versus
+**1 of 8** in the reproduction, so the canonical run rewrote against a much larger custody map.
+**This is a labelled HYPOTHESIS**: the discriminating measurement (placement per rewrite attempt)
+was not taken, and the harness could take it in one run.
+
+The conclusion is unchanged in direction and stronger in force: **segment assignment is a BUILD-TIME
+decision on this lane** and the mitigation belongs upstream, in `midnight-js-contracts`, where each
+scoped call is constructed. 00006 itself is not exposed either way — its maker transaction is a
+SINGLE call.
 
 ### F-303 / F-304 — two SDK caveats anyone reusing this harness will hit
 
@@ -349,7 +372,7 @@ layer is not claimed** for that one.
 
 | Decision | Taken | Why |
 |---|---|---|
-| **D-306** — published artifact form = UNBOUND (`pre-binding`) | Plan 01 spike S3, cross-checked against S1 | the unbound form round-trips byte-identically, keeps FR-302 placement, and S1 settled it through `balanceUnboundTransaction` — the same entry point the pinned SDK's own shielded-swap e2e test uses. It also leaves the taker free to merge without the maker havin… |
+| **D-306** — published artifact form = UNBOUND (`pre-binding`) | Plan 01 spike S3, cross-checked against S1 | the unbound form round-trips byte-identically, keeps FR-302 placement, and S1 settled it through `balanceUnboundTransaction` — the same entry point the pinned SDK's own shielded-swap e2e test uses. It also leaves the taker free to merge without the maker having frozen the transaction, which is what makes an OPEN offer possible at all. The bound form ALSO works and is recorded as the fallback. |
 | **D-307** — the ledger is partitioned across three fresh Managers | Plan 03, forced by F-310 | F-310 — an offer is publishable only while the Manager holds at most ONE shielded custody cell; the spec's row 5 settlement creates the second, so rows 7–12 as literally written cannot be built |
 
 ## Host workarounds — both HOST-scoped, neither a lane property
@@ -372,18 +395,50 @@ layer is not claimed** for that one.
 | **G1** | `scripts/g1/verify-g1-spikes.sh` | 2026-08-20T03:04:35Z | 2026-08-20T03:44:56Z | 18 | 40 min | exit 0 | **0** |
 | **G2** | `scripts/g2/verify-g2-contracts.sh` | 2026-08-20T09:16:50Z | 2026-08-20T10:38:49Z | 20 | 82 min | exit 0 | **0** |
 | **G3** | `scripts/g3/verify-g3-swap-ledger.sh` | 2026-08-20T12:17:25Z | 2026-08-20T12:57:26Z | 18 | 40 min | exit 0 | **0** |
-| **G4** | `scripts/g4/verify-g4-closeout.sh` | 2026-08-20T13:26:32Z |  | 4 | 0 min |  | **(in progress)** |
+| **G4** | `scripts/g4/verify-g4-closeout.sh` | 2026-08-20T13:27:53Z |  | 9 | 167 min |  | **(in progress)** |
 
 The G4 row is written by the run that renders this report, so its `finished`/`final_exit` are
 necessarily "in progress" here; the authoritative record is `evidence/g4-closeout/run.log`.
 
 ## Clean-clone reproduction (SC-306)
 
-**NOT YET REPRODUCED.** This render was not given a clean-clone root, so no reproduction claim is
-made here. Run `scripts/g4/verify-g4-closeout.sh`, which clones this repository into a fresh
-temporary directory, runs G1, G2 and G3 inside that clone against fresh stacks of their own,
-compares the result against the retained original, and re-renders this section from the clone's
-own evidence.
+Reproduced from a clean `git clone` into a temporary directory, running the same three gate
+wrappers against fresh stacks. The clone is deleted at teardown, so the figures below are copied
+into `evidence/g4-closeout/repro/` by the gate itself — otherwise they would be gone.
+
+| What | Original | Reproduction |
+|---|---|---|
+| stage verdicts | A:GREEN B:GREEN C:GREEN | A:GREEN B:GREEN C:GREEN |
+| run rows / checks | 23 / 217 | 23 / 217 |
+| Manager addresses | 1f8f7b515d… 95fb94dc5d… f6eb885f47… | ab8b2ce76d… eddac280e7… bb527a748e… |
+| row 5 — the v1 settlement | `00a3036cec400892e70942…` | `00b917f91daaad575d0827…` |
+| row 8 — the OPEN offer | `00f642666cfa697ea6e802…` | `003929da6f91ef0112ee71…` |
+| transaction ids IN COMMON | — | **0** |
+| S1 (foreign wallet balances a contract call) | GREEN | GREEN |
+| FR-308 openness | GREEN | GREEN |
+| S6 (the maker pays nothing) | GREEN | GREEN |
+| S5b (the F-310 boundary) | 1 → 2 | 1 → 2 |
+| S2 (segment order — a lane investigation, not a spec requirement) | CONFIRMED — but the POST-HOC fix is REFUTED AS IMPLEMENTED | CONFIRMED + FIX DEMONSTRATED |
+
+> **The S2 row above does not match, and that is a RESULT rather than a defect** — read the
+> amended F-306 above. S2 measures accept/refuse ratios over segment ids the SDK draws at
+> random, and the post-hoc re-keying it tests turns out to be valid or fatal depending on
+> where the partitioner put the transcript. The specification does not depend on S2 at any
+> point, and this project's maker transaction is a single call, so nothing else in this
+> report moves. The comparator reports this divergence as a finding by design: it compares
+> the specification, and a comparator stricter than the specification is a comparator bug.
+
+What the comparator requires, and what it deliberately does not: it proves the reproduction is a
+DIFFERENT chain (no Manager address, colour, pooled-coin nonce or transaction id in common), then
+compares every row status, every check structure, and every pool, cell, wallet holding, map size,
+invariant row and conservation row for EXACT equality. It compares the specification's
+DISJUNCTIONS as the specification states them — FR-308 openness is GREEN if either shape settles,
+and the MEASURED rows (FR-311 staleness, the two cancellation forms, P-F310) may record a
+different refusal code, which is reported as a finding rather than scored as a failure. A
+comparator stricter than the specification is a comparator bug.
+
+Full output: `evidence/g4-closeout/09-compare.out`, and the reproduction's own evidence is in
+`evidence/g4-closeout/repro/`.
 
 ## Requirements and success criteria, item by item
 
@@ -405,7 +460,7 @@ own evidence.
 | SC-303 byte-identical round-trip, stable content address | **PASS** | `row-3`, `s3-offer-roundtrip.json` |
 | SC-304 NC-301..306 + P-CXL green, P-104 measured | **PASS / MEASURED** | the negative-controls table above |
 | SC-305 the OPEN offer reported SEPARATELY from v1 | **GREEN**, reported separately throughout | `row-7`/`row-8`, `OPENNESS.md` |
-| SC-306 clean-clone reproduction, 0 shared tx ids | **NOT YET REPRODUCED** by this render | `evidence/g4-closeout/` |
+| SC-306 clean-clone reproduction, 0 shared tx ids | **see the reproduction section** | `evidence/g4-closeout/` |
 | **the spec's literal 13-row single-Manager ledger** | **NOT REACHABLE at these pins** — measured, not assumed (F-310, D-307, P-F310) | `g3-swap-ledger/DEVIATION.md` |
 
 ## How to reproduce

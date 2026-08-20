@@ -72,6 +72,7 @@ fs_init "$GATE" "$EVID" "$MODE"
 
 CLONE_PARENT=""
 CLONE=""
+REPRO_COPIED="0"
 COMPARE="$ROOT/scripts/g4/compare-swap-runs.py"
 
 # The approved specification lives in the ORGANIZER repository, not in this product repo, so its
@@ -86,6 +87,14 @@ cleanup_clone() {
   if [ -z "$CLONE_PARENT" ]; then
     echo "no temporary clone was created; nothing to remove"
     return 0
+  fi
+  # LAST CHANCE to keep the reproduction's evidence. `08-copy-repro-evidence` runs after the three
+  # reproduced gates, so a gate that FAILS would otherwise take its evidence down with the clone —
+  # and that is precisely the run whose evidence is most wanted. Best-effort and idempotent: a copy
+  # failure here must never mask the real error that brought us to teardown.
+  if [ "$REPRO_COPIED" != "1" ] && [ -d "$CLONE/evidence" ]; then
+    echo "copying the clone's evidence before removal (the copy step did not reach completion)"
+    copy_repro_evidence || echo "WARNING: the last-chance evidence copy failed; continuing with teardown" >&2
   fi
   case "$CLONE_PARENT" in
     /tmp/*|/private/tmp/*|/private/var/folders/*|/var/folders/*) ;;
@@ -226,7 +235,7 @@ step_reproduce_g3() { (cd "$CLONE" && ./scripts/g3/verify-g3-swap-ledger.sh); }
 # The clone is deleted at teardown. Whatever is not copied here is gone, and a reproduction claim with
 # no retained evidence is an assertion. The heavy directories (`io/`, container logs) are left behind
 # on purpose; the JSON records and the generated index pages are what carry the claims.
-step_copy_repro() {
+copy_repro_evidence() {
   local dest="$EVID/repro"
   rm -rf "$dest"
   mkdir -p "$dest"
@@ -251,7 +260,10 @@ step_copy_repro() {
   } >> "$dest/CLONE.md"
   du -sh "$dest"
   find "$dest" -type f | wc -l | awk '{print $1 " files copied"}'
+  REPRO_COPIED="1"
 }
+
+step_copy_repro() { copy_repro_evidence; }
 
 # --- compare the reproduction with the original ---------------------------------------------------
 step_compare() { python3 "$COMPARE" "$ROOT" "$CLONE"; }

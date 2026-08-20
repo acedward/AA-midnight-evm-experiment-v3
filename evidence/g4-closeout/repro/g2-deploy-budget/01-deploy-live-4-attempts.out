@@ -1,0 +1,301 @@
+# DIAG deploy-live — EXPERIMENTAL_LANE / LANE-DEV-1
+# gas = max(normalized cost) * max_block_weight; Normal class ceiling = 75% of max_block
+2026-08-20 00:44:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15474/: 1000:: Normal Closure
+2026-08-20 00:44:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15474/: 1000:: Normal Closure
+2026-08-20 00:44:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15474/: 1000:: Normal Closure
+2026-08-20 00:44:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:15474/: 1000:: Normal Closure
+[2026-08-20T04:44:26.258Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-20T04:44:26.273Z]   fund feePayer: attempt 1 — DUST not yet generated, waiting 15s
+[2026-08-20T04:45:01.407Z]   submitted tx 0085856e1e43cea2807acdf55cd198d77f016823bfc4937e7fcb49822a13b7d772 (hash 6f15a7424ee6880e7cb00d0782d25a307e9b2a2d3dd310d0d84f23e3465294fc)
+[2026-08-20T04:45:01.408Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-20T04:45:01.523Z]   waiting for genesis to observe its own spend (NIGHT at or below 248000000000000) …
+[2026-08-20T04:45:46.457Z]   feePayer: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-20T04:46:01.670Z]   feePayer: DUST registration tx 0038e595db93b0a3c59410ccac53cab1b27091093a15256aaba0c889be47d155bb
+[2026-08-20T04:46:01.670Z]   waiting for feePayer NIGHT utxos to show registeredForDustGeneration=true …
+
+--- BALANCED minter deploy (known-good reference)
+{
+  "label": "BALANCED minter deploy (known-good reference)",
+  "bytes": 12565,
+  "cost_enforceTimeToDismiss_false": {
+    "readTime": "3655000000 / 1000000000000 = 0.4%",
+    "computeTime": "5777661095 / 1000000000000 = 0.6%",
+    "blockUsage": "12497 / 200000 = 6.2%",
+    "bytesWritten": "11345 / 50000 = 22.7%",
+    "bytesChurned": "15432 / 1000000 = 1.5%"
+  },
+  "maxRatio_false": "22.7%",
+  "fitsNormalClass_false": true,
+  "headroomToNormalCeiling_false": "52.3 percentage points",
+  "cost_enforceTimeToDismiss_true": {
+    "readTime": "3655000000 / 1000000000000 = 0.4%",
+    "computeTime": "5777661095 / 1000000000000 = 0.6%",
+    "blockUsage": "12497 / 200000 = 6.2%",
+    "bytesWritten": "11345 / 50000 = 22.7%",
+    "bytesChurned": "15432 / 1000000 = 1.5%"
+  },
+  "maxRatio_true": "22.7%",
+  "fitsNormalClass_true": true,
+  "headroomToNormalCeiling_true": "52.3 percentage points"
+}
+minter deployed at b8b356cbda1d48fbe4b1641d52ea1c6737377c0332f8bcefb86412bce4667471
+
+## Manager v4 deploy attempt 1/4
+
+--- BALANCED manager deploy (as submitted)
+{
+  "label": "BALANCED manager deploy (as submitted)",
+  "bytes": 31109,
+  "cost_enforceTimeToDismiss_false": {
+    "readTime": "3655000000 / 1000000000000 = 0.4%",
+    "computeTime": "5777661095 / 1000000000000 = 0.6%",
+    "blockUsage": "31041 / 200000 = 15.5%",
+    "bytesWritten": "32356 / 50000 = 64.7%",
+    "bytesChurned": "15432 / 1000000 = 1.5%"
+  },
+  "maxRatio_false": "64.7%",
+  "fitsNormalClass_false": true,
+  "headroomToNormalCeiling_false": "10.3 percentage points",
+  "cost_enforceTimeToDismiss_true": {
+    "readTime": "3655000000 / 1000000000000 = 0.4%",
+    "computeTime": "5777661095 / 1000000000000 = 0.6%",
+    "blockUsage": "31041 / 200000 = 15.5%",
+    "bytesWritten": "32356 / 50000 = 64.7%",
+    "bytesChurned": "15432 / 1000000 = 1.5%"
+  },
+  "maxRatio_true": "64.7%",
+  "fitsNormalClass_true": true,
+  "headroomToNormalCeiling_true": "10.3 percentage points"
+}
+2026-08-20 00:46:21        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Transaction would exhaust the block limits
+2026-08-20 00:46:21        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Transaction would exhaust the block limits
+attempt 1 FAILED: Transaction submission error
+[2026-08-20T04:46:21.579Z] waiting 20s so the next attempt lands in a quieter block
+
+## Manager v4 deploy attempt 2/4
+
+--- BALANCED manager deploy (as submitted)
+{
+  "label": "BALANCED manager deploy (as submitted)",
+  "bytes": 31110,
+  "cost_enforceTimeToDismiss_false": {
+    "readTime": "3655000000 / 1000000000000 = 0.4%",
+    "computeTime": "5777661095 / 1000000000000 = 0.6%",
+    "blockUsage": "31042 / 200000 = 15.5%",
+    "bytesWritten": "32356 / 50000 = 64.7%",
+    "bytesChurned": "15432 / 1000000 = 1.5%"
+  },
+  "maxRatio_false": "64.7%",
+  "fitsNormalClass_false": true,
+  "headroomToNormalCeiling_false": "10.3 percentage points",
+  "cost_enforceTimeToDismiss_true": {
+    "readTime": "3655000000 / 1000000000000 = 0.4%",
+    "computeTime": "5777661095 / 1000000000000 = 0.6%",
+    "blockUsage": "31042 / 200000 = 15.5%",
+    "bytesWritten": "32356 / 50000 = 64.7%",
+    "bytesChurned": "15432 / 1000000 = 1.5%"
+  },
+  "maxRatio_true": "64.7%",
+  "fitsNormalClass_true": true,
+  "headroomToNormalCeiling_true": "10.3 percentage points"
+}
+2026-08-20 00:46:42        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Transaction would exhaust the block limits
+2026-08-20 00:46:42        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Transaction would exhaust the block limits
+attempt 2 FAILED: Transaction submission error
+[2026-08-20T04:46:42.981Z] waiting 20s so the next attempt lands in a quieter block
+
+## Manager v4 deploy attempt 3/4
+
+--- BALANCED manager deploy (as submitted)
+{
+  "label": "BALANCED manager deploy (as submitted)",
+  "bytes": 31110,
+  "cost_enforceTimeToDismiss_false": {
+    "readTime": "3655000000 / 1000000000000 = 0.4%",
+    "computeTime": "5777661095 / 1000000000000 = 0.6%",
+    "blockUsage": "31042 / 200000 = 15.5%",
+    "bytesWritten": "32356 / 50000 = 64.7%",
+    "bytesChurned": "15432 / 1000000 = 1.5%"
+  },
+  "maxRatio_false": "64.7%",
+  "fitsNormalClass_false": true,
+  "headroomToNormalCeiling_false": "10.3 percentage points",
+  "cost_enforceTimeToDismiss_true": {
+    "readTime": "3655000000 / 1000000000000 = 0.4%",
+    "computeTime": "5777661095 / 1000000000000 = 0.6%",
+    "blockUsage": "31042 / 200000 = 15.5%",
+    "bytesWritten": "32356 / 50000 = 64.7%",
+    "bytesChurned": "15432 / 1000000 = 1.5%"
+  },
+  "maxRatio_true": "64.7%",
+  "fitsNormalClass_true": true,
+  "headroomToNormalCeiling_true": "10.3 percentage points"
+}
+2026-08-20 00:47:04        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Transaction would exhaust the block limits
+2026-08-20 00:47:04        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Transaction would exhaust the block limits
+attempt 3 FAILED: Transaction submission error
+[2026-08-20T04:47:04.383Z] waiting 20s so the next attempt lands in a quieter block
+
+## Manager v4 deploy attempt 4/4
+
+--- BALANCED manager deploy (as submitted)
+{
+  "label": "BALANCED manager deploy (as submitted)",
+  "bytes": 31110,
+  "cost_enforceTimeToDismiss_false": {
+    "readTime": "3655000000 / 1000000000000 = 0.4%",
+    "computeTime": "5777661095 / 1000000000000 = 0.6%",
+    "blockUsage": "31042 / 200000 = 15.5%",
+    "bytesWritten": "32356 / 50000 = 64.7%",
+    "bytesChurned": "15432 / 1000000 = 1.5%"
+  },
+  "maxRatio_false": "64.7%",
+  "fitsNormalClass_false": true,
+  "headroomToNormalCeiling_false": "10.3 percentage points",
+  "cost_enforceTimeToDismiss_true": {
+    "readTime": "3655000000 / 1000000000000 = 0.4%",
+    "computeTime": "5777661095 / 1000000000000 = 0.6%",
+    "blockUsage": "31042 / 200000 = 15.5%",
+    "bytesWritten": "32356 / 50000 = 64.7%",
+    "bytesChurned": "15432 / 1000000 = 1.5%"
+  },
+  "maxRatio_true": "64.7%",
+  "fitsNormalClass_true": true,
+  "headroomToNormalCeiling_true": "10.3 percentage points"
+}
+2026-08-20 00:47:25        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Transaction would exhaust the block limits
+2026-08-20 00:47:25        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Transaction would exhaust the block limits
+attempt 4 FAILED: Transaction submission error
+
+## VERDICT
+HARD (as far as 4 spaced attempts can tell): every attempt was refused.
+If the measured maxRatio above is at or above the Normal-class ceiling, the contract
+itself is too expensive to deploy at these pins and must be made cheaper.
+  attempt 1: Transaction submission error
+  attempt 2: Transaction submission error
+  attempt 3: Transaction submission error
+  attempt 4: Transaction submission error
+
+## measurements
+[
+  {
+    "label": "BALANCED minter deploy (known-good reference)",
+    "bytes": 12565,
+    "cost_enforceTimeToDismiss_false": {
+      "readTime": "3655000000 / 1000000000000 = 0.4%",
+      "computeTime": "5777661095 / 1000000000000 = 0.6%",
+      "blockUsage": "12497 / 200000 = 6.2%",
+      "bytesWritten": "11345 / 50000 = 22.7%",
+      "bytesChurned": "15432 / 1000000 = 1.5%"
+    },
+    "maxRatio_false": "22.7%",
+    "fitsNormalClass_false": true,
+    "headroomToNormalCeiling_false": "52.3 percentage points",
+    "cost_enforceTimeToDismiss_true": {
+      "readTime": "3655000000 / 1000000000000 = 0.4%",
+      "computeTime": "5777661095 / 1000000000000 = 0.6%",
+      "blockUsage": "12497 / 200000 = 6.2%",
+      "bytesWritten": "11345 / 50000 = 22.7%",
+      "bytesChurned": "15432 / 1000000 = 1.5%"
+    },
+    "maxRatio_true": "22.7%",
+    "fitsNormalClass_true": true,
+    "headroomToNormalCeiling_true": "52.3 percentage points"
+  },
+  {
+    "label": "BALANCED manager deploy (as submitted)",
+    "bytes": 31109,
+    "cost_enforceTimeToDismiss_false": {
+      "readTime": "3655000000 / 1000000000000 = 0.4%",
+      "computeTime": "5777661095 / 1000000000000 = 0.6%",
+      "blockUsage": "31041 / 200000 = 15.5%",
+      "bytesWritten": "32356 / 50000 = 64.7%",
+      "bytesChurned": "15432 / 1000000 = 1.5%"
+    },
+    "maxRatio_false": "64.7%",
+    "fitsNormalClass_false": true,
+    "headroomToNormalCeiling_false": "10.3 percentage points",
+    "cost_enforceTimeToDismiss_true": {
+      "readTime": "3655000000 / 1000000000000 = 0.4%",
+      "computeTime": "5777661095 / 1000000000000 = 0.6%",
+      "blockUsage": "31041 / 200000 = 15.5%",
+      "bytesWritten": "32356 / 50000 = 64.7%",
+      "bytesChurned": "15432 / 1000000 = 1.5%"
+    },
+    "maxRatio_true": "64.7%",
+    "fitsNormalClass_true": true,
+    "headroomToNormalCeiling_true": "10.3 percentage points"
+  },
+  {
+    "label": "BALANCED manager deploy (as submitted)",
+    "bytes": 31110,
+    "cost_enforceTimeToDismiss_false": {
+      "readTime": "3655000000 / 1000000000000 = 0.4%",
+      "computeTime": "5777661095 / 1000000000000 = 0.6%",
+      "blockUsage": "31042 / 200000 = 15.5%",
+      "bytesWritten": "32356 / 50000 = 64.7%",
+      "bytesChurned": "15432 / 1000000 = 1.5%"
+    },
+    "maxRatio_false": "64.7%",
+    "fitsNormalClass_false": true,
+    "headroomToNormalCeiling_false": "10.3 percentage points",
+    "cost_enforceTimeToDismiss_true": {
+      "readTime": "3655000000 / 1000000000000 = 0.4%",
+      "computeTime": "5777661095 / 1000000000000 = 0.6%",
+      "blockUsage": "31042 / 200000 = 15.5%",
+      "bytesWritten": "32356 / 50000 = 64.7%",
+      "bytesChurned": "15432 / 1000000 = 1.5%"
+    },
+    "maxRatio_true": "64.7%",
+    "fitsNormalClass_true": true,
+    "headroomToNormalCeiling_true": "10.3 percentage points"
+  },
+  {
+    "label": "BALANCED manager deploy (as submitted)",
+    "bytes": 31110,
+    "cost_enforceTimeToDismiss_false": {
+      "readTime": "3655000000 / 1000000000000 = 0.4%",
+      "computeTime": "5777661095 / 1000000000000 = 0.6%",
+      "blockUsage": "31042 / 200000 = 15.5%",
+      "bytesWritten": "32356 / 50000 = 64.7%",
+      "bytesChurned": "15432 / 1000000 = 1.5%"
+    },
+    "maxRatio_false": "64.7%",
+    "fitsNormalClass_false": true,
+    "headroomToNormalCeiling_false": "10.3 percentage points",
+    "cost_enforceTimeToDismiss_true": {
+      "readTime": "3655000000 / 1000000000000 = 0.4%",
+      "computeTime": "5777661095 / 1000000000000 = 0.6%",
+      "blockUsage": "31042 / 200000 = 15.5%",
+      "bytesWritten": "32356 / 50000 = 64.7%",
+      "bytesChurned": "15432 / 1000000 = 1.5%"
+    },
+    "maxRatio_true": "64.7%",
+    "fitsNormalClass_true": true,
+    "headroomToNormalCeiling_true": "10.3 percentage points"
+  },
+  {
+    "label": "BALANCED manager deploy (as submitted)",
+    "bytes": 31110,
+    "cost_enforceTimeToDismiss_false": {
+      "readTime": "3655000000 / 1000000000000 = 0.4%",
+      "computeTime": "5777661095 / 1000000000000 = 0.6%",
+      "blockUsage": "31042 / 200000 = 15.5%",
+      "bytesWritten": "32356 / 50000 = 64.7%",
+      "bytesChurned": "15432 / 1000000 = 1.5%"
+    },
+    "maxRatio_false": "64.7%",
+    "fitsNormalClass_false": true,
+    "headroomToNormalCeiling_false": "10.3 percentage points",
+    "cost_enforceTimeToDismiss_true": {
+      "readTime": "3655000000 / 1000000000000 = 0.4%",
+      "computeTime": "5777661095 / 1000000000000 = 0.6%",
+      "blockUsage": "31042 / 200000 = 15.5%",
+      "bytesWritten": "32356 / 50000 = 64.7%",
+      "bytesChurned": "15432 / 1000000 = 1.5%"
+    },
+    "maxRatio_true": "64.7%",
+    "fitsNormalClass_true": true,
+    "headroomToNormalCeiling_true": "10.3 percentage points"
+  }
+]
