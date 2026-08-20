@@ -19,6 +19,7 @@
 // `finalizeRecipe` IS `originalTransaction.merge(balancing)` — the merge whose legality at
 // ledger-9.1.0.0-rc.3 the master plan establishes from source. Nothing here forces it.
 import { errorChain } from '../g3/actions.js';
+import { deepErrorText, nodeRefusalOf, type NodeRefusal } from '../node-error.js';
 import { log, withDustRetry } from '../night.js';
 import type { Party } from '../wallet.js';
 
@@ -80,6 +81,17 @@ export type SettlementResult = {
   /** Whatever the `preSubmit` guard reported, if one was supplied (Plan 02's fail-closed check). */
   preSubmitGuard?: unknown;
   error?: string;
+  /**
+   * The NODE's own verdict, dug out of the facade's wrapper.
+   *
+   * The facade replaces the node's error with the bare string `Transaction submission error` and hides
+   * the real one in an Effect tagged field, so walking `.cause` finds nothing. Without this every
+   * refusal in this project would read "code none" — see `src/node-error.ts` for why the extraction is
+   * brute-force rather than clever.
+   */
+  nodeRefusal?: NodeRefusal;
+  /** The full rendered error graph, for the cases where the extraction found nothing to name. */
+  errorDump?: string;
 };
 
 export type SettleOptions = {
@@ -200,6 +212,16 @@ export const settleAsTaker = async (
       feesSpecks,
     };
   } catch (e) {
-    return { route, ok: false, validations, preSubmitGuard, error: errorChain(e) };
+    return {
+      route,
+      ok: false,
+      validations,
+      preSubmitGuard,
+      error: errorChain(e),
+      nodeRefusal: nodeRefusalOf(e),
+      // Kept because a refusal whose code could not be extracted is exactly the case where the raw
+      // graph is the evidence. Truncated so one bad error cannot dominate an evidence file.
+      errorDump: deepErrorText(e).slice(0, 6000),
+    };
   }
 };

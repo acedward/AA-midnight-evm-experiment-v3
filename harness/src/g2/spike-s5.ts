@@ -33,8 +33,10 @@ import { takeOffer, type TakeResult } from '../offer/take.js';
 import { bootstrapSwapRig, classifyRefusal, shieldedKeysOf, stamp, type SwapRig } from './swap-rig.js';
 import {
   custodyTable,
+  custodyUnchanged,
   decodeNodeError,
   nodeErrorCode,
+  observationPointsAgree,
   observeCustody,
   publishAndReread,
   table,
@@ -64,9 +66,13 @@ type ArmResult = {
   localRefusal?: TakeResult;
   nodeErrorCode: number | null;
   nodeErrorDecoded: string;
+  /** The node's own line, verbatim, when one could be recovered from the facade's wrapper. */
+  nodeVerbatim: string | null;
   refusingLayer: string;
   custodyUnchangedOnRefusal?: boolean;
   before: CustodyObservation;
+  /** The state immediately before the take — the baseline a no-state-created claim must use. */
+  preTake: CustodyObservation;
   after: CustodyObservation;
 };
 
@@ -113,14 +119,37 @@ const main = async () => {
               // BEFORE proving, per F-306: rewriting a PROVEN transaction's intents invalidates its
               // zswap proofs. Whether this takes effect is itself a measurement.
               mutateUnproven: (unproven: any) => {
+                const when = new Date(Date.now() + opts.intentTtlSeconds! * 1000);
                 try {
-                  const when = new Date(Date.now() + opts.intentTtlSeconds! * 1000);
-                  for (const [seg, intent] of unproven.intents as Map<number, any>) {
+                  // Snapshot the entries BEFORE mutating: `intents` is wasm-backed, and mutating a
+                  // wasm map mid-iteration is not something to find out about the hard way.
+                  const entries: Array<[number, any]> = Array.from(
+                    (unproven.intents ?? new Map()) as Map<number, any>,
+                  ).map(([k, v]) => [Number(k), v]);
+                  const rebuilt = new Map<number, any>();
+                  for (const [seg, intent] of entries) {
                     intent.ttl = when;
-                    unproven.intents.set(seg, intent);
+                    rebuilt.set(seg, intent);
                   }
-                  intentTtl = when.toISOString();
-                  log(`  intent TTL rewritten to ${intentTtl} (was the hardcoded one hour)`);
+                  // Two shapes are possible at these pins — a whole-map setter (which F-306 showed
+                  // exists, and also showed recomputes the binding randomness) or per-key `set`. Try
+                  // the setter first and fall back, then VERIFY by reading the ttl back, because a
+                  // silently ignored assignment would make the whole arm measure nothing.
+                  try {
+                    unproven.intents = rebuilt;
+                  } catch {
+                    for (const [seg, intent] of rebuilt) unproven.intents.set(seg, intent);
+                  }
+                  // Compare at SECOND granularity. The ledger stores a TTL to the second, so a
+                  // millisecond-exact comparison reports "not applied" for a rewrite that applied
+                  // perfectly — which is exactly what the first run of this arm did.
+                  const sec = (d: unknown) => Math.floor(new Date(d as any).getTime() / 1000);
+                  const readBack = Array.from((unproven.intents ?? new Map()) as Map<number, any>).map(([, i]) => i?.ttl);
+                  const took = readBack.length > 0 && readBack.every((t) => sec(t) === sec(when));
+                  intentTtl = took
+                    ? new Date(sec(when) * 1000).toISOString()
+                    : `NOT APPLIED (read back ${JSON.stringify(readBack.map((t) => new Date(sec(t) * 1000).toISOString()))})`;
+                  log(`  intent TTL rewrite -> ${intentTtl}`);
                 } catch (e) {
                   intentTtl = `REWRITE FAILED: ${errorChain(e)}`;
                   log(`  intent TTL rewrite FAILED — ${intentTtl}`);
@@ -155,7 +184,7 @@ const main = async () => {
       },
     ): Promise<ArmResult> => {
       console.log(`\n## arm ${arm}`);
-      const before = await observeCustody(rig!, [S_A, S_B], [AA_A, AA_B]);
+      const before = await observeCustody(rig!, [S_A, S_B], [AA_A, AA_B], { op2: false });
       const { offer, file, intentTtl } = await mkOffer(`s5-${arm.toLowerCase()}`, {
         intentTtlSeconds: opts.intentTtlSeconds,
       });
@@ -169,6 +198,14 @@ const main = async () => {
         await sleep(wait * 1000);
       }
 
+      // The no-state-created baseline is taken HERE, immediately before the take — NOT at `before`.
+      // For the INTERVENE arm the intervention deliberately changes custody, so comparing the
+      // post-take state against `before` would report "state changed" for a refusal that changed
+      // nothing. The first run of this arm did exactly that and reported a false positive; the
+      // question a refusal has to answer is "did the REFUSAL create state", and only this baseline
+      // can answer it.
+      const preTake = opts.intervene || wait > 0 ? await observeCustody(rig!, [S_A, S_B], [AA_A, AA_B], { op2: false }) : before;
+
       // For the short-TTL arm, first prove the taker's own gate refuses locally, then force it off so
       // the NODE's verdict is on the record too.
       let localRefusal: TakeResult | undefined;
@@ -178,19 +215,20 @@ const main = async () => {
       }
       const take = await takeWith(file, arm, Boolean(opts.alsoTakeLocallyFirst));
 
-      const code = nodeErrorCode(take.error);
-      let after = await observeCustody(rig!, [S_A, S_B], [AA_A, AA_B]);
+      const code = take.nodeRefusal?.code ?? nodeErrorCode(take.error);
+      let after = await observeCustody(rig!, [S_A, S_B], [AA_A, AA_B], { op2: false });
       if (take.ok) {
         // Wait for the settlement to be visible before observing, or "after" is just "before".
         await rig!.base.waitForManagerNow(
           (m) => (m.pools[S_B.hex]?.value ?? 0n) > (before.observation.pools.S_B === 'absent' ? 0n : BigInt(before.observation.pools.S_B!)),
           `arm ${arm}: pool(S_B) to grow after settlement`,
         );
-        after = await observeCustody(rig!, [S_A, S_B], [AA_A, AA_B]);
+        after = await observeCustody(rig!, [S_A, S_B], [AA_A, AA_B], { op2: false });
       }
-      const custodyUnchangedOnRefusal = take.ok
-        ? undefined
-        : JSON.stringify(after.observation) === JSON.stringify(before.observation);
+      // Compared on the LEDGER-STATE fingerprint, not on the whole observation: the observation also
+      // carries how many times OP2 had to be retried, which is a property of the run rather than of
+      // the ledger, and would otherwise make a clean refusal look like a state change.
+      const custodyUnchangedOnRefusal = take.ok ? undefined : custodyUnchanged(after.observation, preTake.observation);
 
       const result: ArmResult = {
         arm,
@@ -206,10 +244,12 @@ const main = async () => {
         take,
         localRefusal,
         nodeErrorCode: code,
-        nodeErrorDecoded: decodeNodeError(code),
-        refusingLayer: take.ok ? 'none' : classifyRefusal(take.stage, take.error),
+        nodeErrorDecoded: take.nodeRefusal?.decoded ?? decodeNodeError(code),
+        nodeVerbatim: take.nodeRefusal?.verbatim ?? null,
+        refusingLayer: take.ok ? 'none' : classifyRefusal(take.stage, take.error, take.nodeRefusal),
         custodyUnchangedOnRefusal,
         before: before.observation,
+        preTake: preTake.observation,
         after: after.observation,
       };
       log(
@@ -243,6 +283,13 @@ const main = async () => {
     for (const t of WAITS) {
       await runArm(`T${t}`, `does an untouched offer still settle after ${t} s?`, { waitSeconds: t });
     }
+
+    // One FULL two-point observation at the end. S5's arms are deliberately OP1-only — its claims are
+    // about staleness, not balances — but leaving the whole spike without a single corroborated read
+    // would be a gap, so the closing state is confirmed at both points.
+    const closing = await observeCustody(rig, [S_A, S_B], [AA_A, AA_B]);
+    const closingProblems = observationPointsAgree(closing.observation);
+    log(`closing two-point observation: ${closingProblems.length === 0 ? 'OP1 and OP2 agree' : closingProblems.join('; ')}`);
 
     // --- the reading ----------------------------------------------------------------------------
     const timeArms = arms.filter((a) => a.arm.startsWith('T'));
@@ -280,6 +327,11 @@ const main = async () => {
         name: 'every UNTOUCHED offer still settled, at every tested age',
         ok: survived.length === timeArms.length && timeArms.length > 0,
         detail: `${survived.length}/${timeArms.length} — ${timeArms.map((a) => `${a.arm}:${a.take.ok ? 'ok' : 'refused'}`).join(' ')}`,
+      },
+      {
+        name: 'the closing state agrees at BOTH observation points',
+        ok: closingProblems.length === 0,
+        detail: closingProblems.join('; ') || 'OP1 and OP2 agree on every cell',
       },
     ];
     const failed = checks.filter((c) => !c.ok);
@@ -356,12 +408,20 @@ const main = async () => {
     md.push('');
     md.push('## Custody across the whole spike');
     md.push('');
-    md.push(...custodyTable(arms[0]!.before, arms[arms.length - 1]!.after));
+    md.push(...custodyTable(arms[0]!.before, closing.observation));
+    md.push('');
+    md.push('The per-arm snapshots are OP1-only, deliberately: S5 measures whether an offer is still');
+    md.push('takeable, not what custody holds, and every OP2 read is itself a submitted transaction —');
+    md.push('~15 s each and exposed to the same F-301 flake this spike is characterising. The closing');
+    md.push('state above IS confirmed at both points.');
     md.push('');
     md.push('## Verbatim refusals (F-202 clean)');
     md.push('');
     for (const a of arms.filter((x) => !x.take.ok)) {
-      md.push(`- **${a.arm}** (layer: ${a.refusingLayer}): \`${a.take.error}\``);
+      md.push(`- **${a.arm}** (layer: ${a.refusingLayer}): \`${a.nodeVerbatim ?? a.take.error}\``);
+      if (a.nodeVerbatim && a.take.error && a.nodeVerbatim !== a.take.error) {
+        md.push(`  - what the FACADE reported instead: \`${a.take.error}\` (see \`src/node-error.ts\`)`);
+      }
       if (a.localRefusal && !a.localRefusal.ok) md.push(`  - local gate first: \`${a.localRefusal.error}\``);
     }
     if (arms.every((a) => a.take.ok)) md.push('None — every arm settled.');
@@ -385,6 +445,8 @@ const main = async () => {
         colours: { S_A: S_A.hex, S_B: S_B.hex },
         parameters: { deposited: String(DEPOSIT_A), gives: String(GIVE_A), wants: String(WANT_B), waits: WAITS, shortTtlSeconds: SHORT_TTL_SECONDS },
         arms,
+        closing: closing.observation,
+        closingObservationProblems: closingProblems,
         checks,
       },
       md,

@@ -86,7 +86,7 @@ const main = async () => {
       S_B: await rig.observeShielded('OwnerT', SEEDS.ownerT, S_B.hex),
     };
     const bearerBefore = await rig.observeShielded('bearer', bearer.seed, S_A.hex);
-    const makerDustBefore = await rig.observeDust('OwnerA', SEEDS.ownerA);
+    const makerFeesBefore = await rig.observeFeeCapacity('OwnerA', SEEDS.ownerA);
 
     // --- build the offer, paying A to the throwaway key ----------------------------------------
     const offer = await buildSwapOffer({
@@ -177,7 +177,7 @@ const main = async () => {
       afterSettle = await observeCustody(rig, [S_A, S_B], [AA_A, AA_B]);
     }
 
-    const makerDustAfter = await rig.observeDust('OwnerA', SEEDS.ownerA);
+    const makerFeesAfter = await rig.observeFeeCapacity('OwnerA', SEEDS.ownerA);
     const opProblems = take.ok ? observationPointsAgree(afterSettle.observation) : [];
 
     const checks: Array<{ name: string; ok: boolean; detail: string }> = [
@@ -234,16 +234,21 @@ const main = async () => {
         detail: `OwnerT S_B ${takerBefore.S_B} -> ${takerAfterSettle.S_B}`,
       },
       {
-        name: 'the MAKER spent no DUST (and it held some, so it could have)',
-        ok: makerDustAfter >= makerDustBefore,
-        detail: `maker DUST ${makerDustBefore} -> ${makerDustAfter}`,
+        name: 'the MAKER attached no dust action to the settled transaction (and it COULD have paid)',
+        ok:
+          makerFeesBefore.registeredNightUtxos > 0 &&
+          offer.placement.intentSegments.every((seg) => (take.merged?.dustActions?.[String(seg)]?.spends ?? 0) === 0),
+        detail:
+          `maker intent segment(s) ${JSON.stringify(offer.placement.intentSegments)}; settled dust actions ` +
+          `${JSON.stringify(take.merged?.dustActions ?? {})}; maker NIGHT registered for dust: ` +
+          `${makerFeesBefore.registeredNightUtxos}`,
       },
       { name: 'OP1 and OP2 agree on every cell', ok: opProblems.length === 0, detail: opProblems.join('; ') },
     ];
     const failed = checks.filter((c) => !c.ok);
     const settledAndSwept = take.ok && Boolean(sweep) && takerAfterSweep.S_A === takerBefore.S_A + GIVE_A;
     const verdict = failed.length === 0 ? 'GREEN' : settledAndSwept ? 'RED' : take.ok ? 'PARTIAL' : 'REFUTED';
-    const layer = take.ok ? (sweepError ? 'the sweep transaction' : 'none') : classifyRefusal(take.stage, take.error);
+    const layer = take.ok ? (sweepError ? 'the sweep transaction' : 'none') : classifyRefusal(take.stage, take.error, take.nodeRefusal);
 
     const md: string[] = [];
     md.push('# SPIKE S4b — the BEARER-KEY open offer (FR-308 v2b, the fallback rung)');
@@ -363,7 +368,8 @@ const main = async () => {
             afterSweep: { S_A: String(takerAfterSweep.S_A), S_B: String(takerAfterSweep.S_B) },
           },
         },
-        makerDust: { before: String(makerDustBefore), after: String(makerDustAfter) },
+        makerFeeCapacity: { before: makerFeesBefore, after: makerFeesAfter },
+        settledIntentDustActions: take.merged?.dustActions ?? {},
         take,
         sweep: sweep ?? { error: sweepError },
         raceWindowSeconds: sweepSeconds ?? null,

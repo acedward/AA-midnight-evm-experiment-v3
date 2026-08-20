@@ -113,6 +113,19 @@ step_boot()   { "${COMPOSE[@]}" up -d; }
 step_health() { stack_health "$ROOT"; }
 step_loadgate() { loadgate_wait 900; }
 
+# Clear the spike evidence directory ONCE, before any spike runs.
+#
+# Not tidiness — correctness. The wrapper reads each spike's own JSON to decide its verdict, whether a
+# failure was infrastructure (and so retryable), and whether the openness goal is GREEN. A stale file
+# from an earlier run would let this run inherit somebody else's answer: a spike that crashed before
+# writing anything would be scored from the PREVIOUS run's verdict, which is the worst kind of wrong.
+# Runs once, so a bounded retry does not wipe the attempt it is retrying.
+step_reset_spike_evidence() {
+  rm -rf "$SPIKE_EVID"
+  mkdir -p "$SPIKE_EVID"
+  echo "spike evidence reset: ${SPIKE_EVID#"$ROOT/"} is empty, so no verdict in this run can be inherited"
+}
+
 # --- spikes, with BOUNDED infra retries -----------------------------------------------------------
 #
 # Owner directive, 12-hour unattended window: bounded infra retries (2 per failure class), each
@@ -394,11 +407,25 @@ step_record_spikes() {
       echo "### Openness is GREEN, and here is exactly what that does and does not mean."
       echo
       echo "A holder whose keys the maker never knew settled a live offer built from contract custody."
-      echo "That is the requirement. It does NOT mean both shapes work, and it does not make the two"
-      echo "shapes interchangeable — see the per-spike write-ups for what each one actually costs. In"
-      echo "particular the bearer shape achieves openness by PUBLISHING A SECRET, which leaves a"
-      echo "post-settlement race for the payout among everyone who read the envelope; the surplus shape"
-      echo "has no such window because the surplus is swept inside the settling transaction itself."
+      echo "That is the requirement, and it is met."
+      echo
+      echo "What it does NOT mean:"
+      echo
+      echo "- It does not mean both shapes work. Only the one marked GREEN above was demonstrated."
+      if [ "$s4" = "GREEN" ]; then
+        echo "- The shape that worked is the FLOATING SURPLUS, which is the preferred one precisely"
+        echo "  because it fixes no recipient at all: the released value is swept inside the settling"
+        echo "  transaction by the settler's own balancer, so there is no published secret and no"
+        echo "  post-settlement race. The bearer shape, had it been needed, would have had both."
+      else
+        echo "- The shape that worked is the BEARER KEY, which achieves openness by PUBLISHING A SECRET."
+        echo "  That leaves a post-settlement race for the payout among everyone who read the envelope,"
+        echo "  and the settler pays the fees without any privileged claim on it. See \`S4b.md\` for the"
+        echo "  measured window. This is genuinely weaker than the floating-surplus shape and must not"
+        echo "  be reported as equivalent to it."
+      fi
+      echo "- It says nothing about the v1 named-taker half of FR-308, which is a separate, weaker"
+      echo "  claim (a swap with a counterparty the maker already knows) and is reported separately."
     fi
     echo
     echo "Details: \`S4.md\`, \`S4b.md\` (if run), and the JSON files beside them."
@@ -430,9 +457,10 @@ fi
 fs_run 10-pull   step_pull
 fs_run 11-boot   step_boot
 fs_run 12-health step_health
-fs_run 13-loadgate step_loadgate
+fs_run 13-reset-spike-evidence step_reset_spike_evidence
+fs_run 14-loadgate step_loadgate
 
-run_spike 14-spike-s4 S4 step_spike_s4
+run_spike 15-spike-s4 S4 step_spike_s4
 
 # Plan 02 Phase 3: "S4b runs only if S4 is refuted". Kept conditional deliberately — openness is GREEN
 # if EITHER shape settles, so once the surplus shape works the fallback answers no open question, and
@@ -458,14 +486,14 @@ if [ "$S4_VERDICT" = "GREEN" ]; then
   } > "$SPIKE_EVID/S4b.md"
 else
   echo "[${GATE}] S4 was ${S4_VERDICT}, so the FR-308 ladder falls through to the bearer-key fallback."
-  run_spike 15-spike-s4b S4b step_spike_s4b
+  run_spike 16-spike-s4b S4b step_spike_s4b
 fi
 
-run_spike 16-spike-s5 S5 step_spike_s5
-run_spike 17-spike-s6 S6 step_spike_s6
+run_spike 17-spike-s5 S5 step_spike_s5
+run_spike 18-spike-s6 S6 step_spike_s6
 
-fs_run 18-record-artifacts step_record_artifacts
-fs_run 19-record-spikes    step_record_spikes
+fs_run 19-record-artifacts step_record_artifacts
+fs_run 20-record-spikes    step_record_spikes
 
 S4_FINAL="$(spike_verdict S4)"; S4B_FINAL="$(spike_verdict S4b)"
 if [ "$S4_FINAL" != "GREEN" ] && [ "$S4B_FINAL" != "GREEN" ]; then

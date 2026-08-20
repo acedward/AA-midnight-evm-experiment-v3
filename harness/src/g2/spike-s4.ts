@@ -47,6 +47,7 @@ import { takeOffer, type TakeResult } from '../offer/take.js';
 import { bootstrapSwapRig, classifyRefusal, stamp, type SwapRig } from './swap-rig.js';
 import {
   custodyTable,
+  custodyUnchanged,
   observationPointsAgree,
   observeCustody,
   publishAndReread,
@@ -92,13 +93,19 @@ const main = async () => {
       S_A: await rig.observeShielded('OwnerT', SEEDS.ownerT, S_A.hex),
       S_B: await rig.observeShielded('OwnerT', SEEDS.ownerT, S_B.hex),
     };
-    const makerDustBefore = await rig.observeDust('OwnerA', SEEDS.ownerA);
+    const makerFeesBefore = await rig.observeFeeCapacity('OwnerA', SEEDS.ownerA);
     log(
       `before: pools ${JSON.stringify(before.observation.pools)}; OwnerT holds ${takerBefore.S_A} S_A / ` +
-        `${takerBefore.S_B} S_B; maker DUST ${makerDustBefore}`,
+        `${takerBefore.S_B} S_B; maker fee capacity ${JSON.stringify(makerFeesBefore, (_k, v) => (typeof v === 'bigint' ? String(v) : v))}`,
     );
-    if (makerDustBefore <= 0n) {
-      throw new Error('the maker holds NO dust — "the maker paid no fees" would be true by accident, proving nothing');
+    // The maker must be ABLE to pay, or "the maker paid nothing" is true by accident and proves
+    // nothing. Registered NIGHT is what generates dust, and it is observable; the dust BALANCE is not
+    // reliably readable at these pins (see `FeeCapacity`).
+    if (makerFeesBefore.registeredNightUtxos <= 0) {
+      throw new Error(
+        'the maker has no NIGHT registered for dust generation — it could not have paid a fee even if it tried, ' +
+          'so "the maker paid no fees" would be vacuous',
+      );
     }
 
     // --- BUILD the open offer. No recipient exists anywhere in it. -----------------------------
@@ -175,9 +182,7 @@ const main = async () => {
 
     // Nothing may have changed on chain from building and proving alone.
     const midway = await observeCustody(rig, [S_A, S_B], [AA_A, AA_B]);
-    const provingChangedState =
-      JSON.stringify(midway.observation.pools) !== JSON.stringify(before.observation.pools) ||
-      JSON.stringify(midway.observation.mapSizes) !== JSON.stringify(before.observation.mapSizes);
+    const provingChangedState = !custodyUnchanged(midway.observation, before.observation);
     if (provingChangedState) throw new Error('building and proving the offer changed on-chain state');
 
     // --- SETTLE with a wallet the maker never knew, using stock calls only ---------------------
@@ -193,7 +198,7 @@ const main = async () => {
 
     let after: { observation: CustodyObservation } = midway;
     let takerAfter = takerBefore;
-    let makerDustAfter = makerDustBefore;
+    let makerFeesAfter = makerFeesBefore;
     let opProblems: string[] = [];
     const expected = {
       poolA: DEPOSIT_A - GIVE_A,
@@ -215,7 +220,7 @@ const main = async () => {
         S_A: await rig.observeShielded('OwnerT', SEEDS.ownerT, S_A.hex),
         S_B: await rig.observeShielded('OwnerT', SEEDS.ownerT, S_B.hex),
       };
-      makerDustAfter = await rig.observeDust('OwnerA', SEEDS.ownerA);
+      makerFeesAfter = await rig.observeFeeCapacity('OwnerA', SEEDS.ownerA);
       opProblems = observationPointsAgree(after.observation);
     } else {
       log(`S4: REFUSED at ${take.stage} — ${take.error}`);
@@ -285,9 +290,15 @@ const main = async () => {
         detail: `OwnerT S_B ${takerBefore.S_B} -> ${takerAfter.S_B} (expected ${expected.takerB})`,
       },
       {
-        name: 'the MAKER spent no DUST (and it held some, so it could have)',
-        ok: take.ok && makerDustAfter >= makerDustBefore,
-        detail: `maker DUST ${makerDustBefore} -> ${makerDustAfter}`,
+        name: 'the MAKER attached no dust action to the settled transaction (and it COULD have paid)',
+        ok:
+          take.ok &&
+          makerFeesBefore.registeredNightUtxos > 0 &&
+          offer.placement.intentSegments.every((s) => (take.merged?.dustActions?.[String(s)]?.spends ?? 0) === 0),
+        detail:
+          `maker intent segment(s) ${JSON.stringify(offer.placement.intentSegments)}; settled dust actions ` +
+          `${JSON.stringify(take.merged?.dustActions ?? {})}; maker NIGHT registered for dust: ` +
+          `${makerFeesBefore.registeredNightUtxos}`,
       },
       { name: 'OP1 and OP2 agree on every cell', ok: opProblems.length === 0, detail: opProblems.join('; ') },
       {
@@ -298,7 +309,7 @@ const main = async () => {
     ];
     const failed = checks.filter((c) => !c.ok);
     const verdict = failed.length === 0 ? 'GREEN' : take.ok ? 'RED' : 'REFUTED';
-    const layer = take.ok ? 'none' : classifyRefusal(take.stage, take.error);
+    const layer = take.ok ? 'none' : classifyRefusal(take.stage, take.error, take.nodeRefusal);
 
     const md: string[] = [];
     md.push('# SPIKE S4 — the FLOATING-SURPLUS open offer (FR-308 v2a, owner-REQUIRED)');
@@ -358,9 +369,19 @@ const main = async () => {
       ),
     );
     md.push('');
-    md.push(`Maker (OwnerA) DUST: ${makerDustBefore} → ${makerDustAfter}. The maker is funded and`);
-    md.push('DUST-registered on purpose, so "the maker paid no fees" is a measurement rather than a');
-    md.push('consequence of the maker being unable to pay at all.');
+    md.push(
+      `Maker (OwnerA) fee capacity before → after: NIGHT ${makerFeesBefore.nightBalance} → ` +
+        `${makerFeesAfter.nightBalance}, NIGHT UTXOs registered for dust generation ` +
+        `${makerFeesBefore.registeredNightUtxos} → ${makerFeesAfter.registeredNightUtxos}.`,
+    );
+    md.push('');
+    md.push('The maker is funded and DUST-registered **on purpose**: "the maker paid no fees" is only');
+    md.push('worth asserting about a wallet that could have paid. The decisive evidence is not a balance');
+    md.push('but the settled transaction\'s own intents — fees are dust actions, dust actions belong to an');
+    md.push('intent, and the maker\'s intent is the one carrying the contract call. Spike S6 develops that');
+    md.push('reading in full. (The dust BALANCE is deliberately not leaned on: the pinned facade\'s dust');
+    md.push('accessors read 0 even for a wallet that is actively paying fees — 00005\'s own wallet report');
+    md.push('printed `DUST=0` for the genesis wallet while it was funding the whole run.)');
     md.push('');
     md.push('## Checks');
     md.push('');
@@ -420,7 +441,8 @@ const main = async () => {
         midway: midway.observation,
         after: after.observation,
         taker: { before: takerBefore, after: takerAfter },
-        makerDust: { before: String(makerDustBefore), after: String(makerDustAfter) },
+        makerFeeCapacity: { before: makerFeesBefore, after: makerFeesAfter },
+        settledIntentDustActions: take.merged?.dustActions ?? {},
         take,
         observationPointProblems: opProblems,
         checks,

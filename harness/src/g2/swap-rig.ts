@@ -30,11 +30,21 @@ import { join } from 'node:path';
 import * as ledger from '@midnightntwrk/ledger-v9';
 import { LANE_STAMP, REPO_ROOT, SEEDS } from '../lane.js';
 import { closeParty, openParty, shieldedSeedOf, type Party } from '../wallet.js';
-import { fundWithNight, log, registerForDust, syncedState, units, dustBalance } from '../night.js';
+import {
+  dustBalance,
+  fundWithNight,
+  log,
+  nightBalance,
+  registerForDust,
+  registeredNightUtxos,
+  syncedState,
+  units,
+} from '../night.js';
 import { mintShieldedToUser, userDepositShielded } from '../g3/actions.js';
 import { makeProviders } from '../g3/providers.js';
 import { compiledManager } from '../contracts.js';
 import { actAs, bootstrapSpikeRig, type MinterInfo, type SpikeRig } from '../g1/spike-rig.js';
+import type { NodeRefusal } from '../node-error.js';
 
 export const EVIDENCE_DIR = join(REPO_ROOT, 'evidence', 'g2-spikes');
 export const OFFERS_DIR = join(EVIDENCE_DIR, 'offers');
@@ -44,6 +54,16 @@ export const bigints = (_k: string, v: unknown) => (typeof v === 'bigint' ? Stri
 export const hex = (u: Uint8Array): string => Buffer.from(u).toString('hex');
 
 export type Colour = { label: string; raw: Uint8Array; hex: string; minter: MinterInfo };
+
+/**
+ * What a wallet can pay with, as far as observable state will say.
+ *
+ * `dustBalance` is included but must not be leaned on: the pinned facade's dust accessors return 0
+ * even for wallets that are actively paying fees (00005's wallet report shows `DUST=0` for the genesis
+ * wallet mid-funding), so a zero here means "not readable", not "cannot pay". `registeredNightUtxos`
+ * is the number that carries the claim: registered NIGHT is what generates dust.
+ */
+export type FeeCapacity = { dustBalance: bigint; nightBalance: bigint; registeredNightUtxos: number };
 
 export type SwapRig = {
   base: SpikeRig;
@@ -60,8 +80,17 @@ export type SwapRig = {
   depositFrom: (seed: string, name: string, colour: Colour, value: bigint, account: Uint8Array) => Promise<string>;
   /** A wallet's shielded balance, read from a FRESH facade that has never submitted (F-104). */
   observeShielded: (name: string, seed: string, colourHex: string) => Promise<bigint>;
-  /** A wallet's DUST balance, read from a FRESH facade (F-104). */
-  observeDust: (name: string, seed: string) => Promise<bigint>;
+  /**
+   * A wallet's FEE CAPACITY, read from a FRESH facade (F-104).
+   *
+   * Not just the DUST balance, because that number is not reliably readable at these pins: the pinned
+   * facade's dust accessors return 0 even for a wallet that is demonstrably paying fees — 00005's own
+   * wallet report printed `DUST=0` for the genesis wallet while it was funding everything. So the
+   * capacity to pay is established the way it actually shows up in observable state: REGISTERED NIGHT
+   * UTXOs, which are what generate dust. A maker holding registered NIGHT could have paid, which is
+   * the precondition that makes "the maker paid nothing" worth asserting at all.
+   */
+  observeFeeCapacity: (name: string, seed: string) => Promise<FeeCapacity>;
   /** Fund and DUST-register an extra wallet mid-run — used for the bearer sweep in S4b. */
   provisionWallet: (name: string, seed: string, night?: bigint) => Promise<void>;
   close: () => Promise<void>;
@@ -143,10 +172,15 @@ export const bootstrapSwapRig = async (): Promise<SwapRig> => {
       }
     };
 
-    const observeDust = async (name: string, seed: string): Promise<bigint> => {
+    const observeFeeCapacity = async (name: string, seed: string): Promise<FeeCapacity> => {
       const obs = await base.openObserver(name, seed);
       try {
-        return dustBalance(await syncedState(obs));
+        const st = await syncedState(obs);
+        return {
+          dustBalance: dustBalance(st),
+          nightBalance: nightBalance(st),
+          registeredNightUtxos: registeredNightUtxos(st).length,
+        };
       } finally {
         await closeParty(obs);
       }
@@ -172,7 +206,7 @@ export const bootstrapSwapRig = async (): Promise<SwapRig> => {
       mintTo,
       depositFrom,
       observeShielded,
-      observeDust,
+      observeFeeCapacity,
       provisionWallet,
       close: closeAll,
     };
@@ -236,7 +270,11 @@ export const sweepShieldedTo = async (
  * differently and the earlier prior art in this lane died in the PROOF SERVER — a fact that would
  * have been invisible from a table saying only "refused".
  */
-export const classifyRefusal = (stage: string, error: string | undefined): string => {
+export const classifyRefusal = (stage: string, error: string | undefined, node?: NodeRefusal): string => {
+  // A numeric node code is unambiguous: the node saw the transaction and refused it. Prefer it over
+  // any text heuristic, because the facade's own wrapper text ("Transaction submission error") says
+  // nothing about which layer answered.
+  if (node?.code != null) return `node (submitted and refused, Custom error: ${node.code} — ${node.decoded})`;
   const e = (error ?? '').toLowerCase();
   if (/compil|circuit .* not found|unknown circuit/.test(e)) return 'compiler / generated artifact';
   if (/failed to check|proof server|proving|prove' returned|bad input/.test(e)) return 'proof server';

@@ -12,13 +12,17 @@
 //      carrying the contract call. So "the maker paid nothing" becomes "the maker's intent has zero
 //      dust spends while another intent has some", which is a structural fact about the committed
 //      transaction rather than an inference.
-//   3. THE MAKER WALLET'S OWN DUST LEDGER, before and after, read from a FRESH facade (F-104).
-//      Deliberately listed LAST, because it is the weakest: DUST is GENERATED over time from
-//      registered NIGHT, so a maker's balance can legitimately RISE across a settlement it did not
-//      pay for, and a naive "balance unchanged" assertion would be both wrong and easy to satisfy
-//      by accident. It is used as a consistency check (it must not FALL), not as the proof.
+//   3. THE MAKER WALLET'S OWN STATE, before and after, read from a FRESH facade (F-104). Listed LAST
+//      because it is the weakest, and deliberately NOT the assertion a reader expects ("the maker's
+//      dust balance is unchanged"), for two reasons. First, that number is not readable: the pinned
+//      facade's dust accessors return 0 even for a wallet actively paying fees — 00005's own wallet
+//      report printed `DUST=0` for the genesis wallet while it was funding the entire run. Second,
+//      dust is GENERATED over time from registered NIGHT, so a real maker balance can legitimately
+//      RISE across a settlement it did not pay for. What IS asserted is that the maker COULD have
+//      paid — it holds NIGHT registered for dust generation — and that its own NIGHT is untouched.
 //
-// The maker is funded and DUST-registered on purpose. A maker that could not pay proves nothing.
+// The maker is funded and DUST-registered on purpose. A maker that could not pay proves nothing: the
+// claim would be true by accident, which is the failure mode this whole series exists to avoid.
 //
 // AND WHAT DOES SETTLEMENT COST? The plan asks for the fee magnitude against a plain transfer, so the
 // spike measures an ordinary shielded transfer by the same taker on the same stack first. Watch for
@@ -80,7 +84,7 @@ const main = async () => {
     // --- BASELINE: what does an ORDINARY shielded transfer cost this taker? --------------------
     // Same wallet, same stack, same colour family — so the comparison is against something, not
     // against a remembered number from another project.
-    const baselineDustBefore = await rig.observeDust('OwnerT', SEEDS.ownerT);
+    const baselineBefore = await rig.observeFeeCapacity('OwnerT', SEEDS.ownerT);
     let baseline: { txId: string; feesSpecks?: string; dustSpent: string; error?: string };
     {
       const spender = await rig.base.openSpender('OwnerT-baseline', SEEDS.ownerT, [
@@ -95,11 +99,11 @@ const main = async () => {
           await closeParty(target);
         }
         const sent = await sweepShieldedTo(spender.party, toAddress, S_B.hex, BASELINE_TRANSFER);
-        const after = await rig.observeDust('OwnerT', SEEDS.ownerT);
+        const after = await rig.observeFeeCapacity('OwnerT', SEEDS.ownerT);
         baseline = {
           txId: sent.txId,
           feesSpecks: sent.feesSpecks,
-          dustSpent: String(baselineDustBefore - after),
+          dustSpent: String(baselineBefore.dustBalance - after.dustBalance),
         };
         log(`baseline plain transfer: ${sent.txId}, declared fee ${sent.feesSpecks ?? 'n/a'} SPECKs`);
       } catch (e) {
@@ -111,12 +115,20 @@ const main = async () => {
     }
 
     const before = await observeCustody(rig, [S_A, S_B], [AA_A, AA_B]);
-    const makerDustBefore = await rig.observeDust('OwnerA', SEEDS.ownerA);
-    const takerDustBefore = await rig.observeDust('OwnerT', SEEDS.ownerT);
-    if (makerDustBefore <= 0n) {
-      throw new Error('the maker holds no DUST — "the maker paid nothing" would be true by accident');
+    const makerFeesBefore = await rig.observeFeeCapacity('OwnerA', SEEDS.ownerA);
+    const takerFeesBefore = await rig.observeFeeCapacity('OwnerT', SEEDS.ownerT);
+    // The maker must be ABLE to pay, or the claim is vacuous. Registered NIGHT is what generates dust
+    // and it IS observable; the dust balance is not reliably readable at these pins.
+    if (makerFeesBefore.registeredNightUtxos <= 0) {
+      throw new Error(
+        'the maker has no NIGHT registered for dust generation — it could not have paid a fee, so ' +
+          '"the maker paid nothing" would be vacuous',
+      );
     }
-    log(`maker DUST ${makerDustBefore}; taker DUST ${takerDustBefore}`);
+    log(
+      `maker fee capacity ${JSON.stringify(makerFeesBefore, (_k, v) => (typeof v === 'bigint' ? String(v) : v))}; ` +
+        `taker ${JSON.stringify(takerFeesBefore, (_k, v) => (typeof v === 'bigint' ? String(v) : v))}`,
+    );
 
     // --- the offer -----------------------------------------------------------------------------
     const offer = await buildSwapOffer({
@@ -157,8 +169,8 @@ const main = async () => {
     }
 
     let after = before;
-    let makerDustAfter = makerDustBefore;
-    let takerDustAfter = takerDustBefore;
+    let makerFeesAfter = makerFeesBefore;
+    let takerFeesAfter = takerFeesBefore;
     let opProblems: string[] = [];
     if (take.ok) {
       await rig.base.waitForManagerNow(
@@ -166,10 +178,13 @@ const main = async () => {
         `pool(S_B) to reach ${WANT_B}`,
       );
       after = await observeCustody(rig, [S_A, S_B], [AA_A, AA_B]);
-      makerDustAfter = await rig.observeDust('OwnerA', SEEDS.ownerA);
-      takerDustAfter = await rig.observeDust('OwnerT', SEEDS.ownerT);
+      makerFeesAfter = await rig.observeFeeCapacity('OwnerA', SEEDS.ownerA);
+      takerFeesAfter = await rig.observeFeeCapacity('OwnerT', SEEDS.ownerT);
       opProblems = observationPointsAgree(after.observation);
-      log(`after: maker DUST ${makerDustBefore} -> ${makerDustAfter}; taker DUST ${takerDustBefore} -> ${takerDustAfter}`);
+      log(
+        `after: maker registered-NIGHT ${makerFeesBefore.registeredNightUtxos} -> ${makerFeesAfter.registeredNightUtxos}; ` +
+          `taker NIGHT ${takerFeesBefore.nightBalance} -> ${takerFeesAfter.nightBalance}`,
+      );
     } else {
       log(`S6: settlement REFUSED at ${take.stage} — ${take.error}`);
     }
@@ -201,14 +216,14 @@ const main = async () => {
         detail: `other segments ${JSON.stringify(otherSegments)} -> ${otherDustSpends} dust spends; full map ${JSON.stringify(dustActions)}`,
       },
       {
-        name: 'line 3 — the maker wallet\'s DUST did not FALL (it may rise: dust is generated over time)',
-        ok: take.ok && makerDustAfter >= makerDustBefore,
-        detail: `${makerDustBefore} -> ${makerDustAfter}`,
+        name: 'line 3 — the maker COULD have paid: it holds NIGHT registered for dust generation',
+        ok: makerFeesBefore.registeredNightUtxos > 0,
+        detail: `${makerFeesBefore.registeredNightUtxos} registered NIGHT utxo(s), NIGHT ${makerFeesBefore.nightBalance}`,
       },
       {
-        name: 'line 3 — the TAKER wallet\'s DUST fell, so the taker is the one who paid',
-        ok: take.ok && takerDustAfter < takerDustBefore,
-        detail: `${takerDustBefore} -> ${takerDustAfter} (spent ${takerDustBefore - takerDustAfter})`,
+        name: 'line 3 — the maker\'s own wallet state is unchanged by the settlement',
+        ok: take.ok && makerFeesAfter.nightBalance === makerFeesBefore.nightBalance,
+        detail: `maker NIGHT ${makerFeesBefore.nightBalance} -> ${makerFeesAfter.nightBalance}`,
       },
       {
         name: 'the merged transaction balanced with nothing left unswept',
@@ -226,6 +241,12 @@ const main = async () => {
     const verdict = failed.length === 0 ? 'GREEN' : take.ok ? 'RED' : 'REFUSED';
 
     const settlementFee = take.settlement?.feesSpecks;
+    // How wrong is the OFFER'S own fee estimate about the settlement? The direction matters: too high
+    // is merely wasteful, too low would leave a taker short at submission.
+    const offerVsSettlement =
+      settlementFee && /^\d+$/.test(offerOwnFee) && BigInt(settlementFee) > 0n
+        ? (Number((BigInt(offerOwnFee) * 100n) / BigInt(settlementFee)) / 100).toFixed(2)
+        : null;
     const ratio =
       settlementFee && baseline.feesSpecks && BigInt(baseline.feesSpecks) > 0n
         ? (Number(BigInt(settlementFee) * 100n / BigInt(baseline.feesSpecks)) / 100).toFixed(2)
@@ -255,18 +276,23 @@ const main = async () => {
             `maker intent(s) ${JSON.stringify(makerSegments)}: **${makerDustSpends}** dust spends; other intent(s) ${JSON.stringify(otherSegments)}: **${otherDustSpends}**`,
           ],
           [
-            '3 — the maker wallet\'s dust ledger',
-            'a consistency check only: DUST is GENERATED over time, so a maker balance can legitimately RISE across a settlement it did not pay for',
-            `${makerDustBefore} → ${makerDustAfter}`,
+            '3 — the maker wallet\'s own state',
+            'a consistency check only. The maker holds NIGHT REGISTERED for dust generation, so it could have paid; and its NIGHT is untouched by the settlement. The dust BALANCE is deliberately not used: the pinned facade\'s dust accessors read 0 even for a wallet that is actively paying fees',
+            `registered NIGHT utxos ${makerFeesBefore.registeredNightUtxos}; NIGHT ${makerFeesBefore.nightBalance} → ${makerFeesAfter.nightBalance}`,
           ],
         ],
       ),
     );
     md.push('');
-    md.push('Line 3 is listed last on purpose. "The maker\'s balance is unchanged" is the assertion a');
-    md.push('reader expects, and it is the wrong one: it is false whenever the maker has registered NIGHT');
-    md.push('(which this maker has, deliberately), and it would also be trivially satisfiable by using an');
-    md.push('unfunded maker — which would prove nothing at all.');
+    md.push('Line 3 is listed last on purpose, and it is deliberately NOT "the maker\'s dust balance is');
+    md.push('unchanged" — the assertion a reader expects. That assertion is unavailable and would be');
+    md.push('misleading if it were: the pinned facade\'s dust accessors return 0 even for a wallet that is');
+    md.push('demonstrably paying fees (00005\'s own wallet report printed `DUST=0` for the genesis wallet');
+    md.push('while it was funding the entire run), and dust is GENERATED over time so a maker\'s real');
+    md.push('balance can legitimately RISE across a settlement it did not pay for. It would also be');
+    md.push('trivially satisfiable by using an unfunded maker, which would prove nothing at all. So what');
+    md.push('is asserted instead is that the maker COULD have paid — it holds NIGHT registered for dust');
+    md.push('generation — and that the decisive reading is line 2.');
     md.push('');
     md.push('## What settlement cost, against a plain transfer on the same stack');
     md.push('');
@@ -283,7 +309,7 @@ const main = async () => {
           [
             'the MERGED swap settlement',
             settlementFee ?? 'n/a',
-            String(takerDustBefore - takerDustAfter),
+            String(takerFeesBefore.dustBalance - takerFeesAfter.dustBalance),
             take.settlement?.txId ? `\`${take.settlement.txId}\`` : '—',
           ],
         ],
@@ -294,8 +320,22 @@ const main = async () => {
     md.push('');
     md.push(`The offer's OWN \`fees()\` figure is \`${offerOwnFee}\` SPECKs. That is **not** the settlement`);
     md.push('fee and must not be quoted as one: the fee actually paid belongs to the MERGED transaction the');
-    md.push('taker submits, whose size the maker cannot know in advance. The offer\'s figure is recorded');
-    md.push('only to show the maker attaches nothing to cover it.');
+    md.push('taker submits, whose size the maker cannot know in advance.');
+    md.push('');
+    if (offerVsSettlement !== null) {
+      md.push(
+        `And the direction of the error matters: the offer's own figure is **${offerVsSettlement}× the fee ` +
+          'actually paid**. ' +
+          (Number(offerVsSettlement) > 1
+            ? 'It OVERSTATES the real cost, so a maker that quoted it to a taker would be asking them to ' +
+              'budget for more than the settlement needs — annoying but safe. '
+            : 'It UNDERSTATES the real cost, which is the dangerous direction: a taker that budgeted from ' +
+              'it would come up short at submission. '),
+      );
+      md.push('Either way the figure a taker should reason about is the merged transaction\'s, which only');
+      md.push('exists after balancing — so an offer format cannot promise a settlement fee, and this one');
+      md.push('does not try to.');
+    }
     md.push('');
     md.push('## Custody, observed at TWO points');
     md.push('');
@@ -312,7 +352,7 @@ const main = async () => {
       md.push(String(take.error));
       md.push('```');
       md.push('');
-      md.push(`Refusing layer: **${classifyRefusal(take.stage, take.error)}**.`);
+      md.push(`Refusing layer: **${classifyRefusal(take.stage, take.error, take.nodeRefusal)}**.`);
       if (feeCalcCliff) {
         md.push('');
         md.push('**This is the known upstream fee-calculation cliff.** The pinned wallet SDK\'s own unshielded');
@@ -334,16 +374,21 @@ const main = async () => {
         baseline,
         offer: { terms: offer.terms, placement: offer.placement, ownFeesSpecks: offerOwnFee, proveMs: offer.proveMs },
         readerProcess: published.reader,
-        dust: {
-          maker: { before: String(makerDustBefore), after: String(makerDustAfter) },
-          taker: { before: String(takerDustBefore), after: String(takerDustAfter), spent: String(takerDustBefore - takerDustAfter) },
+        feeCapacity: {
+          maker: { before: makerFeesBefore, after: makerFeesAfter },
+          taker: { before: takerFeesBefore, after: takerFeesAfter },
         },
+        dustBalanceCaveat:
+          'the pinned facade dust accessors read 0 even for wallets actively paying fees, so any dust ' +
+          'balance here is "not readable", not "cannot pay". The decisive evidence is the settled ' +
+          "transaction's per-intent dust actions (line 2).",
         settledIntentDustActions: dustActions,
         makerIntentSegments,
         makerDustSpends,
         otherDustSpends,
         settlementFeeSpecks: settlementFee ?? null,
         feeRatioVsPlainTransfer: ratio,
+        offerOwnFeeVsSettlementFee: offerVsSettlement,
         feeCalculationCliffObserved: feeCalcCliff,
         before: before.observation,
         after: after.observation,

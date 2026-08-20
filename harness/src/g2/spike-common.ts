@@ -12,6 +12,8 @@ import { LANE_STAMP, REPO_ROOT } from '../lane.js';
 import { mapSizes, shieldedKeyOf, type ManagerView } from '../manager-view.js';
 import { writeEnvelope } from '../offer/envelope.js';
 import type { SwapOffer } from '../offer/build.js';
+import { log } from '../night.js';
+import { nodeRefusalOf } from '../node-error.js';
 import { bigints, EVIDENCE_DIR, OFFERS_DIR, stamp, type Colour, type SwapRig } from './swap-rig.js';
 
 const HARNESS = join(REPO_ROOT, 'harness');
@@ -24,6 +26,60 @@ export type CustodyObservation = {
   cells: Record<string, string>;
   /** OP2: the same cells read again through a PROVED ON-CHAIN circuit call. */
   onChainCells: Record<string, string>;
+  /**
+   * How many times an OP2 read had to be retried because the node answered `Custom error: 104`.
+   *
+   * Recorded rather than hidden: it is a measurement of the lane, and a run where OP2 needed several
+   * attempts is a run whose timing was tight.
+   */
+  op2Retries: Record<string, number>;
+  /** Whether OP2 was consulted at all for this observation. Recorded so no reader has to assume. */
+  op2Consulted: boolean;
+};
+
+/** OP2 unavailability marker. Distinct from any value, so it can never be mistaken for a balance. */
+export const OP2_UNAVAILABLE = 'unavailable';
+
+/**
+ * ONE OP2 read, retried on `Custom error: 104` only.
+ *
+ * WHY THIS RETRY EXISTS, and why it is not papering over a result. OP2 is a real proved circuit call —
+ * a submitted TRANSACTION — and a contract call submitted shortly after another call on the same
+ * contract is refused with 104 on this lane. That is exactly finding F-301 / issue 0001's signature
+ * ("first attempt refused, identical retry sometimes accepted"), and the S5 pilot hit it: the spike
+ * DIED because its own observation of a successful settlement was refused.
+ *
+ * A 104 on a READ-ONLY observation says nothing about the thing under test. Letting it kill a spike
+ * would be recording a measurement failure as a product failure — precisely the confusion this series
+ * exists to avoid. So it is retried, bounded, with the count kept; and if every attempt fails the cell
+ * is marked UNAVAILABLE rather than guessed at, leaving OP1 to carry the observation and the gap
+ * visible in the evidence.
+ */
+const op2Read = async (
+  rig: SwapRig,
+  account: Uint8Array,
+  colour: Uint8Array,
+  label: string,
+): Promise<{ value: string; retries: number }> => {
+  const maxAttempts = 4;
+  let lastErr = '';
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const r = await rig.base.onChainShieldedCell(account, colour);
+      return { value: String(r.value), retries: attempt - 1 };
+    } catch (e) {
+      const refusal = nodeRefusalOf(e);
+      lastErr = refusal.verbatim ?? String(e).slice(0, 200);
+      if (refusal.code !== 104 || attempt === maxAttempts) {
+        if (refusal.code !== 104) throw e; // not the known flake — a real failure, surfaced
+        break;
+      }
+      log(`OP2 ${label}: refused with Custom error: 104 (attempt ${attempt}/${maxAttempts}) — the F-301 flake; retrying in 8s`);
+      await new Promise((r) => setTimeout(r, 8_000));
+    }
+  }
+  log(`OP2 ${label}: UNAVAILABLE after ${maxAttempts} attempts (last: ${lastErr}); OP1 carries this observation`);
+  return { value: OP2_UNAVAILABLE, retries: maxAttempts };
 };
 
 /**
@@ -38,34 +94,95 @@ export const observeCustody = async (
   rig: SwapRig,
   colours: Colour[],
   accounts: Array<{ label: string; id: Uint8Array }>,
+  /**
+   * `op2: false` takes an OP1-ONLY snapshot.
+   *
+   * OP2 is a real proved circuit call — a submitted TRANSACTION, ~15 s each — so a spike that
+   * snapshots often pays for it in wall-clock and in exposure to the F-301 flake. A spike whose claim
+   * is NOT about custody (S5 measures staleness) gains nothing from corroborating balances it is not
+   * asserting, and every unnecessary transaction it submits is another chance to record a measurement
+   * failure as a result. Spikes that DO make custody claims — S4, S6 — always use both points.
+   */
+  opts: { op2?: boolean } = {},
 ): Promise<{ view: ManagerView; observation: CustodyObservation }> => {
+  const useOp2 = opts.op2 ?? true;
   const view = await rig.base.readManagerNow();
   const pools: Record<string, string> = {};
   for (const c of colours) pools[c.label] = view.pools[c.hex] ? String(view.pools[c.hex]!.value) : 'absent';
   const cells: Record<string, string> = {};
   const onChainCells: Record<string, string> = {};
+  const op2Retries: Record<string, number> = {};
   for (const a of accounts) {
     for (const c of colours) {
+      const label = `${a.label}/${c.label}`;
       const key = shieldedKeyOf(a.id, c.raw);
       const has = Object.prototype.hasOwnProperty.call(view.shieldedBalances, key);
-      cells[`${a.label}/${c.label}`] = has ? String(view.shieldedBalances[key]) : 'absent';
-      const onChain = await rig.base.onChainShieldedCell(a.id, c.raw);
-      onChainCells[`${a.label}/${c.label}`] = String(onChain.value);
+      cells[label] = has ? String(view.shieldedBalances[key]) : 'absent';
+      if (!useOp2) continue;
+      const op2 = await op2Read(rig, a.id, c.raw, label);
+      onChainCells[label] = op2.value;
+      if (op2.retries > 0) op2Retries[label] = op2.retries;
     }
   }
-  return { view, observation: { mapSizes: mapSizes(view), pools, cells, onChainCells } };
+  return {
+    view,
+    observation: { mapSizes: mapSizes(view), pools, cells, onChainCells, op2Retries, op2Consulted: useOp2 },
+  };
 };
 
-/** Are OP1 and OP2 consistent? A missing cell reads 0 on chain, which is not a disagreement. */
+/**
+ * Are OP1 and OP2 consistent? A missing cell reads 0 on chain, which is not a disagreement, and an
+ * UNAVAILABLE OP2 read is a gap rather than a contradiction — it is reported separately so it cannot
+ * masquerade as agreement.
+ */
 export const observationPointsAgree = (o: CustodyObservation): string[] => {
+  if (!o.op2Consulted) return ['OP2 was not consulted for this observation (op2:false) — OP1 stands alone here'];
   const problems: string[] = [];
   for (const [k, v] of Object.entries(o.cells)) {
     const expected = v === 'absent' ? '0' : v;
-    if (o.onChainCells[k] !== expected) {
-      problems.push(`${k}: OP1 says ${v}, OP2 (on-chain circuit call) says ${o.onChainCells[k]}`);
+    const got = o.onChainCells[k];
+    if (got === OP2_UNAVAILABLE) {
+      problems.push(`${k}: OP2 UNAVAILABLE (refused with 104 on every attempt) — OP1 says ${v}, unconfirmed`);
+      continue;
     }
+    if (got !== expected) problems.push(`${k}: OP1 says ${v}, OP2 (on-chain circuit call) says ${got}`);
   }
   return problems;
+};
+
+/**
+ * The part of an observation that is a claim about LEDGER STATE, rendered comparably.
+ *
+ * Needed because `CustodyObservation` also carries bookkeeping about the measuring apparatus — how
+ * many times OP2 had to be retried, and whether it ended up unavailable — and a "no state was
+ * created" comparison must not fail because the second observation needed one more retry than the
+ * first. Retries are a property of the run, not of the ledger.
+ *
+ * OP2 entries that are UNAVAILABLE are dropped from BOTH sides, so a gap in corroboration never reads
+ * as a change in state. The gap itself is reported separately by `observationPointsAgree`.
+ */
+export const custodyFingerprint = (o: CustodyObservation, onlyOnChainKeys?: Set<string>): string => {
+  const onChain: Record<string, string> = {};
+  for (const [k, v] of Object.entries(o.onChainCells)) {
+    if (v === OP2_UNAVAILABLE) continue;
+    if (onlyOnChainKeys && !onlyOnChainKeys.has(k)) continue;
+    onChain[k] = v;
+  }
+  return JSON.stringify({ mapSizes: o.mapSizes, pools: o.pools, cells: o.cells, onChain });
+};
+
+/**
+ * Did the ledger state stay byte-identical between two observations?
+ *
+ * OP2 keys are intersected before comparing, so an observation that skipped OP2 (or where one read
+ * came back unavailable) is still comparable to one that did not. Dropping a corroboration is not the
+ * same as observing a change, and conflating the two would turn apparatus noise into findings.
+ */
+export const custodyUnchanged = (a: CustodyObservation, b: CustodyObservation): boolean => {
+  const shared = new Set(
+    Object.keys(a.onChainCells).filter((k) => k in b.onChainCells),
+  );
+  return custodyFingerprint(a, shared) === custodyFingerprint(b, shared);
 };
 
 export type ReaderReport = Record<string, any>;
@@ -116,26 +233,17 @@ export const writeFatal = (spike: string, err: string, partial: unknown): void =
 };
 
 /**
- * The node's numeric refusal code, if the error carries one.
+ * The node's numeric refusal code and its meaning.
  *
- * The node reports refusals as `1010: Invalid Transaction: Custom error: NNN`, and NNN is the only
- * part that identifies WHY. Plan 01 decoded two of them from the pinned node source; the rest are
- * recorded as undecoded rather than guessed at, which is the whole reason this returns the raw number
- * alongside any decoding.
+ * Delegates to `src/node-error.ts`, which is where the real work is: the wallet facade replaces the
+ * node's error with the bare string `Transaction submission error` and buries the real one in an
+ * Effect tagged field, so a regex over the ordinary `.cause` chain finds nothing. Prefer the
+ * `nodeRefusal` a take already carries; these helpers exist for the cases where only text is at hand.
  */
-export const nodeErrorCode = (error: string | undefined): number | null => {
-  const m = /Custom error:\s*(\d+)/.exec(error ?? '');
-  return m ? Number(m[1]) : null;
-};
-
-const NODE_ERRORS: Record<number, string> = {
-  // Decoded from the pinned node source by 00006 Plan 01 spike S2.
-  104: 'InvalidError::Transcript (midnight-node/ledger/src/versions/common/types.rs:406)',
-  235: 'MalformedZswapErrorCode::InvalidProof (midnight-node/ledger/src/versions/common/types.rs:446)',
-};
+export const nodeErrorCode = (error: string | undefined): number | null => nodeRefusalOf(error ?? '').code;
 
 export const decodeNodeError = (code: number | null): string =>
-  code === null ? '(no numeric code in the error)' : (NODE_ERRORS[code] ?? `${code} — NOT DECODED at these pins`);
+  code === null ? '(no numeric code in the error)' : nodeRefusalOf(`Custom error: ${code}`).decoded;
 
 /** A markdown table from a header row and body rows. */
 export const table = (header: string[], rows: string[][]): string[] => [

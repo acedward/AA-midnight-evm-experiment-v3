@@ -40,6 +40,7 @@ import { log } from '../night.js';
 import { segmentsOf } from '../g1/maker.js';
 import { settleAsTaker, type SettlementResult, type TakerRoute } from '../g1/taker.js';
 import type { Party } from '../wallet.js';
+import type { NodeRefusal } from '../node-error.js';
 import {
   decodeEnvelope,
   offerExpired,
@@ -253,6 +254,8 @@ export type TakeResult = {
   error?: string;
   /** True when the refusal happened with NO network contact at all. */
   offlineRefusal?: boolean;
+  /** The NODE's own verdict when the node was reached and refused (see `src/node-error.ts`). */
+  nodeRefusal?: NodeRefusal;
 };
 
 export type TakeOptions = {
@@ -365,6 +368,6 @@ export const takeOffer = async (
     fundability,
     settlement,
     merged,
-    ...(settlement.ok ? {} : { error: settlement.error }),
+    ...(settlement.ok ? {} : { error: settlement.error, nodeRefusal: settlement.nodeRefusal }),
   };
 };
