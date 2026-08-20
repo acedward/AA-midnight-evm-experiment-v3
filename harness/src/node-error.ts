@@ -64,6 +64,12 @@ export const deepErrorText = (e: unknown): string => {
  */
 const NODE_ERRORS: Record<number, string> = {
   // --- observed by this project ---
+  //
+  // 1 is the whole of `[0,50)`'s point: that range is DESERIALIZATION, not validation. Plan 03's row 4
+  // submitted a maker offer exactly as published — the UNBOUND, pre-binding form decision D-306
+  // publishes — and the node refused it here, before it ever looked at balances. A pre-binding
+  // transaction is not a submittable object, and this code is the node saying so (finding F-311).
+  1: 'LedgerApiError::Deserialization(DeserializationError::Transaction) (types.rs:363)',
   104: 'InvalidError::Transcript (types.rs:406)',
   228: 'MalformedError::TransactionApplication(IntentTtlExpired) (types.rs:487)',
   235: 'MalformedZswapErrorCode::InvalidProof (types.rs:446)',

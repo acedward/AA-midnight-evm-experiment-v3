@@ -1,0 +1,199 @@
+{
+  "kind": "taker",
+  "label": "row-5",
+  "lane": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T12:28:59.295Z",
+  "process": {
+    "pid": 37604,
+    "ppid": 37598
+  },
+  "opts": {
+    "label": "row-5",
+    "envelope": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/offer-1.offer",
+    "takerSeedName": "ownerT",
+    "require": [
+      {
+        "colour": "94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096",
+        "amount": "7"
+      }
+    ],
+    "out": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/io/row5-taker.report.json"
+  },
+  "ok": true,
+  "take": {
+    "stage": "settled",
+    "ok": true,
+    "terms": {
+      "version": 1,
+      "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+      "shape": "named-taker",
+      "circuitId": "openSwapShielded",
+      "form": "pre-binding",
+      "managerAddress": "1f8f7b515d8da46148290b4ac780ddfa333a98e845972b21cfe30d4bad234e6d",
+      "gives": {
+        "colour": "586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31",
+        "value": "4",
+        "recipient": "226fe909b3edee5d22d8ec41f643d1138f8f93bd10b023391ece325ded8821df",
+        "recipientKind": "user-coin-public-key"
+      },
+      "wants": {
+        "colour": "94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096",
+        "value": "7",
+        "nonce": "fb0d28a77bc1cd7f7d4a9d2455524c4fe462da72aea67fd644867efa27844e9b"
+      },
+      "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "createdAt": "2026-08-20T12:28:49.963Z",
+      "expiresAt": "2026-08-20T13:28:49.963Z",
+      "ttlSeconds": 3600,
+      "placement": {
+        "segments": [
+          0,
+          6653
+        ],
+        "intentSegments": [
+          6653
+        ],
+        "fallibleOfferSegments": [],
+        "imbalances": {
+          "0": {
+            "shielded:94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096": "-7"
+          },
+          "6653": {}
+        },
+        "expectedAtSegment0": {
+          "shielded:94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096": "-7"
+        },
+        "segment0Exact": true,
+        "otherSegmentsEmpty": true,
+        "offendingSegments": [],
+        "ok": true
+      },
+      "makerAttachedDust": false,
+      "contentAddress": "dde0ba1517179aae815ec60bf334d7d10bb050d50ac4772ed18e2a1daaffcf5c",
+      "transactionBytes": 26819
+    },
+    "contentAddress": "dde0ba1517179aae815ec60bf334d7d10bb050d50ac4772ed18e2a1daaffcf5c",
+    "secondsLeft": 3590,
+    "fundability": {
+      "imbalances": {
+        "0": {
+          "shielded:94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096": "-7"
+        },
+        "6653": {}
+      },
+      "deficits": {
+        "0/shielded:94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096": "-7"
+      },
+      "surpluses": {},
+      "declared": {
+        "wants": "0/shielded:94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096"
+      },
+      "matchesTerms": true
+    },
+    "settlement": {
+      "route": "unbound",
+      "ok": true,
+      "txId": "00a3036cec400892e7094212b30796f7fec39982859dfcead5604cb4cee6e73bcb",
+      "txHash": "dc619dc3ed81252d6b0fc9017ed69df58078ec531f666d5937be9af36c8a9da2",
+      "preSubmitGuard": {
+        "imbalances": {
+          "0": {
+            "dust": "974301369244623"
+          },
+          "1": {},
+          "6653": {}
+        },
+        "unswept": {},
+        "dustActions": {
+          "1": {
+            "spends": 1,
+            "registrations": 0
+          },
+          "6653": {
+            "spends": 0,
+            "registrations": 0
+          }
+        },
+        "intentSegments": [
+          1,
+          6653
+        ]
+      },
+      "identifiers": [
+        "006b3f997fb0f775aa3f99e9c8227e896f9e6d952dce08bb8dffabb0766584f8b9",
+        "00175301d0fa0d018eda04dc8b108d52a313ed323118bf9412d81b2bd668bee6e7",
+        "00ff3922e90717430cd206aa40e8481bf86276a773f6313a70f312d7658090b6b2",
+        "00abc3e065c2d55aded41ab23315d1e5f38263f0c3113cea4b5613c1a56c9b4b15",
+        "0084242623e6df5a00891a8964467d43d39631251197b3f0d436e1d98965f1ea93",
+        "00623188d47bc436f265f37aa7aaa690060976accef2ee15b103c9d6fdbac9c162",
+        "00f0251f97073d4edded84c127947dbf2c3a6d665a8c6262fd155e036e8992ef72",
+        "00a3036cec400892e7094212b30796f7fec39982859dfcead5604cb4cee6e73bcb"
+      ],
+      "validations": [
+        {
+          "flags": {
+            "enforceBalancing": false,
+            "verifySignatures": false,
+            "enforceLimits": false
+          },
+          "passed": false,
+          "error": "call to non-existant contract ContractAddress(1f8f7b515d8da46148290b4ac780ddfa333a98e845972b21cfe30d4bad234e6d)"
+        },
+        {
+          "flags": {
+            "enforceBalancing": true,
+            "verifySignatures": true,
+            "enforceLimits": true
+          },
+          "passed": false,
+          "error": "call to non-existant contract ContractAddress(1f8f7b515d8da46148290b4ac780ddfa333a98e845972b21cfe30d4bad234e6d)"
+        }
+      ],
+      "recipeShape": {
+        "keys": [
+          "balancingTransaction",
+          "baseTransaction",
+          "blockData",
+          "type"
+        ],
+        "baseTransaction": "present",
+        "balancingTransaction": "present",
+        "blockData": {
+          "height": 98,
+          "hash": "7327037f3776795343"
+        }
+      },
+      "finalizedIntentSegments": [
+        1,
+        6653
+      ],
+      "feesSpecks": "776272289111633"
+    },
+    "merged": {
+      "imbalances": {
+        "0": {
+          "dust": "974301369244623"
+        },
+        "1": {},
+        "6653": {}
+      },
+      "unswept": {},
+      "dustActions": {
+        "1": {
+          "spends": 1,
+          "registrations": 0
+        },
+        "6653": {
+          "spends": 0,
+          "registrations": 0
+        }
+      },
+      "intentSegments": [
+        1,
+        6653
+      ]
+    }
+  },
+  "tookMs": 20079
+}
