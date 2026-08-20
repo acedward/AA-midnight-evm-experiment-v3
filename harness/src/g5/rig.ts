@@ -111,8 +111,15 @@ export type G5Rig = {
   /** Deploy one more issuer and take its SHIELDED colour. */
   addColour: (label: string, tagText: string) => Promise<Colour>;
   mintTo: (colour: Colour, value: bigint, seed: string) => Promise<string>;
-  /** Deposit into custody the ordinary way, from an unrelated user's wallet. */
+  /** Deposit into custody the ordinary way, from an unrelated user's wallet (fresh facade each time). */
   depositFrom: (seed: string, name: string, colour: Colour, value: bigint, account: Uint8Array) => Promise<string>;
+  /**
+   * The same deposit, from a LONG-LIVED depositor facade reused across calls.
+   *
+   * For growing custody to many cells: a fresh facade per deposit costs more than the deposit. Safe
+   * because the depositor submits and is never read — see the implementation's note on F-104.
+   */
+  depositManyFrom: (seed: string, name: string, colour: Colour, value: bigint, account: Uint8Array) => Promise<string>;
   read: (colours: Colour[], accounts: Account[]) => Promise<VariantView>;
   waitFor: (colours: Colour[], accounts: Account[], p: (v: VariantView) => boolean, what: string) => Promise<VariantView>;
   observeShielded: (name: string, seed: string, colourHex: string) => Promise<bigint>;
@@ -334,6 +341,51 @@ export const bootstrapG5Rig = async (v: VariantSpec, opts: G5RigOptions = {}): P
       }
     };
 
+    /**
+     * A LONG-LIVED depositor, opened once and reused for every deposit that grows custody.
+     *
+     * WHY THIS IS SAFE, and it is worth being explicit because the series' default is the opposite.
+     * F-104 says a wallet that SUBMITTED is never an observation point, and every submitting wallet
+     * elsewhere in this harness is opened fresh per submission for exactly that reason. The depositor
+     * is different: custody is read through the CONTRACT's ledger state via the fee wallet's
+     * providers, and the depositor's OWN balance is never asserted anywhere in the matrix. It submits
+     * and is never read, so the rule it exists to enforce cannot be violated.
+     *
+     * WHY IT MATTERS: growing custody to sixteen cells means sixteen deposits, and opening plus
+     * syncing a fresh facade costs more than the deposit itself. Across seven fixtures that is close
+     * to an hour of a shared host's wall clock spent proving something already proven. The visibility
+     * wait (F-107) is kept per deposit, so nothing is assumed about what the wallet can see.
+     */
+    const depositors = new Map<string, { party: Party; providers: any }>();
+    const depositManyFrom = async (
+      seed: string,
+      name: string,
+      colour: Colour,
+      value: bigint,
+      account: Uint8Array,
+    ): Promise<string> => {
+      let d = depositors.get(name);
+      if (!d) {
+        const party = await openParty(`${name}-depositor`, seed);
+        opened.push(party);
+        await syncedState(party);
+        const providers = makeProviders(party, 'manager', psDir, zkDir(v.id));
+        providers.privateStateProvider.setContractAddress(contractAddress);
+        await actAs(providers, new Uint8Array(32));
+        d = { party, providers };
+        depositors.set(name, d);
+      }
+      // F-107 kept per deposit: wait until this wallet can actually SEE what it is about to spend.
+      await waitFor(
+        d.party,
+        (st: any) => BigInt(st?.shielded?.balances?.[colour.hex] ?? 0n) >= value,
+        `${name} to see ${value} of shielded ${colour.hex.slice(0, 12)}… before depositing it`,
+        300_000,
+      );
+      const { txId } = await userDepositShielded(ctx, d.party, d.providers, colour.raw, value, account);
+      return txId;
+    };
+
     // --- custody reading, layout-generic --------------------------------------------------------
     const read = async (colours: Colour[], accts: Account[]): Promise<VariantView> => {
       const state = await feeProviders.publicDataProvider.queryContractState(contractAddress);
@@ -443,6 +495,7 @@ export const bootstrapG5Rig = async (v: VariantSpec, opts: G5RigOptions = {}): P
       addColour,
       mintTo,
       depositFrom,
+      depositManyFrom,
       read,
       waitFor: waitForView,
       observeShielded,

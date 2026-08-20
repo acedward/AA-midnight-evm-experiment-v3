@@ -38,13 +38,17 @@
 // error if anything here were submitted.
 //
 // ARM (e) is the one protocol difference, and it is unavoidable: `openSwap` needs a coin in the escrow
-// cell, so `stageOffer` MUST be submitted first (it is self-balanced, so the maker submits it alone —
-// which is the arm's whole claim). After each measurement the staged coin is still committed to the
-// escrow, so the next point re-stages only after `consolidate`... except that consolidate needs a
-// SETTLED offer to have delivered a coin. Since nothing settles here, the escrow is instead LEFT
-// STAGED and the second shape's measurement reuses it: `openSwap` is built and proven twice against
-// the same staged coin, which is exactly right — both are offers over the same escrow state, and
-// neither is submitted, so neither consumes it.
+// cell, so `stageOffer` MUST really be submitted (it is self-balanced, so the maker submits it alone —
+// which is the arm's whole claim, and submitting it here is what makes that claim evidence).
+//
+// It is staged ONCE for the whole dose, not once per point, and relaxation R5'' is why: there is no
+// `cancelStage` circuit, so a staged coin can only leave the escrow through a SETTLED `openSwap` — and
+// this matrix settles nothing, so a second `stageOffer` would be refused with "an offer is already
+// staged". Measuring every point against one staged coin is the RIGHT measurement rather than a
+// workaround: `openSwap` reads the escrow cells and the `accounts` Set and nothing else, so its cost
+// cannot depend on how custody grew after the staging. What this run consequently cannot show is how
+// `stageOffer` ITSELF scales — that curve is in the offline sweep's self-balanced-phases table, and one
+// live `stageOffer` at the winner's larger custody size is submitted by the end-to-end run.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { LANE_STAMP, REPO_ROOT, SEEDS } from '../lane.js';
@@ -141,7 +145,7 @@ const runVariant = async (v: VariantSpec, cells: number[], capture: { done: bool
 
     for (let n = 1; n <= maxCells; n++) {
       const target = accts[n - 1]!;
-      await rig.depositFrom(SEEDS.ownerN, `OwnerN-d${n}`, G, GIVE_PER_CELL, target.id);
+      await rig.depositManyFrom(SEEDS.ownerN, 'OwnerN', G, GIVE_PER_CELL, target.id);
       const view = await rig.waitFor(
         colours,
         accts.slice(0, n),
@@ -152,17 +156,33 @@ const runVariant = async (v: VariantSpec, cells: number[], capture: { done: bool
 
       log(`## ${v.id}: custody at ${view.size.cells} cell(s) / ${view.size.pools} pool(s)`);
 
-      // Arm (e): stage ONCE per measurement point. `stageOffer` is SELF-BALANCED, so the maker
-      // submits it alone and no segment-0 placement question arises for it — which is precisely the
-      // arm's claim, and submitting it here is what turns that claim into evidence. Both shapes are
-      // then measured against the SAME staged coin: neither offer is submitted, so neither consumes
-      // it.
+      // Arm (e): the offer needs a coin in the escrow, so `stageOffer` must really be SUBMITTED. It is
+      // SELF-BALANCED, so the maker submits it alone and no segment-0 placement question arises for it
+      // — which is precisely the arm's claim, and submitting it here is what turns that claim into
+      // evidence rather than an argument.
+      //
+      // IT IS STAGED ONCE, NOT ONCE PER POINT, and the reason is relaxation R5'' biting for real:
+      // there is no `cancelStage` circuit, so a staged coin can only leave the escrow through a
+      // SETTLED `openSwap` — and this matrix settles nothing. A second `stageOffer` would therefore be
+      // refused with "an offer is already staged". (The first version of this loop did exactly that.)
+      //
+      // Measuring every point against ONE staged coin is not a workaround, it is the right
+      // measurement: `openSwap` reads the escrow CELLS and the `accounts` Set and nothing else, so its
+      // cost cannot depend on how custody grew after the staging. What this run therefore CANNOT show
+      // is how `stageOffer` itself scales — that curve is measured offline (`OFFLINE-SWEEP.md`, the
+      // self-balanced-phases table) and one live `stageOffer` at the winner's larger custody size is
+      // submitted by the end-to-end run. Recorded here so the gap is visible where the data is.
       const stagedValue = GIVE;
       if (v.offer === 'staged') {
-        const txId = await rig.submitAs(`OwnerA-stage-${n}`, SEEDS.ownerA, maker.secret, 'stageOffer', [G.raw, GIVE]);
-        stagingTxIds.push(txId);
-        await rig.waitFor(colours, accts.slice(0, n), (x) => x.escrow?.active === 'true', 'the escrow to be staged');
-        log(`   arm (e): staged ${GIVE} of G in ${txId} (self-balanced — F-310 does not constrain it)`);
+        const pre = await rig.read(colours, accts.slice(0, n));
+        if (pre.escrow?.active === 'true') {
+          log(`   arm (e): escrow already staged (R5'': no cancelStage, and nothing settles here) — reusing it`);
+        } else {
+          const txId = await rig.submitAs(`OwnerA-stage-${n}`, SEEDS.ownerA, maker.secret, 'stageOffer', [G.raw, GIVE]);
+          stagingTxIds.push(txId);
+          await rig.waitFor(colours, accts.slice(0, n), (x) => x.escrow?.active === 'true', 'the escrow to be staged');
+          log(`   arm (e): staged ${GIVE} of G in ${txId} (self-balanced — F-310 does not constrain it)`);
+        }
       }
 
       for (const shape of ['named-taker', 'floating-surplus'] as const) {

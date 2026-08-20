@@ -1,6 +1,6 @@
 # G5 offline sweep — the F-310 placement decision computed with no chain (F-313)
 
-`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-20T17:37:40.075Z
+`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-20T18:07:10.190Z
 
 ## What this is, and what it is not
 
@@ -10,7 +10,7 @@ pinned `@midnightntwrk/ledger-v9`. Feeding it a simulator run the way the pinned
 (`@midnight-ntwrk/compact-js` → `ContractExecutable.js::partitionAllTranscripts`) computes the
 same decision offline, in milliseconds. That is finding **F-313**.
 
-**Parameters used: LedgerParameters.initialParameters() — the LEDGER CRATE defaults, NOT the chain. Absolute boundaries from this run are not lane facts (F-313); relative ordering is.**
+**Parameters used: CHAIN parameters captured at ../evidence/g5-mitigation/chain-params.json**
 
 This sweep is a DESIGN AND RANKING instrument. Every fixture is measured under identical
 parameters in an identical simulator with custody grown identically, so a difference between
@@ -21,13 +21,13 @@ the LIVE matrix agrees; that comparison is `CALIBRATION.md`.
 
 | variant | arm | layout | offer | offer ops @ 2 cells | Δ ops vs v4 | last GUARANTEED (named) | last GUARANTEED (surplus) | monotone |
 |---|---|---|---|---|---|---|---|---|
-| `manager` | baseline | flat | single | 117 | 0 | 16 | 16 | yes |
-| `v4-slim` | control | flat | single | 117 | 0 | 16 | 16 | yes |
-| `arm-a-dedupe` | a | flat | single | 98 | -19 | 16 | 16 | yes |
+| `manager` | baseline | flat | single | 117 | 0 | 1 | 1 | yes |
+| `v4-slim` | control | flat | single | 117 | 0 | 1 | 1 | yes |
+| `arm-a-dedupe` | a | flat | single | 98 | -19 | 2 | 2 | yes |
 | `arm-b-nested` | b | nested-balances | single | 139 | +22 | 1 | 1 | yes |
-| `arm-c-both` | c | nested-balances | single | 108 | -9 | 16 | 16 | yes |
-| `arm-d-unified` | d | unified-coins | single | 89 | -28 | 16 | 16 | yes |
-| `arm-e-escrow` | e | flat | staged | 55 | -62 | 16 | 16 | yes |
+| `arm-c-both` | c | nested-balances | single | 108 | -9 | 1 | 1 | yes |
+| `arm-d-unified` | d | unified-coins | single | 89 | -28 | 2 | 2 | yes |
+| `arm-e-escrow` | e | flat | staged | 55 | -62 | 64 | 64 | yes |
 
 `offer ops` is the OFFER transcript program length — the number of VM operations the offer
 circuit records. It is parameter-independent, so it is the one number in this table that is a
@@ -39,76 +39,104 @@ they are not offers and F-310 does not constrain them.
 
 | variant | cells | pools | shape | placement | offer ops | proxy read ms | proxy compute ms | note |
 |---|---|---|---|---|---|---|---|---|
-| `manager` | 1 | 1 | named-taker | GUARANTEED | 126 | 3.468 | 5.305 | — |
-| `manager` | 1 | 1 | floating-surplus | GUARANTEED | 117 | 3.468 | 5.265 | — |
-| `manager` | 2 | 1 | named-taker | GUARANTEED | 126 | 4.386 | 6.257 | — |
-| `manager` | 2 | 1 | floating-surplus | GUARANTEED | 117 | 4.386 | 6.216 | — |
-| `manager` | 4 | 1 | named-taker | GUARANTEED | 126 | 4.386 | 6.308 | — |
-| `manager` | 4 | 1 | floating-surplus | GUARANTEED | 117 | 4.386 | 6.267 | — |
-| `manager` | 8 | 1 | named-taker | GUARANTEED | 126 | 4.386 | 6.311 | — |
-| `manager` | 8 | 1 | floating-surplus | GUARANTEED | 117 | 4.386 | 6.301 | — |
-| `manager` | 16 | 1 | named-taker | GUARANTEED | 126 | 4.386 | 6.314 | — |
-| `manager` | 16 | 1 | floating-surplus | GUARANTEED | 117 | 4.386 | 6.273 | — |
-| `v4-slim` | 1 | 1 | named-taker | GUARANTEED | 126 | 3.468 | 5.305 | — |
-| `v4-slim` | 1 | 1 | floating-surplus | GUARANTEED | 117 | 3.468 | 5.265 | — |
-| `v4-slim` | 2 | 1 | named-taker | GUARANTEED | 126 | 4.386 | 6.257 | — |
-| `v4-slim` | 2 | 1 | floating-surplus | GUARANTEED | 117 | 4.386 | 6.216 | — |
-| `v4-slim` | 4 | 1 | named-taker | GUARANTEED | 126 | 4.386 | 6.308 | — |
-| `v4-slim` | 4 | 1 | floating-surplus | GUARANTEED | 117 | 4.386 | 6.267 | — |
-| `v4-slim` | 8 | 1 | named-taker | GUARANTEED | 126 | 4.386 | 6.311 | — |
-| `v4-slim` | 8 | 1 | floating-surplus | GUARANTEED | 117 | 4.386 | 6.301 | — |
-| `v4-slim` | 16 | 1 | named-taker | GUARANTEED | 126 | 4.386 | 6.314 | — |
-| `v4-slim` | 16 | 1 | floating-surplus | GUARANTEED | 117 | 4.386 | 6.273 | — |
-| `arm-a-dedupe` | 1 | 1 | named-taker | GUARANTEED | 107 | 2.652 | 4.442 | — |
-| `arm-a-dedupe` | 1 | 1 | floating-surplus | GUARANTEED | 98 | 2.652 | 4.401 | — |
-| `arm-a-dedupe` | 2 | 1 | named-taker | GUARANTEED | 107 | 3.366 | 5.190 | — |
-| `arm-a-dedupe` | 2 | 1 | floating-surplus | GUARANTEED | 98 | 3.366 | 5.149 | — |
-| `arm-a-dedupe` | 4 | 1 | named-taker | GUARANTEED | 107 | 3.366 | 5.241 | — |
-| `arm-a-dedupe` | 4 | 1 | floating-surplus | GUARANTEED | 98 | 3.366 | 5.200 | — |
-| `arm-a-dedupe` | 8 | 1 | named-taker | GUARANTEED | 107 | 3.366 | 5.244 | — |
-| `arm-a-dedupe` | 8 | 1 | floating-surplus | GUARANTEED | 98 | 3.366 | 5.233 | — |
-| `arm-a-dedupe` | 16 | 1 | named-taker | GUARANTEED | 107 | 3.366 | 5.246 | — |
-| `arm-a-dedupe` | 16 | 1 | floating-surplus | GUARANTEED | 98 | 3.366 | 5.206 | — |
-| `arm-b-nested` | 1 | 1 | named-taker | GUARANTEED | 148 | 5.202 | 7.145 | — |
-| `arm-b-nested` | 1 | 1 | floating-surplus | GUARANTEED | 139 | 5.202 | 7.104 | — |
-| `arm-b-nested` | 2 | 1 | named-taker | **FALLIBLE** | 148 | 6.630 | 8.606 | — |
-| `arm-b-nested` | 2 | 1 | floating-surplus | **FALLIBLE** | 139 | 6.630 | 8.565 | — |
-| `arm-b-nested` | 4 | 1 | named-taker | **FALLIBLE** | 148 | 6.630 | 8.657 | — |
-| `arm-b-nested` | 4 | 1 | floating-surplus | **FALLIBLE** | 139 | 6.630 | 8.616 | — |
-| `arm-b-nested` | 8 | 1 | named-taker | **FALLIBLE** | 148 | 6.630 | 8.739 | — |
-| `arm-b-nested` | 8 | 1 | floating-surplus | **FALLIBLE** | 139 | 6.630 | 8.698 | — |
-| `arm-b-nested` | 16 | 1 | named-taker | **FALLIBLE** | 148 | 6.630 | 8.741 | — |
-| `arm-b-nested` | 16 | 1 | floating-surplus | **FALLIBLE** | 139 | 6.630 | 8.701 | — |
-| `arm-c-both` | 1 | 1 | named-taker | GUARANTEED | 117 | 3.570 | 5.435 | — |
-| `arm-c-both` | 1 | 1 | floating-surplus | GUARANTEED | 108 | 3.570 | 5.394 | — |
-| `arm-c-both` | 2 | 1 | named-taker | GUARANTEED | 117 | 4.488 | 6.386 | — |
-| `arm-c-both` | 2 | 1 | floating-surplus | GUARANTEED | 108 | 4.488 | 6.345 | — |
-| `arm-c-both` | 4 | 1 | named-taker | GUARANTEED | 117 | 4.488 | 6.437 | — |
-| `arm-c-both` | 4 | 1 | floating-surplus | GUARANTEED | 108 | 4.488 | 6.396 | — |
-| `arm-c-both` | 8 | 1 | named-taker | GUARANTEED | 117 | 4.488 | 6.519 | — |
-| `arm-c-both` | 8 | 1 | floating-surplus | GUARANTEED | 108 | 4.488 | 6.478 | — |
-| `arm-c-both` | 16 | 1 | named-taker | GUARANTEED | 117 | 4.488 | 6.521 | — |
-| `arm-c-both` | 16 | 1 | floating-surplus | GUARANTEED | 108 | 4.488 | 6.481 | — |
-| `arm-d-unified` | 1 | 1 | named-taker | GUARANTEED | 98 | 2.652 | 4.438 | — |
-| `arm-d-unified` | 1 | 1 | floating-surplus | GUARANTEED | 89 | 2.652 | 4.398 | — |
-| `arm-d-unified` | 2 | 1 | named-taker | GUARANTEED | 98 | 3.672 | 5.492 | — |
-| `arm-d-unified` | 2 | 1 | floating-surplus | GUARANTEED | 89 | 3.672 | 5.451 | — |
-| `arm-d-unified` | 4 | 1 | named-taker | GUARANTEED | 98 | 3.672 | 5.543 | — |
-| `arm-d-unified` | 4 | 1 | floating-surplus | GUARANTEED | 89 | 3.672 | 5.502 | — |
-| `arm-d-unified` | 8 | 1 | named-taker | GUARANTEED | 98 | 3.672 | 5.576 | — |
-| `arm-d-unified` | 8 | 1 | floating-surplus | GUARANTEED | 89 | 3.672 | 5.535 | — |
-| `arm-d-unified` | 16 | 1 | named-taker | GUARANTEED | 98 | 3.672 | 5.627 | — |
-| `arm-d-unified` | 16 | 1 | floating-surplus | GUARANTEED | 89 | 3.672 | 5.586 | — |
-| `arm-e-escrow` | 1 | 1 | named-taker | GUARANTEED | 64 | 1.530 | 3.124 | — |
-| `arm-e-escrow` | 1 | 1 | floating-surplus | GUARANTEED | 55 | 1.530 | 3.083 | — |
-| `arm-e-escrow` | 2 | 1 | named-taker | GUARANTEED | 64 | 1.632 | 3.226 | — |
-| `arm-e-escrow` | 2 | 1 | floating-surplus | GUARANTEED | 55 | 1.632 | 3.185 | — |
-| `arm-e-escrow` | 4 | 1 | named-taker | GUARANTEED | 64 | 1.632 | 3.305 | — |
-| `arm-e-escrow` | 4 | 1 | floating-surplus | GUARANTEED | 55 | 1.632 | 3.264 | — |
-| `arm-e-escrow` | 8 | 1 | named-taker | GUARANTEED | 64 | 1.632 | 3.305 | — |
-| `arm-e-escrow` | 8 | 1 | floating-surplus | GUARANTEED | 55 | 1.632 | 3.264 | — |
-| `arm-e-escrow` | 16 | 1 | named-taker | GUARANTEED | 64 | 1.632 | 3.226 | — |
-| `arm-e-escrow` | 16 | 1 | floating-surplus | GUARANTEED | 55 | 1.632 | 3.185 | — |
+| `manager` | 1 | 1 | named-taker | GUARANTEED | 126 | 3.468 | 6.592 | — |
+| `manager` | 1 | 1 | floating-surplus | GUARANTEED | 117 | 3.468 | 6.484 | — |
+| `manager` | 2 | 1 | named-taker | **FALLIBLE** | 126 | 4.386 | 7.712 | — |
+| `manager` | 2 | 1 | floating-surplus | **FALLIBLE** | 117 | 4.386 | 7.604 | — |
+| `manager` | 4 | 1 | named-taker | **FALLIBLE** | 126 | 4.386 | 7.998 | — |
+| `manager` | 4 | 1 | floating-surplus | **FALLIBLE** | 117 | 4.386 | 7.889 | — |
+| `manager` | 8 | 1 | named-taker | **FALLIBLE** | 126 | 4.386 | 8.008 | — |
+| `manager` | 8 | 1 | floating-surplus | **FALLIBLE** | 117 | 4.386 | 8.092 | — |
+| `manager` | 16 | 1 | named-taker | **FALLIBLE** | 126 | 4.386 | 8.019 | — |
+| `manager` | 16 | 1 | floating-surplus | **FALLIBLE** | 117 | 4.386 | 7.911 | — |
+| `manager` | 32 | 1 | named-taker | **FALLIBLE** | 126 | 5.304 | 8.948 | — |
+| `manager` | 32 | 1 | floating-surplus | **FALLIBLE** | 117 | 5.304 | 8.840 | — |
+| `manager` | 64 | 1 | named-taker | **FALLIBLE** | 126 | 5.304 | 8.959 | — |
+| `manager` | 64 | 1 | floating-surplus | **FALLIBLE** | 117 | 5.304 | 8.851 | — |
+| `v4-slim` | 1 | 1 | named-taker | GUARANTEED | 126 | 3.468 | 6.592 | — |
+| `v4-slim` | 1 | 1 | floating-surplus | GUARANTEED | 117 | 3.468 | 6.484 | — |
+| `v4-slim` | 2 | 1 | named-taker | **FALLIBLE** | 126 | 4.386 | 7.712 | — |
+| `v4-slim` | 2 | 1 | floating-surplus | **FALLIBLE** | 117 | 4.386 | 7.604 | — |
+| `v4-slim` | 4 | 1 | named-taker | **FALLIBLE** | 126 | 4.386 | 7.998 | — |
+| `v4-slim` | 4 | 1 | floating-surplus | **FALLIBLE** | 117 | 4.386 | 7.889 | — |
+| `v4-slim` | 8 | 1 | named-taker | **FALLIBLE** | 126 | 4.386 | 8.008 | — |
+| `v4-slim` | 8 | 1 | floating-surplus | **FALLIBLE** | 117 | 4.386 | 8.092 | — |
+| `v4-slim` | 16 | 1 | named-taker | **FALLIBLE** | 126 | 4.386 | 8.019 | — |
+| `v4-slim` | 16 | 1 | floating-surplus | **FALLIBLE** | 117 | 4.386 | 7.911 | — |
+| `v4-slim` | 32 | 1 | named-taker | **FALLIBLE** | 126 | 5.304 | 8.948 | — |
+| `v4-slim` | 32 | 1 | floating-surplus | **FALLIBLE** | 117 | 5.304 | 8.840 | — |
+| `v4-slim` | 64 | 1 | named-taker | **FALLIBLE** | 126 | 5.304 | 8.959 | — |
+| `v4-slim` | 64 | 1 | floating-surplus | **FALLIBLE** | 117 | 5.304 | 8.851 | — |
+| `arm-a-dedupe` | 1 | 1 | named-taker | GUARANTEED | 107 | 2.652 | 5.645 | — |
+| `arm-a-dedupe` | 1 | 1 | floating-surplus | GUARANTEED | 98 | 2.652 | 5.537 | — |
+| `arm-a-dedupe` | 2 | 1 | named-taker | GUARANTEED | 107 | 3.366 | 6.562 | — |
+| `arm-a-dedupe` | 2 | 1 | floating-surplus | GUARANTEED | 98 | 3.366 | 6.453 | — |
+| `arm-a-dedupe` | 4 | 1 | named-taker | **FALLIBLE** | 107 | 3.366 | 6.847 | — |
+| `arm-a-dedupe` | 4 | 1 | floating-surplus | **FALLIBLE** | 98 | 3.366 | 6.738 | — |
+| `arm-a-dedupe` | 8 | 1 | named-taker | **FALLIBLE** | 107 | 3.366 | 6.857 | — |
+| `arm-a-dedupe` | 8 | 1 | floating-surplus | **FALLIBLE** | 98 | 3.366 | 6.941 | — |
+| `arm-a-dedupe` | 16 | 1 | named-taker | **FALLIBLE** | 107 | 3.366 | 6.868 | — |
+| `arm-a-dedupe` | 16 | 1 | floating-surplus | **FALLIBLE** | 98 | 3.366 | 6.760 | — |
+| `arm-a-dedupe` | 32 | 1 | named-taker | **FALLIBLE** | 107 | 4.080 | 7.593 | — |
+| `arm-a-dedupe` | 32 | 1 | floating-surplus | **FALLIBLE** | 98 | 4.080 | 7.485 | — |
+| `arm-a-dedupe` | 64 | 1 | named-taker | **FALLIBLE** | 107 | 4.080 | 7.604 | — |
+| `arm-a-dedupe` | 64 | 1 | floating-surplus | **FALLIBLE** | 98 | 4.080 | 7.496 | — |
+| `arm-b-nested` | 1 | 1 | named-taker | GUARANTEED | 148 | 5.202 | 8.607 | — |
+| `arm-b-nested` | 1 | 1 | floating-surplus | GUARANTEED | 139 | 5.202 | 8.499 | — |
+| `arm-b-nested` | 2 | 1 | named-taker | **FALLIBLE** | 148 | 6.630 | 10.239 | — |
+| `arm-b-nested` | 2 | 1 | floating-surplus | **FALLIBLE** | 139 | 6.630 | 10.131 | — |
+| `arm-b-nested` | 4 | 1 | named-taker | **FALLIBLE** | 148 | 6.630 | 10.526 | — |
+| `arm-b-nested` | 4 | 1 | floating-surplus | **FALLIBLE** | 139 | 6.630 | 10.418 | — |
+| `arm-b-nested` | 8 | 1 | named-taker | **FALLIBLE** | 148 | 6.630 | 11.005 | — |
+| `arm-b-nested` | 8 | 1 | floating-surplus | **FALLIBLE** | 139 | 6.630 | 10.896 | — |
+| `arm-b-nested` | 16 | 1 | named-taker | **FALLIBLE** | 148 | 6.630 | 11.018 | — |
+| `arm-b-nested` | 16 | 1 | floating-surplus | **FALLIBLE** | 139 | 6.630 | 10.909 | — |
+| `arm-b-nested` | 32 | 1 | named-taker | **FALLIBLE** | 148 | 8.058 | 12.458 | — |
+| `arm-b-nested` | 32 | 1 | floating-surplus | **FALLIBLE** | 139 | 8.058 | 12.350 | — |
+| `arm-b-nested` | 64 | 1 | named-taker | **FALLIBLE** | 148 | 8.058 | 12.471 | — |
+| `arm-b-nested` | 64 | 1 | floating-surplus | **FALLIBLE** | 139 | 8.058 | 12.363 | — |
+| `arm-c-both` | 1 | 1 | named-taker | GUARANTEED | 117 | 3.570 | 6.760 | — |
+| `arm-c-both` | 1 | 1 | floating-surplus | GUARANTEED | 108 | 3.570 | 6.652 | — |
+| `arm-c-both` | 2 | 1 | named-taker | **FALLIBLE** | 117 | 4.488 | 7.882 | — |
+| `arm-c-both` | 2 | 1 | floating-surplus | **FALLIBLE** | 108 | 4.488 | 7.774 | — |
+| `arm-c-both` | 4 | 1 | named-taker | **FALLIBLE** | 117 | 4.488 | 8.169 | — |
+| `arm-c-both` | 4 | 1 | floating-surplus | **FALLIBLE** | 108 | 4.488 | 8.061 | — |
+| `arm-c-both` | 8 | 1 | named-taker | **FALLIBLE** | 117 | 4.488 | 8.648 | — |
+| `arm-c-both` | 8 | 1 | floating-surplus | **FALLIBLE** | 108 | 4.488 | 8.539 | — |
+| `arm-c-both` | 16 | 1 | named-taker | **FALLIBLE** | 117 | 4.488 | 8.660 | — |
+| `arm-c-both` | 16 | 1 | floating-surplus | **FALLIBLE** | 108 | 4.488 | 8.552 | — |
+| `arm-c-both` | 32 | 1 | named-taker | **FALLIBLE** | 117 | 5.406 | 9.591 | — |
+| `arm-c-both` | 32 | 1 | floating-surplus | **FALLIBLE** | 108 | 5.406 | 9.483 | — |
+| `arm-c-both` | 64 | 1 | named-taker | **FALLIBLE** | 117 | 5.406 | 9.604 | — |
+| `arm-c-both` | 64 | 1 | floating-surplus | **FALLIBLE** | 108 | 5.406 | 9.496 | — |
+| `arm-d-unified` | 1 | 1 | named-taker | GUARANTEED | 98 | 2.652 | 5.590 | — |
+| `arm-d-unified` | 1 | 1 | floating-surplus | GUARANTEED | 89 | 2.652 | 5.481 | — |
+| `arm-d-unified` | 2 | 1 | named-taker | GUARANTEED | 98 | 3.672 | 6.814 | — |
+| `arm-d-unified` | 2 | 1 | floating-surplus | GUARANTEED | 89 | 3.672 | 6.706 | — |
+| `arm-d-unified` | 4 | 1 | named-taker | **FALLIBLE** | 98 | 3.672 | 7.101 | — |
+| `arm-d-unified` | 4 | 1 | floating-surplus | **FALLIBLE** | 89 | 3.672 | 6.993 | — |
+| `arm-d-unified` | 8 | 1 | named-taker | **FALLIBLE** | 98 | 3.672 | 7.305 | — |
+| `arm-d-unified` | 8 | 1 | floating-surplus | **FALLIBLE** | 89 | 3.672 | 7.197 | — |
+| `arm-d-unified` | 16 | 1 | named-taker | **FALLIBLE** | 98 | 3.672 | 7.592 | — |
+| `arm-d-unified` | 16 | 1 | floating-surplus | **FALLIBLE** | 89 | 3.672 | 7.484 | — |
+| `arm-d-unified` | 32 | 1 | named-taker | **FALLIBLE** | 98 | 4.692 | 8.625 | — |
+| `arm-d-unified` | 32 | 1 | floating-surplus | **FALLIBLE** | 89 | 4.692 | 8.516 | — |
+| `arm-d-unified` | 64 | 1 | named-taker | **FALLIBLE** | 98 | 4.692 | 8.637 | — |
+| `arm-d-unified` | 64 | 1 | floating-surplus | **FALLIBLE** | 89 | 4.692 | 8.529 | — |
+| `arm-e-escrow` | 1 | 1 | named-taker | GUARANTEED | 64 | 1.530 | 3.927 | — |
+| `arm-e-escrow` | 1 | 1 | floating-surplus | GUARANTEED | 55 | 1.530 | 3.819 | — |
+| `arm-e-escrow` | 2 | 1 | named-taker | GUARANTEED | 64 | 1.632 | 4.029 | — |
+| `arm-e-escrow` | 2 | 1 | floating-surplus | GUARANTEED | 55 | 1.632 | 3.921 | — |
+| `arm-e-escrow` | 4 | 1 | named-taker | GUARANTEED | 64 | 1.632 | 4.495 | — |
+| `arm-e-escrow` | 4 | 1 | floating-surplus | GUARANTEED | 55 | 1.632 | 4.386 | — |
+| `arm-e-escrow` | 8 | 1 | named-taker | GUARANTEED | 64 | 1.632 | 4.495 | — |
+| `arm-e-escrow` | 8 | 1 | floating-surplus | GUARANTEED | 55 | 1.632 | 4.386 | — |
+| `arm-e-escrow` | 16 | 1 | named-taker | GUARANTEED | 64 | 1.632 | 4.029 | — |
+| `arm-e-escrow` | 16 | 1 | floating-surplus | GUARANTEED | 55 | 1.632 | 3.921 | — |
+| `arm-e-escrow` | 32 | 1 | named-taker | GUARANTEED | 64 | 1.734 | 4.131 | — |
+| `arm-e-escrow` | 32 | 1 | floating-surplus | GUARANTEED | 55 | 1.734 | 4.023 | — |
+| `arm-e-escrow` | 64 | 1 | named-taker | GUARANTEED | 64 | 1.734 | 4.131 | — |
+| `arm-e-escrow` | 64 | 1 | floating-surplus | GUARANTEED | 55 | 1.734 | 4.023 | — |
 
 `proxy read/compute ms` is `Transcript.gas`, which the ledger sets to
 `gas_heuristic(params, false, 0)` = raw transcript gas x 1.2. It is **not** the quantity the
@@ -128,12 +156,16 @@ the arm rests on exactly that claim, so the numbers are recorded rather than ass
 | 1 | floating-surplus | GUARANTEED | 100 | GUARANTEED | 55 | GUARANTEED | 48 |
 | 2 | named-taker | GUARANTEED | 100 | GUARANTEED | 64 | GUARANTEED | 48 |
 | 2 | floating-surplus | GUARANTEED | 100 | GUARANTEED | 55 | GUARANTEED | 48 |
-| 4 | named-taker | GUARANTEED | 100 | GUARANTEED | 64 | GUARANTEED | 48 |
-| 4 | floating-surplus | GUARANTEED | 100 | GUARANTEED | 55 | GUARANTEED | 48 |
-| 8 | named-taker | GUARANTEED | 100 | GUARANTEED | 64 | GUARANTEED | 48 |
-| 8 | floating-surplus | GUARANTEED | 100 | GUARANTEED | 55 | GUARANTEED | 48 |
-| 16 | named-taker | GUARANTEED | 100 | GUARANTEED | 64 | GUARANTEED | 48 |
-| 16 | floating-surplus | GUARANTEED | 100 | GUARANTEED | 55 | GUARANTEED | 48 |
+| 4 | named-taker | FALLIBLE | 100 | GUARANTEED | 64 | GUARANTEED | 48 |
+| 4 | floating-surplus | FALLIBLE | 100 | GUARANTEED | 55 | GUARANTEED | 48 |
+| 8 | named-taker | FALLIBLE | 100 | GUARANTEED | 64 | GUARANTEED | 48 |
+| 8 | floating-surplus | FALLIBLE | 100 | GUARANTEED | 55 | GUARANTEED | 48 |
+| 16 | named-taker | FALLIBLE | 100 | GUARANTEED | 64 | GUARANTEED | 48 |
+| 16 | floating-surplus | FALLIBLE | 100 | GUARANTEED | 55 | GUARANTEED | 48 |
+| 32 | named-taker | FALLIBLE | 100 | GUARANTEED | 64 | GUARANTEED | 48 |
+| 32 | floating-surplus | FALLIBLE | 100 | GUARANTEED | 55 | GUARANTEED | 48 |
+| 64 | named-taker | FALLIBLE | 100 | GUARANTEED | 64 | GUARANTEED | 48 |
+| 64 | floating-surplus | FALLIBLE | 100 | GUARANTEED | 55 | GUARANTEED | 48 |
 
 ## Relaxations, per fixture
 

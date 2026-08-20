@@ -153,17 +153,25 @@ const runCase = async (spec: CaseSpec): Promise<CaseResult> => {
 
   try {
     // --- arm (e) phase 1: stage. Self-balanced, submitted by the maker alone. -------------------
-    let giveValue = GIVE;
+    //
+    // Reuse an already-staged coin rather than failing: relaxation R5'' means there is no way to clear
+    // the escrow except by settling, so if a PREVIOUS case did not settle its offer the coin is still
+    // sitting there. Re-staging would be refused with "an offer is already staged", which would make
+    // this case report a staging failure when the real result is the earlier refusal.
+    const giveValue = GIVE;
     if (v.offer === 'staged') {
-      res.stageTxId = await rig.submitAs(
-        `OwnerA-stage-${spec.label}`,
-        SEEDS.ownerA,
-        maker.secret,
-        'stageOffer',
-        [G.raw, GIVE],
-      );
-      await rig.waitFor(colours, accts, (x) => x.escrow?.active === 'true', 'the escrow to be staged');
-      giveValue = GIVE;
+      if (before.escrow?.active === 'true') {
+        log(`  arm (e): escrow already staged from an earlier case (R5'': no cancelStage) — reusing it`);
+      } else {
+        res.stageTxId = await rig.submitAs(
+          `OwnerA-stage-${spec.label}`,
+          SEEDS.ownerA,
+          maker.secret,
+          'stageOffer',
+          [G.raw, GIVE],
+        );
+        await rig.waitFor(colours, accts, (x) => x.escrow?.active === 'true', 'the escrow to be staged');
+      }
     }
 
     // --- build + prove the offer. The maker's last act. -----------------------------------------
@@ -408,7 +416,7 @@ const main = async () => {
       for (let i = 0; i < n; i++) {
         const view = await rig!.read([G, B], accts);
         if (view.size.cells >= n) break;
-        await rig!.depositFrom(SEEDS.ownerN, `OwnerN-d${i}`, G, G_PER_CELL, accts[i]!.id);
+        await rig!.depositManyFrom(SEEDS.ownerN, 'OwnerN', G, G_PER_CELL, accts[i]!.id);
         await rig!.waitFor([G, B], accts, (x) => x.size.cells >= i + 1, `custody to reach ${i + 1} cell(s)`);
       }
     };
