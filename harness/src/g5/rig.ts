@@ -50,6 +50,7 @@ import { makeProviders, zkDir } from '../g3/providers.js';
 import { buildCall } from '../g3/compose.js';
 import { compiledMinter } from '../contracts.js';
 import { mintShieldedToUser, userDepositShielded, type Ctx, type MinterHandle } from '../g3/actions.js';
+import { nodeRefusalOf } from '../node-error.js';
 import {
   cellValue,
   colourTotal,
@@ -121,6 +122,19 @@ export type G5Rig = {
    */
   depositManyFrom: (seed: string, name: string, colour: Colour, value: bigint, account: Uint8Array) => Promise<string>;
   read: (colours: Colour[], accounts: Account[]) => Promise<VariantView>;
+  /**
+   * OP2 — one custody cell read again through a REAL PROVED ON-CHAIN CIRCUIT CALL.
+   *
+   * A genuinely independent mechanism from OP1: OP1 fetches the contract's ledger state from the
+   * indexer and decodes it with the generated reader, while this submits a transaction and takes the
+   * result back through the SDK. The series requires two observation points for every custody claim
+   * (FR-208, and G3's discipline that Plan 05 says every live settle must keep), because a decoder bug
+   * would be invisible to a single point.
+   *
+   * Returns `unavailable` rather than guessing when the node refuses every attempt — see the retry
+   * note in the implementation. A gap is reported as a gap; it never masquerades as agreement.
+   */
+  onChainCell: (account: Uint8Array, colour: Uint8Array, label: string) => Promise<{ value: string; retries: number }>;
   waitFor: (colours: Colour[], accounts: Account[], p: (v: VariantView) => boolean, what: string) => Promise<VariantView>;
   observeShielded: (name: string, seed: string, colourHex: string) => Promise<bigint>;
   observeFeeCapacity: (name: string, seed: string) => Promise<FeeCapacity>;
@@ -437,6 +451,46 @@ export const bootstrapG5Rig = async (v: VariantSpec, opts: G5RigOptions = {}): P
       }
     };
 
+    /**
+     * OP2, with the bounded 104 retry inherited from `g2/spike-common.ts`.
+     *
+     * WHY THE RETRY EXISTS AND IS NOT PAPERING OVER A RESULT: OP2 is a submitted transaction, and a
+     * contract call submitted shortly after another call on the same contract is refused with
+     * `Custom error: 104` on this lane — finding F-301 / issue 0001's exact signature ("first attempt
+     * refused, identical retry sometimes accepted"). A 104 on a READ-ONLY observation says nothing
+     * about the thing under test, and letting it kill a case would record a measurement failure as a
+     * product failure. So it is retried, bounded, with the count kept; and if every attempt fails the
+     * cell is marked UNAVAILABLE rather than guessed at, leaving OP1 to carry the observation and the
+     * gap visible in the evidence. Any OTHER refusal code is a real failure and is surfaced.
+     */
+    const OP2_UNAVAILABLE = 'unavailable';
+    const onChainCell = async (
+      account: Uint8Array,
+      colour: Uint8Array,
+      label: string,
+    ): Promise<{ value: string; retries: number }> => {
+      const maxAttempts = 4;
+      let lastErr = '';
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          await actAs(feeProviders, new Uint8Array(32));
+          const r: any = await withDustRetry(fee, 'shieldedAccountBalance', () =>
+            (deployed.callTx as any).shieldedAccountBalance(account, colour),
+          );
+          return { value: String(resultOf<bigint>(r)), retries: attempt - 1 };
+        } catch (e) {
+          const refusal = nodeRefusalOf(e);
+          lastErr = refusal.verbatim ?? String(e).slice(0, 200);
+          if (refusal.code !== 104) throw e; // not the known flake — a real failure, surfaced
+          if (attempt === maxAttempts) break;
+          log(`OP2 ${label}: refused with Custom error: 104 (attempt ${attempt}/${maxAttempts}) — the F-301 flake; retrying in 8s`);
+          await new Promise((r) => setTimeout(r, 8_000));
+        }
+      }
+      log(`OP2 ${label}: UNAVAILABLE after ${maxAttempts} attempts (last: ${lastErr}); OP1 carries this observation`);
+      return { value: OP2_UNAVAILABLE, retries: maxAttempts };
+    };
+
     const observeShielded = async (name: string, seed: string, colourHex: string): Promise<bigint> => {
       const obs = await openParty(`${name}-observer`, seed);
       try {
@@ -497,6 +551,7 @@ export const bootstrapG5Rig = async (v: VariantSpec, opts: G5RigOptions = {}): P
       depositFrom,
       depositManyFrom,
       read,
+      onChainCell,
       waitFor: waitForView,
       observeShielded,
       observeFeeCapacity,

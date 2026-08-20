@@ -1,0 +1,178 @@
+# deploy cost against the ledger block limits — EXPERIMENTAL_LANE / LANE-DEV-1
+# block limits (from midnight-ledger/ledger/src/structure.rs:1271-1283):
+#   {"readTime":"1000000000000","computeTime":"1000000000000","blockUsage":"200000","bytesWritten":"50000","bytesChurned":"1000000"}
+# transaction_byte_limit: 1 MiB (same source) — not the binding constraint here
+
+## manager
+   verifier keys: 13, 24,475 bytes total
+   unproven deploy transaction: 25,673 bytes
+   | dimension | cost | block limit | ratio | verdict |
+   |---|---|---|---|---|
+   | readTime | 1,785,000,000 | 1,000,000,000,000 | 0.2% | ok |
+   | computeTime | 1,975,817,471 | 1,000,000,000,000 | 0.2% | ok |
+   | blockUsage | 25,601 | 200,000 | 12.8% | ok |
+   | bytesWritten | 29,846 | 50,000 | 59.7% | ok |
+   | bytesChurned | 6,144 | 1,000,000 | 0.6% | ok |
+   normalizeFullness: OK
+   => within every block limit.
+   fees: 7310690000000001 SPECKs
+   per-circuit verifier keys:
+       2119  depositShielded
+       2119  depositUnshielded
+       2119  openSwapShielded
+       2119  shieldedAccountBalance
+       2119  transferInternalShielded
+       2119  transferInternalUnshielded
+       2119  unshieldedAccountBalance
+       2119  withdrawShielded
+       2119  withdrawUnshielded
+       1351  isRegistered
+       1351  poolHasColour
+       1351  poolValue
+       1351  registerAccount
+
+## v4-slim
+   verifier keys: 9, 15,999 bytes total
+   unproven deploy transaction: 16,924 bytes
+   | dimension | cost | block limit | ratio | verdict |
+   |---|---|---|---|---|
+   | readTime | 1,785,000,000 | 1,000,000,000,000 | 0.2% | ok |
+   | computeTime | 1,975,817,471 | 1,000,000,000,000 | 0.2% | ok |
+   | blockUsage | 16,851 | 200,000 | 8.4% | ok |
+   | bytesWritten | 19,676 | 50,000 | 39.4% | ok |
+   | bytesChurned | 6,144 | 1,000,000 | 0.6% | ok |
+   normalizeFullness: OK
+   => within every block limit.
+   fees: 4839190000000001 SPECKs
+   per-circuit verifier keys:
+       2119  depositShielded
+       2119  openSwapShielded
+       2119  shieldedAccountBalance
+       2119  transferInternalShielded
+       2119  withdrawShielded
+       1351  isRegistered
+       1351  poolHasColour
+       1351  poolValue
+       1351  registerAccount
+
+## arm-a-dedupe
+   verifier keys: 9, 15,999 bytes total
+   unproven deploy transaction: 16,924 bytes
+   | dimension | cost | block limit | ratio | verdict |
+   |---|---|---|---|---|
+   | readTime | 1,785,000,000 | 1,000,000,000,000 | 0.2% | ok |
+   | computeTime | 1,975,817,471 | 1,000,000,000,000 | 0.2% | ok |
+   | blockUsage | 16,851 | 200,000 | 8.4% | ok |
+   | bytesWritten | 19,676 | 50,000 | 39.4% | ok |
+   | bytesChurned | 6,144 | 1,000,000 | 0.6% | ok |
+   normalizeFullness: OK
+   => within every block limit.
+   fees: 4839190000000001 SPECKs
+   per-circuit verifier keys:
+       2119  depositShielded
+       2119  openSwapShielded
+       2119  shieldedAccountBalance
+       2119  transferInternalShielded
+       2119  withdrawShielded
+       1351  isRegistered
+       1351  poolHasColour
+       1351  poolValue
+       1351  registerAccount
+
+## arm-b-nested
+   verifier keys: 9, 15,231 bytes total
+   unproven deploy transaction: 16,156 bytes
+   | dimension | cost | block limit | ratio | verdict |
+   |---|---|---|---|---|
+   | readTime | 1,785,000,000 | 1,000,000,000,000 | 0.2% | ok |
+   | computeTime | 1,975,817,471 | 1,000,000,000,000 | 0.2% | ok |
+   | blockUsage | 16,083 | 200,000 | 8.0% | ok |
+   | bytesWritten | 18,908 | 50,000 | 37.8% | ok |
+   | bytesChurned | 6,144 | 1,000,000 | 0.6% | ok |
+   normalizeFullness: OK
+   => within every block limit.
+   fees: 4647190000000001 SPECKs
+   per-circuit verifier keys:
+       2119  depositShielded
+       2119  openSwapShielded
+       2119  transferInternalShielded
+       2119  withdrawShielded
+       1351  isRegistered
+       1351  poolHasColour
+       1351  poolValue
+       1351  registerAccount
+       1351  shieldedAccountBalance
+
+## arm-c-both
+   verifier keys: 9, 15,231 bytes total
+   unproven deploy transaction: 16,156 bytes
+   | dimension | cost | block limit | ratio | verdict |
+   |---|---|---|---|---|
+   | readTime | 1,785,000,000 | 1,000,000,000,000 | 0.2% | ok |
+   | computeTime | 1,975,817,471 | 1,000,000,000,000 | 0.2% | ok |
+   | blockUsage | 16,083 | 200,000 | 8.0% | ok |
+   | bytesWritten | 18,908 | 50,000 | 37.8% | ok |
+   | bytesChurned | 6,144 | 1,000,000 | 0.6% | ok |
+   normalizeFullness: OK
+   => within every block limit.
+   fees: 4647190000000001 SPECKs
+   per-circuit verifier keys:
+       2119  depositShielded
+       2119  openSwapShielded
+       2119  transferInternalShielded
+       2119  withdrawShielded
+       1351  isRegistered
+       1351  poolHasColour
+       1351  poolValue
+       1351  registerAccount
+       1351  shieldedAccountBalance
+
+## arm-d-unified
+   verifier keys: 8, 13,880 bytes total
+   unproven deploy transaction: 14,669 bytes
+   | dimension | cost | block limit | ratio | verdict |
+   |---|---|---|---|---|
+   | readTime | 1,785,000,000 | 1,000,000,000,000 | 0.2% | ok |
+   | computeTime | 1,975,817,471 | 1,000,000,000,000 | 0.2% | ok |
+   | blockUsage | 14,596 | 200,000 | 7.3% | ok |
+   | bytesWritten | 16,351 | 50,000 | 32.7% | ok |
+   | bytesChurned | 6,144 | 1,000,000 | 0.6% | ok |
+   normalizeFullness: OK
+   => within every block limit.
+   fees: 4061440000000001 SPECKs
+   per-circuit verifier keys:
+       2119  depositShielded
+       2119  openSwapShielded
+       2119  transferInternalShielded
+       2119  withdrawShielded
+       1351  accountHasColour
+       1351  isRegistered
+       1351  registerAccount
+       1351  shieldedAccountBalance
+
+## arm-e-escrow
+   verifier keys: 11, 20,237 bytes total
+   unproven deploy transaction: 21,415 bytes
+   | dimension | cost | block limit | ratio | verdict |
+   |---|---|---|---|---|
+   | readTime | 1,785,000,000 | 1,000,000,000,000 | 0.2% | ok |
+   | computeTime | 1,975,817,471 | 1,000,000,000,000 | 0.2% | ok |
+   | blockUsage | 21,342 | 200,000 | 10.7% | ok |
+   | bytesWritten | 25,064 | 50,000 | 50.1% | ok |
+   | bytesChurned | 6,144 | 1,000,000 | 0.6% | ok |
+   normalizeFullness: OK
+   => within every block limit.
+   fees: 6141340000000001 SPECKs
+   per-circuit verifier keys:
+       2119  consolidate
+       2119  depositShielded
+       2119  openSwap
+       2119  shieldedAccountBalance
+       2119  stageOffer
+       2119  transferInternalShielded
+       2119  withdrawShielded
+       1351  isRegistered
+       1351  poolHasColour
+       1351  poolValue
+       1351  registerAccount
+

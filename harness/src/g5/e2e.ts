@@ -105,6 +105,10 @@ export type CaseResult = {
   after?: unknown;
   settlerBefore?: Record<string, string>;
   settlerAfter?: Record<string, string>;
+  /** OP2 — the same cells read through a proved on-chain circuit call (FR-208's second point). */
+  onChainCells?: Record<string, string>;
+  /** How many times an OP2 read had to be retried past a `Custom error: 104` (F-301's flake). */
+  op2Retries?: Record<string, number>;
   makerDustActions?: unknown;
   checks: Array<{ name: string; ok: boolean; detail: string }>;
 };
@@ -300,6 +304,41 @@ const runCase = async (spec: CaseSpec): Promise<CaseResult> => {
     }
     const after = await rig.read(colours, accts);
     res.after = after;
+
+    // --- OP2: the same two cells read again through a PROVED ON-CHAIN CIRCUIT CALL --------------
+    //
+    // Plan 05 requires every live settle to keep the G3 discipline, and that discipline is TWO
+    // INDEPENDENT OBSERVATION POINTS (FR-208). OP1 above fetched the contract's ledger state from the
+    // indexer and decoded it with the generated reader; this submits a transaction and takes the answer
+    // back through the SDK — a different mechanism end to end, which is the only reason the second
+    // point is worth anything. A decoder bug would be invisible to OP1 alone.
+    //
+    // Read only AFTER the settle, and only for the two cells this case makes claims about. OP2 is a
+    // real transaction (~15 s each, and exposed to the F-301 flake), so reading cells nobody is
+    // asserting would spend a shared host's time to corroborate nothing.
+    const op2: Record<string, string> = {};
+    const op2Retries: Record<string, number> = {};
+    if (res.settled) {
+      for (const c of colours) {
+        const label = `${maker.label}/${c.label}`;
+        const r = await rig.onChainCell(maker.id, c.raw, label);
+        op2[label] = r.value;
+        if (r.retries > 0) op2Retries[label] = r.retries;
+      }
+      res.onChainCells = op2;
+      if (Object.keys(op2Retries).length) res.op2Retries = op2Retries;
+    }
+    // Absence reads 0 on chain, which is not a disagreement; an UNAVAILABLE read is a GAP and is
+    // reported as one rather than allowed to masquerade as agreement.
+    const op2Problems: string[] = [];
+    for (const [k, v] of Object.entries(op2)) {
+      if (v === 'unavailable') {
+        op2Problems.push(`${k}: OP2 UNAVAILABLE (refused with 104 on every attempt) — OP1 says ${after.cells[k]}, unconfirmed`);
+        continue;
+      }
+      const expected = String(cellNum(after.cells[k]));
+      if (v !== expected) op2Problems.push(`${k}: OP1 says ${after.cells[k]}, OP2 (on-chain call) says ${v}`);
+    }
     const settlerAfter = {
       G: String(await rig.observeShielded(spec.settlerName, spec.settlerSeed, G.hex)),
       B: String(await rig.observeShielded(spec.settlerName, spec.settlerSeed, B.hex)),
@@ -346,6 +385,15 @@ const runCase = async (spec: CaseSpec): Promise<CaseResult> => {
           BigInt(settlerAfter.G) === BigInt(settlerBefore.G) + giveValue &&
           BigInt(settlerAfter.B) === BigInt(settlerBefore.B) - WANT,
         detail: `${spec.settlerName} G ${settlerBefore.G} -> ${settlerAfter.G}, B ${settlerBefore.B} -> ${settlerAfter.B}`,
+      },
+      {
+        name: 'OP1 and OP2 agree on every cell this case claims (FR-208, two observation points)',
+        ok: res.settled && op2Problems.length === 0,
+        detail: op2Problems.length
+          ? op2Problems.join('; ')
+          : res.settled
+            ? `OP1 == OP2 for ${Object.keys(op2).join(', ')}${Object.keys(op2Retries).length ? ` (retries: ${JSON.stringify(op2Retries)})` : ''}`
+            : 'not settled — OP2 not consulted',
       },
       {
         name: 'the MAKER attached no dust action to the SETTLED transaction',

@@ -1,0 +1,19 @@
+# G5 LIVE MATRIX — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-20T18:58:07.023Z
+# variants: manager, v4-slim, arm-a-dedupe, arm-b-nested, arm-c-both, arm-d-unified, arm-e-escrow
+# cells: 1, 2, 4, 8, 16   shapes: named-taker, floating-surplus
+# BUILD + PROVE ONLY. Nothing in this run is balanced, signed or submitted as an offer.
+
+===== manager (baseline) — Manager v4 (SHIPPED, unchanged) =====
+2026-08-20 14:58:07        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:14698/: 1000:: Normal Closure
+2026-08-20 14:58:07        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:14698/: 1000:: Normal Closure
+2026-08-20 14:58:07        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:14698/: 1000:: Normal Closure
+2026-08-20 14:58:07        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:14698/: 1000:: Normal Closure
+[2026-08-20T18:58:07.547Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-20T18:58:07.564Z]   fund feePayer: attempt 1 — DUST not yet generated, waiting 15s
+[2026-08-20T18:58:43.584Z]   submitted tx 002916f2cd512525b965ef0dddf7fd0ae1b538460acbc675217dafbb38061c2db5 (hash ff77b5d0b4ae260c856a72abea157af1ae04efcbd0fc63fee8bad238dd649474)
+[2026-08-20T18:58:43.584Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-20T18:58:43.716Z]   waiting for genesis to observe its own spend (NIGHT at or below 248000000000000) …
+Terminated: 15
+[G5] INTERRUPTED
+[G5] teardown: docker compose --env-file /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/docker/.env -f /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00006-g5-20260820185045-41645 && w1_cleanup
+[G5] RED (exit 130)
