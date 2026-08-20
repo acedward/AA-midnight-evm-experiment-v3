@@ -234,7 +234,8 @@ comparator stricter than the specification is a comparator bug:
 | **LANE-DEV-1** | compactc `0.33.0` substituted for `-rc.2`; inherited, owner-approved, never re-pinned | `evidence/*/04-lane-dev-1.out` |
 | **D-306** | offers publish as the **UNBOUND** (`pre-binding`) form; the bound form is a proven fallback | G1 spike S3, cross-checked against S1 |
 | **D-307** | the step ledger is PARTITIONED across three fresh Managers on one chain | G3, forced by F-310; **owner ratification wanted (Q03-1)** |
-| **F-301 / F-306** | node `104` = `InvalidError::Transcript`; descending merged segment order is necessary (and sufficient for a dependent pair); the post-hoc re-keying fix is REFUTED as implemented (`235`), so the mitigation belongs upstream at construction time | G1 spike S2, replicated across four runs |
+| **F-301** | node `104` = `InvalidError::Transcript`; descending merged segment order is NECESSARY (and sufficient for a genuine read-after-write); for disjoint pairs refusals concentrate on new-key insertion | G1 spike S2, replicated across four runs (shape B: 23/23 ascending accepted, 25/25 descending refused) |
+| **F-306** (amended by G4) | post-hoc re-keying of a merged transaction's segments is **state-dependent**: refused **12/12** with `235` in the canonical G1 run, **accepted 12/12** in the G4 clean-clone reproduction of the same code. Mechanism (hypothesis, with support): a re-key moves `fallibleOffer` entries only if they exist, so it is harmless when the zswap items are GUARANTEED and fatal when they are FALLIBLE — i.e. it is governed by the same cost budget as F-308/F-310. Conclusion unchanged and stronger: segment assignment is a build-time decision and the mitigation belongs upstream | G1 spike S2 + the G4 reproduction |
 | **F-302** | the inherited tree does not typecheck at the base commit — a defect in the pinned TYPES, reproduced identically in the 00005 clone. Handled by subtracting exactly that one baseline error and failing if it stops reproducing | G1 Phase 1 |
 | **F-303** | `validateTransaction` cannot validate a contract-call transaction on this lane; its refusal is a FALSE NEGATIVE, so the step is recorded and **never gates** | G1 spike S1 |
 | **F-304** | `Transaction.segments()` is not bound to JS, so the FR-302 "no other segment" assert had to reimplement it — the first version silently degraded to "segment 0 looks right" | G1 spike S1 |
@@ -275,6 +276,13 @@ Stated plainly, because a verification document that only lists successes is a m
    one-cell budget, so only one long arm is possible per Manager — which is itself F-310.
 8. **`171`** (sibling issue 0002) remains undecoded: it is not in the `InvalidError` arm of the
    pinned node's error enum.
+9. **The mechanism behind F-306's amendment is a HYPOTHESIS, not a measurement.** Spike S2's
+   post-hoc segment rewrite was refused 12/12 in the canonical run and accepted 12/12 in the
+   clean-clone reproduction of the same code. The explanation offered — that a re-key is harmless when
+   the pair's zswap items are in the guaranteed section and fatal when they are fallible, i.e. the same
+   cost budget as F-310 — is supported by the code path and by the two runs' state-growth figures, but
+   the discriminating measurement (placement recorded per rewrite attempt) was **not taken**. Nothing
+   the specification asks for depends on it: 00006's maker transaction is a single call.
 9. **Nothing here is a statement about a supported lane.** `EXPERIMENTAL_LANE` / `LANE-DEV-1`
    throughout, on a local fresh dev chain, with two HOST workarounds active.
 
