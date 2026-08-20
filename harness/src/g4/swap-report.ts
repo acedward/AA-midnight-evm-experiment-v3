@@ -620,12 +620,12 @@ const main = () => {
         [
           `**D-306** — published artifact form = ${esc(s3.decisionD306?.choice ?? 'UNBOUND')}`,
           'Plan 01 spike S3, cross-checked against S1',
-          esc(short(s3.decisionD306?.reason ?? '', 260)),
+          esc(s3.decisionD306?.reason ?? ''),
         ],
         [
           '**D-307** — the ledger is partitioned across three fresh Managers',
           'Plan 03, forced by F-310',
-          esc(short(DEVIATION_D307.cause, 260)),
+          esc(DEVIATION_D307.cause),
         ],
       ],
     ),
@@ -723,7 +723,8 @@ const main = () => {
       'different refusal code, which is reported as a finding rather than scored as a failure. A',
       'comparator stricter than the specification is a comparator bug.',
       '',
-      'Full output: `evidence/g4-closeout/08-compare.out`.',
+      'Full output: `evidence/g4-closeout/09-compare.out`, and the reproduction\'s own evidence is in',
+      '`evidence/g4-closeout/repro/`.',
       '',
     );
   }

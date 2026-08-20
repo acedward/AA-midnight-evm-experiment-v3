@@ -409,11 +409,23 @@ def compare_g2(root: str, clone: str) -> None:
         print(f'-- {what}')
         print(f'   original:     {o["verdict"]}')
         print(f'   reproduction: {r["verdict"]}')
+        # These two spikes are MEASUREMENTS (FR-311 asks for the measured rule; F-310 is a lane
+        # boundary). A check that changed verdict is therefore a FINDING; what must hold is that the
+        # spike produced a measurement at all. Scoring a different measured code as a failure would
+        # make this comparator stricter than the specification.
         for label, doc in (('original', o), ('reproduction', r)):
-            bad = [c['name'] for c in doc.get('checks') or [] if not c['ok']]
-            if bad:
-                problems.append(f'{fname} in the {label} could not measure: {len(bad)} failing check(s) '
-                                f'{bad[:2]}')
+            if not str(doc.get('verdict', '')).startswith('MEASURED'):
+                problems.append(f'{fname} in the {label} did not produce a measurement: verdict '
+                                f'"{doc.get("verdict")}"')
+        for oc, rc in zip(o.get('checks') or [], r.get('checks') or []):
+            if oc.get('ok') != rc.get('ok'):
+                findings.append(f'{fname}: check "{rc.get("name")}" changed verdict between the runs '
+                                f'(original {oc.get("ok")}, reproduction {rc.get("ok")}). Measured lane '
+                                f'behaviour, reported rather than scored.')
+        bad = [c['name'] for c in r.get('checks') or [] if not c['ok']]
+        if bad:
+            findings.append(f'{fname}: {len(bad)} check(s) did not hold in the reproduction: {bad[:3]}. '
+                            f'Read the spike file before quoting either run.')
         if fname == 's5b.json':
             ob = (o.get('lastGuaranteedStep'), o.get('firstFallibleStep'))
             rb = (r.get('lastGuaranteedStep'), r.get('firstFallibleStep'))
