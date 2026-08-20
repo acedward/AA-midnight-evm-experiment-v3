@@ -1,6 +1,6 @@
 == W-1 adopted (inherited host workaround, 00004 G4)
 source config dir : /Users/edwardalvarado/.docker
-scratch DOCKER_CONFIG: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-Wxx66L
+scratch DOCKER_CONFIG: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-JNRjLP
 scratch config.json  : {}
 cli-plugins          : symlink -> /Users/edwardalvarado/.docker/cli-plugins (14 plugins)
 docker compose plugin under the scratch config: 2.40.3-desktop.1

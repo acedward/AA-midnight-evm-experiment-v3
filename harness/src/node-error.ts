@@ -53,11 +53,41 @@ export const deepErrorText = (e: unknown): string => {
   }
 };
 
-/** Known node refusal codes, decoded from the PINNED node source. Absence is reported, never guessed. */
+/**
+ * Known node refusal codes, decoded from the PINNED node source
+ * (`midnight-node/ledger/src/versions/common/types.rs`). Absence is reported as NOT DECODED, never
+ * guessed — an invented meaning is worse than an honest number.
+ *
+ * 104 and 235 were decoded by 00006 Plan 01 spike S2; the rest were read off the same match arms while
+ * decoding 239 and 228 for Plan 02 gate run 1 (finding F-309). Codes are included here even when this
+ * project has not observed them, because the next refusal is cheaper to read than to re-derive.
+ */
 const NODE_ERRORS: Record<number, string> = {
-  // Decoded by 00006 Plan 01 spike S2 from midnight-node/ledger/src/versions/common/types.rs.
+  // --- observed by this project ---
   104: 'InvalidError::Transcript (types.rs:406)',
+  228: 'MalformedError::TransactionApplication(IntentTtlExpired) (types.rs:487)',
   235: 'MalformedZswapErrorCode::InvalidProof (types.rs:446)',
+  239: 'ZswapInvalidErrorCode::NullifierAlreadyPresent (types.rs:400)',
+  // --- read from the same arms, not yet observed here ---
+  105: 'InvalidError::InsufficientClaimable (types.rs:407)',
+  106: 'InvalidError::VerifierKeyNotFound (types.rs:408)',
+  108: 'InvalidError::ReplayCounterMismatch (types.rs:410)',
+  111: 'MalformedError::TransactionTooLarge (types.rs:429)',
+  114: 'MalformedError::ContractNotPresent (types.rs:432)',
+  115: 'MalformedError::InvalidProof (types.rs:433)',
+  118: 'MalformedError::FallibleWithoutCheckpoint (types.rs:436)',
+  126: 'MalformedError::Unbalanced (types.rs:444)',
+  129: 'MalformedError::GuaranteedLimit (types.rs:453)',
+  166: 'MalformedError::InvalidNetworkId (types.rs:465)',
+  167: 'MalformedError::IllegallyDeclaredGuaranteed (types.rs:466)',
+  177: 'MalformedError::IntentSegmentIdCollision (types.rs:481)',
+  231: 'FeeCalculationErrorCode::OutsideTimeToDismiss (types.rs:468)',
+  232: 'FeeCalculationErrorCode::BlockLimitExceeded (types.rs:469)',
+  237: 'MalformedZswapErrorCode::NonDisjointCoinMerge (types.rs:448)',
+  240: 'ZswapInvalidErrorCode::CommitmentAlreadyPresent (types.rs:401)',
+  241: 'ZswapInvalidErrorCode::UnknownMerkleRoot (types.rs:402)',
+  242: 'TransactionApplicationErrorCode::IntentTtlExpired, replay-protection arm (types.rs:412)',
+  244: 'TransactionApplicationErrorCode::IntentAlreadyExists (types.rs:414)',
 };
 
 export type NodeRefusal = {

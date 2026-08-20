@@ -1,0 +1,248 @@
+{
+  "spike": "S5b",
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T09:47:09.100Z",
+  "question": "how much custody state can the Manager hold and still build a PUBLISHABLE (guaranteed-section) offer?",
+  "verdict": "MEASURED — the publishability boundary lies between step 1 (pools 1, cells 1) and step 2 (pools 1, cells 2)",
+  "boundary": "between step 1 (pools 1, cells 1) and step 2 (pools 1, cells 2)",
+  "lastGuaranteedStep": 1,
+  "firstFallibleStep": 2,
+  "managerAddress": "421a5911d99cbe5d31130ff32a95d33b5f85e1d6cc6e491097c4d20a960f1198",
+  "parameters": {
+    "giveColour": "16859d0bc6378154a414d2ae09283fd3393c5b9d27170f91aa0b04c24ce35c75",
+    "depositedToAA_A": "8",
+    "depositedToAA_B": "2",
+    "fillerSteps": 2,
+    "gives": "1",
+    "wants": "1"
+  },
+  "steps": [
+    {
+      "step": 1,
+      "what": "deposit 8 G to AA_A — the state S4/S6 published from",
+      "pools": 1,
+      "cells": 1,
+      "offers": [
+        {
+          "shape": "named-taker",
+          "built": true,
+          "guaranteed": true,
+          "segments": [
+            0,
+            27698
+          ],
+          "intentSegments": [
+            27698
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:c8ecdb0aa48efe96c16e0c46e3ece2a60185f6a5fd1fe8148821a72ea89fb502": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "proveMs": 7054
+        },
+        {
+          "shape": "floating-surplus",
+          "built": true,
+          "guaranteed": true,
+          "segments": [
+            0,
+            19279
+          ],
+          "intentSegments": [
+            19279
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:16859d0bc6378154a414d2ae09283fd3393c5b9d27170f91aa0b04c24ce35c75": "1",
+            "shielded:9fb8c8c6bc03c6fd7f4caba5425bbd5a9acf746c7790c024f158401bea71ce23": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "proveMs": 6317
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "what": "deposit 2 G to AA_B — ONE MORE CELL, pool count unchanged",
+      "pools": 1,
+      "cells": 2,
+      "offers": [
+        {
+          "shape": "named-taker",
+          "built": true,
+          "guaranteed": false,
+          "segments": [
+            0,
+            48077
+          ],
+          "intentSegments": [
+            48077
+          ],
+          "fallibleOfferSegments": [
+            48077
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "48077": {
+              "shielded:a7ec91b77fb3b1ecb5d968467c3c84c11250fd547d66ea7af3bc284b7ce5143c": "-1"
+            }
+          },
+          "proveMs": 7032
+        },
+        {
+          "shape": "floating-surplus",
+          "built": true,
+          "guaranteed": false,
+          "segments": [
+            0,
+            61571
+          ],
+          "intentSegments": [
+            61571
+          ],
+          "fallibleOfferSegments": [
+            61571
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "61571": {
+              "shielded:16859d0bc6378154a414d2ae09283fd3393c5b9d27170f91aa0b04c24ce35c75": "1",
+              "shielded:47266487be621773c298b3dfbffe6d060ad9e6f1e3e80319175889b819c64dd6": "-1"
+            }
+          },
+          "proveMs": 6448
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "what": "deposit 2 F1 to AA_A — ONE MORE POOL",
+      "pools": 2,
+      "cells": 3,
+      "offers": [
+        {
+          "shape": "named-taker",
+          "built": true,
+          "guaranteed": false,
+          "segments": [
+            0,
+            64697
+          ],
+          "intentSegments": [
+            64697
+          ],
+          "fallibleOfferSegments": [
+            64697
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "64697": {
+              "shielded:f99a8d5dd610eb3e97d5810f0b5fba8550f4fe65c2d568ef60cf5344716cf790": "-1"
+            }
+          },
+          "proveMs": 7163
+        },
+        {
+          "shape": "floating-surplus",
+          "built": true,
+          "guaranteed": false,
+          "segments": [
+            0,
+            33496
+          ],
+          "intentSegments": [
+            33496
+          ],
+          "fallibleOfferSegments": [
+            33496
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "33496": {
+              "shielded:16859d0bc6378154a414d2ae09283fd3393c5b9d27170f91aa0b04c24ce35c75": "1",
+              "shielded:1f7af74a9e9ef1a062c3212105fc39802640afa780e351f2fee9ebe7798707a0": "-1"
+            }
+          },
+          "proveMs": 7187
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "what": "deposit 2 F2 to AA_A — ONE MORE POOL",
+      "pools": 3,
+      "cells": 4,
+      "offers": [
+        {
+          "shape": "named-taker",
+          "built": true,
+          "guaranteed": false,
+          "segments": [
+            0,
+            28531
+          ],
+          "intentSegments": [
+            28531
+          ],
+          "fallibleOfferSegments": [
+            28531
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "28531": {
+              "shielded:7b8487d40b6ee988ec657721b1eb0f3ab24e68c4694cf205cc75c26c580b363b": "-1"
+            }
+          },
+          "proveMs": 7158
+        },
+        {
+          "shape": "floating-surplus",
+          "built": true,
+          "guaranteed": false,
+          "segments": [
+            0,
+            56680
+          ],
+          "intentSegments": [
+            56680
+          ],
+          "fallibleOfferSegments": [
+            56680
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "56680": {
+              "shielded:16859d0bc6378154a414d2ae09283fd3393c5b9d27170f91aa0b04c24ce35c75": "1",
+              "shielded:3a5ed8eda84325e91fbebb540bd7f41ea476b86ca13d4a646e1e0af06e3cc149": "-1"
+            }
+          },
+          "proveMs": 6733
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "name": "the dose-response is MONOTONE (once unpublishable, it stays unpublishable)",
+      "ok": true,
+      "detail": "s1(1p/1c):G s2(1p/2c):F s3(2p/3c):F s4(3p/4c):F"
+    },
+    {
+      "name": "both offer SHAPES flip together — placement is about state, not shape",
+      "ok": true,
+      "detail": "s1:n=G,s=G s2:n=F,s=F s3:n=F,s=F s4:n=F,s=F"
+    },
+    {
+      "name": "a boundary was actually located (otherwise the dose range was too narrow)",
+      "ok": true,
+      "detail": "between step 1 (pools 1, cells 1) and step 2 (pools 1, cells 2)"
+    },
+    {
+      "name": "every offer either built or failed ONLY on placement (no unrelated build errors)",
+      "ok": true,
+      "detail": "all built"
+    }
+  ],
+  "supersedes": "an earlier 2x2 of {shape} x {wanted colour has a pool}, whose hypothesis (the merge branch) was REFUTED: all four cells were fallible because that design ran at two pools / two cells throughout and so held the real variable constant."
+}

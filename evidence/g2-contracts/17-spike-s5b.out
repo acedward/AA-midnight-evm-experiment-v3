@@ -1,0 +1,124 @@
+# SPIKE S5b — how much custody state still allows a PUBLISHABLE offer? — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-20T09:30:59.179Z
+[2026-08-20T09:30:59.249Z] wallets open; syncing genesis …
+2026-08-20 05:30:59        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:30:59        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:30:59        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:30:59        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:30:59.836Z] genesis: NIGHT=248000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+[2026-08-20T09:30:59.853Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-20T09:31:19.087Z]   submitted tx 00a129e74f483872b384b47574ebc35d53d7f999632a08070badb9ad812d5668a3 (hash 3c1b8b6f5913bead6efeef7e50e9309fa857851e57391d89d04a100159f9fc0f)
+[2026-08-20T09:31:19.087Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-20T09:31:19.249Z]   waiting for genesis to observe its own spend (NIGHT at or below 246000000000000) …
+[2026-08-20T09:31:26.291Z]   feePayer: NIGHT already registered for DUST
+2026-08-20 05:31:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:31:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:31:26.613Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T09:31:43.174Z]   submitted tx 003e960ccd75d92b8e4786c1a6d35a069fad939697bcb9512466ba0735e9498dea (hash 9ef2330e8ce9b30ce3c6c1547869846d9aef5dcc1f4a603ae9cc78ee43a9b0ce)
+[2026-08-20T09:31:43.174Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-20T09:31:43.350Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2400000000000) …
+[2026-08-20T09:31:55.943Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-20 05:31:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:31:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:31:56.276Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T09:32:13.944Z]   submitted tx 003c7376e25a0eec3a3cfabc52a36155a528399935a093510e922e25f641f13f25 (hash 3a7fdd3c2120cc2f71f8cd2a23d71b70d61554bfc410a89fda6ee08d51ed1e2d)
+[2026-08-20T09:32:13.944Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-20T09:32:14.119Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2000000000000) …
+[2026-08-20T09:32:29.139Z]   OwnerT-funding: NIGHT already registered for DUST
+2026-08-20 05:32:29        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:32:29        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:32:29.497Z] deploying Manager v3 (UNCHANGED from 00005) …
+[2026-08-20T09:32:49.922Z]   Manager at 421a5911d99cbe5d31130ff32a95d33b5f85e1d6cc6e491097c4d20a960f1198
+[2026-08-20T09:33:26.036Z] AA_A 009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b / AA_B 755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904 registered; custody maps {"pools":0,"shieldedCells":0,"unshieldedCells":0}
+2026-08-20 05:33:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:33:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:33:26.457Z]   funding OwnerA-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T09:33:43.669Z]   submitted tx 00c4d7fbaa332f7bf6202ee6c7708b4ddf78326197f391cf68910a7b03b0fa894c (hash 316408e9ec4c704fe027e48b291da92e17820314d0a5b1de1a44420fb006aab2)
+[2026-08-20T09:33:43.669Z]   waiting for OwnerA-funding NIGHT to arrive …
+[2026-08-20T09:33:43.857Z]   waiting for feePayer to observe its own spend (NIGHT at or below 1600000000000) …
+[2026-08-20T09:33:54.112Z]   OwnerA-funding: NIGHT already registered for DUST
+2026-08-20 05:33:54        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:33:54        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:33:54.501Z] maker OwnerA open (funded + DUST-registered on purpose, so "paid no fees" means something)
+[2026-08-20T09:33:54.501Z] deploying Minter1 (TOKG) …
+[2026-08-20T09:34:50.263Z]   Minter1 at c682fe72130429e819e1441d0bcb6c53f2d78548dd3d7d9fcb2e17a7adc852ba: shielded 16859d0bc6378154a414d2ae09283fd3393c5b9d27170f91aa0b04c24ce35c75 / unshielded f2f34162ad6699e244fcd4409283b4c0776eb247fcf3dcfd85ef24c0104f8faf
+[2026-08-20T09:35:07.972Z] minted 40 G (16859d0bc637…) in 00ddabf157267d33e067d182dc8a79f1918b86bde73a26f5b4272d918e335f3aeb
+2026-08-20 05:35:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:35:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:35:08.396Z]   waiting for OwnerN-g-a-spender-1 to see 8 of shielded 16859d0bc637… before spending it …
+[2026-08-20T09:35:30.722Z] OwnerN-g-a deposited 8 G into custody in 00eec972b0b06e9ff8b096006dd2d4ae77e62493ac1d8d27aac7b50d4348e04080
+
+## step 1 — deposit 8 G to AA_A — the state S4/S6 published from (pools 1, shielded cells 1)
+[2026-08-20T09:35:32.796Z] deploying Minter2 (TOKW1) …
+[2026-08-20T09:36:26.641Z]   Minter2 at 72e80bcab586da253b6baaae8accf9908dccb051ce1c094b1344a21606764511: shielded c8ecdb0aa48efe96c16e0c46e3ece2a60185f6a5fd1fe8148821a72ea89fb502 / unshielded d0372f7adca6190b7865ae7c2b9d75dd94433db83168020ee3bf9fc117922cd7
+[2026-08-20T09:36:26.646Z] maker[named-taker]: building openSwapShielded(give 1 of 16859d0bc637…, want 1 of c8ecdb0aa48e…)
+[2026-08-20T09:36:26.773Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T09:36:33.830Z] maker[named-taker]: offer proven in 7054 ms; 26878 bytes, sha256 4e27aaeb6d1e62fd…; imbalances(0) = {"shielded:c8ecdb0aa48efe96c16e0c46e3ece2a60185f6a5fd1fe8148821a72ea89fb502":"-1"}
+[2026-08-20T09:36:33.831Z]   named-taker: GUARANTEED — publishable; imbalances(0) = {"shielded:c8ecdb0aa48efe96c16e0c46e3ece2a60185f6a5fd1fe8148821a72ea89fb502":"-1"}; fallible segments []
+[2026-08-20T09:36:33.834Z] deploying Minter3 (TOKW2) …
+[2026-08-20T09:37:26.860Z]   Minter3 at bcc6a556c3e38cf63793e73a6827d3ca199f0182dae9742d8c69b514069d7003: shielded 9fb8c8c6bc03c6fd7f4caba5425bbd5a9acf746c7790c024f158401bea71ce23 / unshielded acb3c7824ec383ed495298f7664e8058610e41be5caacf71fb58e888959c01ca
+[2026-08-20T09:37:26.862Z] maker[floating-surplus]: building openSwapShielded(give 1 of 16859d0bc637…, want 1 of 9fb8c8c6bc03…)
+[2026-08-20T09:37:26.986Z] maker[floating-surplus]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T09:37:33.305Z] maker[floating-surplus]: offer proven in 6317 ms; 21582 bytes, sha256 af9a4cb47d590e0e…; imbalances(0) = {"shielded:16859d0bc6378154a414d2ae09283fd3393c5b9d27170f91aa0b04c24ce35c75":"1","shielded:9fb8c8c6bc03c6fd7f4caba5425bbd5a9acf746c7790c024f158401bea71ce23":"-1"}
+[2026-08-20T09:37:33.306Z]   floating-surplus: GUARANTEED — publishable; imbalances(0) = {"shielded:16859d0bc6378154a414d2ae09283fd3393c5b9d27170f91aa0b04c24ce35c75":"1","shielded:9fb8c8c6bc03c6fd7f4caba5425bbd5a9acf746c7790c024f158401bea71ce23":"-1"}; fallible segments []
+2026-08-20 05:37:33        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:37:33        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:37:33.661Z]   waiting for OwnerN-g-b-spender-2 to see 2 of shielded 16859d0bc637… before spending it …
+[2026-08-20T09:37:55.247Z] OwnerN-g-b deposited 2 G into custody in 002cdba8f096e30c212092ef5555dd5dc0284214a70c992f783b2b6af547e10c10
+
+## step 2 — deposit 2 G to AA_B — ONE MORE CELL, pool count unchanged (pools 1, shielded cells 2)
+[2026-08-20T09:37:57.324Z] deploying Minter4 (TOKW3) …
+[2026-08-20T09:38:49.795Z]   Minter4 at 182d47522af51da39a9537114364f7220c7c35b341bd1b53b472f7adcd58c4fc: shielded a7ec91b77fb3b1ecb5d968467c3c84c11250fd547d66ea7af3bc284b7ce5143c / unshielded cdee2dc7a384c49a7478fccfcac23106893eef1e30632b5cc3b31b32e35f9ad5
+[2026-08-20T09:38:49.805Z] maker[named-taker]: building openSwapShielded(give 1 of 16859d0bc637…, want 1 of a7ec91b77fb3…)
+[2026-08-20T09:38:49.967Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T09:38:57.002Z] maker[named-taker]: offer proven in 7032 ms; 26869 bytes, sha256 5e8d25b0851558f3…; imbalances(0) = {}
+[2026-08-20T09:38:57.004Z]   named-taker: FALLIBLE — NOT publishable; imbalances(0) = {}; fallible segments [48077]
+[2026-08-20T09:38:57.006Z] deploying Minter5 (TOKW4) …
+[2026-08-20T09:39:50.025Z]   Minter5 at ad5523718d9cf211119848e0d206ffae8b13361748a0b3894308b8df2f41b136: shielded 47266487be621773c298b3dfbffe6d060ad9e6f1e3e80319175889b819c64dd6 / unshielded 0cdae3ed5dd20423a16fe84f7b708747a4a41c08ec18d333f9a4c54bebda4ada
+[2026-08-20T09:39:50.026Z] maker[floating-surplus]: building openSwapShielded(give 1 of 16859d0bc637…, want 1 of 47266487be62…)
+[2026-08-20T09:39:50.152Z] maker[floating-surplus]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T09:39:56.603Z] maker[floating-surplus]: offer proven in 6448 ms; 21631 bytes, sha256 df42884c391d5533…; imbalances(0) = {}
+[2026-08-20T09:39:56.604Z]   floating-surplus: FALLIBLE — NOT publishable; imbalances(0) = {}; fallible segments [61571]
+[2026-08-20T09:39:56.606Z] deploying Minter6 (TOKF1) …
+[2026-08-20T09:40:50.234Z]   Minter6 at e4ccf0e8a23f08cccd70fe4f601edff59ba20c9cb2f94912e5e215d2c883320f: shielded fd8964ff5b9395a052d297e13764cc08c970b2041a269b401790f75af5dcdadd / unshielded a095d843c10829de1c9e8331b151c0917f0798b717832a874713fe3d59eee619
+[2026-08-20T09:41:07.941Z] minted 6 F1 (fd8964ff5b93…) in 00f91aee86e2aacf90a936c64ae0c8180d8a39194a6823bab1b08b0bb66fa05457
+2026-08-20 05:41:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:41:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:41:08.396Z]   waiting for OwnerN-f1-spender-3 to see 2 of shielded fd8964ff5b93… before spending it …
+[2026-08-20T09:41:32.014Z] OwnerN-f1 deposited 2 F1 into custody in 0087793b86602aaa20a64af517e0d38d988e7ab20e2c212a6dde2a8f96c563c5d7
+
+## step 3 — deposit 2 F1 to AA_A — ONE MORE POOL (pools 2, shielded cells 3)
+[2026-08-20T09:41:34.091Z] deploying Minter7 (TOKW5) …
+[2026-08-20T09:42:26.540Z]   Minter7 at 480780099632f15b26be268feee948545f7500b71b15b5bf3ffd3ccce60fcc4b: shielded f99a8d5dd610eb3e97d5810f0b5fba8550f4fe65c2d568ef60cf5344716cf790 / unshielded 909ac2fdbaa5b275d581d51fcd5f20ba2009ec49b53bf6d64d9a1b15f6ac46e9
+[2026-08-20T09:42:26.548Z] maker[named-taker]: building openSwapShielded(give 1 of 16859d0bc637…, want 1 of f99a8d5dd610…)
+[2026-08-20T09:42:26.683Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T09:42:33.849Z] maker[named-taker]: offer proven in 7163 ms; 26869 bytes, sha256 a3c9601aa8407160…; imbalances(0) = {}
+[2026-08-20T09:42:33.850Z]   named-taker: FALLIBLE — NOT publishable; imbalances(0) = {}; fallible segments [64697]
+[2026-08-20T09:42:33.854Z] deploying Minter8 (TOKW6) …
+[2026-08-20T09:43:26.753Z]   Minter8 at 54dfd9dd0ba05a16f373ca7758fc9d0ef4e73b81a7b8dca5db2e78466428ad02: shielded 1f7af74a9e9ef1a062c3212105fc39802640afa780e351f2fee9ebe7798707a0 / unshielded 441730c483680e03885d58f1cf228f7bd3b5c6accba7a22ddbdff728bc93e34a
+[2026-08-20T09:43:26.754Z] maker[floating-surplus]: building openSwapShielded(give 1 of 16859d0bc637…, want 1 of 1f7af74a9e9e…)
+[2026-08-20T09:43:26.882Z] maker[floating-surplus]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T09:43:34.071Z] maker[floating-surplus]: offer proven in 7187 ms; 21631 bytes, sha256 7eca64bde9b34833…; imbalances(0) = {}
+[2026-08-20T09:43:34.072Z]   floating-surplus: FALLIBLE — NOT publishable; imbalances(0) = {}; fallible segments [33496]
+[2026-08-20T09:43:34.074Z] deploying Minter9 (TOKF2) …
+[2026-08-20T09:44:26.991Z]   Minter9 at c3305498ce185d3d5cb87aa5f4c9c84c966340e432e1d17bd601b3da59414b7c: shielded 759afb5afa7382740ea74cfa919a7b3842f37628b827c79036334fce0ac9531f / unshielded a4bcbc246ca867f4c2515736a6ef8674ef9472f08cabc50bdfe01d5dfe94a1b6
+[2026-08-20T09:44:43.359Z] minted 6 F2 (759afb5afa73…) in 0012817454587f503ac3239011c4841ea0eeb07d140494d10ff3ebc29b6d4f2e5c
+2026-08-20 05:44:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:44:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:44:43.860Z]   waiting for OwnerN-f2-spender-4 to see 2 of shielded 759afb5afa73… before spending it …
+[2026-08-20T09:45:07.434Z] OwnerN-f2 deposited 2 F2 into custody in 00a540879b7c1440421c594f3890c296cfe914af4b9b61b1c69566d973eed379ae
+
+## step 4 — deposit 2 F2 to AA_A — ONE MORE POOL (pools 3, shielded cells 4)
+[2026-08-20T09:45:09.510Z] deploying Minter10 (TOKW7) …
+[2026-08-20T09:46:02.017Z]   Minter10 at fafe64ca33a310fd1d4e0b2d323ab35ee46cbe035bba85d441d6c1ad1ebd2348: shielded 7b8487d40b6ee988ec657721b1eb0f3ab24e68c4694cf205cc75c26c580b363b / unshielded e09e9b71ff6b41fe756f81a547bc829f33f422f9af7157985d1d5044241bd07e
+[2026-08-20T09:46:02.025Z] maker[named-taker]: building openSwapShielded(give 1 of 16859d0bc637…, want 1 of 7b8487d40b6e…)
+[2026-08-20T09:46:02.153Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T09:46:09.314Z] maker[named-taker]: offer proven in 7158 ms; 26869 bytes, sha256 324ba16f85218223…; imbalances(0) = {}
+[2026-08-20T09:46:09.315Z]   named-taker: FALLIBLE — NOT publishable; imbalances(0) = {}; fallible segments [28531]
+[2026-08-20T09:46:09.319Z] deploying Minter11 (TOKW8) …
+[2026-08-20T09:47:02.227Z]   Minter11 at 59d2bfc735629c7130f589b218656ba075cd71e8b8999fb7a0a1f9e2ba4cbc87: shielded 3a5ed8eda84325e91fbebb540bd7f41ea476b86ca13d4a646e1e0af06e3cc149 / unshielded 5e1d53039173b63ce96d58d1decb278bd0a9fa2c317c6c158e74dcde5faa955b
+[2026-08-20T09:47:02.228Z] maker[floating-surplus]: building openSwapShielded(give 1 of 16859d0bc637…, want 1 of 3a5ed8eda843…)
+[2026-08-20T09:47:02.362Z] maker[floating-surplus]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T09:47:09.098Z] maker[floating-surplus]: offer proven in 6733 ms; 21631 bytes, sha256 d4acd6366430fe82…; imbalances(0) = {}
+[2026-08-20T09:47:09.099Z]   floating-surplus: FALLIBLE — NOT publishable; imbalances(0) = {}; fallible segments [56680]
+
+## S5b: MEASURED — the publishability boundary lies between step 1 (pools 1, cells 1) and step 2 (pools 1, cells 2)
