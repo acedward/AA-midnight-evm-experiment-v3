@@ -133,19 +133,32 @@ step_reset_spike_evidence() {
 # ONLY when the spike's own fatal record matches a known INFRASTRUCTURE signature. A product-code
 # failure, a refusal, or an assertion failure is never retried, because retrying those would turn a
 # real result into a coin flip.
-INFRA_SIGNATURES='AbortError|ECONNREFUSED|ECONNRESET|socket hang up|fetch failed|EAI_AGAIN|Timeout has occurred|ETIMEDOUT|503|502|504|read ECONNRESET'
+#
+# NARROWED after gate run 1 (2026-08-20). The original list included `Timeout has occurred` and bare
+# `502|503|504`, and that made it match a DETERMINISTIC failure: S5 died three times on an identical
+# FR-302 placement assert, and because an incidental rxjs timeout string appeared in the payload the
+# wrapper labelled all three attempts VOID and burned 20 minutes retrying a settled result.
+# Mislabelling a real finding "VOID" is worse than not retrying at all, so the signatures are now only
+# the ones that can ONLY be transport-level, and any error carrying an assertion marker is never retried.
+INFRA_SIGNATURES='AbortError|ECONNREFUSED|ECONNRESET|socket hang up|fetch failed|EAI_AGAIN|ETIMEDOUT'
+# A failure matching any of these is a RESULT, whatever else the payload happens to contain.
+DETERMINISTIC_SIGNATURES='FR-302 VIOLATED|does not match its own terms|unreadable imbalance|still carries non-dust deficits'
 VOID_RUNS=0
 
 spike_is_infra_failure() {
   local json="$1"
   [ -f "$json" ] || return 1
-  python3 - "$json" "$INFRA_SIGNATURES" <<'PY'
+  python3 - "$json" "$INFRA_SIGNATURES" "$DETERMINISTIC_SIGNATURES" <<'PY'
 import json, re, sys
 try:
     d = json.load(open(sys.argv[1]))
 except Exception:
     sys.exit(1)
 blob = json.dumps(d)
+# A deterministic marker wins outright: retrying an assertion failure cannot change its outcome, and
+# labelling it VOID would hide a real result behind a word that means "ignore this".
+if re.search(sys.argv[3], blob):
+    sys.exit(1)
 sys.exit(0 if re.search(sys.argv[2], blob) else 1)
 PY
 }
@@ -213,6 +226,9 @@ step_spike_s4b() { (cd "$ROOT/harness" && npx tsx src/g2/spike-s4b.ts); }
 # asks for 60 / 600 / 1800 s; the arms are strictly sequential because a settlement on either colour
 # would invalidate any other live offer on it, which is the very effect being measured.
 step_spike_s5()  { (cd "$ROOT/harness" && S5_WAITS=60,600,1800 S5_SHORT_TTL=90 npx tsx src/g2/spike-s5.ts); }
+# S5b runs BEFORE S5: it establishes which offers can be PUBLISHED at all, which is a precondition for
+# reading S5's arms — and for writing Plan 03's step ledger.
+step_spike_s5b() { (cd "$ROOT/harness" && npx tsx src/g2/spike-s5b.ts); }
 step_spike_s6()  { (cd "$ROOT/harness" && npx tsx src/g2/spike-s6.ts); }
 
 step_record_artifacts() {
@@ -329,7 +345,7 @@ step_record_spikes() {
     echo
     echo "| Spike | Question | Evidence | Verdict |"
     echo "|---|---|---|---|"
-    for f in s4 s4b s5 s6; do
+    for f in s4 s4b s5b s5 s6; do
       if [ -f "$SPIKE_EVID/${f}.json" ]; then
         printf '| %s | %s | `%s.json` | %s |\n' \
           "$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['spike'])" "$SPIKE_EVID/${f}.json")" \
@@ -341,7 +357,7 @@ step_record_spikes() {
       fi
     done
     echo
-    echo "Human-readable write-ups: \`S4.md\`, \`S4b.md\`, \`S5.md\`, \`S6.md\` in this directory."
+    echo "Human-readable write-ups: \`S4.md\`, \`S4b.md\`, \`S5b.md\`, \`S5.md\`, \`S6.md\` in this directory."
     echo
     echo "## FR-308 openness: **${openness}**"
     echo
@@ -489,11 +505,12 @@ else
   run_spike 16-spike-s4b S4b step_spike_s4b
 fi
 
-run_spike 17-spike-s5 S5 step_spike_s5
-run_spike 18-spike-s6 S6 step_spike_s6
+run_spike 17-spike-s5b S5b step_spike_s5b
+run_spike 18-spike-s5 S5 step_spike_s5
+run_spike 19-spike-s6 S6 step_spike_s6
 
-fs_run 19-record-artifacts step_record_artifacts
-fs_run 20-record-spikes    step_record_spikes
+fs_run 20-record-artifacts step_record_artifacts
+fs_run 21-record-spikes    step_record_spikes
 
 S4_FINAL="$(spike_verdict S4)"; S4B_FINAL="$(spike_verdict S4b)"
 if [ "$S4_FINAL" != "GREEN" ] && [ "$S4B_FINAL" != "GREEN" ]; then

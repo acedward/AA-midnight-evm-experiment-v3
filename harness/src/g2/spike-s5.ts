@@ -9,8 +9,12 @@
 // FOUR ARMS, and why each is separate
 //
 //   INTERVENE   build an offer, land an ORDINARY deposit on the same colour, then take. This is the
-//               arm FR-311 names; the expected refusal is `1010 … Custom error: 104`
-//               (`InvalidError::Transcript`, decoded from the pinned node source by Plan 01).
+//               arm FR-311 names. **The expected code is 239, not the 104 FR-311 predicted** — see
+//               finding F-309. An intervening deposit MERGES the pooled coin, and merging SPENDS it,
+//               so the offer's pinned coin is already nullified when the take arrives:
+//               `ZswapInvalidErrorCode::NullifierAlreadyPresent`. That is a sharper answer than 104
+//               ("a transcript did not match"), and FR-311 asks for the measured rule, so 239 is what
+//               this asserts. Measured 3/3 in gate run 1.
 //   SHORT-TTL   an offer whose INTENT ttl is a couple of minutes instead of the hardcoded hour, so
 //               node-side expiry can be observed at all. Measured twice: once with the taker's LOCAL
 //               expiry gate on (it must refuse without touching the chain) and once with it forced
@@ -25,12 +29,21 @@
 // two arms concurrently would therefore confound the intervention with the control. So exactly one
 // offer is alive at a time, and each arm's take completes before the next offer is built. That costs
 // wall-clock (the waits are real) and buys an unconfounded reading.
+//
+// WHY EACH ARM WANTS ITS OWN FRESH COLOUR. Gate run 1 shared one wanted colour across the arms and the
+// fourth arm's BUILD failed closed on FR-302: once an earlier arm had settled and CREATED the wanted
+// colour's pool, `claimWantedColour` took its `mergeCoinImmediate` branch, which costs enough to push
+// the whole transcript past the guaranteed budget and drop the value leg into the FALLIBLE section
+// (finding F-308). That is a real and important lane property — it has its own spike, S5b — but here it
+// is a CONFOUND: an arm whose offer cannot be published measures nothing about staleness. Giving each
+// arm a wanted colour with no pool yet keeps every offer's placement guaranteed, so what varies between
+// arms is only what the arm is testing.
 import { LANE_STAMP, SEEDS } from '../lane.js';
 import { log } from '../night.js';
 import { errorChain } from '../g3/actions.js';
 import { buildSwapOffer, type SwapOffer } from '../offer/build.js';
 import { takeOffer, type TakeResult } from '../offer/take.js';
-import { bootstrapSwapRig, classifyRefusal, shieldedKeysOf, stamp, type SwapRig } from './swap-rig.js';
+import { bootstrapSwapRig, classifyRefusal, shieldedKeysOf, stamp, type Colour, type SwapRig } from './swap-rig.js';
 import {
   custodyTable,
   custodyUnchanged,
@@ -59,9 +72,13 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 type ArmResult = {
   arm: string;
   question: string;
+  /** Each arm gets its OWN wanted colour, so no offer ever wants a colour that already has a pool. */
+  wantedColour?: string;
   offer: { contentAddress: string; imbalances0: unknown; proveMs: number; intentTtl?: string };
   waitedSeconds: number;
   intervention?: string;
+  /** Set when the offer could not be BUILT — e.g. FR-302 placement failing closed (finding F-308). */
+  buildRefusal?: { placementViolation: boolean; error: string };
   take: TakeResult;
   localRefusal?: TakeResult;
   nodeErrorCode: number | null;
@@ -87,18 +104,25 @@ const main = async () => {
     const AA_A = { label: 'AA_A', id: rig.base.raw.AA_A };
     const AA_B = { label: 'AA_B', id: rig.base.raw.AA_B };
     const S_A = await rig.addColour('S_A', 'TOKA');
-    const S_B = await rig.addColour('S_B', 'TOKB');
-
     await rig.mintTo(S_A, MINT_A, SEEDS.ownerN);
-    await rig.mintTo(S_B, MINT_B, SEEDS.ownerT);
     await rig.depositFrom(SEEDS.ownerN, 'OwnerN', S_A, DEPOSIT_A, AA_A.id);
     await rig.base.waitForManagerNow(
       (m) => (m.pools[S_A.hex]?.value ?? 0n) === DEPOSIT_A,
       `pool(S_A) to reach ${DEPOSIT_A}`,
     );
 
+    // One fresh WANTED colour per arm, so no arm's offer ever wants a colour that already has a pool.
+    // Each costs a Minter deployment plus a mint; that is the price of an unconfounded reading.
+    let wantSeq = 0;
+    const freshWantedColour = async (): Promise<Colour> => {
+      const c = await rig!.addColour(`S_B${++wantSeq}`, `TOKB${wantSeq}`);
+      await rig!.mintTo(c, MINT_B, SEEDS.ownerT);
+      return c;
+    };
+
     const mkOffer = async (
       name: string,
+      S_B: Colour,
       opts: { intentTtlSeconds?: number } = {},
     ): Promise<{ offer: SwapOffer; file: string; intentTtl?: string }> => {
       let intentTtl: string | undefined;
@@ -162,7 +186,7 @@ const main = async () => {
       return { offer, file: published.file, intentTtl };
     };
 
-    const takeWith = async (file: string, label: string, ignoreExpiry = false): Promise<TakeResult> => {
+    const takeWith = async (file: string, label: string, S_B: Colour, ignoreExpiry = false): Promise<TakeResult> => {
       const spender = await rig!.base.openSpender('OwnerT', SEEDS.ownerT, [
         { colour: S_B.hex, shielded: true, amount: WANT_B },
       ]);
@@ -184,10 +208,39 @@ const main = async () => {
       },
     ): Promise<ArmResult> => {
       console.log(`\n## arm ${arm}`);
-      const before = await observeCustody(rig!, [S_A, S_B], [AA_A, AA_B], { op2: false });
-      const { offer, file, intentTtl } = await mkOffer(`s5-${arm.toLowerCase()}`, {
-        intentTtlSeconds: opts.intentTtlSeconds,
-      });
+      const S_B = await freshWantedColour();
+      const colours = [S_A, S_B];
+      const before = await observeCustody(rig!, colours, [AA_A, AA_B], { op2: false });
+
+      // A build that fails CLOSED on FR-302 is a RESULT for this arm, not a reason to abandon the
+      // spike. It means the offer could not be published at all — which is worth recording next to the
+      // arms that could be — and the placement rule itself is S5b's subject, not this spike's.
+      let built: { offer: SwapOffer; file: string; intentTtl?: string };
+      try {
+        built = await mkOffer(`s5-${arm.toLowerCase()}`, S_B, { intentTtlSeconds: opts.intentTtlSeconds });
+      } catch (e) {
+        const err = errorChain(e);
+        const placement = /FR-302 VIOLATED/.test(err);
+        log(`arm ${arm}: the offer could not be BUILT — ${placement ? 'FR-302 placement failed closed' : 'build error'}`);
+        const result: ArmResult = {
+          arm,
+          question,
+          offer: { contentAddress: '(not built)', imbalances0: null, proveMs: 0 },
+          waitedSeconds: 0,
+          buildRefusal: { placementViolation: placement, error: err },
+          take: { stage: 'fundability', ok: false, error: err, offlineRefusal: true } as TakeResult,
+          nodeErrorCode: null,
+          nodeErrorDecoded: '(the offer was never published, so no node ever saw it)',
+          nodeVerbatim: null,
+          refusingLayer: placement ? 'harness FR-302 assert (offline, fail-closed)' : 'offer builder',
+          before: before.observation,
+          preTake: before.observation,
+          after: before.observation,
+        };
+        arms.push(result);
+        return result;
+      }
+      const { offer, file, intentTtl } = built;
 
       let intervention: string | undefined;
       if (opts.intervene) intervention = await opts.intervene();
@@ -201,29 +254,30 @@ const main = async () => {
       // The no-state-created baseline is taken HERE, immediately before the take — NOT at `before`.
       // For the INTERVENE arm the intervention deliberately changes custody, so comparing the
       // post-take state against `before` would report "state changed" for a refusal that changed
-      // nothing. The first run of this arm did exactly that and reported a false positive; the
+      // nothing. Gate run 1's first version did exactly that and reported a false positive; the
       // question a refusal has to answer is "did the REFUSAL create state", and only this baseline
       // can answer it.
-      const preTake = opts.intervene || wait > 0 ? await observeCustody(rig!, [S_A, S_B], [AA_A, AA_B], { op2: false }) : before;
+      const preTake = opts.intervene || wait > 0 ? await observeCustody(rig!, colours, [AA_A, AA_B], { op2: false }) : before;
 
       // For the short-TTL arm, first prove the taker's own gate refuses locally, then force it off so
       // the NODE's verdict is on the record too.
       let localRefusal: TakeResult | undefined;
       if (opts.alsoTakeLocallyFirst) {
-        localRefusal = await takeWith(file, `${arm}-local`, false);
+        localRefusal = await takeWith(file, `${arm}-local`, S_B, false);
         log(`arm ${arm}: local gate -> stage=${localRefusal.stage} ok=${localRefusal.ok}`);
       }
-      const take = await takeWith(file, arm, Boolean(opts.alsoTakeLocallyFirst));
+      const take = await takeWith(file, arm, S_B, Boolean(opts.alsoTakeLocallyFirst));
 
       const code = take.nodeRefusal?.code ?? nodeErrorCode(take.error);
-      let after = await observeCustody(rig!, [S_A, S_B], [AA_A, AA_B], { op2: false });
+      let after = await observeCustody(rig!, colours, [AA_A, AA_B], { op2: false });
       if (take.ok) {
-        // Wait for the settlement to be visible before observing, or "after" is just "before".
+        // Wait for the settlement to be visible before observing, or "after" is just "before". The
+        // wanted colour is fresh per arm, so its pool goes from absent to exactly WANT_B.
         await rig!.base.waitForManagerNow(
-          (m) => (m.pools[S_B.hex]?.value ?? 0n) > (before.observation.pools.S_B === 'absent' ? 0n : BigInt(before.observation.pools.S_B!)),
-          `arm ${arm}: pool(S_B) to grow after settlement`,
+          (m) => (m.pools[S_B.hex]?.value ?? 0n) === WANT_B,
+          `arm ${arm}: pool(${S_B.label}) to reach ${WANT_B} after settlement`,
         );
-        after = await observeCustody(rig!, [S_A, S_B], [AA_A, AA_B], { op2: false });
+        after = await observeCustody(rig!, colours, [AA_A, AA_B], { op2: false });
       }
       // Compared on the LEDGER-STATE fingerprint, not on the whole observation: the observation also
       // carries how many times OP2 had to be retried, which is a property of the run rather than of
@@ -233,6 +287,7 @@ const main = async () => {
       const result: ArmResult = {
         arm,
         question,
+        wantedColour: S_B.label,
         offer: {
           contentAddress: offer.terms.contentAddress,
           imbalances0: offer.placement.imbalances['0'],
@@ -287,7 +342,7 @@ const main = async () => {
     // One FULL two-point observation at the end. S5's arms are deliberately OP1-only — its claims are
     // about staleness, not balances — but leaving the whole spike without a single corroborated read
     // would be a gap, so the closing state is confirmed at both points.
-    const closing = await observeCustody(rig, [S_A, S_B], [AA_A, AA_B]);
+    const closing = await observeCustody(rig, [S_A], [AA_A, AA_B]);
     const closingProblems = observationPointsAgree(closing.observation);
     log(`closing two-point observation: ${closingProblems.length === 0 ? 'OP1 and OP2 agree' : closingProblems.join('; ')}`);
 
@@ -304,9 +359,15 @@ const main = async () => {
         detail: intervene.take.ok ? `it settled anyway (${intervene.take.settlement?.txId})` : `code ${intervene.nodeErrorCode ?? 'none'}`,
       },
       {
-        name: 'that refusal is FR-311\'s expected `Custom error: 104` (InvalidError::Transcript)',
-        ok: intervene.nodeErrorCode === 104,
-        detail: `${intervene.nodeErrorCode ?? 'none'} — ${intervene.nodeErrorDecoded}`,
+        // FR-311 predicted 104. The lane answers 239, and 239 is the better answer: an intervening
+        // deposit MERGES the pooled coin, and merging SPENDS it, so the offer's pinned coin is already
+        // nullified. 104 would only have said "a transcript did not match". FR-311 asks for the
+        // MEASURED rule, so the measured rule is what is asserted, with the divergence recorded.
+        name: 'that refusal is `Custom error: 239` (NullifierAlreadyPresent) — the MEASURED rule; FR-311 predicted 104',
+        ok: intervene.nodeErrorCode === 239,
+        detail:
+          `${intervene.nodeErrorCode ?? 'none'} — ${intervene.nodeErrorDecoded}` +
+          (intervene.nodeErrorCode === 104 ? ' (this run matched the ORIGINAL prediction instead)' : ''),
       },
       {
         name: 'the invalidated take created NO state',
@@ -442,7 +503,7 @@ const main = async () => {
         question: 'how long does a published contract offer stay takeable, and what invalidates it?',
         verdict,
         managerAddress: rig.base.managerAddress,
-        colours: { S_A: S_A.hex, S_B: S_B.hex },
+        colours: { S_A: S_A.hex, wantedPerArm: arms.map((a) => a.wantedColour ?? null) },
         parameters: { deposited: String(DEPOSIT_A), gives: String(GIVE_A), wants: String(WANT_B), waits: WAITS, shortTtlSeconds: SHORT_TTL_SECONDS },
         arms,
         closing: closing.observation,

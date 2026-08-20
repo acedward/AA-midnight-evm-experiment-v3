@@ -1,0 +1,117 @@
+# SPIKE S5 — staleness window (FR-311) — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-20T06:53:42.929Z
+# waits: 60, 600, 1800 s; short-TTL arm: 90 s
+[2026-08-20T06:53:43.001Z] wallets open; syncing genesis …
+2026-08-20 02:53:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 02:53:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 02:53:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 02:53:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+[2026-08-20T06:53:44.003Z] genesis: NIGHT=244000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+[2026-08-20T06:53:44.009Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-20T06:54:02.007Z]   submitted tx 0054d262935968e9d7a494546ebd6d7a2274039ba40ed2f4ed73eb9fb885141a53 (hash 43ba2b65fddc9e65516c73eae7305a1e446d6779c9e287397a231174aee2a907)
+[2026-08-20T06:54:02.007Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-20T06:54:02.170Z]   waiting for genesis to observe its own spend (NIGHT at or below 242000000000000) …
+[2026-08-20T06:54:07.829Z]   feePayer: NIGHT already registered for DUST
+2026-08-20 02:54:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 02:54:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+[2026-08-20T06:54:08.331Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T06:54:24.742Z]   submitted tx 00fac505c4236cd8da54f6d6cbc7ae12b5258edb1878bc32013b9f01ece4159a43 (hash f5e1d91a8bc10b147bc3dc047fad5439293be29c8dc79dfdcb26c6100fd501ce)
+[2026-08-20T06:54:24.743Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-20T06:54:24.902Z]   waiting for feePayer to observe its own spend (NIGHT at or below 4000000000000) …
+[2026-08-20T06:54:43.551Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-20 02:54:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 02:54:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+[2026-08-20T06:54:44.074Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T06:55:00.888Z]   submitted tx 00eff8ee12621f61ef43b7c04473785a285364572479caadb89c3ecfd1d50d8461 (hash a6aee570203e23884aabca888e11e8926c6df2e57ab0cf8b5041837e4aeebc67)
+[2026-08-20T06:55:00.888Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-20T06:55:01.066Z]   waiting for feePayer to observe its own spend (NIGHT at or below 3600000000000) …
+[2026-08-20T06:55:09.910Z]   OwnerT-funding: NIGHT already registered for DUST
+2026-08-20 02:55:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 02:55:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+[2026-08-20T06:55:10.422Z] deploying Manager v3 (UNCHANGED from 00005) …
+[2026-08-20T06:55:26.145Z]   Manager at bc3b9d01e6c87f423a52e7ac189089866f84a2ffe0c6e36c1eaf24b37575968f
+[2026-08-20T06:56:02.233Z] AA_A 009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b / AA_B 755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904 registered; custody maps {"pools":0,"shieldedCells":0,"unshieldedCells":0}
+2026-08-20 02:56:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 02:56:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+[2026-08-20T06:56:02.829Z]   funding OwnerA-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T06:56:19.865Z]   submitted tx 00fa0b37fa27a547c571b04378d0f16c319e7b4dbce2e645350c2cc049ebca19e8 (hash 5f3e2b5bf5f686d6e0b99303c1fef7d6391cc7bc001cdda46b208e73bfe8507d)
+[2026-08-20T06:56:19.865Z]   waiting for OwnerA-funding NIGHT to arrive …
+[2026-08-20T06:56:20.001Z]   waiting for feePayer to observe its own spend (NIGHT at or below 3200000000000) …
+[2026-08-20T06:56:30.566Z]   OwnerA-funding: NIGHT already registered for DUST
+2026-08-20 02:56:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 02:56:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+[2026-08-20T06:56:31.121Z] maker OwnerA open (funded + DUST-registered on purpose, so "paid no fees" means something)
+[2026-08-20T06:56:31.121Z] deploying Minter1 (TOKA) …
+[2026-08-20T06:57:26.491Z]   Minter1 at c1b88abf72a9f89585985c35792e1e44dd5b07e80000deedc4924009c37410fa: shielded 63890e238c9c50b46eebf8884c0c4d61f2a4eea922c4e417d1b34bc80e8c504b / unshielded f25bc0323bb8b00b596908e1bb30df531a59f685b853032bfc68ebab20f9fa46
+[2026-08-20T06:57:26.493Z] deploying Minter2 (TOKB) …
+[2026-08-20T06:58:20.041Z]   Minter2 at 276d6e0e6b1825396ba2de26535dc9e78ca9ed133ff735b9ae365116e542075b: shielded 8f3ccbf62eca793c51506af2383726a63e666d35bf35a00960737026c81665f3 / unshielded 101adc0fcd731dacdab0a3ec7e035ef37eb8d81930388a54f795512c72b37778
+[2026-08-20T06:58:37.747Z] minted 16 S_A (63890e238c9c…) in 00ed23bec50763c9c0b093996cd051eba4fad8b763ba33d0dc078446d5841949b8
+[2026-08-20T06:58:55.144Z] minted 16 S_B (8f3ccbf62eca…) in 00fdaabaf1a695d04aa6584f771f93b33189c0b7dbcfec80364b39772e39fb5494
+2026-08-20 02:58:55        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 02:58:55        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+[2026-08-20T06:58:55.761Z]   waiting for OwnerN-spender-1 to see 12 of shielded 63890e238c9c… before spending it …
+[2026-08-20T06:59:19.227Z] OwnerN deposited 12 S_A into custody in 004e05adfe7eb18ab873dcc2cbb29207b21604ff8a9d84d82daf3e229efa6221c8
+
+## arm INTERVENE
+[2026-08-20T06:59:21.288Z] maker[named-taker]: building openSwapShielded(give 1 of 63890e238c9c…, want 1 of 8f3ccbf62eca…)
+[2026-08-20T06:59:21.405Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T06:59:28.793Z] maker[named-taker]: offer proven in 7384 ms; 26878 bytes, sha256 2ac617255fcd0467…; imbalances(0) = {"shielded:8f3ccbf62eca793c51506af2383726a63e666d35bf35a00960737026c81665f3":"-1"}
+2026-08-20 02:59:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 02:59:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+[2026-08-20T06:59:31.176Z]   waiting for OwnerN-intervene-spender-2 to see 1 of shielded 63890e238c9c… before spending it …
+[2026-08-20T06:59:55.327Z] OwnerN-intervene deposited 1 S_A into custody in 0057aece2792ce8507daf5cc7f145a3111f0cd61269cdeed5c2aabe4d682692017
+2026-08-20 02:59:57        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 02:59:57        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+[2026-08-20T06:59:57.925Z]   waiting for OwnerT-spender-3 to see 1 of shielded 8f3ccbf62eca… before spending it …
+[2026-08-20T06:59:57.976Z] taker[INTERVENE]: envelope ok — named-taker offer, give 1 of 63890e238c9c…, want 1 of 8f3ccbf62eca…, 3571 s of life left
+[2026-08-20T06:59:57.982Z] taker[INTERVENE]: fundable — deficits {"0/shielded:8f3ccbf62eca793c51506af2383726a63e666d35bf35a00960737026c81665f3":"-1"}, surpluses {}
+[2026-08-20T06:59:58.124Z] taker[INTERVENE]: balanceUnboundTransaction on a transaction it did not build
+[2026-08-20T06:59:59.747Z] taker[INTERVENE]: merged transaction balances; unswept non-dust surplus {}
+[2026-08-20T06:59:59.747Z] taker[INTERVENE]: submitting the merged transaction
+2026-08-20 03:00:00        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 239
+2026-08-20 03:00:00        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 239
+[2026-08-20T07:00:00.852Z] arm INTERVENE: REFUSED at settlement, code 239; custody unchanged: true
+
+## arm SHORT-TTL
+[2026-08-20T07:00:00.863Z] maker[named-taker]: building openSwapShielded(give 1 of 63890e238c9c…, want 1 of 8f3ccbf62eca…)
+[2026-08-20T07:00:00.969Z]   intent TTL rewrite -> 2026-08-20T07:01:30.000Z
+[2026-08-20T07:00:00.969Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T07:00:06.938Z] maker[named-taker]: offer proven in 5966 ms; 26818 bytes, sha256 4b21097f3890f25e…; imbalances(0) = {"shielded:8f3ccbf62eca793c51506af2383726a63e666d35bf35a00960737026c81665f3":"-1"}
+[2026-08-20T07:00:08.778Z] arm SHORT-TTL: waiting 120 s with NO other activity on this stack
+2026-08-20 03:02:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 03:02:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+[2026-08-20T07:02:09.351Z]   waiting for OwnerT-spender-4 to see 1 of shielded 8f3ccbf62eca… before spending it …
+[2026-08-20T07:02:09.403Z] taker[SHORT-TTL-local]: envelope ok — named-taker offer, give 1 of 63890e238c9c…, want 1 of 8f3ccbf62eca…, -32 s of life left
+[2026-08-20T07:02:09.403Z] taker[SHORT-TTL-local]: REFUSED — offer expired 32 s ago (expiresAt 2026-08-20T07:01:36.937Z); refused locally without contacting the chain
+[2026-08-20T07:02:09.406Z] arm SHORT-TTL: local gate -> stage=expired ok=false
+2026-08-20 03:02:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 03:02:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+[2026-08-20T07:02:09.909Z]   waiting for OwnerT-spender-5 to see 1 of shielded 8f3ccbf62eca… before spending it …
+[2026-08-20T07:02:09.959Z] taker[SHORT-TTL]: envelope ok — named-taker offer, give 1 of 63890e238c9c…, want 1 of 8f3ccbf62eca…, -33 s of life left
+[2026-08-20T07:02:09.964Z] taker[SHORT-TTL]: fundable — deficits {"0/shielded:8f3ccbf62eca793c51506af2383726a63e666d35bf35a00960737026c81665f3":"-1"}, surpluses {}
+[2026-08-20T07:02:09.969Z] taker[SHORT-TTL]: balanceUnboundTransaction on a transaction it did not build
+[2026-08-20T07:02:11.364Z] taker[SHORT-TTL]: merged transaction balances; unswept non-dust surplus {}
+[2026-08-20T07:02:11.364Z] taker[SHORT-TTL]: submitting the merged transaction
+2026-08-20 03:02:12        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 228
+2026-08-20 03:02:12        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 228
+[2026-08-20T07:02:12.434Z] arm SHORT-TTL: REFUSED at settlement, code 228; custody unchanged: true
+
+## arm T60
+[2026-08-20T07:02:12.448Z] maker[named-taker]: building openSwapShielded(give 1 of 63890e238c9c…, want 1 of 8f3ccbf62eca…)
+[2026-08-20T07:02:12.559Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T07:02:18.460Z] maker[named-taker]: offer proven in 5898 ms; 26818 bytes, sha256 cc2a408e0f2fc17c…; imbalances(0) = {"shielded:8f3ccbf62eca793c51506af2383726a63e666d35bf35a00960737026c81665f3":"-1"}
+[2026-08-20T07:02:20.109Z] arm T60: waiting 60 s with NO other activity on this stack
+2026-08-20 03:03:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+2026-08-20 03:03:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:37440/: 1000:: Normal Closure
+[2026-08-20T07:03:20.678Z]   waiting for OwnerT-spender-6 to see 1 of shielded 8f3ccbf62eca… before spending it …
+[2026-08-20T07:03:20.731Z] taker[T60]: envelope ok — named-taker offer, give 1 of 63890e238c9c…, want 1 of 8f3ccbf62eca…, 3538 s of life left
+[2026-08-20T07:03:20.735Z] taker[T60]: fundable — deficits {"0/shielded:8f3ccbf62eca793c51506af2383726a63e666d35bf35a00960737026c81665f3":"-1"}, surpluses {}
+[2026-08-20T07:03:20.816Z] taker[T60]: balanceUnboundTransaction on a transaction it did not build
+[2026-08-20T07:03:22.478Z] taker[T60]: merged transaction balances; unswept non-dust surplus {}
+[2026-08-20T07:03:22.478Z] taker[T60]: submitting the merged transaction
+[2026-08-20T07:03:39.593Z] arm T60: ACCEPTED (0012d8a8a79526114d86aa71dd847100a54f184d620c870efac473c413be379014)
+
+## arm T600
+[2026-08-20T07:03:39.612Z] maker[named-taker]: building openSwapShielded(give 1 of 63890e238c9c…, want 1 of 8f3ccbf62eca…)
+[2026-08-20T07:03:39.786Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+
+S5 FAILED: FR-302 VIOLATED for named-taker offer (openSwapShielded, give 1 63890e238c9c… / want 1 8f3ccbf62eca…): segments present: [0,13681] intent segments: [13681] fallible-offer segments: [13681] expected 0: {"shielded:8f3ccbf62eca793c51506af2383726a63e666d35bf35a00960737026c81665f3":"-1"} observed 0: {} segment-0 exact: false other segments carrying deltas: 13681: {"shielded:8f3ccbf62eca793c51506af2383726a63e666d35bf35a00960737026c81665f3":"-1"} A leg outside the guaranteed section is UNSETTLEABLE by an independent taker (balancing is per (token, segment) and a taker can only reach segment 0). This is lane issue 0003 in its designed-against form — retain this output as evidence.

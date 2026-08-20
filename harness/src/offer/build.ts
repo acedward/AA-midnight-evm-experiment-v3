@@ -135,6 +135,19 @@ export type SwapOfferSpec = {
    * as data rather than assuming the mutation took effect.
    */
   mutateUnproven?: (unprovenTx: any) => void;
+  /**
+   * MEASUREMENT ONLY: record the FR-302 placement instead of failing closed on it.
+   *
+   * FR-302 is fail-closed by design and must stay that way for anything that gets PUBLISHED — an offer
+   * whose value leg is outside the guaranteed section is unsettleable by any taker, so publishing one
+   * would be publishing a lie. But a spike whose whole subject is *when* placement goes wrong needs the
+   * placement report for the failing cases too, and `requirePlacement` throws before it can be read.
+   *
+   * Offers built with this flag are never published: the callers are spikes that read the report and
+   * discard the artifact. `SwapOffer.placement.ok` still tells the truth, so a caller that ignored it
+   * would be making its own mistake rather than inheriting one.
+   */
+  measureOnly?: boolean;
 };
 
 export type SwapOffer = {
@@ -249,10 +262,13 @@ export const buildSwapOffer = async (spec: SwapOfferSpec): Promise<SwapOffer> =>
   if (dust) throw new Error(`FR-301 VIOLATED: the ${spec.shape} maker artifact carries DUST actions`);
 
   const expected = expectedPlacement(spec);
-  const placement = requirePlacement(
-    `${spec.shape} offer (${circuitId}, give ${spec.gives.value} ${giveHex.slice(0, 12)}… / want ${spec.wants.value} ${wantHex.slice(0, 12)}…)`,
-    assertPlacement(proven, expected),
-  );
+  const measured = assertPlacement(proven, expected);
+  const placement = spec.measureOnly
+    ? measured
+    : requirePlacement(
+        `${spec.shape} offer (${circuitId}, give ${spec.gives.value} ${giveHex.slice(0, 12)}… / want ${spec.wants.value} ${wantHex.slice(0, 12)}…)`,
+        measured,
+      );
 
   const bytes: Uint8Array = proven.serialize();
   const createdAt = new Date();
