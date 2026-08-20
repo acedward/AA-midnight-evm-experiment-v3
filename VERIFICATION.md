@@ -202,7 +202,7 @@ gates). Comparator: `scripts/g4/compare-swap-runs.py`. Authoritative record:
 | `08-copy-repro-evidence` | the clone's JSON records and index pages are copied out before teardown destroys them |
 | `09-compare` | verdict-and-shape comparison against the retained original: **zero** shared transaction ids, Manager addresses, colours or pooled-coin nonces, and exact equality of every pool, cell, wallet holding, map size, invariant row and conservation row |
 | `10-report` | `REPORT.md` is re-rendered from retained evidence plus the clone's own |
-| `11-docs` | `REPORT.md`, `README.md` and `VERIFICATION.md` exist, carry both lane labels, disclose **D-307** and **F-310**, surface owner questions **Q02-2** and **Q03-1**, state the FR-308 openness verdict in so many words, carry the findings this project owes a reader, keep the three archives intact, prove `contracts/minter.compact` is still byte-identical to `f066a09`, and prove no generated artifact, key or `docker/.env` is tracked by git |
+| `11-docs` | `REPORT.md`, `README.md` and `VERIFICATION.md` exist, carry both lane labels, disclose **D-307** and **F-310**, surface owner questions **Q02-2** and **Q03-1** (both decided 2026-08-20, and the documents say so), state the FR-308 openness verdict in so many words, carry the findings this project owes a reader, keep the three archives intact, prove `contracts/minter.compact` is still byte-identical to `f066a09`, and prove no generated artifact, key or `docker/.env` is tracked by git |
 | teardown | the temporary clone is removed (after validating the path really is a temporary one), then no `aa00006*` container, volume or network is left, then W-1's scratch config is removed |
 
 ### What the comparator deliberately does NOT demand
@@ -225,7 +225,7 @@ comparator stricter than the specification is a comparator bug:
 | Run | Outcome | Notes |
 |---|---|---|
 | `--offline` preflight | **GREEN** | clone, spec hash, the non-vacuous freshness self-test (exit **2**, every substantive check passing), report render, document checks; `final_exit: 0` including teardown, clone removal and the residue proof. Retained separately at `evidence/g4-closeout/offline-preflight/`, because the full run overwrites that directory and a preflight that established the guard is not vacuous is evidence in its own right |
-| full run | see `evidence/g4-closeout/run.log` (`final_exit`) and `09-compare.out` | the authoritative record. `evidence/g4-closeout/repro/` holds the reproduction's own evidence |
+| **full run 1** | **GREEN — `final_exit: 0`**, 2 h 47 m (started `2026-08-20T13:27:53Z`, finished `2026-08-20T16:15:23Z`), including teardown, clone removal and the residue proof; host verified free of every `aa00006-*` container, volume and network | G1 46 m → G2 82 m → G3 39 m inside the clone, in series. **0 shared transaction ids** (97 original / 106 reproduced), and 0 shared Manager addresses, colours or pooled-coin nonces. All three stages GREEN: 23 rows, 217 checks, every status, check tally and refusal code identical (`1`, `244`, `228`, `239`, `239`, `104`). Both settlements landed under ONE transaction id on NEW ids — v1 `00b917f91daaad575d0827…`, v2 `003929da6f91ef0112ee71…`. FR-308 openness GREEN again via the floating surplus; the F-310 boundary identical. **One reported finding:** spike S2 diverged (see F-306, amended). Records: `run.log`, `09-compare.out`, and the reproduction's own evidence in `repro/` (99 files) |
 
 ## Deviations, findings and workarounds, with where each was established
 
@@ -233,7 +233,7 @@ comparator stricter than the specification is a comparator bug:
 |---|---|---|
 | **LANE-DEV-1** | compactc `0.33.0` substituted for `-rc.2`; inherited, owner-approved, never re-pinned | `evidence/*/04-lane-dev-1.out` |
 | **D-306** | offers publish as the **UNBOUND** (`pre-binding`) form; the bound form is a proven fallback | G1 spike S3, cross-checked against S1 |
-| **D-307** | the step ledger is PARTITIONED across three fresh Managers on one chain | G3, forced by F-310; **owner ratification wanted (Q03-1)** |
+| **D-307** | the step ledger is PARTITIONED across three fresh Managers on one chain | G3, forced by F-310. **Owner decision 2026-08-20 (Q03-1): D-307 STANDS AS THE RECORD** — "record what really was tested"; a full re-run is left for later and the spec file stays byte-identical |
 | **F-301** | node `104` = `InvalidError::Transcript`; descending merged segment order is NECESSARY (and sufficient for a genuine read-after-write); for disjoint pairs refusals concentrate on new-key insertion | G1 spike S2, replicated across four runs (shape B: 23/23 ascending accepted, 25/25 descending refused) |
 | **F-306** (amended by G4) | post-hoc re-keying of a merged transaction's segments is **state-dependent**: refused **12/12** with `235` in the canonical G1 run, **accepted 12/12** in the G4 clean-clone reproduction of the same code. Mechanism (hypothesis, with support): a re-key moves `fallibleOffer` entries only if they exist, so it is harmless when the zswap items are GUARANTEED and fatal when they are FALLIBLE — i.e. it is governed by the same cost budget as F-308/F-310. Conclusion unchanged and stronger: segment assignment is a build-time decision and the mitigation belongs upstream | G1 spike S2 + the G4 reproduction |
 | **F-302** | the inherited tree does not typecheck at the base commit — a defect in the pinned TYPES, reproduced identically in the 00005 clone. Handled by subtracting exactly that one baseline error and failing if it stops reproducing | G1 Phase 1 |
@@ -243,7 +243,7 @@ comparator stricter than the specification is a comparator bug:
 | **F-307** | a contract DEPLOY budget on this lane is ~**13 provable circuits** (60.1% of the per-block `bytesWritten` ceiling; 14 circuits at 64.7% is refused). v3 had 12, so v4's budget was ONE new circuit and the two FR-308 shapes were merged into it | G2, four probe contracts deployed live |
 | **F-308** | lane issue 0003 observed LIVE: an offer's value leg goes fallible once the wanted colour already has a pool, and FR-302 failed closed | G2 gate run 1 |
 | **F-309** | refusal codes decoded from the pinned node source: `239`, `228`, `104`, plus `118`/`129`/`167` | G2 gate run 1 |
-| **F-310** | **an offer is publishable only while custody holds ONE shielded cell** — dose-response, monotone, both shapes flipping together, the deciding step adding a CELL with the pool count held at 1 | G2 spike S5b, replicated in three independent runs; **owner decision wanted (Q02-2)** |
+| **F-310** | **an offer is publishable only while custody holds ONE shielded cell** — dose-response, monotone, both shapes flipping together, the deciding step adding a CELL with the pool count held at 1 | G2 spike S5b, replicated in three independent runs and a **fourth** time by the G4 clean-clone reproduction. **Owner decision 2026-08-20 (Q02-2): measure the alternatives** in a follow-up rig; the Manager v4 shipped here does not change |
 | **F-311** | NC-301 is sharper than the spec expected: the published (unbound) offer is refused by the node at DESERIALIZATION (`1`), and the row records refusals at three non-overlapping layers | G3 stage A row 4 |
 | **F-312** | the double take (NC-302) is refused with `244` = `ReplayProtectionViolation(IntentAlreadyExists)` — replay protection fires before the spent coin's nullifier is consulted, so the spec's parenthetical "backing coin spent" names a mechanism that is real but second in line | G3 stage A row 6, decoded from `types.rs:411-414` |
 | **W-1** | scratch `DOCKER_CONFIG` for every gate (a credential helper can hang). HOST workaround | inherited, step 01 everywhere |
@@ -256,7 +256,8 @@ Stated plainly, because a verification document that only lists successes is a m
 1. **The specification's literal 13-row single-Manager step ledger did not run, and cannot at these
    pins.** F-310 caps publishability at one shielded custody cell and row 5's settlement creates the
    second. What ran is D-307's three-stage partition, with every row's exact amounts and assertions.
-   The limit itself is evidenced by P-F310 rather than asserted. **Owner ratification is wanted.**
+   The limit itself is evidenced by P-F310 rather than asserted. **The owner's decision (2026-08-20)
+   is that this record stands as what was tested**, with a full re-run left for later.
 2. **The bearer-key shape (FR-308 v2b) was implemented but NOT RUN.** FR-308 makes openness GREEN if
    EITHER shape settles, and the floating surplus settled. Nothing here says the bearer shape would
    fail; it answers no open question and would have spent a shared host's proof server for nothing.
@@ -266,9 +267,11 @@ Stated plainly, because a verification document that only lists successes is a m
 4. **Whether pool COUNT alone crosses the publishability boundary was not isolated.** S5b's steps 3–4
    grow pools and cells together; only the cell-count sufficiency is claimed (step 2 holds the pool
    count at 1).
-5. **The transcript-cost reduction that might buy more cells was not attempted** — it changes the
-   contract the owner-REQUIRED openness result rests on, and its payoff is unmeasured. That is
-   question **Q02-2**, left for the owner.
+5. **The transcript-cost reduction that might buy more cells was not attempted here** — it changes the
+   contract the owner-REQUIRED openness result rests on, and its payoff is unmeasured. That was
+   question **Q02-2**; the owner has since directed that the alternatives be MEASURED in a follow-up
+   rig, explicitly without changing the Manager v4 shipped here. Nothing this project proved depends
+   on that measurement.
 6. **`104` for the staleness case, as FR-311 predicted, was not observed** — the lane answers `239`,
    3/3 in G2 and again in G3. The measured rule is what is asserted.
 7. **The S5 timing arm at T600 was not measured** and is not claimed. T60 (accepted) and T1800

@@ -9,7 +9,7 @@ under **ONE transaction id**. Two halves are reported, never conflated: **v1**, 
 and **v2**, the OPEN offer — usable by a holder whose keys the maker never knew, which is the
 owner's REQUIRED outcome (spec FR-308, owner Q1 2026-08-19).
 
-Generated 2026-08-20T16:15:20.872Z from retained evidence in `evidence/`. Nothing in this
+Generated 2026-08-20T16:38:38.239Z from retained evidence in `evidence/`. Nothing in this
 report is restated by hand; every figure is read from the file named beside it.
 
 ## The two headline results
@@ -61,7 +61,12 @@ no recipient field of any kind.
 
 **Why three.** rows 5 and 8 each require a settlement and a settlement exhausts the budget, so TWO Managers are unavoidable. The third keeps the refusal-only negatives from interleaving with — and destroying — the live offers rows 5 and 8 must settle. A two-stage packing is arithmetically possible and was rejected: it would make the owner-REQUIRED rows 7–8 depend on five prior interventions each landing exactly right.
 
-**Status.** owner ratification wanted as a spec amendment — Plan 03 question Q03-1. The spec file is byte-identical.
+**Status as recorded by the run.** owner ratification wanted as a spec amendment — Plan 03 question Q03-1. The spec file is byte-identical.
+
+**Status now (owner decision, 2026-08-20): D-307 STANDS AS THE RECORD** — "record what really was
+tested", with a full re-run left for later. The line above is what the run itself wrote, kept
+verbatim because it is generated from the same committed expectation table the run asserted
+against; the decision supersedes only its last clause. The spec file remains byte-identical.
 
 | Stage | Manager | Carries | Verdict | Rows | Checks |
 |---|---|---|---|---|---|
@@ -69,12 +74,16 @@ no recipient field of any kind.
 | **B** | `95fb94dc5df1d640705f…` | rows 7–8 (P-OPEN — the owner-REQUIRED open offer) | GREEN | 3 | 44 |
 | **C** | `f6eb885f4760142781e6…` | rows 9 (NC-303), 11 (P-104), 12 (P-CXL, both forms), NC-306, P-F310 replication | GREEN | 8 | 57 |
 
-### Open owner questions, both raised by execution and neither answered here
+### The two owner questions this project raised — both now decided (2026-08-20)
 
-| Question | What it asks | Recommendation recorded in the plan |
+| Question | What it asked | Owner decision |
 |---|---|---|
-| **Q02-2** | F-310: an offer is publishable only while custody holds ONE shielded cell. Accept the limit, or reduce the circuit's transcript cost and re-measure? | A (accept now), with the cost reduction as a scoped follow-up |
-| **Q03-1** | ratify D-307 as a spec amendment — the ledger ran per-stage, not as one 13-row single-Manager sequence | A (ratify), with Q02-2 option B as the route to the literal table |
+| **Q02-2** | F-310: an offer is publishable only while custody holds ONE shielded cell. Accept the limit, or reduce the circuit's transcript cost and re-measure? | **Measure the alternatives.** A follow-up measurement plan (Plan 05, "F-310 mitigation rig") runs five contract variants against two use cases — self-merge and published-file — at custody sizes past the current boundary. **The Manager v4 shipped here does not change**, and productizing any winner is a separate numbered project with its own spec |
+| **Q03-1** | ratify D-307 — the ledger ran per-stage, not as one 13-row single-Manager sequence | **D-307 stands as the record**: "record what really was tested", with a full re-run left for later. The spec file stays byte-identical and this report is that record |
+
+So nothing in this report is waiting on a decision. What is *not* settled is the engineering
+question behind Q02-2 — whether transcript cost can be cut far enough to lift the one-cell
+boundary — and that is a measurement, now scheduled, not an unknown in what was proven here.
 
 ### The lane
 
@@ -253,8 +262,10 @@ partially-applied swap is worse than an unpublishable one.** Rejected with reaso
 
 **The safe lever is transcript COST, and it is real but unquantified** — `openSwapShielded`
 re-reads the same map entries several times. Deduplicating is semantics-preserving and might buy
-one cell or ten; only measuring tells. That is owner question **Q02-2**, deliberately not taken
-unilaterally, because it changes the contract the owner-REQUIRED openness result rests on.
+one cell or ten; only measuring tells. That was owner question **Q02-2**, deliberately not taken
+unilaterally here, because it changes the contract the owner-REQUIRED openness result rests on —
+and the owner has since decided to **measure the alternatives** in a follow-up rig (Plan 05) whose
+binding constraint is that the Manager v4 shipped in this PR does not change.
 
 ### F-308 — lane issue 0003, observed live: placement is state-dependent, and FR-302 caught it
 
@@ -395,7 +406,7 @@ layer is not claimed** for that one.
 | **G1** | `scripts/g1/verify-g1-spikes.sh` | 2026-08-20T03:04:35Z | 2026-08-20T03:44:56Z | 18 | 40 min | exit 0 | **0** |
 | **G2** | `scripts/g2/verify-g2-contracts.sh` | 2026-08-20T09:16:50Z | 2026-08-20T10:38:49Z | 20 | 82 min | exit 0 | **0** |
 | **G3** | `scripts/g3/verify-g3-swap-ledger.sh` | 2026-08-20T12:17:25Z | 2026-08-20T12:57:26Z | 18 | 40 min | exit 0 | **0** |
-| **G4** | `scripts/g4/verify-g4-closeout.sh` | 2026-08-20T13:27:53Z |  | 9 | 167 min |  | **(in progress)** |
+| **G4** | `scripts/g4/verify-g4-closeout.sh` | 2026-08-20T13:27:53Z | 2026-08-20T16:15:23Z | 11 | 167 min | exit 0 | **0** |
 
 The G4 row is written by the run that renders this report, so its `finished`/`final_exit` are
 necessarily "in progress" here; the authoritative record is `evidence/g4-closeout/run.log`.
@@ -403,8 +414,11 @@ necessarily "in progress" here; the authoritative record is `evidence/g4-closeou
 ## Clean-clone reproduction (SC-306)
 
 Reproduced from a clean `git clone` into a temporary directory, running the same three gate
-wrappers against fresh stacks. The clone is deleted at teardown, so the figures below are copied
-into `evidence/g4-closeout/repro/` by the gate itself — otherwise they would be gone.
+wrappers against fresh stacks of their own. The clone is deleted at teardown, so the figures
+below are copied into `evidence/g4-closeout/repro/` by the gate itself — otherwise they would be
+gone, and a reproduction claim with no retained evidence is an assertion. This section can be
+re-rendered from those committed files at any time:
+`npx tsx src/g4/swap-report.ts evidence/g4-closeout/repro`.
 
 | What | Original | Reproduction |
 |---|---|---|

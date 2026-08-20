@@ -31,7 +31,16 @@ const G2_BUDGET = 'g2-deploy-budget';
 const G3 = 'g3-swap-ledger';
 const G4 = 'g4-closeout';
 
-const ev = (root: string, ...parts: string[]) => join(root, 'evidence', ...parts);
+/**
+ * Evidence path inside a run root.
+ *
+ * A "root" is normally a repository (so its evidence lives under `evidence/`), but the clean clone is
+ * DELETED at teardown and only its copied evidence survives — `evidence/g4-closeout/repro/`. Accepting
+ * an evidence directory directly is what lets this report be re-rendered later from committed files
+ * alone, with no live clone anywhere: `npx tsx src/g4/swap-report.ts evidence/g4-closeout/repro`.
+ */
+const ev = (root: string, ...parts: string[]) =>
+  existsSync(join(root, 'evidence')) ? join(root, 'evidence', ...parts) : join(root, ...parts);
 
 const readJson = (p: string): any => {
   if (!existsSync(p)) throw new Error(`missing evidence file: ${p}`);
@@ -251,7 +260,12 @@ const main = () => {
     '',
     `**Why three.** ${DEVIATION_D307.minimality}.`,
     '',
-    `**Status.** ${DEVIATION_D307.ratification}.`,
+    `**Status as recorded by the run.** ${DEVIATION_D307.ratification}.`,
+    '',
+    '**Status now (owner decision, 2026-08-20): D-307 STANDS AS THE RECORD** — "record what really was',
+    'tested", with a full re-run left for later. The line above is what the run itself wrote, kept',
+    'verbatim because it is generated from the same committed expectation table the run asserted',
+    'against; the decision supersedes only its last clause. The spec file remains byte-identical.',
     '',
     ...table(
       ['Stage', 'Manager', 'Carries', 'Verdict', 'Rows', 'Checks'],
@@ -265,23 +279,27 @@ const main = () => {
       ]),
     ),
     '',
-    '### Open owner questions, both raised by execution and neither answered here',
+    '### The two owner questions this project raised — both now decided (2026-08-20)',
     '',
     ...table(
-      ['Question', 'What it asks', 'Recommendation recorded in the plan'],
+      ['Question', 'What it asked', 'Owner decision'],
       [
         [
           '**Q02-2**',
           'F-310: an offer is publishable only while custody holds ONE shielded cell. Accept the limit, or reduce the circuit\'s transcript cost and re-measure?',
-          'A (accept now), with the cost reduction as a scoped follow-up',
+          '**Measure the alternatives.** A follow-up measurement plan (Plan 05, "F-310 mitigation rig") runs five contract variants against two use cases — self-merge and published-file — at custody sizes past the current boundary. **The Manager v4 shipped here does not change**, and productizing any winner is a separate numbered project with its own spec',
         ],
         [
           '**Q03-1**',
-          'ratify D-307 as a spec amendment — the ledger ran per-stage, not as one 13-row single-Manager sequence',
-          'A (ratify), with Q02-2 option B as the route to the literal table',
+          'ratify D-307 — the ledger ran per-stage, not as one 13-row single-Manager sequence',
+          '**D-307 stands as the record**: "record what really was tested", with a full re-run left for later. The spec file stays byte-identical and this report is that record',
         ],
       ],
     ),
+    '',
+    'So nothing in this report is waiting on a decision. What is *not* settled is the engineering',
+    'question behind Q02-2 — whether transcript cost can be cut far enough to lift the one-cell',
+    'boundary — and that is a measurement, now scheduled, not an unknown in what was proven here.',
     '',
     '### The lane',
     '',
@@ -512,8 +530,10 @@ const main = () => {
     '',
     '**The safe lever is transcript COST, and it is real but unquantified** — `openSwapShielded`',
     're-reads the same map entries several times. Deduplicating is semantics-preserving and might buy',
-    'one cell or ten; only measuring tells. That is owner question **Q02-2**, deliberately not taken',
-    "unilaterally, because it changes the contract the owner-REQUIRED openness result rests on.",
+    'one cell or ten; only measuring tells. That was owner question **Q02-2**, deliberately not taken',
+    'unilaterally here, because it changes the contract the owner-REQUIRED openness result rests on —',
+    'and the owner has since decided to **measure the alternatives** in a follow-up rig (Plan 05) whose',
+    'binding constraint is that the Manager v4 shipped in this PR does not change.',
     '',
     '### F-308 — lane issue 0003, observed live: placement is state-dependent, and FR-302 caught it',
     '',
@@ -721,8 +741,11 @@ const main = () => {
     const rTx = rsts.flatMap((s) => s.rows.flatMap((r) => r.txIds));
     p(
       `Reproduced from a clean \`git clone\` into a temporary directory, running the same three gate`,
-      'wrappers against fresh stacks. The clone is deleted at teardown, so the figures below are copied',
-      'into `evidence/g4-closeout/repro/` by the gate itself — otherwise they would be gone.',
+      'wrappers against fresh stacks of their own. The clone is deleted at teardown, so the figures',
+      "below are copied into `evidence/g4-closeout/repro/` by the gate itself — otherwise they would be",
+      'gone, and a reproduction claim with no retained evidence is an assertion. This section can be',
+      're-rendered from those committed files at any time:',
+      '`npx tsx src/g4/swap-report.ts evidence/g4-closeout/repro`.',
       '',
       ...table(
         ['What', 'Original', 'Reproduction'],

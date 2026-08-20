@@ -30,8 +30,11 @@ Two halves are demonstrated and they are never conflated:
 > settle it, and the builder then refuses to publish it (fail-closed, by design).
 > **D-307:** because of F-310, the specification's 13-row single-Manager step ledger **cannot run as
 > literally written**, so it ran **partitioned across three fresh Managers on one chain in one
-> scripted run**, every row keeping the spec's exact amounts and assertions. That is a deviation
-> awaiting owner ratification, and it is **never** presented as the spec's literal table.
+> scripted run**, every row keeping the spec's exact amounts and assertions. The owner's decision
+> (2026-08-20) is that **this deviation stands as the record of what was tested**; the spec file is
+> byte-identical and unedited, and the partitioned run is **never** presented as the spec's literal
+> table. Lifting the F-310 boundary is a separate, scheduled measurement — it does not change the
+> Manager shipped here.
 
 Full report: [`REPORT.md`](REPORT.md) — start there. Command-by-command ledger:
 [`VERIFICATION.md`](VERIFICATION.md).
