@@ -1,6 +1,6 @@
 # Deviation D-307 — the demonstration ledger is PARTITIONED across three fresh Managers on one chain
 
-`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-20T12:57:24.466Z
+`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-20T13:02:51.192Z
 
 ## Cause
 

@@ -1,6 +1,6 @@
 # Custody after every row — pools, cells, map sizes, both observation points
 
-`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-20T12:57:24.466Z
+`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-20T13:02:51.192Z
 
 One row per demonstration row, in run order. `absent` and `0` are DIFFERENT claims: a cell that does not exist is what a no-state-created proof turns on. OP2 is a proved on-chain circuit call and is consulted at the settlement rows and the closing tables; elsewhere the claim is that state did not change, which OP1 establishes by being byte-identical.
 

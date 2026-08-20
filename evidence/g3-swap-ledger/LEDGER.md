@@ -1,6 +1,6 @@
 # The swap step ledger — what ran, where, and with what verdict
 
-`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-20T12:57:24.466Z
+`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-20T13:02:51.192Z
 
 ## Overall: **GREEN**
 
@@ -29,7 +29,7 @@
 | 9 | Expiry negative: OFFER-3 (small give) held past its TTL, then taken | C | `row-9` | PASS | 9/9 |
 | 10 | Tamper negative: OFFER-1's retained bytes, one byte flipped, taken | A | `row-10` | PASS | 7/7 |
 | 11 | Staleness probe (FR-311): OFFER-4 built on a live colour, then an ordinary deposit lands on that colour, then OFFER-4 taken | C | `row-11` | MEASURED | 6/6 |
-| 12 | Cancellation: OFFER-5 built, maker then moves the backing pool coin (internal transfer / withdraw), OFFER-5 taken | C | `row-12a` | MEASURED | 7/7 |
+| 12 | Cancellation: OFFER-5 built, maker then moves the backing pool coin (internal transfer / withdraw), OFFER-5 taken | C, C | `row-12a`, `row-12b` | MEASURED, MEASURED | 7/7, 7/7 |
 
 ### Where a row was run differently, and why
 

@@ -56,7 +56,16 @@ const main = () => {
   const present = stages.filter((s): s is Stored => Boolean(s));
   const byStage = new Map(present.map((s) => [s.stage, s]));
   const allRows = present.flatMap((s) => s.rows.map((r) => ({ ...r, stage: s.stage })));
-  const rowFor = (n: number) => allRows.filter((r) => r.specRow === n);
+  /**
+   * Every run row belonging to one spec row.
+   *
+   * The id prefix is matched as well as `specRow`, because a spec row can need MORE THAN ONE run row:
+   * the spec's row 12 names two cancellation mechanisms ("internal transfer / withdraw") that turn out
+   * to be genuinely different, so it runs as `row-12a` and `row-12b`. Matching on `specRow` alone left
+   * the second one out of this table, which is exactly the kind of gap the index exists to prevent.
+   */
+  const rowFor = (n: number) =>
+    allRows.filter((r) => r.specRow === n || new RegExp(`^row-${n}[a-z]?$`).test(r.id));
 
   const overall = present.length === 3 && present.every((s) => s.verdict === 'GREEN') ? 'GREEN' : 'RED';
   const stamp = new Date().toISOString();
