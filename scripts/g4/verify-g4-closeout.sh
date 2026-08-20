@@ -68,6 +68,15 @@ done
 
 EVID="$ROOT/evidence/g4-closeout"
 GATE=$([ "$MODE" = "offline" ] && echo "G4-OFFLINE" || echo "G4")
+
+# Clear THIS gate's own per-step outputs before recording anything new. Not tidiness: `--offline` and a
+# full run write different step numbers (`05-report.out` vs `05-reproduce-g1.out`), so without this a
+# directory ends up holding two runs' answers side by side with nothing to say which is which — and a
+# reader cannot tell an orphan from a result. Subdirectories are left alone on purpose: `repro/` and
+# `offline-preflight/` are deliberately retained records, and `run.log` is truncated by `fs_init`.
+if [ -d "$EVID" ]; then
+  find "$EVID" -maxdepth 1 -type f -name '*.out' -delete
+fi
 fs_init "$GATE" "$EVID" "$MODE"
 
 CLONE_PARENT=""
