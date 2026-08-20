@@ -284,15 +284,23 @@ const main = async () => {
     md.push('');
     md.push('Read for EVERY segment the transaction has, never assumed (lane issue 0003).');
     md.push('');
-    md.push('| Leg | segments | intent segments | imbalances(0) | other segments carrying deltas |');
-    md.push('|---|---|---|---|---|');
+    md.push('| Leg | segments | intent segments | fallible-offer segments | imbalances(0) | other segments carrying deltas |');
+    md.push('|---|---|---|---|---|---|');
     for (const l of legs) {
       const p: any = l.makerPlacement;
       md.push(
         `| ${l.id} | ${JSON.stringify(p.segments)} | ${JSON.stringify(p.intentSegments)} | ` +
-          `\`${JSON.stringify(p.imbalances['0'])}\` | ${p.offendingSegments.length ? p.offendingSegments.join('; ') : 'none' } |`,
+          `${JSON.stringify(p.fallibleOfferSegments)} | \`${JSON.stringify(p.imbalances['0'])}\` | ` +
+          `${p.offendingSegments.length ? p.offendingSegments.join('; ') : 'none'} |`,
       );
     }
+    md.push('');
+    md.push('> **F-304.** `Transaction::segments()` exists in the ledger (`ledger/src/structure.rs:1817`) but is NOT');
+    md.push('> bound to JS at these pins — `ledger-wasm/src/tx.rs` exports no `segments` and `ledger-v9.d.ts` declares');
+    md.push('> none. The segment set above is therefore recomputed in TypeScript as the ledger does it,');
+    md.push('> `{0} ∪ intents.keys() ∪ fallibleOffer.keys()`. This matters: the first version of the assert used');
+    md.push('> `tx.segments?.() ?? [0]`, which silently degraded FR-302 to "segment 0 looks right" and would have');
+    md.push('> MISSED a leg parked in a fallible segment — exactly the failure lane issue 0003 says to expect.');
     md.push('');
     md.push('## Verbatim refusals (F-202 clean — stack frames stripped)');
     md.push('');
@@ -305,7 +313,7 @@ const main = async () => {
       }
     }
     md.push('');
-    md.push('## Validation outcomes (the facade\'s own `validateTransaction`)');
+    md.push('## Validation outcomes (the facade\'s own `validateTransaction`) — finding F-303');
     md.push('');
     md.push('| Leg | flags | passed | error |');
     md.push('|---|---|---|---|');
@@ -314,6 +322,20 @@ const main = async () => {
         md.push(`| ${l.id} | \`${JSON.stringify(v.flags)}\` | ${v.passed} | ${v.error ? `\`${v.error}\`` : '—'} |`);
       }
     }
+    md.push('');
+    md.push('> **F-303 — `validateTransaction` cannot validate a CONTRACT-CALL transaction on this lane, and its');
+    md.push('> refusal is a FALSE NEGATIVE.** Every call above fails with `call to non-existant contract');
+    md.push('> ContractAddress(…)` — including the pre-submit one with all three flags true — and yet the very same');
+    md.push('> transaction was then accepted by the node and committed. The cause is in the pinned SDK, not the offer:');
+    md.push('> `wallet-sdk-capabilities/dist/validation/validationService.js:28-31` builds a **BLANK** `LedgerState`');
+    md.push('> (`LedgerState.blank(networkId)` with only `parameters` filled in), so no deployed contract exists in the');
+    md.push('> reference state and `wellFormed` rejects any transaction that calls one. The same file\'s type declares');
+    md.push('> the proof-verification flags deliberately omitted because they "require the complete ledger state".');
+    md.push('>');
+    md.push('> **Consequence for FR-303**, which names `validateTransaction` in the taker pipeline: for a contract');
+    md.push('> offer this step is INFORMATIONAL ONLY and must never gate settlement. `settleAsTaker` therefore RECORDS');
+    md.push('> each outcome and carries on; a fail-closed implementation of FR-303 as literally written would refuse');
+    md.push('> every offer this project exists to settle. Plan 03 must keep it non-gating and say so in the evidence.');
     md.push('');
     md.push('## Maker DUST');
     md.push('');

@@ -1,0 +1,82 @@
+[W-2] re-exec under 'caffeinate -is' so this host cannot idle-sleep mid-gate
+[W-2] already running under caffeinate (pid 81413) — idle sleep is held off
+[G1] EXPERIMENTAL_LANE / LANE-DEV-1 — 00006, mode=full
+[G1] compose project: aa00006-g1-20260820012716-81413
+[G1] ok: 01-w1-docker-config (2s)
+[G1] ok: 02-probe-ports (0s)
+[G1] ok: 03-lane-reuse (1s)
+[G1] ok: 04-lane-dev-1 (3s)
+[G1] ok: 05-compile-fast (2s)
+[G1] ok: 06-install (0s)
+[G1] ok: 07-compile-zk (65s)
+[G1] ok: 08-typecheck (2s)
+[G1] ok: 09-pull (2s)
+[G1] ok: 10-boot (6s)
+[G1] ok: 11-health (3s)
+[G1] ok: 12-wallets (5s)
+[G1] ok: 13-funding (80s)
+[G1] ok: 14-record-lane (0s)
+[G1] ok: 15-spike-s1 (338s)
+[G1] STEP FAILED: 16-spike-s2 (exit 1)
+# SPIKE S2 — what causes node `Custom error: 104`? — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-20T01:35:47.332Z
+# attempts: 12 for shapes A/B, 8 for shapes D/C
+# host: 16 cores, 1-min load 3.13; load gate at 16, per-attempt timeout 240s, up to 3 infrastructure retries
+[2026-08-20T01:35:47.401Z] wallets open; syncing genesis …
+2026-08-19 21:35:47        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+2026-08-19 21:35:47        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+2026-08-19 21:35:47        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+2026-08-19 21:35:47        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+[2026-08-20T01:35:47.957Z] genesis: NIGHT=247000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+[2026-08-20T01:35:47.997Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-20T01:36:06.739Z]   submitted tx 004a99370fee70f5ba33eeb163ce0fb0eab596995b1dedb84ad6ecde501d801bec (hash 04aae2440fb35f9793247aacaf45b2d04bc5e57b9e57bc17a27e1a61c5dad42a)
+[2026-08-20T01:36:06.739Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-20T01:36:06.906Z]   waiting for genesis to observe its own spend (NIGHT at or below 245000000000000) …
+[2026-08-20T01:36:22.007Z]   feePayer: NIGHT already registered for DUST
+2026-08-19 21:36:22        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+2026-08-19 21:36:22        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+[2026-08-20T01:36:22.338Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T01:36:37.528Z]   submitted tx 00cf9e3e0a24e29eaaae2ec85171baf77a3e2ebb546174630a23f24ece80be44cb (hash 2bebd9d3ee170a659ad950124d5f280dd9f3d2ad72d7a7d4848085b4b8a014e9)
+[2026-08-20T01:36:37.529Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-20T01:36:37.663Z]   waiting for feePayer to observe its own spend (NIGHT at or below 3799999000000) …
+[2026-08-20T01:36:46.588Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-19 21:36:46        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+2026-08-19 21:36:46        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+[2026-08-20T01:36:46.938Z] deploying Manager v3 (UNCHANGED from 00005) …
+[2026-08-20T01:37:08.145Z]   Manager at 4312ffe0718cc84fbf87f8aea71be900f9d271ba20d7b299a9e81d019201f888
+[2026-08-20T01:37:44.228Z] AA_A 009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b / AA_B 755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904 registered; custody maps {"pools":0,"shieldedCells":0,"unshieldedCells":0}
+[2026-08-20T01:37:44.323Z] deploying Minter5 (TOKE) …
+[2026-08-20T01:38:39.036Z]   Minter5 at ab70fa589b1b881f8a37f3b7aaa130e2590e540121c3bd9245be3639e2994e84: shielded e0911948bd8456bf7abf1b5afa5a677c656df08c41aadaafd2f91c584f055741 / unshielded c6b1e075221cc08a288a82044bd9932446a3f08bb57b378af74c2e026fe4df1e
+2026-08-19 21:38:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+2026-08-19 21:38:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+[2026-08-20T01:39:12.828Z] minted 30 TOKE-shielded (000261fa35ee30cedb974329e13b7581a2af7e18b0a2cc6ba719837e050426610c) and 16 TOKE-unshielded (00356afaeb9948030d07561f6a76bc3ca43b43315e380018a2a74ddb7ccbef744c) to OwnerN
+[2026-08-20T01:39:12.852Z] custody maps before S2: {"pools":0,"shieldedCells":0,"unshieldedCells":0}
+
+## SHAPE A — INDEPENDENT pair (00005 M3: depositShielded S5 + depositUnshielded U5 -> AA_B; DISJOINT state)
+2026-08-19 21:39:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+2026-08-19 21:39:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+[2026-08-20T01:39:13.217Z]   waiting for OwnerN-spender-2 to see 1 of shielded e0911948bd84… before spending it …
+[2026-08-20T01:39:13.219Z]   waiting for OwnerN-spender-2 to see 1 of unshielded c6b1e075221c… before spending it …
+2026-08-19 21:39:19        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 21:39:19        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T01:39:19.364Z]   attempt 1: lazyInit=true load=3.43 segments call1=36292 call2=34103 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-independent-1': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 21:39:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+2026-08-19 21:39:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+[2026-08-20T01:39:19.709Z]   waiting for OwnerN-spender-3 to see 1 of shielded e0911948bd84… before spending it …
+[2026-08-20T01:39:19.710Z]   waiting for OwnerN-spender-3 to see 1 of unshielded c6b1e075221c… before spending it …
+2026-08-19 21:39:25        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 21:39:25        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T01:39:25.050Z]   attempt 2: lazyInit=true load=4.20 segments call1=31823 call2=8723 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-independent-2': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 21:39:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+2026-08-19 21:39:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+[2026-08-20T01:39:25.390Z]   waiting for OwnerN-spender-4 to see 1 of shielded e0911948bd84… before spending it …
+[2026-08-20T01:39:25.391Z]   waiting for OwnerN-spender-4 to see 1 of unshielded c6b1e075221c… before spending it …
+2026-08-19 21:39:30        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 21:39:30        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T01:39:30.650Z]   attempt 3: lazyInit=true load=4.91 segments call1=54837 call2=8799 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-independent-3': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 21:39:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+2026-08-19 21:39:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:34171/: 1000:: Normal Closure
+[2026-08-20T01:39:30.996Z]   waiting for OwnerN-spender-5 to see 1 of shielded e0911948bd84… before spending it …
+[2026-08-20T01:39:30.997Z]   waiting for OwnerN-spender-5 to see 1 of unshielded c6b1e075221c… before spending it …
+[2026-08-20T01:39:56.688Z]   attempt 4: lazyInit=true load=4.67 segments call1=14213 call2=55704 (ascending) -> ACCEPTED 00aaa30a8de254eca5596c0ac49f0cf5057ca1d5c6a7a0ac2d47c9039c7ec09c9b
+[G1] teardown: docker compose --env-file /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/docker/.env -f /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00006-g1-20260820012716-81413 && w1_cleanup
+[G1] RED (exit 1)

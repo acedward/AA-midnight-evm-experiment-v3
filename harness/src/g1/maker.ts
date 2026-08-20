@@ -27,10 +27,12 @@ import { log } from '../night.js';
 export type ImbalanceMap = Record<string, string>;
 
 export type PlacementReport = {
-  /** Every segment the transaction actually has, per `Transaction.segments()` (0 is always present). */
+  /** Every segment the transaction has, derived by `segmentsOf` (0 is always present). */
   segments: number[];
   /** The physical segment ids of the transaction's intents. */
   intentSegments: number[];
+  /** The segment ids carrying a FALLIBLE zswap offer — non-empty is issue-0003 territory. */
+  fallibleOfferSegments: number[];
   /** segment -> (token -> signed delta). */
   imbalances: Record<string, ImbalanceMap>;
   /** What segment 0 was required to carry. */
@@ -47,6 +49,25 @@ export type PlacementReport = {
 const tokenLabel = (t: any): string =>
   t?.tag === 'dust' ? 'dust' : `${t?.tag ?? 'unknown'}:${String(t?.raw ?? '').toLowerCase()}`;
 
+/**
+ * The segment ids a transaction actually has — reimplemented in TypeScript because the ledger's own
+ * accessor IS NOT BOUND TO JS at these pins (finding F-304).
+ *
+ * `Transaction::segments()` exists in Rust (`midnight-ledger/ledger/src/structure.rs:1817`) as
+ * `{GUARANTEED_SEGMENT} ∪ intents.keys() ∪ fallible_coins.keys()`, but `ledger-wasm/src/tx.rs` exports
+ * no `segments` binding and `ledger-v9.d.ts` declares none, so `tx.segments` is `undefined` in JS.
+ * The first version of this file did `tx.segments?.() ?? [0]`, which silently degraded FR-302 to
+ * "segment 0 looks right" and would have MISSED a leg parked in a fallible segment — precisely the
+ * failure lane issue 0003 says to expect. This computes the same set from the two maps that ARE bound
+ * (`intents` and `fallibleOffer`), so "no other segment carries a delta" is a real claim again.
+ */
+export const segmentsOf = (tx: any): number[] => {
+  const set = new Set<number>([0]);
+  for (const k of ((tx.intents?.keys?.() ?? []) as Iterable<number>)) set.add(Number(k));
+  for (const k of ((tx.fallibleOffer?.keys?.() ?? []) as Iterable<number>)) set.add(Number(k));
+  return [...set].sort((a, b) => a - b);
+};
+
 const readImbalances = (tx: any, segment: number): ImbalanceMap => {
   const out: ImbalanceMap = {};
   for (const [token, delta] of tx.imbalances(segment) as Map<unknown, bigint>) {
@@ -62,10 +83,21 @@ const readImbalances = (tx: any, segment: number): ImbalanceMap => {
  * `{ 'shielded:ab12…': '-4' }`. An empty expectation means "segment 0 must be empty too".
  */
 export const assertPlacement = (tx: any, expected: ImbalanceMap): PlacementReport => {
-  const segments: number[] = Array.from(tx.segments?.() ?? [0]).map((s: any) => Number(s));
+  const segments = segmentsOf(tx);
   const intentSegments: number[] = Array.from((tx.intents?.keys?.() ?? []) as Iterable<number>).map((s) => Number(s));
+  const fallibleOfferSegments: number[] = Array.from((tx.fallibleOffer?.keys?.() ?? []) as Iterable<number>).map((s) =>
+    Number(s),
+  );
   const imbalances: Record<string, ImbalanceMap> = {};
-  for (const s of segments) imbalances[String(s)] = readImbalances(tx, s);
+  for (const s of segments) {
+    // `imbalances` throws for a segment the transaction does not have; a throw here would mean the
+    // JS-side segment derivation disagrees with the ledger's, which is worth surfacing loudly.
+    try {
+      imbalances[String(s)] = readImbalances(tx, s);
+    } catch (e) {
+      imbalances[String(s)] = { '<unreadable>': e instanceof Error ? e.message : String(e) };
+    }
+  }
 
   const seg0 = imbalances['0'] ?? {};
   const segment0Exact =
@@ -80,6 +112,7 @@ export const assertPlacement = (tx: any, expected: ImbalanceMap): PlacementRepor
   return {
     segments,
     intentSegments,
+    fallibleOfferSegments,
     imbalances,
     expectedAtSegment0: expected,
     segment0Exact,
@@ -96,6 +129,7 @@ export const requirePlacement = (what: string, report: PlacementReport): Placeme
     `FR-302 VIOLATED for ${what}:`,
     `  segments present:        ${JSON.stringify(report.segments)}`,
     `  intent segments:         ${JSON.stringify(report.intentSegments)}`,
+    `  fallible-offer segments: ${JSON.stringify(report.fallibleOfferSegments)}`,
     `  expected at segment 0:   ${JSON.stringify(report.expectedAtSegment0)}`,
     `  observed at segment 0:   ${JSON.stringify(report.imbalances['0'] ?? {})}`,
     `  segment-0 exact:         ${report.segment0Exact}`,

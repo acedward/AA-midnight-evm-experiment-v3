@@ -29,6 +29,19 @@ const imbalancesFor = (tx: any, segment: number): Record<string, string> => {
   return out;
 };
 
+/**
+ * The transaction's segment ids. `Transaction::segments()` exists in Rust
+ * (`midnight-ledger/ledger/src/structure.rs:1817`) but IS NOT BOUND TO JS at these pins (finding
+ * F-304), so it is recomputed here from the two maps that are bound — the same union the Rust does:
+ * `{0} ∪ intents.keys() ∪ fallible_coins.keys()`.
+ */
+const segmentsOf = (tx: any): number[] => {
+  const set = new Set<number>([0]);
+  for (const k of ((tx.intents?.keys?.() ?? []) as Iterable<number>)) set.add(Number(k));
+  for (const k of ((tx.fallibleOffer?.keys?.() ?? []) as Iterable<number>)) set.add(Number(k));
+  return [...set].sort((a, b) => a - b);
+};
+
 /** Every `wellFormed` variant worth trying on an UNBALANCED third-party artifact. */
 const STRICTNESS_CASES: Array<{ name: string; flags: Record<string, boolean> }> = [
   {
@@ -92,11 +105,19 @@ const main = () => {
     report.roundTripByteIdentical =
       reserialized.length === raw.length && Buffer.compare(Buffer.from(reserialized), Buffer.from(raw)) === 0;
 
-    const segments: number[] = Array.from(tx.segments() as Iterable<number>).map(Number);
+    const segments: number[] = segmentsOf(tx);
     report.segments = segments;
+    report.segmentsAccessorBound = typeof tx.segments === 'function';
     report.intentSegments = Array.from((tx.intents?.keys?.() ?? []) as Iterable<number>).map(Number);
+    report.fallibleOfferSegments = Array.from((tx.fallibleOffer?.keys?.() ?? []) as Iterable<number>).map(Number);
     const imb: Record<string, Record<string, string>> = {};
-    for (const s of segments) imb[String(s)] = imbalancesFor(tx, s);
+    for (const s of segments) {
+      try {
+        imb[String(s)] = imbalancesFor(tx, s);
+      } catch (e) {
+        imb[String(s)] = { '<unreadable>': strip(e instanceof Error ? e.message : String(e)) };
+      }
+    }
     report.imbalances = imb;
     try {
       report.transactionHash = String(tx.transactionHash());

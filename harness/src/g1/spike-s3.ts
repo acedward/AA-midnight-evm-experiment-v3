@@ -337,6 +337,29 @@ const main = async () => {
       if (v) md.push(`| ${k} | \`${JSON.stringify(v.flags)}\` | ${v.passed} | ${v.error ? `\`${v.error}\`` : '—'} |`);
     }
     md.push('');
+    md.push('## Practical consequences for the FR-306 envelope');
+    md.push('');
+    md.push('| Fact | unbound | bound |');
+    md.push('|---|---|---|');
+    md.push(
+      `| \`transactionHash()\` | ${JSON.stringify(String(forms.unbound?.readerReport?.transactionHash ?? '—')).slice(0, 120)} | ` +
+        `${JSON.stringify(String(forms.bound?.readerReport?.transactionHash ?? '—')).slice(0, 120)} |`,
+    );
+    md.push(
+      `| \`fees(initialParameters)\` in SPECKs | ${forms.unbound?.readerReport?.feesSpecks} | ${forms.bound?.readerReport?.feesSpecks} |`,
+    );
+    md.push('');
+    md.push('**The unbound form has no canonical transaction hash** — `transactionHash()` is defined only for proven,');
+    md.push('signed AND bound transactions. So an unbound offer cannot be named by a chain identifier, which is exactly');
+    md.push('why FR-306 content-addresses the envelope by **SHA-256 of the raw `Transaction.serialize()` bytes**. That');
+    md.push('is not a stylistic choice: for the form D-306 selects it is the only stable name available. It is also the');
+    md.push('right one, since `finalizeRecipe` merges the offer into a LARGER transaction whose hash the maker cannot');
+    md.push('know in advance.');
+    md.push('');
+    md.push('**The offer\'s own `fees()` figure is not the settlement fee.** It is read here only to show the maker');
+    md.push('attaches no DUST of its own; the fee that is actually paid belongs to the merged transaction the taker');
+    md.push('submits, and spike S6 (Plan 02) measures that.');
+    md.push('');
     md.push('## D-306 inputs');
     md.push('');
     md.push('| Form | round-trips | FR-302 placement | unbalanced proven | settles (from S1 evidence) |');

@@ -35,6 +35,11 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
+# W-2 must run BEFORE fs_init: the re-exec replaces this process, and doing it after fs_init would
+# truncate the run log the parent had just created.
+# shellcheck source=../lib/nosleep.sh
+source "$ROOT/scripts/lib/nosleep.sh"
+nosleep_reexec "${BASH_SOURCE[0]}" "$@"
 # shellcheck source=../lib/failsafe.sh
 source "$ROOT/scripts/lib/failsafe.sh"
 # shellcheck source=../lib/docker-w1.sh
@@ -106,7 +111,10 @@ step_wallets() { (cd "$ROOT/harness" && npx tsx src/g1/wallets.ts); }
 step_funding() { (cd "$ROOT/harness" && npx tsx src/g1/fund.ts); }
 
 step_spike_s1() { (cd "$ROOT/harness" && npx tsx src/g1/spike-s1.ts); }
-step_spike_s2() { (cd "$ROOT/harness" && npx tsx src/g1/spike-s2.ts); }
+# Sample sizes are pinned HERE, not left to the script's defaults, so the gate is reproducible. 12 is
+# enough for shapes A/B/C to see both segment orders (Plan 01 asks for N>=10); shape D costs a Minter
+# deployment plus two mints per attempt, so it gets 8.
+step_spike_s2() { (cd "$ROOT/harness" && S2_ATTEMPTS=12 S2_FRESH_ATTEMPTS=8 npx tsx src/g1/spike-s2.ts); }
 step_spike_s3() { (cd "$ROOT/harness" && npx tsx src/g1/spike-s3.ts); }
 
 step_record_lane() {
@@ -206,6 +214,26 @@ step_record_lane() {
     echo "  \`pull\` step is still run and still asserted."
     echo "- Pulls run anonymously. The images are public and **pinned by digest**, and the digest is the"
     echo "  identity, so the pin proof is unaffected."
+    echo
+    echo "## \`W-2\` — HOST workaround adopted by 00006 (not a lane change)"
+    echo
+    echo "$(nosleep_note)"
+    echo
+    echo "This Mac idle-slept mid-gate during 00006's G1 run 2, and 00005's G4 run 1 recorded the same"
+    echo "failure mode. A 40-minute gate is almost entirely waiting — proving, block production, indexer"
+    echo "catch-up — so it looks idle and the sleep timer fires. What comes back is not a clean failure:"
+    echo "sockets drop mid-request and the SDK reports whatever it was doing, e.g."
+    echo "\`'prove' returned an error: AbortError: The user aborted a request.\`, which is indistinguishable"
+    echo "from a real refusal in an evidence table. Every 00006 gate wrapper therefore re-execs itself"
+    echo "under \`caffeinate -is\` — see \`scripts/lib/nosleep.sh\`."
+    echo
+    echo "- It is a PROCESS WRAPPER around the gate's own process tree. No system setting is written, no"
+    echo "  \`pmset\` value is changed, and the assertion disappears when the gate exits, so every other"
+    echo "  tenant of this shared host is unaffected."
+    echo "- It changes WHEN the machine sleeps, not WHAT is executed or asserted. No pin, step, contract"
+    echo "  or piece of evidence was altered to accommodate it."
+    echo "- Like W-1 it is a HOST workaround, **not** a lane property, and nothing about it may be read as"
+    echo "  a statement about node, ledger, indexer or SDK behaviour."
     echo
     echo "## Compile probes"
     echo
