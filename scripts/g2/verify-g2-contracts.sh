@@ -225,7 +225,11 @@ step_spike_s4b() { (cd "$ROOT/harness" && npx tsx src/g2/spike-s4b.ts); }
 # Waits pinned HERE rather than left to the script's defaults, so the gate is reproducible. The plan
 # asks for 60 / 600 / 1800 s; the arms are strictly sequential because a settlement on either colour
 # would invalidate any other live offer on it, which is the very effect being measured.
-step_spike_s5()  { (cd "$ROOT/harness" && S5_WAITS=60,600,1800 S5_SHORT_TTL=90 npx tsx src/g2/spike-s5.ts); }
+# ONE timing arm, the longest. Finding F-310: a settlement consumes the single custody cell that makes
+# offers publishable, so only one settling arm exists per Manager and 1800 s subsumes 60 s and 600 s.
+# Gate run 1 measured T60 = ACCEPTED 3/3 before that was understood; the spike cites it rather than
+# re-running it.
+step_spike_s5()  { (cd "$ROOT/harness" && S5_WAITS=1800 S5_SHORT_TTL=90 npx tsx src/g2/spike-s5.ts); }
 # S5b runs BEFORE S5: it establishes which offers can be PUBLISHED at all, which is a precondition for
 # reading S5's arms — and for writing Plan 03's step ledger.
 step_spike_s5b() { (cd "$ROOT/harness" && npx tsx src/g2/spike-s5b.ts); }

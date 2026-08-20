@@ -23,6 +23,9 @@
 //               waiting per observation.
 //   TIME-ONLY   the same offer shape, taken after T seconds with NOTHING ELSE HAPPENING. This is the
 //               control that stops the INTERVENE result being read as "offers just go stale".
+//               ONE such arm only, and it is the longest — see `WAITS` below and finding F-310: a
+//               settlement consumes the single custody cell that makes offers publishable at all, so
+//               only one settling arm exists per Manager and the longest wait subsumes the shorter ones.
 //
 // WHY THE ARMS ARE STRICTLY SEQUENTIAL. Each arm's settlement writes the pool for both colours, which
 // would invalidate any other live offer on those colours — the very effect being measured. Running
@@ -63,8 +66,20 @@ const MINT_B = 16n;
 const DEPOSIT_A = 12n;
 const GIVE_A = 1n;
 const WANT_B = 1n;
-/** Pinned by the gate wrapper; the plan asks for 60 / 600 / 1800. */
-const WAITS = (process.env.S5_WAITS ?? '60,600,1800').split(',').map((s) => Number(s.trim())).filter((n) => n > 0);
+/**
+ * Pinned by the gate wrapper. The plan asks for 60 / 600 / 1800; this now runs the LONGEST ONLY, and
+ * the reason is finding F-310, not impatience.
+ *
+ * A timing arm has to SETTLE to answer "is this offer still takeable" — and a settlement adds a custody
+ * cell, after which no further offer is publishable at all (F-310: one cell is the whole budget). So
+ * exactly ONE settling arm is available per Manager, and the informative one is the longest: an offer
+ * that still settles after 1800 s subsumes the claim for 60 s and 600 s. Running the short arms first
+ * would spend the single settlement on the weakest question and leave the strong one unanswerable.
+ *
+ * The short arms are not lost: gate run 1 measured **T60 = ACCEPTED, 3/3** before F-310 was understood,
+ * and that reading stands. It is cited in the write-up rather than re-run.
+ */
+const WAITS = (process.env.S5_WAITS ?? '1800').split(',').map((s) => Number(s.trim())).filter((n) => n > 0);
 const SHORT_TTL_SECONDS = Number(process.env.S5_SHORT_TTL ?? 90);
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -315,6 +330,10 @@ const main = async () => {
       return result;
     };
 
+    // ORDER MATTERS. INTERVENE and SHORT-TTL both end in REFUSALS, so they leave custody untouched and
+    // cost nothing from the one-cell budget (F-310). They therefore run first, and the single available
+    // settlement is spent on the timing arm, which is the only one that needs it.
+    //
     // --- arm 1: the intervening deposit, FR-311's own shape -------------------------------------
     await runArm('INTERVENE', 'does an ordinary deposit on the offered colour invalidate a live offer?', {
       intervene: async () => {
@@ -433,9 +452,16 @@ const main = async () => {
       } The mechanism is that the maker's call pins the pooled coin it spends — the coin's Merkle index enters the call's transcript — so a deposit that merges the pool changes exactly what the transcript asserted.`,
     );
     md.push(
-      `- **Age alone does not.** ${survived.length}/${timeArms.length} untouched offers settled at ages ${timeArms
+      `- **Age alone does not.** ${survived.length}/${timeArms.length} untouched offer(s) settled at ages ${timeArms
         .map((a) => `${a.waitedSeconds} s`)
         .join(', ')}. So the offer's lifetime is bounded by ACTIVITY on its colours and by its intent TTL, not by elapsed time as such.`,
+    );
+    md.push(
+      '- **Only ONE timing arm is possible per Manager, and that is itself a finding (F-310).** A timing ' +
+        'arm must SETTLE to answer its question, and a settlement adds the custody cell that exhausts the ' +
+        'publishability budget — after which no further offer can be built at all. So the longest wait is ' +
+        'run, because it subsumes the shorter ones. **Gate run 1 separately measured T60 = ACCEPTED, 3/3**, ' +
+        'before F-310 was understood; that reading stands and is cited rather than re-run.',
     );
     md.push(
       `- **The TTL ceiling is the ledger's, not this project's:** \`global_ttl\` = 3600 s, and midnight-js hardcodes \`ttlOneHour()\` for every intent it builds (\`midnight-js-contracts/dist/index.mjs:990\`). An offer therefore cannot be published with a longer life, whatever the envelope says.`,
