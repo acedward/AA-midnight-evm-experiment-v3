@@ -148,16 +148,40 @@ def shape(name: str) -> str:
     return re.sub(r'\d+', 'N', HEXRUN.sub('<hex>', name))
 
 
-def core_of(after: dict | None) -> dict | None:
+OP2_UNAVAILABLE = 'unavailable'
+# Fields that describe the APPARATUS rather than the ledger. Never compared for equality: OP2 is
+# itself a submitted transaction and can be refused (the F-301 flake), and marking that "UNAVAILABLE"
+# is exactly what the harness is supposed to do. A row's substantive claims are carried by its checks
+# and by OP1, so apparatus availability is reported, never scored.
+APPARATUS_FIELDS = ('utc', 'poolCoins', 'accounts', 'op2Retries', 'op2Consulted', 'usersConsulted')
+
+
+def core_of(after: dict | None, other: dict | None = None) -> dict | None:
     """The part of a custody observation that MUST reproduce exactly.
 
     Dropped: `utc` (a timestamp), `poolCoins` (coin identity — freshness, compared separately),
-    `accounts` (commitments of deterministic dev seeds), `op2Retries` (apparatus noise).
+    `accounts` (commitments of deterministic dev seeds), and the apparatus-availability fields.
+
+    `onChainCells` (observation point 2) is narrowed to the cells BOTH runs actually read: OP2 is a
+    submitted transaction and can be refused, and a cell the harness marked UNAVAILABLE is apparatus
+    noise. OP1's `cells` — the indexer-decoded contract state — is compared in full either way, so the
+    narrowing cannot hide a state difference.
     """
     if not isinstance(after, dict):
         return None
-    return {k: v for k, v in after.items()
-            if k not in ('utc', 'poolCoins', 'accounts', 'op2Retries')}
+    out = {k: v for k, v in after.items() if k not in APPARATUS_FIELDS}
+    if isinstance(out.get('onChainCells'), dict):
+        mine = out['onChainCells']
+        theirs = (other or {}).get('onChainCells') if isinstance(other, dict) else None
+        keep = {}
+        for k, v in mine.items():
+            if v == OP2_UNAVAILABLE:
+                continue
+            if isinstance(theirs, dict) and theirs.get(k) == OP2_UNAVAILABLE:
+                continue
+            keep[k] = v
+        out['onChainCells'] = keep
+    return out
 
 
 def codes(row: dict) -> list[str]:
@@ -244,12 +268,26 @@ def compare_stages(root: str, clone: str) -> None:
 
             # --- the arithmetic: every pool, cell, wallet holding, map size, invariant row
             for side in ('before', 'after'):
-                if core_of(orr.get(side)) != core_of(rr.get(side)):
-                    ocore, rcore = core_of(orr.get(side)) or {}, core_of(rr.get(side)) or {}
+                ocore = core_of(orr.get(side), rr.get(side)) or {}
+                rcore = core_of(rr.get(side), orr.get(side)) or {}
+                if ocore != rcore:
                     diff = sorted(k for k in set(ocore) | set(rcore) if ocore.get(k) != rcore.get(k))
                     problems.append(f'row {rid}: the "{side}" custody observation differs in {diff}: '
                                     f'original { {k: ocore.get(k) for k in diff} } vs '
                                     f'reproduction { {k: rcore.get(k) for k in diff} }')
+                # Apparatus availability: reported, never scored (see APPARATUS_FIELDS).
+                ro, oo = rr.get(side) or {}, orr.get(side) or {}
+                if isinstance(ro, dict) and isinstance(oo, dict):
+                    skipped = sorted(k for k, v in (ro.get('onChainCells') or {}).items()
+                                     if v == OP2_UNAVAILABLE)
+                    if skipped:
+                        findings.append(f'row {rid} ("{side}"): observation point 2 was UNAVAILABLE for '
+                                        f'{skipped} in the reproduction — OP2 is itself a submitted '
+                                        f'transaction and can be refused, so this is apparatus noise. '
+                                        f'OP1 was compared in full for those cells.')
+                    if oo.get('op2Consulted') and not ro.get('op2Consulted'):
+                        findings.append(f'row {rid} ("{side}"): the reproduction did not consult '
+                                        f'observation point 2 at all where the original did.')
 
             # --- refusal codes: recorded, and divergence reported rather than scored
             oc, rc = codes(orr), codes(rr)
