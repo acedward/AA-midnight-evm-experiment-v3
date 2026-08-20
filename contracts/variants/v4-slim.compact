@@ -1,0 +1,345 @@
+// ============================================================================================
+// F-310 MITIGATION RIG — CONTROL FIXTURE `v4-slim`
+// 00006-unbalanced-zswap Plan 05 / gate G5. EXPERIMENTAL_LANE / LANE-DEV-1.
+// ============================================================================================
+//
+// THIS IS NOT A PRODUCT. It is a MEASUREMENT FIXTURE. The shipped Manager v4
+// (`contracts/manager.compact`) is untouched by Plan 05 and every G1-G4 result stands exactly as
+// closed; this file and its five siblings exist only to be compiled, costed, deployed on disposable
+// stacks and measured against the F-310 publishability boundary.
+//
+// WHY A SLIM CONTROL EXISTS AT ALL — this is the load-bearing methodological point of the whole rig.
+//
+// Four of the five arms (b, c, d, e) need MORE circuit budget than Manager v4 has left. F-307 measured
+// the deploy ceiling on this lane at THIRTEEN provable circuits (13 => 30,070 `bytesWritten`, 60.1% of
+// the 50,000 per-block ceiling, DEPLOYS; 14 => 32,356, 64.7%, REFUSED), and v4 already sits at exactly
+// 13. Plan 05 anticipates this and permits it: "a variant that needs more circuits must merge shapes
+// or drop the unshielded family to fit, and record that it did."
+//
+// So every arm drops the UNSHIELDED family, which frees four provable circuits:
+//
+//     depositUnshielded            2,119 B
+//     withdrawUnshielded           2,119 B
+//     transferInternalUnshielded   2,119 B
+//     unshieldedAccountBalance     2,119 B
+//     ------------------------------------
+//     four circuits, 8,476 B of verifier key
+//
+// That is a CHANGE TO THE FIXTURE, and a change to the fixture is a confound: if arm (a) were compared
+// against stock v4 directly, any measured difference would mix "dedupe helped" with "removing an
+// unrelated ledger field helped". `v4-slim` is therefore the arms' true baseline — v4 with the
+// unshielded family removed and NOTHING ELSE CHANGED — while stock v4 remains in the matrix as the
+// F-310 anchor. The difference between v4 and v4-slim is the PRICE OF THE RELAXATION, measured rather
+// than assumed, and the difference between v4-slim and each arm is the arm's own effect.
+//
+// RELAXATIONS TAKEN BY THIS FIXTURE (recorded per Plan 05's constraint; carried by every arm):
+//
+//   R1  The UNSHIELDED family is deleted: ledger field `unshieldedBalances`, key domain
+//       `unshieldedKey` / `unshieldedFamilyTag`, reader `unshieldedAccountBalance`, and circuits
+//       `depositUnshielded`, `withdrawUnshielded`, `transferInternalUnshielded`.
+//       * Breaks v3 map-layout compatibility (a v3 raw-state decoder reads one field too many).
+//       * Makes 00005's FR-203 family-separation property and its P-COLL probe INAPPLICABLE — there is
+//         only one family left to separate. Nothing about FR-203 is refuted; it is simply not
+//         exercised by this fixture, and any winner productized later must restore it or restate it.
+//       * Owner Q3 -> A already scopes 00006 to shielded only, so no measurement this project makes
+//         depends on the unshielded half.
+//
+// EVERYTHING ELSE below is BYTE-FOR-BYTE the shipped v4's logic: the same witness choke point, the
+// same per-(account, colour) guard evaluated BEFORE any pool guard, the same missing-cell-reads-0 rule,
+// the same lazy creation, the same `shieldedKey` domain separator (so a v4 cell key and a v4-slim cell
+// key are the SAME 32 bytes for the same (account, colour) — which is what lets one harness reader
+// serve both), and the same single fused swap circuit with `recipientA: Maybe<...>` selecting the
+// FR-308 shape.
+
+import CompactStandardLibrary;
+
+export {
+  registerAccount,
+  depositShielded,
+  withdrawShielded,
+  transferInternalShielded,
+  openSwapShielded,
+  zswapNullifierOf,
+  zswapCommitmentOf,
+  myAccount,
+  isRegistered,
+  shieldedAccountBalance,
+  shieldedKey,
+  poolValue,
+  poolHasColour,
+  accounts,
+  shieldedBalances,
+  pools
+}
+
+// --- ledger state ---------------------------------------------------------------------------
+
+export ledger pools: Map<Bytes<32>, QualifiedShieldedCoinInfo>;
+export ledger accounts: Set<Bytes<32>>;
+export ledger shieldedBalances: Map<Bytes<32>, Uint<128>>;
+
+// --- owner authorization --------------------------------------------------------------------
+
+witness localOwnerSecret(): Bytes<32>;
+
+circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
+  return persistentCommit<Bytes<21>>("aa00005:manager:owner", disclose(sk));
+}
+
+/// THE single authorization choke point for every debiting circuit (FR-204), unchanged from v3/v4.
+circuit authenticatedAccount(): Bytes<32> {
+  const acct = ownerCommitment(localOwnerSecret());
+  assert(accounts.member(acct), "caller's owner witness matches no registered account");
+  return acct;
+}
+
+// --- family-scoped key ----------------------------------------------------------------------
+//
+// The separator string is UNCHANGED from v3/v4 on purpose: `shieldedKey(a, c)` produces the same 32
+// bytes here as in the shipped Manager, so the harness's cell enumeration is shared and a measurement
+// taken on this fixture is directly comparable to one taken on v4.
+
+circuit shieldedFamilyTag(): Bytes<32> {
+  return pad(32, "aa00005:manager:shielded");
+}
+
+export circuit shieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([acct, colour, shieldedFamilyTag()]);
+}
+
+/// A MISSING CELL READS AS 0 — never as an error, never by creating the cell (FR-204, FR-206).
+circuit shieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  const k = shieldedKey(acct, colour);
+  return shieldedBalances.member(k) ? shieldedBalances.lookup(k) : 0;
+}
+
+// --- setup and readers -----------------------------------------------------------------------
+
+export circuit registerAccount(owner: Bytes<32>): [] {
+  const acct = disclose(owner);
+  assert(!accounts.member(acct), "account already registered");
+  accounts.insert(acct);
+}
+
+export circuit myAccount(): Bytes<32> {
+  return ownerCommitment(localOwnerSecret());
+}
+
+export circuit isRegistered(owner: Bytes<32>): Boolean {
+  return accounts.member(disclose(owner));
+}
+
+export circuit shieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  return shieldedBalanceOf(disclose(owner), disclose(colour));
+}
+
+export circuit poolValue(colour: Bytes<32>): Uint<128> {
+  const col = disclose(colour);
+  return pools.member(col) ? pools.lookup(col).value : 0;
+}
+
+export circuit poolHasColour(colour: Bytes<32>): Boolean {
+  return pools.member(disclose(colour));
+}
+
+// --- shielded custody ------------------------------------------------------------------------
+
+export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
+  const c = disclose(coin);
+  const acct = disclose(account);
+
+  assert(c.value > 0, "deposit must be positive");
+  assert(accounts.member(acct), "credit account is not registered");
+
+  receiveShielded(c);
+
+  if (pools.member(c.color)) {
+    pools.insertCoin(
+      c.color,
+      mergeCoinImmediate(pools.lookup(c.color), c),
+      right<ZswapCoinPublicKey, ContractAddress>(kernel.self())
+    );
+  } else {
+    pools.insertCoin(c.color, c, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+  }
+
+  shieldedBalances.insert(
+    shieldedKey(acct, c.color),
+    (shieldedBalanceOf(acct, c.color) + c.value) as Uint<128>
+  );
+}
+
+export circuit withdrawShielded(
+  colour: Bytes<32>,
+  value: Uint<128>,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): ShieldedCoinInfo {
+  const col = disclose(colour);
+  const val = disclose(value);
+
+  const acct = authenticatedAccount();
+  assert(shieldedBalanceOf(acct, col) >= val, "account colour balance too low");
+  assert(pools.member(col), "no pooled coin for this colour");
+  assert(pools.lookup(col).value >= val, "pooled colour balance too low");
+
+  const result = sendShielded(pools.lookup(col), disclose(recipient), val);
+
+  if (result.change.is_some) {
+    pools.insertCoin(col, result.change.value, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+  } else {
+    pools.remove(col);
+  }
+
+  shieldedBalances.insert(shieldedKey(acct, col), (shieldedBalanceOf(acct, col) - val) as Uint<128>);
+  return result.sent;
+}
+
+export circuit transferInternalShielded(to: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+  const dst = disclose(to);
+  const col = disclose(colour);
+  const amt = disclose(amount);
+
+  const fromAcct = authenticatedAccount();
+  assert(accounts.member(dst), "destination account is not registered");
+  assert(fromAcct != dst, "internal transfer to the same account");
+  assert(amt > 0, "internal transfer must be positive");
+  assert(shieldedBalanceOf(fromAcct, col) >= amt, "account colour balance too low");
+
+  shieldedBalances.insert(shieldedKey(fromAcct, col), (shieldedBalanceOf(fromAcct, col) - amt) as Uint<128>);
+  shieldedBalances.insert(shieldedKey(dst, col), (shieldedBalanceOf(dst, col) + amt) as Uint<128>);
+}
+
+// --- the swap maker, verbatim v4 -------------------------------------------------------------
+
+struct SwapCoinPreimage {
+  domain_sep: Bytes<21>,
+  info: ShieldedCoinInfo,
+  dataType: Boolean,
+  data: Bytes<32>,
+}
+
+circuit zswapCoinCommitment(
+  coin: ShieldedCoinInfo,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): Bytes<32> {
+  return persistentHash<SwapCoinPreimage>(
+    SwapCoinPreimage {
+      domain_sep: "midnight:zswap-cc[v1]",
+      info: coin,
+      dataType: recipient.is_left,
+      data: recipient.is_left ? recipient.left.bytes : recipient.right.bytes,
+    });
+}
+
+circuit zswapCoinNullifier(coin: ShieldedCoinInfo, addr: ContractAddress): Bytes<32> {
+  return persistentHash<SwapCoinPreimage>(
+    SwapCoinPreimage {
+      domain_sep: "midnight:zswap-cn[v1]",
+      info: coin,
+      dataType: false,
+      data: addr.bytes,
+    });
+}
+
+circuit dropMerkleIndex(coin: QualifiedShieldedCoinInfo): ShieldedCoinInfo {
+  return ShieldedCoinInfo{ nonce: coin.nonce, color: coin.color, value: coin.value };
+}
+
+export circuit zswapNullifierOf(coin: ShieldedCoinInfo, addr: ContractAddress): Bytes<32> {
+  return zswapCoinNullifier(coin, addr);
+}
+
+export circuit zswapCommitmentOf(
+  coin: ShieldedCoinInfo,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): Bytes<32> {
+  return zswapCoinCommitment(coin, recipient);
+}
+
+circuit assertSwapPreconditions(
+  colA: Bytes<32>,
+  val: Uint<128>,
+  coinB: ShieldedCoinInfo,
+  credit: Bytes<32>
+): Bytes<32> {
+  assert(val > 0, "swap must give a positive amount");
+  assert(coinB.value > 0, "swap must want a positive amount");
+  assert(colA != coinB.color, "swap legs must be different colours");
+  const acct = authenticatedAccount();
+  assert(shieldedBalanceOf(acct, colA) >= val, "account colour balance too low");
+  assert(pools.member(colA), "no pooled coin for this colour");
+  assert(pools.lookup(colA).value >= val, "pooled colour balance too low");
+  assert(accounts.member(credit), "credit account is not registered");
+  return acct;
+}
+
+circuit claimWantedColour(coinB: ShieldedCoinInfo, credit: Bytes<32>): [] {
+  receiveShielded(coinB);
+  if (pools.member(coinB.color)) {
+    pools.insertCoin(
+      coinB.color,
+      mergeCoinImmediate(pools.lookup(coinB.color), coinB),
+      right<ZswapCoinPublicKey, ContractAddress>(kernel.self())
+    );
+  } else {
+    pools.insertCoin(coinB.color, coinB, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+  }
+  shieldedBalances.insert(
+    shieldedKey(credit, coinB.color),
+    (shieldedBalanceOf(credit, coinB.color) + coinB.value) as Uint<128>
+  );
+}
+
+circuit repoolOrRemove(col: Bytes<32>, change: Maybe<ShieldedCoinInfo>): [] {
+  if (change.is_some) {
+    pools.insertCoin(col, change.value, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+  } else {
+    pools.remove(col);
+  }
+}
+
+export circuit openSwapShielded(
+  colourA: Bytes<32>,
+  valA: Uint<128>,
+  recipientA: Maybe<Either<ZswapCoinPublicKey, ContractAddress>>,
+  coinB: ShieldedCoinInfo,
+  creditAccount: Bytes<32>
+): [] {
+  const colA = disclose(colourA);
+  const val = disclose(valA);
+  const rcpt = disclose(recipientA);
+  const cb = disclose(coinB);
+  const credit = disclose(creditAccount);
+
+  const acct = assertSwapPreconditions(colA, val, cb, credit);
+  const selfAddr = kernel.self();
+  const pooled = pools.lookup(colA);
+
+  if (rcpt.is_some) {
+    const result = sendShielded(pooled, rcpt.value, val);
+    repoolOrRemove(colA, result.change);
+  } else {
+    createZswapInput(pooled);
+    kernel.claimZswapNullifier(zswapCoinNullifier(dropMerkleIndex(pooled), selfAddr));
+    const changeValue = (pooled.value - val) as Uint<128>;
+    if (changeValue == 0) {
+      repoolOrRemove(colA, none<ShieldedCoinInfo>());
+    } else {
+      const changeCoin = ShieldedCoinInfo{
+        nonce: evolveNonce(2, pooled.nonce),
+        color: colA,
+        value: changeValue
+      };
+      const selfRecipient = right<ZswapCoinPublicKey, ContractAddress>(selfAddr);
+      createZswapOutput(changeCoin, selfRecipient);
+      const cm = zswapCoinCommitment(changeCoin, selfRecipient);
+      kernel.claimZswapCoinSpend(cm);
+      kernel.claimZswapCoinReceive(cm);
+      repoolOrRemove(colA, some<ShieldedCoinInfo>(changeCoin));
+    }
+  }
+
+  shieldedBalances.insert(shieldedKey(acct, colA), (shieldedBalanceOf(acct, colA) - val) as Uint<128>);
+
+  claimWantedColour(cb, credit);
+}

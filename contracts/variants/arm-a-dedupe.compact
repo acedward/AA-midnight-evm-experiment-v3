@@ -1,0 +1,327 @@
+// ============================================================================================
+// F-310 MITIGATION RIG — ARM (a) `dedupe-flat`
+// 00006-unbalanced-zswap Plan 05 / gate G5. EXPERIMENTAL_LANE / LANE-DEV-1.
+// ============================================================================================
+//
+// Issue 0004 mitigation 1, the cheapest change in the ladder and the one recorded there as "identified,
+// semantics-preserving, NOT attempted in 00006". It is `v4-slim` with EXACTLY one difference: inside
+// the swap circuit every ledger entry is read ONCE into a local and reused, instead of being re-read
+// per guard and per write.
+//
+// WHAT v4 RE-READS, counted from `contracts/manager.compact` (the shipped circuit), for the SURPLUS
+// branch giving colour A and wanting a fresh colour B:
+//
+//   shieldedKey(acct, colA)          twice   (once inside the guard's `shieldedBalanceOf`,
+//                                             once again for the debit write's `shieldedBalanceOf`,
+//                                             and a third time as the `insert` key)  -> 3 hashes
+//   shieldedBalances.member(kA)      twice   (guard, then debit write)
+//   shieldedBalances.lookup(kA)      twice   (guard, then debit write)
+//   pools.member(colA)               once
+//   pools.lookup(colA)               twice   (guard's `.value`, then `pooled`)
+//   pools.member(colB)               once    (`claimWantedColour`)
+//   shieldedKey(credit, colB)        twice   (`shieldedBalanceOf`, then the `insert` key)
+//   shieldedBalances.member(kB)      once
+//   shieldedBalances.lookup(kB)      0/1     (fresh colour: member is false, so no lookup)
+//
+// AFTER DEDUPING, each of those becomes exactly one operation. The saving is therefore:
+//   - 3 `persistentHash` of a `Vector<3, Bytes<32>>` (two for the maker's key, one for the credit key)
+//   - 1 `Map.member` + 1 `Map.lookup` on `shieldedBalances`
+//   - 1 `Map.lookup` on `pools`
+//
+// WHAT IS DELIBERATELY *NOT* CHANGED, because it would stop this arm from being a clean measurement:
+//
+//   * GUARD ORDER. The order is the owner-critical property (FR-204, FR-305, NC-305/306): parameter
+//     sanity, then the WITNESS choke point, then the per-(account, colour) guard with a missing cell
+//     read as 0, then the pool guards, then the credit target. Deduping moves the READS earlier but
+//     every ASSERT fires in the same order against the same values, so an unregistered witness still
+//     dies before any balance is consulted and a poor maker cell still dies before the pool is
+//     consulted. The offline suite asserts this arm's refusal messages and their order are identical
+//     to v4-slim's, which is what makes "semantics-preserving" a checked claim rather than a comment.
+//   * The zswap structure. Same inputs, same outputs, same claimed effects, same nonces.
+//   * The ledger layout. Same three fields, same key domain, so a v4 cell key is an arm-(a) cell key.
+//
+// RELAXATIONS: R1 only (the unshielded family, inherited from `v4-slim` — see that file's header).
+// This arm takes NO relaxation of its own: it is behaviour-preserving by construction and is the only
+// arm that could be adopted without a Manager redesign.
+
+import CompactStandardLibrary;
+
+export {
+  registerAccount,
+  depositShielded,
+  withdrawShielded,
+  transferInternalShielded,
+  openSwapShielded,
+  zswapNullifierOf,
+  zswapCommitmentOf,
+  myAccount,
+  isRegistered,
+  shieldedAccountBalance,
+  shieldedKey,
+  poolValue,
+  poolHasColour,
+  accounts,
+  shieldedBalances,
+  pools
+}
+
+export ledger pools: Map<Bytes<32>, QualifiedShieldedCoinInfo>;
+export ledger accounts: Set<Bytes<32>>;
+export ledger shieldedBalances: Map<Bytes<32>, Uint<128>>;
+
+witness localOwnerSecret(): Bytes<32>;
+
+circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
+  return persistentCommit<Bytes<21>>("aa00005:manager:owner", disclose(sk));
+}
+
+circuit authenticatedAccount(): Bytes<32> {
+  const acct = ownerCommitment(localOwnerSecret());
+  assert(accounts.member(acct), "caller's owner witness matches no registered account");
+  return acct;
+}
+
+circuit shieldedFamilyTag(): Bytes<32> {
+  return pad(32, "aa00005:manager:shielded");
+}
+
+export circuit shieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([acct, colour, shieldedFamilyTag()]);
+}
+
+circuit shieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  const k = shieldedKey(acct, colour);
+  return shieldedBalances.member(k) ? shieldedBalances.lookup(k) : 0;
+}
+
+/// THE DEDUPE PRIMITIVE: read one cell by a key the caller ALREADY HAS.
+///
+/// This is the whole arm. v4's `shieldedBalanceOf` recomputes the composite key on every call; this
+/// takes it as an argument so the hash is paid once per (account, colour) per circuit.
+circuit cellAt(k: Bytes<32>): Uint<128> {
+  return shieldedBalances.member(k) ? shieldedBalances.lookup(k) : 0;
+}
+
+export circuit registerAccount(owner: Bytes<32>): [] {
+  const acct = disclose(owner);
+  assert(!accounts.member(acct), "account already registered");
+  accounts.insert(acct);
+}
+
+export circuit myAccount(): Bytes<32> {
+  return ownerCommitment(localOwnerSecret());
+}
+
+export circuit isRegistered(owner: Bytes<32>): Boolean {
+  return accounts.member(disclose(owner));
+}
+
+export circuit shieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  return shieldedBalanceOf(disclose(owner), disclose(colour));
+}
+
+export circuit poolValue(colour: Bytes<32>): Uint<128> {
+  const col = disclose(colour);
+  return pools.member(col) ? pools.lookup(col).value : 0;
+}
+
+export circuit poolHasColour(colour: Bytes<32>): Boolean {
+  return pools.member(disclose(colour));
+}
+
+// --- shielded custody: deduped too, so the DEPOSITS that grow custody are also cheaper ---------
+//
+// Deduping `depositShielded` is not part of the measured claim (an offer's placement is decided by
+// the OFFER's transcript, not by the deposits that preceded it), but leaving it un-deduped would make
+// the arm's own dose-response steps needlessly expensive and would look like an oversight. It is the
+// identical transformation.
+
+export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
+  const c = disclose(coin);
+  const acct = disclose(account);
+
+  assert(c.value > 0, "deposit must be positive");
+  assert(accounts.member(acct), "credit account is not registered");
+
+  receiveShielded(c);
+
+  const self = right<ZswapCoinPublicKey, ContractAddress>(kernel.self());
+  if (pools.member(c.color)) {
+    pools.insertCoin(c.color, mergeCoinImmediate(pools.lookup(c.color), c), self);
+  } else {
+    pools.insertCoin(c.color, c, self);
+  }
+
+  const k = shieldedKey(acct, c.color);
+  shieldedBalances.insert(k, (cellAt(k) + c.value) as Uint<128>);
+}
+
+export circuit withdrawShielded(
+  colour: Bytes<32>,
+  value: Uint<128>,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): ShieldedCoinInfo {
+  const col = disclose(colour);
+  const val = disclose(value);
+
+  const acct = authenticatedAccount();
+  const k = shieldedKey(acct, col);
+  const held = cellAt(k);
+  assert(held >= val, "account colour balance too low");
+  assert(pools.member(col), "no pooled coin for this colour");
+  const pooled = pools.lookup(col);
+  assert(pooled.value >= val, "pooled colour balance too low");
+
+  const result = sendShielded(pooled, disclose(recipient), val);
+
+  if (result.change.is_some) {
+    pools.insertCoin(col, result.change.value, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+  } else {
+    pools.remove(col);
+  }
+
+  shieldedBalances.insert(k, (held - val) as Uint<128>);
+  return result.sent;
+}
+
+export circuit transferInternalShielded(to: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+  const dst = disclose(to);
+  const col = disclose(colour);
+  const amt = disclose(amount);
+
+  const fromAcct = authenticatedAccount();
+  assert(accounts.member(dst), "destination account is not registered");
+  assert(fromAcct != dst, "internal transfer to the same account");
+  assert(amt > 0, "internal transfer must be positive");
+  const kFrom = shieldedKey(fromAcct, col);
+  const heldFrom = cellAt(kFrom);
+  assert(heldFrom >= amt, "account colour balance too low");
+
+  const kTo = shieldedKey(dst, col);
+  shieldedBalances.insert(kFrom, (heldFrom - amt) as Uint<128>);
+  shieldedBalances.insert(kTo, (cellAt(kTo) + amt) as Uint<128>);
+}
+
+// --- the swap maker, DEDUPED --------------------------------------------------------------------
+
+struct SwapCoinPreimage {
+  domain_sep: Bytes<21>,
+  info: ShieldedCoinInfo,
+  dataType: Boolean,
+  data: Bytes<32>,
+}
+
+circuit zswapCoinCommitment(
+  coin: ShieldedCoinInfo,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): Bytes<32> {
+  return persistentHash<SwapCoinPreimage>(
+    SwapCoinPreimage {
+      domain_sep: "midnight:zswap-cc[v1]",
+      info: coin,
+      dataType: recipient.is_left,
+      data: recipient.is_left ? recipient.left.bytes : recipient.right.bytes,
+    });
+}
+
+circuit zswapCoinNullifier(coin: ShieldedCoinInfo, addr: ContractAddress): Bytes<32> {
+  return persistentHash<SwapCoinPreimage>(
+    SwapCoinPreimage {
+      domain_sep: "midnight:zswap-cn[v1]",
+      info: coin,
+      dataType: false,
+      data: addr.bytes,
+    });
+}
+
+circuit dropMerkleIndex(coin: QualifiedShieldedCoinInfo): ShieldedCoinInfo {
+  return ShieldedCoinInfo{ nonce: coin.nonce, color: coin.color, value: coin.value };
+}
+
+export circuit zswapNullifierOf(coin: ShieldedCoinInfo, addr: ContractAddress): Bytes<32> {
+  return zswapCoinNullifier(coin, addr);
+}
+
+export circuit zswapCommitmentOf(
+  coin: ShieldedCoinInfo,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): Bytes<32> {
+  return zswapCoinCommitment(coin, recipient);
+}
+
+/// The whole circuit is written out flat rather than split across helpers, because the deduping IS
+/// the sharing of locals across what used to be helper boundaries. Guard ORDER is unchanged from
+/// v4-slim line for line; only the reads feeding those guards moved.
+export circuit openSwapShielded(
+  colourA: Bytes<32>,
+  valA: Uint<128>,
+  recipientA: Maybe<Either<ZswapCoinPublicKey, ContractAddress>>,
+  coinB: ShieldedCoinInfo,
+  creditAccount: Bytes<32>
+): [] {
+  const colA = disclose(colourA);
+  const val = disclose(valA);
+  const rcpt = disclose(recipientA);
+  const cb = disclose(coinB);
+  const credit = disclose(creditAccount);
+
+  // 0. parameter sanity — pure arithmetic on the caller's own arguments.
+  assert(val > 0, "swap must give a positive amount");
+  assert(cb.value > 0, "swap must want a positive amount");
+  assert(colA != cb.color, "swap legs must be different colours");
+  // 1. the witness choke point.
+  const acct = authenticatedAccount();
+  // 2. THE PER-ACCOUNT, PER-COLOUR GUARD, BEFORE any pool guard. ONE key, ONE read.
+  const kA = shieldedKey(acct, colA);
+  const heldA = cellAt(kA);
+  assert(heldA >= val, "account colour balance too low");
+  // 3. only now, the pool. ONE member, ONE lookup.
+  assert(pools.member(colA), "no pooled coin for this colour");
+  const pooled = pools.lookup(colA);
+  assert(pooled.value >= val, "pooled colour balance too low");
+  // 4. the credit target.
+  assert(accounts.member(credit), "credit account is not registered");
+
+  const selfAddr = kernel.self();
+  const selfRecipient = right<ZswapCoinPublicKey, ContractAddress>(selfAddr);
+
+  if (rcpt.is_some) {
+    const result = sendShielded(pooled, rcpt.value, val);
+    if (result.change.is_some) {
+      pools.insertCoin(colA, result.change.value, selfRecipient);
+    } else {
+      pools.remove(colA);
+    }
+  } else {
+    createZswapInput(pooled);
+    kernel.claimZswapNullifier(zswapCoinNullifier(dropMerkleIndex(pooled), selfAddr));
+    const changeValue = (pooled.value - val) as Uint<128>;
+    if (changeValue == 0) {
+      pools.remove(colA);
+    } else {
+      const changeCoin = ShieldedCoinInfo{
+        nonce: evolveNonce(2, pooled.nonce),
+        color: colA,
+        value: changeValue
+      };
+      createZswapOutput(changeCoin, selfRecipient);
+      const cm = zswapCoinCommitment(changeCoin, selfRecipient);
+      kernel.claimZswapCoinSpend(cm);
+      kernel.claimZswapCoinReceive(cm);
+      pools.insertCoin(colA, changeCoin, selfRecipient);
+    }
+  }
+
+  // The debit reuses `kA` and `heldA` — v4 recomputed both.
+  shieldedBalances.insert(kA, (heldA - val) as Uint<128>);
+
+  // --- WANT: +B, credited to `creditAccount`, with the credit key hashed ONCE ---
+  receiveShielded(cb);
+  if (pools.member(cb.color)) {
+    pools.insertCoin(cb.color, mergeCoinImmediate(pools.lookup(cb.color), cb), selfRecipient);
+  } else {
+    pools.insertCoin(cb.color, cb, selfRecipient);
+  }
+  const kB = shieldedKey(credit, cb.color);
+  shieldedBalances.insert(kB, (cellAt(kB) + cb.value) as Uint<128>);
+}
