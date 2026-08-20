@@ -77,7 +77,23 @@ export type SettlementResult = {
   finalizedIntentSegments?: number[];
   /** The fee the finalized transaction declares, in SPECKs. */
   feesSpecks?: string;
+  /** Whatever the `preSubmit` guard reported, if one was supplied (Plan 02's fail-closed check). */
+  preSubmitGuard?: unknown;
   error?: string;
+};
+
+export type SettleOptions = {
+  ttlMs?: number;
+  label?: string;
+  /**
+   * A last check on the FINALIZED (merged) transaction, run BEFORE `submitTransaction`. Throwing
+   * refuses the submit; whatever it returns is recorded as `preSubmitGuard`.
+   *
+   * Added by Plan 02 for the fail-closed imbalance guard (the Offer Files `nonDustImbalances` +
+   * `ImbalanceUnreadableError` pattern). Optional and defaulted, so Plan 01's spikes — whose evidence
+   * is already committed and gate-green — behave exactly as they did.
+   */
+  preSubmit?: (finalized: any, recipe: any) => unknown | Promise<unknown>;
 };
 
 const intentSegmentsOf = (tx: any): number[] => {
@@ -98,9 +114,10 @@ export const settleAsTaker = async (
   taker: Party,
   tx: any,
   route: TakerRoute,
-  opts: { ttlMs?: number; label?: string } = {},
+  opts: SettleOptions = {},
 ): Promise<SettlementResult> => {
   const validations: ValidationOutcome[] = [];
+  let preSubmitGuard: unknown;
   const label = opts.label ?? route;
   const ttl = new Date(Date.now() + (opts.ttlMs ?? TTL_MS));
   const facade: any = taker.wallet;
@@ -156,6 +173,11 @@ export const settleAsTaker = async (
       /* fee estimation is diagnostics, not an assertion */
     }
 
+    // The fail-closed guard, if the caller supplied one. It runs on the MERGED transaction, which is
+    // the only object that can answer "is this actually submittable and does it hold what I agreed
+    // to?" — the offer alone cannot, and the recipe is not the thing that gets submitted.
+    if (opts.preSubmit) preSubmitGuard = await opts.preSubmit(finalized, recipe);
+
     log(`taker[${label}]: submitting the merged transaction`);
     const txId = String(await facade.submitTransaction(finalized));
 
@@ -164,6 +186,7 @@ export const settleAsTaker = async (
       ok: true,
       txId,
       txHash,
+      preSubmitGuard,
       identifiers: (() => {
         try {
           return Array.from(finalized.identifiers() as Iterable<string>).map(String);
@@ -177,6 +200,6 @@ export const settleAsTaker = async (
       feesSpecks,
     };
   } catch (e) {
-    return { route, ok: false, validations, error: errorChain(e) };
+    return { route, ok: false, validations, preSubmitGuard, error: errorChain(e) };
   }
 };

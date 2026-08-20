@@ -17,7 +17,11 @@ import {
 // The compiled contracts. Built by scripts/g2/compile.sh into harness/generated/*.
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — generated artifact, present after compilation
-import { Contract as ManagerContract, ledger as managerLedger } from '../../generated/manager/contract/index.js';
+import {
+  Contract as ManagerContract,
+  ledger as managerLedger,
+  pureCircuits as managerPureCircuits,
+} from '../../generated/manager/contract/index.js';
 // @ts-ignore — generated artifact, present after compilation
 import { Contract as MinterContract, ledger as minterLedger } from '../../generated/minter/contract/index.js';
 // @ts-ignore — generated artifact, present after compilation
@@ -28,6 +32,66 @@ import {
 
 /** Private state: just the owner secret the witness hands to the circuit. */
 export type ManagerPS = { ownerSecret: Uint8Array };
+
+/** One zswap input a circuit consumed. */
+export type ZswapInputView = { nonce: string; colour: string; value: bigint; mtIndex: bigint };
+/** One zswap output a circuit created. */
+export type ZswapOutputView = {
+  nonce: string;
+  colour: string;
+  value: bigint;
+  /** True when the recipient is a contract address rather than a user coin public key. */
+  toContract: boolean;
+  recipient: string;
+};
+
+/** A circuit call's result plus the zswap structure and effects it produced. */
+export type CallDetail<T> = {
+  result: T;
+  inputs: ZswapInputView[];
+  outputs: ZswapOutputView[];
+  effects: {
+    claimedNullifiers: string[];
+    claimedShieldedSpends: string[];
+    claimedShieldedReceives: string[];
+  };
+};
+
+/**
+ * The per-colour ZSWAP IMBALANCE a call contributes, computed the way the ledger does it:
+ * inputs count POSITIVE, outputs count NEGATIVE. A surplus is positive, a deficit negative, and
+ * balancing is legal only when nothing is negative (`ledger/src/verify.rs`; measured live by
+ * 00006 spike S3, whose control case failed with `invalid balance -4 … in segment 0`).
+ *
+ * Colours with a net delta of 0 are omitted, so the map reads exactly like `Transaction.imbalances`.
+ */
+export const zswapDeltas = (call: Pick<CallDetail<unknown>, 'inputs' | 'outputs'>): Record<string, bigint> => {
+  const out: Record<string, bigint> = {};
+  for (const i of call.inputs) out[i.colour] = (out[i.colour] ?? 0n) + i.value;
+  for (const o of call.outputs) out[o.colour] = (out[o.colour] ?? 0n) - o.value;
+  for (const [k, v] of Object.entries(out)) if (v === 0n) delete out[k];
+  return out;
+};
+
+/**
+ * The Manager's PURE circuits, callable with no context — this is where the compiler puts a circuit
+ * that touches no ledger state (which is also why they cost no proving key). 00006 exports
+ * `zswapNullifierOf` / `zswapCommitmentOf` through here purely so the swap circuits' transcription of
+ * the standard library's PRIVATE `coinNullifier` / `coinCommitment` can be tested for equality
+ * against the values the stdlib itself claims, rather than trusted.
+ */
+export const managerPure = managerPureCircuits as {
+  shieldedKey: (acct: Uint8Array, colour: Uint8Array) => Uint8Array;
+  unshieldedKey: (acct: Uint8Array, colour: Uint8Array) => Uint8Array;
+  zswapNullifierOf: (
+    coin: { nonce: Uint8Array; color: Uint8Array; value: bigint },
+    addr: { bytes: Uint8Array },
+  ) => Uint8Array;
+  zswapCommitmentOf: (
+    coin: { nonce: Uint8Array; color: Uint8Array; value: bigint },
+    recipient: { is_left: boolean; left: { bytes: Uint8Array }; right: { bytes: Uint8Array } },
+  ) => Uint8Array;
+};
 
 export const hex = (u: Uint8Array): string => Buffer.from(u).toString('hex');
 
@@ -184,13 +248,51 @@ export class ManagerSim {
 
   /** Call an impure circuit, committing the resulting state on success. */
   async call<T = unknown>(circuitId: string, ...args: unknown[]): Promise<T> {
+    return (await this.callDetailed<T>(circuitId, ...args)).result;
+  }
+
+  /**
+   * Call an impure circuit and return the ZSWAP SHAPE it produced as well as its result — the
+   * coins the circuit consumed as zswap inputs, the coins it created as outputs, and the effects it
+   * claimed (nullifiers, shielded spends, shielded receives).
+   *
+   * This is what makes 00006's surplus circuit testable OFFLINE. A swap offer's whole correctness
+   * claim is a statement about zswap structure — "the A leg is internally balanced" (v1) versus
+   * "the A leg leaves a positive imbalance addressed to nobody" (v2) — and the pinned
+   * `@midnight-ntwrk/compact-runtime` records exactly that in `callContext.currentZswapLocalState`
+   * and `queryContext.effects`. So the FR-302 imbalance claim and the ledger's own effects rules
+   * (`ledger/src/verify.rs:1528`/`:1548`/`:1599`) can be checked before any stack is booted, and a
+   * live refusal can be attributed to a layer rather than guessed at.
+   */
+  async callDetailed<T = unknown>(circuitId: string, ...args: unknown[]): Promise<CallDetail<T>> {
     const res = await this.contract.impureCircuits[circuitId](this.ctx(circuitId), ...args);
     // The post-call ledger state lives in this contract's query context.
     const qc = res.context?.queryContexts?.[this.address];
     if (qc?.state) this.state = qc.state;
     const ps = res.context?.callContext?.currentPrivateState;
     if (ps) this.privateState = ps;
-    return res.result as T;
+    const zswap = res.context?.callContext?.currentZswapLocalState;
+    return {
+      result: res.result as T,
+      inputs: (zswap?.inputs ?? []).map((c: any) => ({
+        nonce: hex(c.nonce),
+        colour: hex(c.color),
+        value: BigInt(c.value),
+        mtIndex: BigInt(c.mt_index ?? 0n),
+      })),
+      outputs: (zswap?.outputs ?? []).map((o: any) => ({
+        nonce: hex(o.coinInfo.nonce),
+        colour: hex(o.coinInfo.color),
+        value: BigInt(o.coinInfo.value),
+        toContract: !o.recipient.is_left,
+        recipient: hex(o.recipient.is_left ? o.recipient.left.bytes : o.recipient.right.bytes),
+      })),
+      effects: {
+        claimedNullifiers: [...((qc?.effects?.claimedNullifiers ?? []) as string[])].sort(),
+        claimedShieldedSpends: [...((qc?.effects?.claimedShieldedSpends ?? []) as string[])].sort(),
+        claimedShieldedReceives: [...((qc?.effects?.claimedShieldedReceives ?? []) as string[])].sort(),
+      },
+    };
   }
 
   /**
