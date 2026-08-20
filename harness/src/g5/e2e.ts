@@ -66,6 +66,13 @@ const arg = (flag: string): string | undefined => {
   return i >= 0 ? process.argv[i + 1] : undefined;
 };
 
+/**
+ * A cell reading as a number. `rig.read` reports a zero-or-missing cell as `absent-or-zero` because
+ * "the cell reads zero" and "the cell does not exist" are different claims and the no-state-created
+ * proofs depend on the difference — but an arithmetic check on a DELTA does not care which it was.
+ */
+const cellNum = (v: string | undefined): bigint => (v === undefined || v === 'absent-or-zero' ? 0n : BigInt(v));
+
 export type CaseResult = {
   useCase: 'U1' | 'U2';
   label: string;
@@ -318,13 +325,19 @@ const runCase = async (spec: CaseSpec): Promise<CaseResult> => {
         detail: `held(B) ${before.held.B} -> ${after.held.B} (expected ${expectedHeldB})`,
       },
       {
+        // RELATIVE, not absolute. Several cases run against ONE Manager in sequence — the 1-cell U1
+        // control, then U1 at the target size, then U2 — and each settlement credits the maker another
+        // WANT of B. An absolute `== WANT` check passes only for the first case and then reports a
+        // spurious failure for every later one, which is exactly the kind of self-contradicting
+        // evidence this rig must not produce.
         name: "the maker's own cell was debited G and credited B",
         ok:
           res.settled &&
-          after.cells[`${maker.label}/B`] === String(WANT) &&
-          after.cells[`${maker.label}/G`] !== before.cells[`${maker.label}/G`],
+          BigInt(cellNum(after.cells[`${maker.label}/B`])) === BigInt(cellNum(before.cells[`${maker.label}/B`])) + WANT &&
+          BigInt(cellNum(after.cells[`${maker.label}/G`])) === BigInt(cellNum(before.cells[`${maker.label}/G`])) - giveValue,
         detail: `${maker.label}/G ${before.cells[`${maker.label}/G`]} -> ${after.cells[`${maker.label}/G`]}; ` +
-          `${maker.label}/B ${before.cells[`${maker.label}/B`]} -> ${after.cells[`${maker.label}/B`]}`,
+          `${maker.label}/B ${before.cells[`${maker.label}/B`]} -> ${after.cells[`${maker.label}/B`]} ` +
+          `(expected +${WANT} B, -${giveValue} G)`,
       },
       {
         name: `the SETTLER swept the ${giveValue} G surplus and funded the ${WANT} B deficit`,

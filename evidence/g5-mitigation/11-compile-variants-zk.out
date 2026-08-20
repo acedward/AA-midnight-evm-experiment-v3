@@ -1,0 +1,7 @@
+[g5-compile] compiler image aa00006-compactc:0.33.0 present (attempt 1)
+[g5-compile] compactc 0.33.0
+[g5-compile] compiling v4-slim (--zk) -> harness/generated-zk/v4-slim
+Terminated: 15
+[G5] INTERRUPTED
+[G5] teardown: docker compose --env-file /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/docker/.env -f /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00006-g5-20260820184809-37819 && w1_cleanup
+[G5] RED (exit 130)

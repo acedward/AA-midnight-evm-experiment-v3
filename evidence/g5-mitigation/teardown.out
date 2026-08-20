@@ -1,0 +1,2 @@
+host clean: no containers, volumes or networks named aa00006-g5-20260820184809-37819*
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-zABCJF)
