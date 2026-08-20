@@ -1,0 +1,4 @@
+expected SHA-256 (recorded in the organizer project-summary): 6441f8ed216a4f6b48306d171a5230e33f4ec3ed2739ff04f6c055f77b672bea
+spec path: /Users/edwardalvarado/todo/AA/.claude/worktrees/plan-00002-review-audit-cf7c40/AA/spec/00006-unbalanced-zswap.md
+actual   SHA-256: 6441f8ed216a4f6b48306d171a5230e33f4ec3ed2739ff04f6c055f77b672bea
+RESULT: byte-identical to the approved, owner-signed specification.
