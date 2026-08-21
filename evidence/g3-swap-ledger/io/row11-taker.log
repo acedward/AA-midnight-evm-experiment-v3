@@ -1,0 +1,13 @@
+[2026-08-20T12:54:13.039Z]   waiting for Taker-row-11 to see 1 of shielded 4fde155ea51f… before spending it …
+[2026-08-20T12:54:13.043Z] taker[row-11]: envelope ok — named-taker offer, give 1 of 3ee0a9b91f70…, want 1 of 4fde155ea51f…, 3567 s of life left
+[2026-08-20T12:54:13.057Z] taker[row-11]: fundable — deficits {"0/shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25":"-1"}, surpluses {}
+[2026-08-20T12:54:13.211Z] taker[row-11]: balanceUnboundTransaction on a transaction it did not build
+[2026-08-20T12:54:14.773Z] taker[row-11]: merged transaction balances; unswept non-dust surplus {}
+[2026-08-20T12:54:14.773Z] taker[row-11]: submitting the merged transaction
+[2026-08-20T12:54:15.872Z] taker[row-11]: REFUSED at settlement (node code 239)
+
+--- stderr ---
+2026-08-20 08:54:12        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
+2026-08-20 08:54:12        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
+2026-08-20 08:54:15        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 239
+2026-08-20 08:54:15        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 239

@@ -1,0 +1,359 @@
+// ============================================================================================
+// F-310 MITIGATION RIG — ARM (d) `unified per-account coin map`
+// 00006-unbalanced-zswap Plan 05 / gate G5. EXPERIMENTAL_LANE / LANE-DEV-1.
+// ============================================================================================
+//
+// Issue 0004 mitigation 1c, the owner's proposal of 2026-08-20:
+//
+//     pools[account][colour] = QualifiedShieldedCoinInfo
+//
+// Each (account, colour) holds its OWN pooled coin, and `shieldedBalances` IS DELETED ENTIRELY —
+// the coin's value IS the balance. The swap circuit therefore touches ONE ledger field instead of
+// two, which is the arm's whole thesis: roughly halving the container operations of an offer.
+//
+// THE GENUINELY GOOD PART, and it is a safety property rather than a cost one. In v3/v4 the "rich pool
+// never rescues a poor account" rule is enforced by an ORDERED PAIR OF GUARDS — the per-(account,
+// colour) cell is checked BEFORE the shared pool, and getting that order wrong is a real
+// vulnerability (it is what NC-306 exists to catch, and why FR-204 calls the order load-bearing).
+// Here the rule is STRUCTURAL: there is no shared pool to rescue anybody from. Your coin is your
+// balance, so an account cannot spend value it does not hold even if every guard were deleted. The
+// guard below is retained as a value check (`mine.value >= val`), but it is no longer the thing
+// standing between one account and another's money.
+//
+// WHAT IT COSTS, measured rather than hand-waved — this is why the arm is "the deepest" in issue 0004:
+//
+//   * `transferInternalShielded` STOPS BEING FREE. In v3/v4 an internal transfer moves no token at
+//     all: it is two cell writes and the pooled coin is byte-identical before and after. Here the two
+//     accounts hold DIFFERENT COINS, so moving value between them is a real zswap split-and-merge:
+//     `sendShielded` the source coin to this contract (producing a `sent` coin and change), then
+//     `mergeCoin` the `sent` coin into the destination's existing coin if it has one. That is
+//     up to three zswap inputs, three outputs and their nullifier/commitment claims for what used to
+//     be two map writes. Plan 05 requires this cost to be measured as the arm's price, so
+//     `transferInternalShielded` is in the matrix, not just the offer circuit.
+//   * COIN COUNT GROWS with (accounts x colours) instead of (colours). More coins means more Merkle
+//     commitments per unit of custody, which is a cost the whole system pays, not just this circuit.
+//   * `poolValue` / `poolHasColour` LOSE THEIR MEANING. There is no per-colour pool to value, so they
+//     are replaced by `accountColourValue` / `accountHasColour`. Any downstream reader of the v3/v4
+//     pool API breaks.
+//
+// RELAXATIONS:
+//   R1  the unshielded family, inherited from `v4-slim`.
+//   R2' **BOTH custody fields change.** `shieldedBalances` is DELETED and `pools` is re-keyed from
+//       `colour -> coin` to `account -> colour -> coin`. Every v3/v4 raw-state decoder breaks; the
+//       `shieldedKey` key-reproduction tooling has nothing to reproduce (the field it addressed is
+//       gone); 00005's FR-205 conservation invariant
+//       (`poolValue(c) == sum over accounts of shieldedBalances[(a, c)]`) becomes VACUOUS because the
+//       two sides are now the same number by construction — it must be restated as "the sum of the
+//       coin values this contract holds for colour c equals the sum of what was credited minus what
+//       was debited", which is what the offline suite asserts for this arm.
+//   R3' `poolValue` / `poolHasColour` are removed (see above), so the v3/v4 reader API is not
+//       preserved. The G5 harness reads this arm through its own variant reader.
+//   R4' F-314 applies: an ADT-typed intermediate cannot be bound to a local, so every inner-map access
+//       restates the chain from the ledger field. A `QualifiedShieldedCoinInfo` IS a regular type, so
+//       the COIN itself binds to a local fine — which is what keeps this arm's read count low despite
+//       the nesting, and is the structural reason it can beat arm (b) even though both are nested.
+
+import CompactStandardLibrary;
+
+export {
+  registerAccount,
+  depositShielded,
+  withdrawShielded,
+  transferInternalShielded,
+  openSwapShielded,
+  zswapNullifierOf,
+  zswapCommitmentOf,
+  myAccount,
+  isRegistered,
+  shieldedAccountBalance,
+  accountHasColour,
+  shieldedKey,
+  accounts,
+  pools
+}
+
+/// THE ARM. `account -> (colour -> that account's own pooled coin)`. There is no second field.
+export ledger pools: Map<Bytes<32>, Map<Bytes<32>, QualifiedShieldedCoinInfo>>;
+export ledger accounts: Set<Bytes<32>>;
+
+witness localOwnerSecret(): Bytes<32>;
+
+circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
+  return persistentCommit<Bytes<21>>("aa00005:manager:owner", disclose(sk));
+}
+
+circuit authenticatedAccount(): Bytes<32> {
+  const acct = ownerCommitment(localOwnerSecret());
+  assert(accounts.member(acct), "caller's owner witness matches no registered account");
+  return acct;
+}
+
+circuit shieldedFamilyTag(): Bytes<32> {
+  return pad(32, "aa00005:manager:shielded");
+}
+
+/// RETAINED, PURE, AND ADDRESSING NOTHING THAT EXISTS ANY MORE (relaxation R2'). Kept only so the G5
+/// harness can name a v4 cell when tabulating arms side by side.
+export circuit shieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([acct, colour, shieldedFamilyTag()]);
+}
+
+/// Does this account hold a coin of this colour? Two traversals, creating nothing.
+circuit holds(acct: Bytes<32>, colour: Bytes<32>): Boolean {
+  return pools.member(acct) ? pools.lookup(acct).member(colour) : false;
+}
+
+/// A MISSING COIN READS AS BALANCE 0 — the same rule as v3/v4's missing cell, one level deeper.
+circuit valueOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  if (!pools.member(acct)) {
+    return 0;
+  }
+  return pools.lookup(acct).member(colour) ? pools.lookup(acct).lookup(colour).value : 0;
+}
+
+/// Put a coin created IN THIS TRANSACTION at (acct, colour), creating the account's sub-map lazily.
+circuit putFreshCoin(
+  acct: Bytes<32>,
+  colour: Bytes<32>,
+  coin: ShieldedCoinInfo,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): [] {
+  if (!pools.member(acct)) {
+    pools.insertDefault(acct);
+  }
+  pools.lookup(acct).insertCoin(colour, coin, recipient);
+}
+
+export circuit registerAccount(owner: Bytes<32>): [] {
+  const acct = disclose(owner);
+  assert(!accounts.member(acct), "account already registered");
+  accounts.insert(acct);
+}
+
+export circuit myAccount(): Bytes<32> {
+  return ownerCommitment(localOwnerSecret());
+}
+
+export circuit isRegistered(owner: Bytes<32>): Boolean {
+  return accounts.member(disclose(owner));
+}
+
+/// The v3/v4 reader name, same meaning, different mechanism: the value of YOUR coin.
+export circuit shieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  return valueOf(disclose(owner), disclose(colour));
+}
+
+export circuit accountHasColour(owner: Bytes<32>, colour: Bytes<32>): Boolean {
+  return holds(disclose(owner), disclose(colour));
+}
+
+// --- shielded custody ---------------------------------------------------------------------------
+
+/// Credit an incoming coin to `account` under its OWN colour, merging into that account's existing
+/// coin of that colour if it has one. Note there is no second write: the coin IS the balance.
+export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
+  const c = disclose(coin);
+  const acct = disclose(account);
+
+  assert(c.value > 0, "deposit must be positive");
+  assert(accounts.member(acct), "credit account is not registered");
+
+  receiveShielded(c);
+
+  const self = right<ZswapCoinPublicKey, ContractAddress>(kernel.self());
+  if (holds(acct, c.color)) {
+    // `mergeCoinImmediate` takes the existing QUALIFIED coin and this transaction's fresh one.
+    pools.lookup(acct).insertCoin(
+      c.color,
+      mergeCoinImmediate(pools.lookup(acct).lookup(c.color), c),
+      self
+    );
+  } else {
+    putFreshCoin(acct, c.color, c, self);
+  }
+}
+
+export circuit withdrawShielded(
+  colour: Bytes<32>,
+  value: Uint<128>,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): ShieldedCoinInfo {
+  const col = disclose(colour);
+  const val = disclose(value);
+
+  const acct = authenticatedAccount();
+  // ONE guard now, and it is structural: there is no shared pool to over-draw.
+  assert(holds(acct, col), "account colour balance too low");
+  const mine = pools.lookup(acct).lookup(col);
+  assert(mine.value >= val, "account colour balance too low");
+
+  const result = sendShielded(mine, disclose(recipient), val);
+
+  const self = right<ZswapCoinPublicKey, ContractAddress>(kernel.self());
+  if (result.change.is_some) {
+    pools.lookup(acct).insertCoin(col, result.change.value, self);
+  } else {
+    // Fully spent: the colour leaves THIS ACCOUNT's sub-map. The sub-map itself is left in place —
+    // an account that has held a colour keeps its (possibly empty) sub-map, exactly as v3/v4 leaves
+    // a zeroed cell behind.
+    pools.lookup(acct).remove(col);
+  }
+  return result.sent;
+}
+
+/// THE PRICE OF THIS ARM, MADE EXPLICIT. In v3/v4 this circuit moves no token at all. Here it is a
+/// real zswap split and merge, and its cost is part of what the rig measures.
+export circuit transferInternalShielded(to: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+  const dst = disclose(to);
+  const col = disclose(colour);
+  const amt = disclose(amount);
+
+  const fromAcct = authenticatedAccount();
+  assert(accounts.member(dst), "destination account is not registered");
+  assert(fromAcct != dst, "internal transfer to the same account");
+  assert(amt > 0, "internal transfer must be positive");
+  assert(holds(fromAcct, col), "account colour balance too low");
+  const src = pools.lookup(fromAcct).lookup(col);
+  assert(src.value >= amt, "account colour balance too low");
+
+  const self = right<ZswapCoinPublicKey, ContractAddress>(kernel.self());
+  // Split: `sent` is a contract-owned coin of `amt`, `change` is what stays with the source.
+  const result = sendShielded(src, self, amt);
+
+  // Credit the destination, merging with its existing coin of this colour if it has one.
+  if (holds(dst, col)) {
+    pools.lookup(dst).insertCoin(
+      col,
+      mergeCoinImmediate(pools.lookup(dst).lookup(col), result.sent),
+      self
+    );
+  } else {
+    putFreshCoin(dst, col, result.sent, self);
+  }
+
+  // Return the change to the source, or drop the colour if it gave everything.
+  if (result.change.is_some) {
+    pools.lookup(fromAcct).insertCoin(col, result.change.value, self);
+  } else {
+    pools.lookup(fromAcct).remove(col);
+  }
+}
+
+// --- the swap maker over the unified layout -------------------------------------------------------
+
+struct SwapCoinPreimage {
+  domain_sep: Bytes<21>,
+  info: ShieldedCoinInfo,
+  dataType: Boolean,
+  data: Bytes<32>,
+}
+
+circuit zswapCoinCommitment(
+  coin: ShieldedCoinInfo,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): Bytes<32> {
+  return persistentHash<SwapCoinPreimage>(
+    SwapCoinPreimage {
+      domain_sep: "midnight:zswap-cc[v1]",
+      info: coin,
+      dataType: recipient.is_left,
+      data: recipient.is_left ? recipient.left.bytes : recipient.right.bytes,
+    });
+}
+
+circuit zswapCoinNullifier(coin: ShieldedCoinInfo, addr: ContractAddress): Bytes<32> {
+  return persistentHash<SwapCoinPreimage>(
+    SwapCoinPreimage {
+      domain_sep: "midnight:zswap-cn[v1]",
+      info: coin,
+      dataType: false,
+      data: addr.bytes,
+    });
+}
+
+circuit dropMerkleIndex(coin: QualifiedShieldedCoinInfo): ShieldedCoinInfo {
+  return ShieldedCoinInfo{ nonce: coin.nonce, color: coin.color, value: coin.value };
+}
+
+export circuit zswapNullifierOf(coin: ShieldedCoinInfo, addr: ContractAddress): Bytes<32> {
+  return zswapCoinNullifier(coin, addr);
+}
+
+export circuit zswapCommitmentOf(
+  coin: ShieldedCoinInfo,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): Bytes<32> {
+  return zswapCoinCommitment(coin, recipient);
+}
+
+/// Give `valA` of `colourA` from the MAKER'S OWN coin and require `coinB` into the maker's custody.
+/// Same two FR-308 shapes, selected by `recipientA`, same zswap structure — the only difference from
+/// v4 is that both legs address ONE ledger field.
+export circuit openSwapShielded(
+  colourA: Bytes<32>,
+  valA: Uint<128>,
+  recipientA: Maybe<Either<ZswapCoinPublicKey, ContractAddress>>,
+  coinB: ShieldedCoinInfo,
+  creditAccount: Bytes<32>
+): [] {
+  const colA = disclose(colourA);
+  const val = disclose(valA);
+  const rcpt = disclose(recipientA);
+  const cb = disclose(coinB);
+  const credit = disclose(creditAccount);
+
+  // 0. parameter sanity.
+  assert(val > 0, "swap must give a positive amount");
+  assert(cb.value > 0, "swap must want a positive amount");
+  assert(colA != cb.color, "swap legs must be different colours");
+  // 1. the witness choke point.
+  const acct = authenticatedAccount();
+  // 2. the maker's own coin — and it IS the per-account guard, structurally.
+  assert(holds(acct, colA), "account colour balance too low");
+  const mine = pools.lookup(acct).lookup(colA);
+  assert(mine.value >= val, "account colour balance too low");
+  // 3. the credit target.
+  assert(accounts.member(credit), "credit account is not registered");
+
+  const selfAddr = kernel.self();
+  const selfRecipient = right<ZswapCoinPublicKey, ContractAddress>(selfAddr);
+
+  if (rcpt.is_some) {
+    const result = sendShielded(mine, rcpt.value, val);
+    if (result.change.is_some) {
+      pools.lookup(acct).insertCoin(colA, result.change.value, selfRecipient);
+    } else {
+      pools.lookup(acct).remove(colA);
+    }
+  } else {
+    createZswapInput(mine);
+    kernel.claimZswapNullifier(zswapCoinNullifier(dropMerkleIndex(mine), selfAddr));
+    const changeValue = (mine.value - val) as Uint<128>;
+    if (changeValue == 0) {
+      pools.lookup(acct).remove(colA);
+    } else {
+      const changeCoin = ShieldedCoinInfo{
+        nonce: evolveNonce(2, mine.nonce),
+        color: colA,
+        value: changeValue
+      };
+      createZswapOutput(changeCoin, selfRecipient);
+      const cm = zswapCoinCommitment(changeCoin, selfRecipient);
+      kernel.claimZswapCoinSpend(cm);
+      kernel.claimZswapCoinReceive(cm);
+      pools.lookup(acct).insertCoin(colA, changeCoin, selfRecipient);
+    }
+  }
+
+  // --- WANT: +B, into the credited account's OWN coin. No second field to write. ---
+  receiveShielded(cb);
+  if (holds(credit, cb.color)) {
+    pools.lookup(credit).insertCoin(
+      cb.color,
+      mergeCoinImmediate(pools.lookup(credit).lookup(cb.color), cb),
+      selfRecipient
+    );
+  } else {
+    putFreshCoin(credit, cb.color, cb, selfRecipient);
+  }
+}

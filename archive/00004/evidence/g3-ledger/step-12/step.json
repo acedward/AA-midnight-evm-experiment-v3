@@ -1,0 +1,237 @@
+{
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "step": 12,
+  "action": "AA_A withdraws U2 2 -> OwnerN",
+  "utc": "2026-08-18T23:21:25.847Z",
+  "expected": {
+    "table": {
+      "OwnerN": {
+        "S1": "4",
+        "S2": "0",
+        "U1": "5",
+        "U2": "2"
+      },
+      "OwnerM": {
+        "S1": "3",
+        "S2": "4",
+        "U1": "0",
+        "U2": "5"
+      },
+      "AA_A": {
+        "S1": "3",
+        "S2": "0",
+        "U1": "5",
+        "U2": "0"
+      },
+      "AA_B": {
+        "S1": "0",
+        "S2": "6",
+        "U1": "0",
+        "U2": "3"
+      }
+    },
+    "custody": {
+      "poolS1": "3",
+      "poolS2": "6",
+      "ledgerU1": "5",
+      "ledgerU2": "3"
+    }
+  },
+  "observed": {
+    "table": {
+      "OwnerN": {
+        "S1": "4",
+        "S2": "0",
+        "U1": "5",
+        "U2": "2"
+      },
+      "OwnerM": {
+        "S1": "3",
+        "S2": "4",
+        "U1": "0",
+        "U2": "5"
+      },
+      "AA_A": {
+        "S1": "3",
+        "S2": "0",
+        "U1": "5",
+        "U2": "0"
+      },
+      "AA_B": {
+        "S1": "0",
+        "S2": "6",
+        "U1": "0",
+        "U2": "3"
+      }
+    },
+    "custody": {
+      "S1": "3",
+      "S2": "6",
+      "U1": "5",
+      "U2": "3"
+    },
+    "pools": {
+      "S1": {
+        "present": true,
+        "value": "3",
+        "nonce": "a1184a6c4bec8e2876a0f78f8c94602ab0f12672085edd06842539f6176b2400"
+      },
+      "S2": {
+        "present": true,
+        "value": "6",
+        "nonce": "90f1aaddaf69efe7c071905b1b0cbf6045be09e010abc9d9b5d5d270f8e06d9d"
+      },
+      "U1": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "U2": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      }
+    },
+    "accounts": [
+      "67105e92521d24ccd0b0ee9d2ff842aec4b0dbfb81123b2143c9512fe6f114e7",
+      "e01c3be2d447aa46f6b9a9d8ab6b0f5fef285782b0b6af40bea330a59de33e92"
+    ],
+    "balances": {
+      "309cbe1d5693258b118a2a0033a89d58076cf16c4d156de97d8bf8a81482bf20": "6",
+      "5d82cfef524db4eac63d32a54dd0f05ea4a51c22989901b709eb2725328ce5da": "5",
+      "11f4c1d5ea1f2fca82853b20c3ed3793546f7e665ee8deed9128a328baf98f63": "0",
+      "ddce69cd9b322a966d82769107f70275b3e868cfaef7e1bb57fdc1e03598c20e": "3",
+      "28d2d9cbfb683643bdda3f72b1adf6f2b79d63e86f7ccad53ce751c740401644": "0",
+      "78096820e4beee66e702bb7cdbb57f8ce3fdfef22333f87d0a900ce6bdce3bed": "0",
+      "70f256d9130434bfa16fde017045d03dc10f2feedf4886580b1c6e8e21436a0c": "0",
+      "40a6bfcd3af92f26278289a14e733029ff55696b6463d9911ca16061c5395772": "3"
+    },
+    "kernelUnshielded": {
+      "888080b72e0f350e6599b3d146a26585a4462a6ec08cea9424b5144785ec0ad3": "5",
+      "90c789c4d6d5bfe7d01f9084e8d337b1a096b4fa272d0eca3958db9404603ca0": "3"
+    },
+    "colours": {
+      "S1": "9c77d2fb6250482c9c7bff6f8ceedc71f687b8d502383b33012f9602d711d888",
+      "S2": "6dda5d892a426e5776ecb97c6b6ff0131f1bb3f39da6457f8b1d32cc5c0032ab",
+      "U1": "888080b72e0f350e6599b3d146a26585a4462a6ec08cea9424b5144785ec0ad3",
+      "U2": "90c789c4d6d5bfe7d01f9084e8d337b1a096b4fa272d0eca3958db9404603ca0"
+    },
+    "configured": true,
+    "coins": {
+      "OwnerN": {
+        "S1": [
+          {
+            "nonce": "2c70338ebf9bf16d1e3305a10c96ba5981dcc6d4f3b822b28d497cfbec5d4004",
+            "value": "4",
+            "commitment": "b8200ea962062d12bd536f1ca4cc687c25d4abaf22453ea3aa8e390e9e67e01e",
+            "nullifier": "80ba453fc8a243b9ecb73fae94d54f31ac14aa8a0de19bdc68a0cdd01da15efa"
+          }
+        ],
+        "S2": [],
+        "U1": [],
+        "U2": []
+      },
+      "OwnerM": {
+        "S1": [
+          {
+            "nonce": "86d208bfb074f5a3b61d68f3fa79c441eb2ad344ab34a8b7ddd1a218b805a600",
+            "value": "3",
+            "commitment": "5aa966342f61cd88ea52006db42ac36e1cc268de0736fd913b859015fa41d678",
+            "nullifier": "dd25dc28806009d0873039a2be906ef9908884b35d654e591c0dad4165405b6e"
+          }
+        ],
+        "S2": [
+          {
+            "nonce": "a1c2d1462ed2df9bf060e2d19977384c61c1fdf0633b6adc4cbe294ae922fff8",
+            "value": "4",
+            "commitment": "2c313fe6855e521972c65b3ba089526c1c29322df8771a7918584e7cdfa1271f",
+            "nullifier": "880615ba43b1d39cb8b641d042e58bd307d77a5b3e353aa6ea0a749e356087bd"
+          }
+        ],
+        "U1": [],
+        "U2": []
+      }
+    },
+    "utxos": {
+      "OwnerN": {
+        "S1": [],
+        "S2": [],
+        "U1": [
+          {
+            "value": "5",
+            "intentHash": "0e13343c0feb6323694ef29f3be5c56819768b790d4fd9c1d0b9c5f58957ae3d",
+            "outputNo": "0"
+          }
+        ],
+        "U2": [
+          {
+            "value": "2",
+            "intentHash": "e0c03923c7d9984783e389a40cf5bf27dde4fed23a95db8281f35af7710d0b4b",
+            "outputNo": "0"
+          }
+        ]
+      },
+      "OwnerM": {
+        "S1": [],
+        "S2": [],
+        "U1": [],
+        "U2": [
+          {
+            "value": "5",
+            "intentHash": "ae6ac3ca7f576220a8d6436741c1a7117d5377927f1d38212dd154371d3bdb48",
+            "outputNo": "0"
+          }
+        ]
+      }
+    }
+  },
+  "observationPoints": {
+    "AA_cells": "Manager `balances` map decoded from contract state (keys derived by the contract's own pure balanceKey circuit)",
+    "AA_cells_second": "the per-colour custody side — pooled zswap coin (shielded) / ledger-kernel unshielded balance — via the invariant custody[c] == AA_A[c] + AA_B[c]",
+    "AA_cells_third": "on-chain accountBalance(AA_B, S1) = 0",
+    "user_cells": "read-only OBSERVER wallet facades (never submitters — finding F-104)",
+    "user_cells_second_unshielded": "UTXO set reconstructed from the indexer transaction history, per colour",
+    "user_cells_second_shielded": "ledger conservation identity minted[c] == custody[c] + OwnerN[c] + OwnerM[c]"
+  },
+  "indexerUnshielded": {
+    "OwnerN": {
+      "U1": "5",
+      "U2": "2"
+    },
+    "OwnerM": {
+      "U1": "0",
+      "U2": "5"
+    }
+  },
+  "spotCheck": {
+    "account": "AA_B",
+    "colour": "S1",
+    "onChain": "0",
+    "ledgerState": "0",
+    "txish": "0070d204188deea834dfc298f989bbe37dc2b57147b23cc0bf03dc9709b2c97c97"
+  },
+  "mintedTotals": {
+    "S1": "10",
+    "S2": "10",
+    "U1": "10",
+    "U2": "10"
+  },
+  "perColourInvariant": {
+    "S1": "3 == 3 + 0",
+    "S2": "6 == 0 + 6",
+    "U1": "5 == 5 + 0",
+    "U2": "3 == 0 + 3"
+  },
+  "operations": [
+    {
+      "label": "AA_A withdraws U2 2 -> OwnerN",
+      "txs": [
+        "00954729ff02920dbd2f91eca1a1aa20cf546f53e6e2c7101f2597be0a51290bc9"
+      ],
+      "level": "SDK",
+      "detail": {
+        "colour": "90c789c4d6d5bfe7d01f9084e8d337b1a096b4fa272d0eca3958db9404603ca0"
+      }
+    }
+  ]
+}

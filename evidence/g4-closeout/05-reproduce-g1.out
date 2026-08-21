@@ -1,0 +1,24 @@
+[W-2] already running under caffeinate (pid 56991) — idle sleep is held off
+[G1] EXPERIMENTAL_LANE / LANE-DEV-1 — 00006, mode=full
+[G1] compose project: aa00006-g1-20260820132754-56991
+[G1] ok: 01-w1-docker-config (0s)
+[G1] ok: 02-probe-ports (0s)
+[G1] ok: 03-lane-reuse (1s)
+[G1] ok: 04-lane-dev-1 (1s)
+[G1] ok: 05-compile-fast (2s)
+[G1] ok: 06-install (2s)
+[G1] ok: 07-compile-zk (84s)
+[G1] ok: 08-typecheck (2s)
+[G1] ok: 09-pull (2s)
+[G1] ok: 10-boot (8s)
+[G1] ok: 11-health (2s)
+[G1] ok: 12-wallets (6s)
+[G1] ok: 13-funding (138s)
+[G1] ok: 14-record-lane (0s)
+[G1] ok: 15-spike-s1 (361s)
+[G1] ok: 16-spike-s2 (1913s)
+[G1] ok: 17-spike-s3 (227s)
+[G1] ok: 18-record-spikes (0s)
+[G1] all steps passed; teardown runs next and must also succeed
+[G1] teardown: docker compose --env-file /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00006-g4-88MwCz/clone/docker/.env -f /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00006-g4-88MwCz/clone/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00006-g1-20260820132754-56991 && w1_cleanup
+[G1] GREEN

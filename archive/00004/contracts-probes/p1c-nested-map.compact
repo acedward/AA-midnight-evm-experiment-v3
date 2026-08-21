@@ -1,0 +1,49 @@
+// PROBE P1(c) — 00004-multi-token-custody, Plan 01 Phase 3 (EXPERIMENTAL_LANE / LANE-DEV-1)
+//
+// THROWAWAY. Not deployed, not part of the product.
+//
+// Plan 01 makes this probe CONDITIONAL on P1(b) failing. It is compiled anyway, clearly labelled
+// INFORMATIONAL, because one extra compile is nearly free and it gives Plan 02 a second, more
+// legible option for the per-(account, colour) table: nested maps
+// (`account -> colour -> balance`) instead of P1(a)'s hashed composite key.
+//
+// Nesting rule on this compiler: ADTs may be nested ONLY inside a `Map` value, `Kernel` excepted,
+// and a nested ledger value must be initialised with `default<T>` before it is used.
+
+import CompactStandardLibrary;
+
+export { balanceOf, openAccount, credit, debit }
+
+// account -> (colour -> balance)
+export ledger balances: Map<Bytes<32>, Map<Bytes<32>, Uint<128>>>;
+
+/// A nested ledger value must exist before it can be indexed.
+export circuit openAccount(account: Bytes<32>): [] {
+  assert(!balances.member(disclose(account)), "account already open");
+  balances.insert(disclose(account), default<Map<Bytes<32>, Uint<128>>>);
+}
+
+export circuit balanceOf(account: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  if (!balances.member(disclose(account))) {
+    return 0;
+  }
+  if (!balances.lookup(disclose(account)).member(disclose(colour))) {
+    return 0;
+  }
+  return balances.lookup(disclose(account)).lookup(disclose(colour));
+}
+
+export circuit credit(account: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+  assert(balances.member(disclose(account)), "account not open");
+  const cur = balanceOf(disclose(account), disclose(colour));
+  // The whole indirection chain must be written out inline — nested ledger values are not
+  // first-class, so there is no way to bind `balances.lookup(account)` to a local.
+  balances.lookup(disclose(account)).insert(disclose(colour), (cur + disclose(amount)) as Uint<128>);
+}
+
+export circuit debit(account: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+  assert(balances.member(disclose(account)), "account not open");
+  const cur = balanceOf(disclose(account), disclose(colour));
+  assert(cur >= disclose(amount), "per-(account,colour) balance too low");
+  balances.lookup(disclose(account)).insert(disclose(colour), (cur - disclose(amount)) as Uint<128>);
+}

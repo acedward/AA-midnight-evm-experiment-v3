@@ -1,0 +1,1998 @@
+{
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-19T05:20:56.443Z",
+  "managerAddress": "b1f34f0469b0c29e0a61e931be21a1d335d33953367bf3fc9c633b0d8372076d",
+  "managerDeploy": {
+    "label": "Manager",
+    "address": "b1f34f0469b0c29e0a61e931be21a1d335d33953367bf3fc9c633b0d8372076d",
+    "txId": 32,
+    "txHash": "da711ebed1fd300b6db80d73269217649d67b442b206c2607010e01f7118e438",
+    "blockHeight": 45,
+    "blockHash": "05a9982e12d3541e27185859dccfa796c373151e6b61ff3dd2c6f49bd876f163",
+    "blockTimestamp": 1787115474001,
+    "sdk": {
+      "tx": {
+        "__wbg_ptr": 5342080
+      },
+      "status": "SucceedEntirely",
+      "txId": "00a6e21ecae834c8bfbacb11bd76bcb3f9b2a206924979baa010c7ad5a1127c86a",
+      "txHash": "da711ebed1fd300b6db80d73269217649d67b442b206c2607010e01f7118e438",
+      "identifiers": [
+        "0095d1161a11d831fc70f3a47e7861eba508dc485e37b840da86bb7ec097b46539",
+        "00a6e21ecae834c8bfbacb11bd76bcb3f9b2a206924979baa010c7ad5a1127c86a"
+      ],
+      "blockHeight": 45,
+      "blockHash": "05a9982e12d3541e27185859dccfa796c373151e6b61ff3dd2c6f49bd876f163",
+      "unshielded": {
+        "created": [],
+        "spent": []
+      },
+      "blockTimestamp": 1787115474001,
+      "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+      "indexerId": 32,
+      "protocolVersion": 2000000,
+      "fees": {
+        "paidFees": "5985383476099863",
+        "estimatedFees": "5985383476099863"
+      },
+      "contractAddress": "b1f34f0469b0c29e0a61e931be21a1d335d33953367bf3fc9c633b0d8372076d",
+      "initialContractState": {
+        "__wbg_ptr": 1273632
+      }
+    }
+  },
+  "chainTipBeforeAnyDeploy": {
+    "height": 42,
+    "hash": "356de935c2887e3a67eefd04302fc24d3c250a2e72fb99d079be484e18e0f9f2",
+    "timestamp": 1787115456001
+  },
+  "deployOrder": {
+    "managerBlock": 45,
+    "rows": [
+      {
+        "contract": "Minter1",
+        "tag": "TOKA",
+        "address": "0bb842c5b867d73242056d975699037a145c2515cc56e4883441c531691995f2",
+        "deployBlock": 57,
+        "managerBlock": 45,
+        "strictlyLater": true,
+        "absentAtManagerBlock": true,
+        "absentAtManagerBlockAtOrBefore": true,
+        "contractQueryError": null
+      },
+      {
+        "contract": "Minter2",
+        "tag": "TOKB",
+        "address": "6b2a58fee518a9d8b37b3efe7f2f7b19d9189d8a2f48fb9f17356da2fdc665aa",
+        "deployBlock": 67,
+        "managerBlock": 45,
+        "strictlyLater": true,
+        "absentAtManagerBlock": true,
+        "absentAtManagerBlockAtOrBefore": true,
+        "contractQueryError": null
+      },
+      {
+        "contract": "Minter3",
+        "tag": "TOKC",
+        "address": "398524288ec4b0e3907170d9f6bfb22445e98b467546485a29b44f8b811a98b5",
+        "deployBlock": 76,
+        "managerBlock": 45,
+        "strictlyLater": true,
+        "absentAtManagerBlock": true,
+        "absentAtManagerBlockAtOrBefore": true,
+        "contractQueryError": null
+      },
+      {
+        "contract": "Minter4",
+        "tag": "TOKD",
+        "address": "24319339d7d1886f9d780f873f1c22e1c9127de9115e6a24fa2f8c4b89df72b0",
+        "deployBlock": 172,
+        "managerBlock": 45,
+        "strictlyLater": true,
+        "absentAtManagerBlock": true,
+        "absentAtManagerBlockAtOrBefore": true,
+        "contractQueryError": null
+      },
+      {
+        "contract": "Minter5",
+        "tag": "TOKE",
+        "address": "4dd07d275346219ceda9e918ee70b7c226fe759e9d7450e95aba6fa6983e9fa4",
+        "deployBlock": 213,
+        "managerBlock": 45,
+        "strictlyLater": true,
+        "absentAtManagerBlock": true,
+        "absentAtManagerBlockAtOrBefore": true,
+        "contractQueryError": null
+      },
+      {
+        "contract": "MinterCollide",
+        "tag": "TOKX",
+        "address": "91d2f65440db34c57dd5f7b3538d759fa798519d94932fe3b9b699cb596c7b67",
+        "deployBlock": 222,
+        "managerBlock": 45,
+        "strictlyLater": true,
+        "absentAtManagerBlock": true,
+        "absentAtManagerBlockAtOrBefore": true,
+        "contractQueryError": null
+      }
+    ],
+    "claim": "the Manager was deployed in a strictly earlier block than every issuing contract, and at the Manager's deploy block the indexer reports NO contract action for any of their addresses"
+  },
+  "minters": [
+    {
+      "label": "Minter1",
+      "kind": "minter",
+      "tagText": "TOKA",
+      "tagIn": "544f4b4100000000000000000000000000000000000000000000000000000000",
+      "address": "0bb842c5b867d73242056d975699037a145c2515cc56e4883441c531691995f2",
+      "ledgerTag": "544f4b4100000000000000000000000000000000000000000000000000000000",
+      "shieldedSep": "f0d01ad6d6ebe86a154ad08351017bb8bcce8d0431ccffa29f5ecb4c15bcce2e",
+      "unshieldedSep": "20712f5ad7c47b300147ad7a92d9d606575a12d46dc00c6991758a596c9d4ac6",
+      "simShieldedSep": "f0d01ad6d6ebe86a154ad08351017bb8bcce8d0431ccffa29f5ecb4c15bcce2e",
+      "simUnshieldedSep": "20712f5ad7c47b300147ad7a92d9d606575a12d46dc00c6991758a596c9d4ac6",
+      "shieldedColour": "af0cf3315634a046dab2734b721b8d3f923e346d878a3d414edcd2164cec8a31",
+      "unshieldedColour": "df6c4aa1b76bd3b559685a2dbabd38ab5ca5250b40a9e591783ff52ef34a71b6",
+      "shieldedName": "S1",
+      "unshieldedName": "U1",
+      "deploy": {
+        "label": "Minter1",
+        "address": "0bb842c5b867d73242056d975699037a145c2515cc56e4883441c531691995f2",
+        "txId": 36,
+        "txHash": "6f32d9ecfa86442e1b734f93fefae5e023a8d3bc507e3b9bfb19dc125d3ab380",
+        "blockHeight": 57,
+        "blockHash": "4137e000cebb5e48930cac6950ed5ffbb43da6ebfc41f600b8cc0aa51377f516",
+        "blockTimestamp": 1787115546001,
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 6126560
+          },
+          "status": "SucceedEntirely",
+          "txId": "006379d28bb4ae51a0e687b246cd89976cd1dc81ac46e46f00ab468227208a5b0d",
+          "txHash": "6f32d9ecfa86442e1b734f93fefae5e023a8d3bc507e3b9bfb19dc125d3ab380",
+          "identifiers": [
+            "0074f1dcf2dd63c2deb4c2af743336874b2fe00f229aa1edda94409435130ec630",
+            "006379d28bb4ae51a0e687b246cd89976cd1dc81ac46e46f00ab468227208a5b0d"
+          ],
+          "blockHeight": 57,
+          "blockHash": "4137e000cebb5e48930cac6950ed5ffbb43da6ebfc41f600b8cc0aa51377f516",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787115546001,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 36,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2548164804178252",
+            "estimatedFees": "2548164804178252"
+          },
+          "contractAddress": "0bb842c5b867d73242056d975699037a145c2515cc56e4883441c531691995f2",
+          "initialContractState": {
+            "__wbg_ptr": 1622704
+          }
+        }
+      }
+    },
+    {
+      "label": "Minter2",
+      "kind": "minter",
+      "tagText": "TOKB",
+      "tagIn": "544f4b4200000000000000000000000000000000000000000000000000000000",
+      "address": "6b2a58fee518a9d8b37b3efe7f2f7b19d9189d8a2f48fb9f17356da2fdc665aa",
+      "ledgerTag": "544f4b4200000000000000000000000000000000000000000000000000000000",
+      "shieldedSep": "f3940770d5517d6ca314ced3be429137cbf5813aed8a6a16d25e951cbf15aeaa",
+      "unshieldedSep": "074e16e697ad8b0b62a37692da4a00d63d5e284ead62fd691e3507ec23ddb509",
+      "simShieldedSep": "f3940770d5517d6ca314ced3be429137cbf5813aed8a6a16d25e951cbf15aeaa",
+      "simUnshieldedSep": "074e16e697ad8b0b62a37692da4a00d63d5e284ead62fd691e3507ec23ddb509",
+      "shieldedColour": "22d2a436b6554a4eb773a6b9222f09b2901af4e34473bb40e7f0499ca75c690d",
+      "unshieldedColour": "945184e96f853231a70e09a5210a252cdff6ede55f5a871c87ac0417efa24e37",
+      "shieldedName": "S2",
+      "unshieldedName": "U2",
+      "deploy": {
+        "label": "Minter2",
+        "address": "6b2a58fee518a9d8b37b3efe7f2f7b19d9189d8a2f48fb9f17356da2fdc665aa",
+        "txId": 39,
+        "txHash": "8a37dc4e0b45e169c90066d078276b6171145d02fad1f1a0f2b48508aa6efaa0",
+        "blockHeight": 67,
+        "blockHash": "0b0ae6861adad3347d6920a1f8d80197e8cb83354b0389a82f8ed988518a47b9",
+        "blockTimestamp": 1787115606001,
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 7190032
+          },
+          "status": "SucceedEntirely",
+          "txId": "00664801cd598b71f6cc2bc88c2da0f34406ed39d30e80897c84132e84d2584180",
+          "txHash": "8a37dc4e0b45e169c90066d078276b6171145d02fad1f1a0f2b48508aa6efaa0",
+          "identifiers": [
+            "00e5c9a758cc1a1608eb792f4f16d719fc2590c7b5ecf79138a4b52738ee57781a",
+            "00664801cd598b71f6cc2bc88c2da0f34406ed39d30e80897c84132e84d2584180"
+          ],
+          "blockHeight": 67,
+          "blockHash": "0b0ae6861adad3347d6920a1f8d80197e8cb83354b0389a82f8ed988518a47b9",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787115606001,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 39,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2608260465115454",
+            "estimatedFees": "2608260465115454"
+          },
+          "contractAddress": "6b2a58fee518a9d8b37b3efe7f2f7b19d9189d8a2f48fb9f17356da2fdc665aa",
+          "initialContractState": {
+            "__wbg_ptr": 1908920
+          }
+        }
+      }
+    },
+    {
+      "label": "Minter3",
+      "kind": "minter",
+      "tagText": "TOKC",
+      "tagIn": "544f4b4300000000000000000000000000000000000000000000000000000000",
+      "address": "398524288ec4b0e3907170d9f6bfb22445e98b467546485a29b44f8b811a98b5",
+      "ledgerTag": "544f4b4300000000000000000000000000000000000000000000000000000000",
+      "shieldedSep": "43c395dfd73f970e3276d2fec3bef618203008f990c84a972fc6f201eb48b60e",
+      "unshieldedSep": "08ffdfbb93a13cf953af7a4263f4b210e2418654cb581b078a968575265475c9",
+      "simShieldedSep": "43c395dfd73f970e3276d2fec3bef618203008f990c84a972fc6f201eb48b60e",
+      "simUnshieldedSep": "08ffdfbb93a13cf953af7a4263f4b210e2418654cb581b078a968575265475c9",
+      "shieldedColour": "560e94176de2b692c51c516a7daff0ae8c13c9e244834e4296093aaa91361a90",
+      "unshieldedColour": "027dcccf6a6def7577ebe335efe2a1aa1eaa0ab7a5d5d869ed3ef1cfab279ff8",
+      "shieldedName": "S3",
+      "unshieldedName": "U3",
+      "deploy": {
+        "label": "Minter3",
+        "address": "398524288ec4b0e3907170d9f6bfb22445e98b467546485a29b44f8b811a98b5",
+        "txId": 42,
+        "txHash": "eaf15a6c2510f12f13ce88b2ec156b1db034986d77eb7c1277c8e6940a25dd3a",
+        "blockHeight": 76,
+        "blockHash": "6e88957f9f945de5e2d323e28d9b2284b370200e83d2e08a7af53381b9369b13",
+        "blockTimestamp": 1787115660012,
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 5835520
+          },
+          "status": "SucceedEntirely",
+          "txId": "00f75ac1df9f8d9a043ecdf152927d4c118dcfed7522a524236291d82a9e286060",
+          "txHash": "eaf15a6c2510f12f13ce88b2ec156b1db034986d77eb7c1277c8e6940a25dd3a",
+          "identifiers": [
+            "008f854e778443eff2f2a49fd44e95a7088b12fb4e9b18aa1a297baacbc909ff1a",
+            "00f75ac1df9f8d9a043ecdf152927d4c118dcfed7522a524236291d82a9e286060"
+          ],
+          "blockHeight": 76,
+          "blockHash": "6e88957f9f945de5e2d323e28d9b2284b370200e83d2e08a7af53381b9369b13",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787115660012,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 42,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2669285916386256",
+            "estimatedFees": "2669285916386256"
+          },
+          "contractAddress": "398524288ec4b0e3907170d9f6bfb22445e98b467546485a29b44f8b811a98b5",
+          "initialContractState": {
+            "__wbg_ptr": 1197736
+          }
+        }
+      }
+    },
+    {
+      "label": "Minter4",
+      "kind": "minter",
+      "tagText": "TOKD",
+      "tagIn": "544f4b4400000000000000000000000000000000000000000000000000000000",
+      "address": "24319339d7d1886f9d780f873f1c22e1c9127de9115e6a24fa2f8c4b89df72b0",
+      "ledgerTag": "544f4b4400000000000000000000000000000000000000000000000000000000",
+      "shieldedSep": "a430348cc6ae1eade3823e220974bc3c61a37a10b0299d3f0339cd87a5482cf5",
+      "unshieldedSep": "ed7a86e40c8fbb8ab945c066041988d145997fa726db8c1a7d29a224fb2b4cb0",
+      "simShieldedSep": "a430348cc6ae1eade3823e220974bc3c61a37a10b0299d3f0339cd87a5482cf5",
+      "simUnshieldedSep": "ed7a86e40c8fbb8ab945c066041988d145997fa726db8c1a7d29a224fb2b4cb0",
+      "shieldedColour": "1830d810691419a4a0aacae99deb76d5bc59c881178d559a9be0fb674b9c5337",
+      "unshieldedColour": "21472fe902aa4a4fb7b528b9d96464d7b3091b2baeed8d07ee55841af4a43d6a",
+      "shieldedName": "S4",
+      "unshieldedName": "U4",
+      "deploy": {
+        "label": "Minter4",
+        "address": "24319339d7d1886f9d780f873f1c22e1c9127de9115e6a24fa2f8c4b89df72b0",
+        "txId": 72,
+        "txHash": "614fd285dc118e9d9dd8bb094a988f8949fbb99f474ea2a65e15f390904927f4",
+        "blockHeight": 172,
+        "blockHash": "5e0965bc6a30fdc875a4c9c38d60e334f8e196afffc4d7491d43e5facf0045e8",
+        "blockTimestamp": 1787116236002,
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 5814832
+          },
+          "status": "SucceedEntirely",
+          "txId": "008235b1d8e48c66cef6e4b07ca5040b1d833e9be21e8d081eb0fe4e0c016c5eec",
+          "txHash": "614fd285dc118e9d9dd8bb094a988f8949fbb99f474ea2a65e15f390904927f4",
+          "identifiers": [
+            "00f31ac97ca48f824e18a9b09b6a832fa746cb437fdb76264cbdd29500b5064c3d",
+            "008235b1d8e48c66cef6e4b07ca5040b1d833e9be21e8d081eb0fe4e0c016c5eec"
+          ],
+          "blockHeight": 172,
+          "blockHash": "5e0965bc6a30fdc875a4c9c38d60e334f8e196afffc4d7491d43e5facf0045e8",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787116236002,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 72,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2724531700609678",
+            "estimatedFees": "2724531700609678"
+          },
+          "contractAddress": "24319339d7d1886f9d780f873f1c22e1c9127de9115e6a24fa2f8c4b89df72b0",
+          "initialContractState": {
+            "__wbg_ptr": 1265232
+          }
+        }
+      }
+    },
+    {
+      "label": "Minter5",
+      "kind": "minter",
+      "tagText": "TOKE",
+      "tagIn": "544f4b4500000000000000000000000000000000000000000000000000000000",
+      "address": "4dd07d275346219ceda9e918ee70b7c226fe759e9d7450e95aba6fa6983e9fa4",
+      "ledgerTag": "544f4b4500000000000000000000000000000000000000000000000000000000",
+      "shieldedSep": "3f539bb4ec5fcc48cb69c09c640b1a0daaa6ef5907025783b02de4722aa4d334",
+      "unshieldedSep": "0cff86670daebad033cd488c223f2b3eb8b66514799a5a4a844b3457b75a3d92",
+      "simShieldedSep": "3f539bb4ec5fcc48cb69c09c640b1a0daaa6ef5907025783b02de4722aa4d334",
+      "simUnshieldedSep": "0cff86670daebad033cd488c223f2b3eb8b66514799a5a4a844b3457b75a3d92",
+      "shieldedColour": "5646230bed383e0dffae1c1442f2152118cffa8761a3f0b347cdf017c9a7300e",
+      "unshieldedColour": "cd56842f5052d16b8b220698637f5d54d7bd7d72539a85034fc5eb98641b3a50",
+      "shieldedName": "S5",
+      "unshieldedName": "U5",
+      "deploy": {
+        "label": "Minter5",
+        "address": "4dd07d275346219ceda9e918ee70b7c226fe759e9d7450e95aba6fa6983e9fa4",
+        "txId": 82,
+        "txHash": "63d1a5b7158abe85044289ad8cc2090bc95a39796c51a04513bce871878276ee",
+        "blockHeight": 213,
+        "blockHash": "6a6b76e8bd3c5e90ae49e31a964aa213bed729f7bad72516dd27f0d10831a3d2",
+        "blockTimestamp": 1787116482011,
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 7590752
+          },
+          "status": "SucceedEntirely",
+          "txId": "0051ccc6ed1b2047a824c8a26f05222e3c47415ba983c2ce7c185c385476847733",
+          "txHash": "63d1a5b7158abe85044289ad8cc2090bc95a39796c51a04513bce871878276ee",
+          "identifiers": [
+            "0077c9866a7866423b1312119317ea37360fffdf73adddc56f39668b4ed81690eb",
+            "0051ccc6ed1b2047a824c8a26f05222e3c47415ba983c2ce7c185c385476847733"
+          ],
+          "blockHeight": 213,
+          "blockHash": "6a6b76e8bd3c5e90ae49e31a964aa213bed729f7bad72516dd27f0d10831a3d2",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787116482011,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 82,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2815762720219051",
+            "estimatedFees": "2815762720219051"
+          },
+          "contractAddress": "4dd07d275346219ceda9e918ee70b7c226fe759e9d7450e95aba6fa6983e9fa4",
+          "initialContractState": {
+            "__wbg_ptr": 2429520
+          }
+        }
+      }
+    },
+    {
+      "label": "MinterCollide",
+      "kind": "minter-collide",
+      "tagText": "TOKX",
+      "tagIn": "544f4b5800000000000000000000000000000000000000000000000000000000",
+      "address": "91d2f65440db34c57dd5f7b3538d759fa798519d94932fe3b9b699cb596c7b67",
+      "ledgerTag": "544f4b5800000000000000000000000000000000000000000000000000000000",
+      "shieldedSep": "e0f7cbe09ceba1dac6fbec7df9eb00c5f872960fb8108fd4988199f5bf41dd75",
+      "unshieldedSep": "e0f7cbe09ceba1dac6fbec7df9eb00c5f872960fb8108fd4988199f5bf41dd75",
+      "simShieldedSep": "e0f7cbe09ceba1dac6fbec7df9eb00c5f872960fb8108fd4988199f5bf41dd75",
+      "simUnshieldedSep": "e0f7cbe09ceba1dac6fbec7df9eb00c5f872960fb8108fd4988199f5bf41dd75",
+      "shieldedColour": "9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd",
+      "unshieldedColour": "9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd",
+      "shieldedName": "XS",
+      "unshieldedName": "XU",
+      "deploy": {
+        "label": "MinterCollide",
+        "address": "91d2f65440db34c57dd5f7b3538d759fa798519d94932fe3b9b699cb596c7b67",
+        "txId": 85,
+        "txHash": "76eade21b9815953366cbd4f7cdd6d5d4c534028cbe1ca53a6d43400d7879bf6",
+        "blockHeight": 222,
+        "blockHash": "e2de8d621251451df305f4174b9046f2012dad25e2ffc7977cab74157156f7f5",
+        "blockTimestamp": 1787116536002,
+        "sdk": {
+          "tx": {
+            "__wbg_ptr": 7765152
+          },
+          "status": "SucceedEntirely",
+          "txId": "00ab05005cf1df5732befa5037a8a1d8bc3b4816d1b19e0884a4dd37ad0b84f4ad",
+          "txHash": "76eade21b9815953366cbd4f7cdd6d5d4c534028cbe1ca53a6d43400d7879bf6",
+          "identifiers": [
+            "00857250bb209128bb9b45dab4213eef21e4721e561ac2a5c6733d8aaeee0e9f1d",
+            "00ab05005cf1df5732befa5037a8a1d8bc3b4816d1b19e0884a4dd37ad0b84f4ad"
+          ],
+          "blockHeight": 222,
+          "blockHash": "e2de8d621251451df305f4174b9046f2012dad25e2ffc7977cab74157156f7f5",
+          "unshielded": {
+            "created": [],
+            "spent": []
+          },
+          "blockTimestamp": 1787116536002,
+          "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+          "indexerId": 85,
+          "protocolVersion": 2000000,
+          "fees": {
+            "paidFees": "2343854881417012",
+            "estimatedFees": "2343854881417012"
+          },
+          "contractAddress": "91d2f65440db34c57dd5f7b3538d759fa798519d94932fe3b9b699cb596c7b67",
+          "initialContractState": {
+            "__wbg_ptr": 2427904
+          }
+        }
+      }
+    }
+  ],
+  "colours": {
+    "S1": {
+      "hex": "af0cf3315634a046dab2734b721b8d3f923e346d878a3d414edcd2164cec8a31",
+      "family": "shielded",
+      "issuer": "Minter1"
+    },
+    "U1": {
+      "hex": "df6c4aa1b76bd3b559685a2dbabd38ab5ca5250b40a9e591783ff52ef34a71b6",
+      "family": "unshielded",
+      "issuer": "Minter1"
+    },
+    "S2": {
+      "hex": "22d2a436b6554a4eb773a6b9222f09b2901af4e34473bb40e7f0499ca75c690d",
+      "family": "shielded",
+      "issuer": "Minter2"
+    },
+    "U2": {
+      "hex": "945184e96f853231a70e09a5210a252cdff6ede55f5a871c87ac0417efa24e37",
+      "family": "unshielded",
+      "issuer": "Minter2"
+    },
+    "S3": {
+      "hex": "560e94176de2b692c51c516a7daff0ae8c13c9e244834e4296093aaa91361a90",
+      "family": "shielded",
+      "issuer": "Minter3"
+    },
+    "U3": {
+      "hex": "027dcccf6a6def7577ebe335efe2a1aa1eaa0ab7a5d5d869ed3ef1cfab279ff8",
+      "family": "unshielded",
+      "issuer": "Minter3"
+    },
+    "S4": {
+      "hex": "1830d810691419a4a0aacae99deb76d5bc59c881178d559a9be0fb674b9c5337",
+      "family": "shielded",
+      "issuer": "Minter4"
+    },
+    "U4": {
+      "hex": "21472fe902aa4a4fb7b528b9d96464d7b3091b2baeed8d07ee55841af4a43d6a",
+      "family": "unshielded",
+      "issuer": "Minter4"
+    },
+    "S5": {
+      "hex": "5646230bed383e0dffae1c1442f2152118cffa8761a3f0b347cdf017c9a7300e",
+      "family": "shielded",
+      "issuer": "Minter5"
+    },
+    "U5": {
+      "hex": "cd56842f5052d16b8b220698637f5d54d7bd7d72539a85034fc5eb98641b3a50",
+      "family": "unshielded",
+      "issuer": "Minter5"
+    },
+    "XS": {
+      "hex": "9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd",
+      "family": "shielded",
+      "issuer": "MinterCollide"
+    },
+    "XU": {
+      "hex": "9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd",
+      "family": "unshielded",
+      "issuer": "MinterCollide"
+    }
+  },
+  "colourNames": [
+    "S1",
+    "U1",
+    "S2",
+    "U2",
+    "S3",
+    "U3",
+    "S4",
+    "U4",
+    "S5",
+    "U5",
+    "XS",
+    "XU"
+  ],
+  "accounts": {
+    "AA_A": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "AA_B": "755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904"
+  },
+  "deployTxs": {
+    "Manager": "00a6e21ecae834c8bfbacb11bd76bcb3f9b2a206924979baa010c7ad5a1127c86a",
+    "Minter1": "006379d28bb4ae51a0e687b246cd89976cd1dc81ac46e46f00ab468227208a5b0d",
+    "Minter2": "00664801cd598b71f6cc2bc88c2da0f34406ed39d30e80897c84132e84d2584180",
+    "Minter3": "00f75ac1df9f8d9a043ecdf152927d4c118dcfed7522a524236291d82a9e286060",
+    "Minter4": "008235b1d8e48c66cef6e4b07ca5040b1d833e9be21e8d081eb0fe4e0c016c5eec",
+    "Minter5": "0051ccc6ed1b2047a824c8a26f05222e3c47415ba983c2ce7c185c385476847733",
+    "MinterCollide": "00ab05005cf1df5732befa5037a8a1d8bc3b4816d1b19e0884a4dd37ad0b84f4ad"
+  },
+  "fundingTxs": {
+    "feePayer": "0d705e99d077d307abcc6e85302ab6b7e40c17c96e94d97e7af760253475760e",
+    "feePayerDust": "0046cec50002e5d9067cdf931148ddd497aa725525b27d98a509cf97da00c3f2ad",
+    "OwnerN": "120c6112049bea062a3d544b6cc5178d35f41f891293b7870fc433b74b30a411",
+    "OwnerNDust": "00841c8ee2cc6c476c51cb8f093100c0199c13ace59a783d9397f1b9de4b426488",
+    "OwnerM": "e9e229de15d4174ff8af879d1a519b4b42f0f7615d3ef6ed4d3e3b5532588eb0",
+    "OwnerMDust": "007499baa4ad61bcffb3fc31c1579969b9e4065ca7c5e63c17d5663de38823060c"
+  },
+  "mintedTotals": {
+    "S1": "10",
+    "U1": "10",
+    "S2": "10",
+    "S3": "10",
+    "U2": "10",
+    "S4": "7",
+    "U4": "4",
+    "S5": "3",
+    "U5": "3",
+    "XS": "3",
+    "XU": "2"
+  },
+  "endStateMapSizes": {
+    "pools": 4,
+    "shieldedCells": 5,
+    "unshieldedCells": 3
+  },
+  "specEndStateMapSizes": {
+    "pools": 4,
+    "shieldedCells": 5,
+    "unshieldedCells": 3
+  },
+  "finalWalkTable": {
+    "colours": [
+      {
+        "name": "S1",
+        "family": "shielded",
+        "hex": "af0cf3315634a046dab2734b721b8d3f923e346d878a3d414edcd2164cec8a31",
+        "issuer": "Minter1"
+      },
+      {
+        "name": "U1",
+        "family": "unshielded",
+        "hex": "df6c4aa1b76bd3b559685a2dbabd38ab5ca5250b40a9e591783ff52ef34a71b6",
+        "issuer": "Minter1"
+      },
+      {
+        "name": "S2",
+        "family": "shielded",
+        "hex": "22d2a436b6554a4eb773a6b9222f09b2901af4e34473bb40e7f0499ca75c690d",
+        "issuer": "Minter2"
+      },
+      {
+        "name": "U2",
+        "family": "unshielded",
+        "hex": "945184e96f853231a70e09a5210a252cdff6ede55f5a871c87ac0417efa24e37",
+        "issuer": "Minter2"
+      },
+      {
+        "name": "S3",
+        "family": "shielded",
+        "hex": "560e94176de2b692c51c516a7daff0ae8c13c9e244834e4296093aaa91361a90",
+        "issuer": "Minter3"
+      },
+      {
+        "name": "U3",
+        "family": "unshielded",
+        "hex": "027dcccf6a6def7577ebe335efe2a1aa1eaa0ab7a5d5d869ed3ef1cfab279ff8",
+        "issuer": "Minter3"
+      },
+      {
+        "name": "S4",
+        "family": "shielded",
+        "hex": "1830d810691419a4a0aacae99deb76d5bc59c881178d559a9be0fb674b9c5337",
+        "issuer": "Minter4"
+      },
+      {
+        "name": "U4",
+        "family": "unshielded",
+        "hex": "21472fe902aa4a4fb7b528b9d96464d7b3091b2baeed8d07ee55841af4a43d6a",
+        "issuer": "Minter4"
+      }
+    ],
+    "table": {
+      "OwnerN": {
+        "S1": "4",
+        "U1": "5",
+        "S2": "2",
+        "U2": "0",
+        "S3": "0",
+        "U3": "0",
+        "S4": "0",
+        "U4": "0"
+      },
+      "OwnerM": {
+        "S1": "0",
+        "U1": "2",
+        "S2": "4",
+        "U2": "5",
+        "S3": "6",
+        "U3": "0",
+        "S4": "0",
+        "U4": "0"
+      },
+      "AA_A": {
+        "S1": "3",
+        "U1": "3",
+        "S2": "0",
+        "U2": "0",
+        "S3": "4",
+        "U3": "0",
+        "S4": "7",
+        "U4": "0"
+      },
+      "AA_B": {
+        "S1": "3",
+        "U1": "0",
+        "S2": "4",
+        "U2": "5",
+        "S3": "0",
+        "U3": "0",
+        "S4": "0",
+        "U4": "4"
+      }
+    },
+    "custody": {
+      "S1": "6",
+      "U1": "3",
+      "S2": "4",
+      "U2": "5",
+      "S3": "4",
+      "U3": "0",
+      "S4": "7",
+      "U4": "4"
+    },
+    "pools": {
+      "S1": {
+        "present": true,
+        "value": "6",
+        "nonce": "4f2fc65115e4e96646d196485bcba5b3bea247d3f8016ba2a2b371d6b16fcfbe"
+      },
+      "U1": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "S2": {
+        "present": true,
+        "value": "4",
+        "nonce": "6617c5f1f6a8312f1f7902eca768cf099b29fa2fe05a539fa7e001bf53565700"
+      },
+      "U2": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "S3": {
+        "present": true,
+        "value": "4",
+        "nonce": "d6e31542a41b9d4ecf88d3ad602d2ada2cf3541c21e6f9b2bdc6c79523ad7cbe"
+      },
+      "U3": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "S4": {
+        "present": true,
+        "value": "7",
+        "nonce": "6e7607c23e8fa5039fb96784606caa2835563ed22445952d86974f8748b1e28b"
+      },
+      "U4": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      }
+    },
+    "sizes": {
+      "pools": 4,
+      "shieldedCells": 5,
+      "unshieldedCells": 3
+    },
+    "accounts": [
+      "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904"
+    ],
+    "shieldedBalances": {
+      "a17f1e33c386b53c28728ebbbe1d393fa05c6ed63e8ff8ec3564305af547035d": "3",
+      "d59267d5469361c0a0ee047eccd7b40b4c31cc7d852e8173bf24eee5e11547d2": "4",
+      "bb4ea121eb6f82b4d735fe5e82f733718a652c74c4aadccb12aaacbb877ba9e9": "3",
+      "c6f6a04f8be7a636d59a2c62cc42fd185d21822a22edf0aea0045308569ed155": "4",
+      "7b74d6142177014ae24d9f27fba67fa61776948904430f7c81711ecad2033e34": "7"
+    },
+    "unshieldedBalances": {
+      "3df0f0dbff1f55eb8f67168d4c4b2ddc290d17005497da5f88df2c63684860b0": "3",
+      "c6115bb032bb1e9ff65168af4f037457be5b75a6f9180494c11dc58d0ed38085": "4",
+      "1f660c9ed31a8fc37abc0afd92ffb910a45bcb64d00f00945b89e6b1ba5d894c": "5"
+    },
+    "poolsRaw": {
+      "af0cf3315634a046dab2734b721b8d3f923e346d878a3d414edcd2164cec8a31": {
+        "nonce": "4f2fc65115e4e96646d196485bcba5b3bea247d3f8016ba2a2b371d6b16fcfbe",
+        "color": "af0cf3315634a046dab2734b721b8d3f923e346d878a3d414edcd2164cec8a31",
+        "value": "6",
+        "mt_index": "32"
+      },
+      "560e94176de2b692c51c516a7daff0ae8c13c9e244834e4296093aaa91361a90": {
+        "nonce": "d6e31542a41b9d4ecf88d3ad602d2ada2cf3541c21e6f9b2bdc6c79523ad7cbe",
+        "color": "560e94176de2b692c51c516a7daff0ae8c13c9e244834e4296093aaa91361a90",
+        "value": "4",
+        "mt_index": "36"
+      },
+      "22d2a436b6554a4eb773a6b9222f09b2901af4e34473bb40e7f0499ca75c690d": {
+        "nonce": "6617c5f1f6a8312f1f7902eca768cf099b29fa2fe05a539fa7e001bf53565700",
+        "color": "22d2a436b6554a4eb773a6b9222f09b2901af4e34473bb40e7f0499ca75c690d",
+        "value": "4",
+        "mt_index": "38"
+      },
+      "1830d810691419a4a0aacae99deb76d5bc59c881178d559a9be0fb674b9c5337": {
+        "nonce": "6e7607c23e8fa5039fb96784606caa2835563ed22445952d86974f8748b1e28b",
+        "color": "1830d810691419a4a0aacae99deb76d5bc59c881178d559a9be0fb674b9c5337",
+        "value": "7",
+        "mt_index": "40"
+      }
+    },
+    "kernelUnshielded": {
+      "df6c4aa1b76bd3b559685a2dbabd38ab5ca5250b40a9e591783ff52ef34a71b6": "3",
+      "21472fe902aa4a4fb7b528b9d96464d7b3091b2baeed8d07ee55841af4a43d6a": "4",
+      "945184e96f853231a70e09a5210a252cdff6ede55f5a871c87ac0417efa24e37": "5"
+    },
+    "coins": {
+      "OwnerN": {
+        "S1": [
+          {
+            "nonce": "056ae666930abfd85b017ba794691bee927359b933e4e0076d8078c8d81d77a3",
+            "value": "4",
+            "commitment": "2983fa83d211cc584cfdeb32f7c89b204473ed96218f68757aa4e36f22a55d9d",
+            "nullifier": "b0f50f50d5fa3244b71b2f5b6b0785e5b8f00f577d32c76a27f6e744935ac2b0"
+          }
+        ],
+        "U1": [],
+        "S2": [
+          {
+            "nonce": "74c74a2df4ef57379f9373b1ad019ee76a421888700105646ee3cd51c85fd100",
+            "value": "2",
+            "commitment": "7c5874682ef011d60017b1ff4514ee2bff5660cec7dcc8bee8e24a0c7eb355bc",
+            "nullifier": "b8287df962da3d1b02ef74f5c2b7c4d798ddcb495c17086c80eeb5c4a8567c3d"
+          }
+        ],
+        "U2": [],
+        "S3": [],
+        "U3": [],
+        "S4": [],
+        "U4": []
+      },
+      "OwnerM": {
+        "S1": [],
+        "U1": [],
+        "S2": [
+          {
+            "nonce": "c0263992e4dc2bd0b4e3a1fb790441a35fb2735dadbfc0ff447ede5afee994d4",
+            "value": "4",
+            "commitment": "a25484fc9210b394d26e4a4d16990ce8eecd8ef68918c37318fe1cf79de39492",
+            "nullifier": "3eb622c05eba86925d241a5c823e6b67a6e57babe3936766e87bec31588574cf"
+          }
+        ],
+        "U2": [],
+        "S3": [
+          {
+            "nonce": "e9ce220f444bbcd529b773a458a0d286b881a68f0b88fb46ee87a00724c476e1",
+            "value": "6",
+            "commitment": "115c5365e6dd6bcb1beece8f431072f296a14f56c0dd614805ef0b99358bfd3c",
+            "nullifier": "b854890743ab158a91f0f58f33a431b76b19d37e1008bb0880e681ebbc77c762"
+          }
+        ],
+        "U3": [],
+        "S4": [],
+        "U4": []
+      }
+    },
+    "utxos": {
+      "OwnerN": {
+        "S1": [],
+        "U1": [
+          {
+            "value": "5",
+            "intentHash": "efad3058e1d333917aeee4e077863ee61718dc144083db651d1b81cf5979467c",
+            "outputNo": "0"
+          }
+        ],
+        "S2": [],
+        "U2": [],
+        "S3": [],
+        "U3": [],
+        "S4": [],
+        "U4": []
+      },
+      "OwnerM": {
+        "S1": [],
+        "U1": [
+          {
+            "value": "2",
+            "intentHash": "e4f3f795eef7b224a3c22c635c2bb9d924a53a1f86cded272041337e6578fbc3",
+            "outputNo": "0"
+          }
+        ],
+        "S2": [],
+        "U2": [
+          {
+            "value": "5",
+            "intentHash": "cc40c3d7bea1baa4a01db97c27cb66b5f8ec2ebb64abbc37d266ac56b4d4758d",
+            "outputNo": "0"
+          }
+        ],
+        "S3": [],
+        "U3": [],
+        "S4": [],
+        "U4": []
+      }
+    }
+  },
+  "finalTableMarkdown": [
+    "|  | S1 | S2 | S3 | S4 | U1 | U2 | U3 | U4 |",
+    "|---|---|---|---|---|---|---|---|---|",
+    "| OwnerN | 4 | 2 | 0 | 0 | 5 | 0 | 0 | 0 |",
+    "| OwnerM | 0 | 4 | 6 | 0 | 2 | 5 | 0 | 0 |",
+    "| AA_A | 3 | 0 | 4 | 7 | 3 | 0 | 0 | 0 |",
+    "| AA_B | 3 | 4 | 0 | 0 | 0 | 5 | 0 | 4 |",
+    "| pool / ledger | 6 | 4 | 4 | 7 | 3 | 5 | 0 | 4 |"
+  ],
+  "probes": {
+    "distinctness": {
+      "comparisons": 45,
+      "distinct": 45,
+      "collisions": [],
+      "colours": {
+        "Minter1(TOKA).S1": "af0cf3315634a046dab2734b721b8d3f923e346d878a3d414edcd2164cec8a31",
+        "Minter1(TOKA).U1": "df6c4aa1b76bd3b559685a2dbabd38ab5ca5250b40a9e591783ff52ef34a71b6",
+        "Minter2(TOKB).S2": "22d2a436b6554a4eb773a6b9222f09b2901af4e34473bb40e7f0499ca75c690d",
+        "Minter2(TOKB).U2": "945184e96f853231a70e09a5210a252cdff6ede55f5a871c87ac0417efa24e37",
+        "Minter3(TOKC).S3": "560e94176de2b692c51c516a7daff0ae8c13c9e244834e4296093aaa91361a90",
+        "Minter3(TOKC).U3": "027dcccf6a6def7577ebe335efe2a1aa1eaa0ab7a5d5d869ed3ef1cfab279ff8",
+        "Minter4(TOKD).S4": "1830d810691419a4a0aacae99deb76d5bc59c881178d559a9be0fb674b9c5337",
+        "Minter4(TOKD).U4": "21472fe902aa4a4fb7b528b9d96464d7b3091b2baeed8d07ee55841af4a43d6a",
+        "Minter5(TOKE).S5": "5646230bed383e0dffae1c1442f2152118cffa8761a3f0b347cdf017c9a7300e",
+        "Minter5(TOKE).U5": "cd56842f5052d16b8b220698637f5d54d7bd7d72539a85034fc5eb98641b3a50"
+      },
+      "collider": {
+        "shielded": "9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd",
+        "unshielded": "9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd",
+        "byteIdentical": true,
+        "contaminates": []
+      },
+      "ok": true
+    },
+    "pcoll": {
+      "collidingColour": "9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd",
+      "issuer": "MinterCollide",
+      "issuerAddress": "91d2f65440db34c57dd5f7b3538d759fa798519d94932fe3b9b699cb596c7b67",
+      "familyKeysForAA_B": {
+        "shielded": "10e27aacb3f07384fc2a97bbb9056abc4c051798583374b79523a393fc771fb1",
+        "unshielded": "92903947a5d86664fb6b677db7681fc2a6da9618652c1db97346a91bb343ac3f",
+        "differ": true
+      },
+      "afterBothDeposits": {
+        "pool": "3",
+        "contractLedgerBalance": "2",
+        "AA_B shielded cell": "3",
+        "AA_B unshielded cell": "2",
+        "mapSizes": {
+          "pools": 5,
+          "shieldedCells": 6,
+          "unshieldedCells": 4
+        }
+      },
+      "afterIndependentWithdrawals": {
+        "pool": "2",
+        "contractLedgerBalance": "1",
+        "AA_B shielded cell": "2",
+        "AA_B unshielded cell": "1",
+        "OwnerM holds, per family": "shielded 1, unshielded 1"
+      },
+      "onChainCircuitReads": {
+        "note": "the SAME 32-byte colour argument, handed to two circuits on the deployed Manager — a proved transaction each, independent of the state decode",
+        "shieldedAccountBalance(AA_B, X)": "2",
+        "unshieldedAccountBalance(AA_B, X)": "1",
+        "txs": [
+          "00914bc9365a8aa8f929785f3b0e98e2b10e0488fe1262f698f949c700646a9705",
+          "00e9c2c04ca46d19cd8ef6af4df3b1a17de026a6982cee7f75976eb2cc0cb04c19"
+        ]
+      },
+      "txs": [
+        "00b66bd35c1bbd81a5f1040656b62759e1614aee225cc7c67c83a5df05be50e5f1",
+        "00713f1fcd3747fa437a1786029b23d39c75b0a3ae3503491e562badc81f9b2269",
+        "00c10656f1923b64cdce84e714cf7c72249079904421baf094bc615b8e2cf2e955",
+        "0080fc7064f4887536eedc935e88602478b87f0e07efd5ea09775e04c99d5fe33d",
+        "00504ec1f7fd5ae0d31342efff6bd4473d44e5fd1d6ba3e3091180d4ada70f728f",
+        "0047ba5b249baf3a3a21601d77c3fdbf89d713d6236e82a64c0a1fa61f3c2bb82a"
+      ]
+    },
+    "m3": {
+      "issuer": "Minter5",
+      "issuerAddress": "4dd07d275346219ceda9e918ee70b7c226fe759e9d7450e95aba6fa6983e9fa4",
+      "S5": "5646230bed383e0dffae1c1442f2152118cffa8761a3f0b347cdf017c9a7300e",
+      "U5": "cd56842f5052d16b8b220698637f5d54d7bd7d72539a85034fc5eb98641b3a50",
+      "brandNewBefore": {
+        "pool for S5 exists": "false",
+        "(AA_B,S5) cell exists": "false",
+        "(AA_B,U5) cell exists": "false",
+        "kernel holds U5": "false",
+        "mapSizesBefore": "{\"pools\":5,\"shieldedCells\":6,\"unshieldedCells\":4}"
+      },
+      "shape": "sdk-scoped batch (one transaction, one segment per call, state threaded)",
+      "txIds": [
+        "00202436c94913c2b9b1556d064ebbe1d055c48ed0aa0983e66b43f8fc0f150c2a"
+      ],
+      "shieldedNonce": "6aa1ecb242bdc14ba9a60e5bdaa169659bf4b84b156ad2523edd3cd8e5f1ac20",
+      "circuits": [
+        "depositShielded",
+        "depositUnshielded"
+      ],
+      "attempts": [
+        {
+          "shape": "sdk-scoped batch (one transaction, one segment per call, state threaded)",
+          "attempt": 1,
+          "ok": false,
+          "error": "Unexpected error submitting scoped transaction 'aa00005-double-lazy-init': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error"
+        },
+        {
+          "shape": "sdk-scoped batch (one transaction, one segment per call, state threaded)",
+          "attempt": 2,
+          "ok": true
+        }
+      ],
+      "composedInOneTransaction": true,
+      "refusedCompositionCreatedNoState": "(the composition was accepted)",
+      "onChainCircuitReads": {
+        "shieldedAccountBalance(AA_B, S5)": "3",
+        "unshieldedAccountBalance(AA_B, U5)": "3",
+        "txs": [
+          "0029ba608d2ef73acf882605f3a26c5361ce31cba9d82daa522c650bd0da73aa29",
+          "00992c026bcac8092604012e2676935096967cfff858151123c1c7f53ce5d82fb6"
+        ]
+      },
+      "mapSizesBefore": {
+        "pools": 5,
+        "shieldedCells": 6,
+        "unshieldedCells": 4
+      },
+      "mapSizesAfter": {
+        "pools": 6,
+        "shieldedCells": 7,
+        "unshieldedCells": 5
+      },
+      "decisionD203": "RESOLVED — SDK contract-scoped batch; one transaction id carried both first deposits"
+    }
+  },
+  "metrics": {
+    "proofLatencyMs": {
+      "count": 70,
+      "min": 0,
+      "median": 620,
+      "max": 5945,
+      "mean": 1050
+    },
+    "transactionBytes": {
+      "count": 70,
+      "min": 6671,
+      "median": 8282,
+      "max": 26760,
+      "mean": 11304
+    },
+    "proofs": [
+      {
+        "circuits": "unknown",
+        "ms": 0
+      },
+      {
+        "circuits": "registerAccount",
+        "ms": 1415
+      },
+      {
+        "circuits": "registerAccount",
+        "ms": 143
+      },
+      {
+        "circuits": "shieldedAccountBalance",
+        "ms": 597
+      },
+      {
+        "circuits": "unknown",
+        "ms": 0
+      },
+      {
+        "circuits": "shieldedColor",
+        "ms": 692
+      },
+      {
+        "circuits": "unshieldedColor",
+        "ms": 766
+      },
+      {
+        "circuits": "unknown",
+        "ms": 1
+      },
+      {
+        "circuits": "shieldedColor",
+        "ms": 449
+      },
+      {
+        "circuits": "unshieldedColor",
+        "ms": 500
+      },
+      {
+        "circuits": "unknown",
+        "ms": 1
+      },
+      {
+        "circuits": "shieldedColor",
+        "ms": 458
+      },
+      {
+        "circuits": "unshieldedColor",
+        "ms": 472
+      },
+      {
+        "circuits": "unshieldedAccountBalance",
+        "ms": 593
+      },
+      {
+        "circuits": "mintShieldedTo",
+        "ms": 1419
+      },
+      {
+        "circuits": "shieldedAccountBalance",
+        "ms": 612
+      },
+      {
+        "circuits": "mintUnshieldedTo",
+        "ms": 581
+      },
+      {
+        "circuits": "unshieldedAccountBalance",
+        "ms": 574
+      },
+      {
+        "circuits": "mintShieldedTo",
+        "ms": 1107
+      },
+      {
+        "circuits": "shieldedAccountBalance",
+        "ms": 587
+      },
+      {
+        "circuits": "mintShieldedTo",
+        "ms": 962
+      },
+      {
+        "circuits": "unshieldedAccountBalance",
+        "ms": 471
+      },
+      {
+        "circuits": "mintUnshieldedTo",
+        "ms": 592
+      },
+      {
+        "circuits": "shieldedAccountBalance",
+        "ms": 620
+      },
+      {
+        "circuits": "depositShielded",
+        "ms": 5945
+      },
+      {
+        "circuits": "unshieldedAccountBalance",
+        "ms": 561
+      },
+      {
+        "circuits": "depositUnshielded",
+        "ms": 880
+      },
+      {
+        "circuits": "shieldedAccountBalance",
+        "ms": 655
+      },
+      {
+        "circuits": "depositShielded",
+        "ms": 3486
+      },
+      {
+        "circuits": "unshieldedAccountBalance",
+        "ms": 600
+      },
+      {
+        "circuits": "depositShielded",
+        "ms": 2196
+      },
+      {
+        "circuits": "shieldedAccountBalance",
+        "ms": 591
+      },
+      {
+        "circuits": "depositUnshielded",
+        "ms": 861
+      },
+      {
+        "circuits": "unshieldedAccountBalance",
+        "ms": 599
+      },
+      {
+        "circuits": "transferInternalShielded",
+        "ms": 1663
+      },
+      {
+        "circuits": "shieldedAccountBalance",
+        "ms": 449
+      },
+      {
+        "circuits": "withdrawShielded",
+        "ms": 4957
+      },
+      {
+        "circuits": "unshieldedAccountBalance",
+        "ms": 608
+      },
+      {
+        "circuits": "withdrawUnshielded",
+        "ms": 906
+      },
+      {
+        "circuits": "shieldedAccountBalance",
+        "ms": 678
+      },
+      {
+        "circuits": "unknown",
+        "ms": 0
+      },
+      {
+        "circuits": "shieldedColor",
+        "ms": 629
+      },
+      {
+        "circuits": "unshieldedColor",
+        "ms": 664
+      },
+      {
+        "circuits": "mintShieldedTo",
+        "ms": 2093
+      },
+      {
+        "circuits": "mintUnshieldedTo",
+        "ms": 630
+      },
+      {
+        "circuits": "unshieldedAccountBalance",
+        "ms": 600
+      },
+      {
+        "circuits": "depositShielded",
+        "ms": 3198
+      },
+      {
+        "circuits": "shieldedAccountBalance",
+        "ms": 591
+      },
+      {
+        "circuits": "depositUnshielded",
+        "ms": 875
+      },
+      {
+        "circuits": "unshieldedAccountBalance",
+        "ms": 604
+      },
+      {
+        "circuits": "unknown",
+        "ms": 0
+      },
+      {
+        "circuits": "shieldedColor",
+        "ms": 651
+      },
+      {
+        "circuits": "unshieldedColor",
+        "ms": 620
+      },
+      {
+        "circuits": "unknown",
+        "ms": 0
+      },
+      {
+        "circuits": "shieldedColor",
+        "ms": 498
+      },
+      {
+        "circuits": "unshieldedColor",
+        "ms": 476
+      },
+      {
+        "circuits": "mintShieldedTo",
+        "ms": 1314
+      },
+      {
+        "circuits": "mintUnshieldedTo",
+        "ms": 603
+      },
+      {
+        "circuits": "depositShielded",
+        "ms": 3090
+      },
+      {
+        "circuits": "depositUnshielded",
+        "ms": 954
+      },
+      {
+        "circuits": "withdrawShielded",
+        "ms": 4541
+      },
+      {
+        "circuits": "withdrawUnshielded",
+        "ms": 1114
+      },
+      {
+        "circuits": "shieldedAccountBalance",
+        "ms": 629
+      },
+      {
+        "circuits": "unshieldedAccountBalance",
+        "ms": 588
+      },
+      {
+        "circuits": "mintShieldedTo",
+        "ms": 1276
+      },
+      {
+        "circuits": "mintUnshieldedTo",
+        "ms": 635
+      },
+      {
+        "circuits": "depositShielded+depositUnshielded",
+        "ms": 3564
+      },
+      {
+        "circuits": "depositShielded+depositUnshielded",
+        "ms": 2637
+      },
+      {
+        "circuits": "shieldedAccountBalance",
+        "ms": 610
+      },
+      {
+        "circuits": "unshieldedAccountBalance",
+        "ms": 574
+      }
+    ],
+    "transactions": [
+      {
+        "label": "feePayer/manager",
+        "bytes": 26760
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 6671
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 6671
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8212
+      },
+      {
+        "label": "feePayer/minter1",
+        "bytes": 12573
+      },
+      {
+        "label": "feePayer/minter1",
+        "bytes": 8246
+      },
+      {
+        "label": "feePayer/minter1",
+        "bytes": 8248
+      },
+      {
+        "label": "feePayer/minter2",
+        "bytes": 12573
+      },
+      {
+        "label": "feePayer/minter2",
+        "bytes": 8246
+      },
+      {
+        "label": "feePayer/minter2",
+        "bytes": 8254
+      },
+      {
+        "label": "feePayer/minter3",
+        "bytes": 12573
+      },
+      {
+        "label": "feePayer/minter3",
+        "bytes": 8246
+      },
+      {
+        "label": "feePayer/minter3",
+        "bytes": 8248
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8214
+      },
+      {
+        "label": "feePayer/minter1",
+        "bytes": 13926
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8212
+      },
+      {
+        "label": "feePayer/minter1",
+        "bytes": 8909
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8214
+      },
+      {
+        "label": "feePayer/minter2",
+        "bytes": 13926
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8212
+      },
+      {
+        "label": "feePayer/minter3",
+        "bytes": 13927
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8214
+      },
+      {
+        "label": "feePayer/minter2",
+        "bytes": 8909
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8212
+      },
+      {
+        "label": "OwnerN-spender-1-step7/manager",
+        "bytes": 23978
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8214
+      },
+      {
+        "label": "OwnerN-spender-2-step8/manager",
+        "bytes": 8910
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8212
+      },
+      {
+        "label": "OwnerM-spender-3-step9/manager",
+        "bytes": 23948
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8213
+      },
+      {
+        "label": "OwnerM-spender-4-step10/manager",
+        "bytes": 23948
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8217
+      },
+      {
+        "label": "OwnerM-spender-5-step11/manager",
+        "bytes": 8909
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8212
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8568
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8279
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 24623
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8281
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 9287
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8212
+      },
+      {
+        "label": "feePayer/minter4",
+        "bytes": 12573
+      },
+      {
+        "label": "feePayer/minter4",
+        "bytes": 8246
+      },
+      {
+        "label": "feePayer/minter4",
+        "bytes": 8248
+      },
+      {
+        "label": "feePayer/minter4",
+        "bytes": 13925
+      },
+      {
+        "label": "feePayer/minter4",
+        "bytes": 8908
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8214
+      },
+      {
+        "label": "OwnerN-spender-6-step16/manager",
+        "bytes": 18794
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8274
+      },
+      {
+        "label": "OwnerM-spender-7-step17/manager",
+        "bytes": 8833
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8282
+      },
+      {
+        "label": "feePayer/minter5",
+        "bytes": 12572
+      },
+      {
+        "label": "feePayer/minter5",
+        "bytes": 8246
+      },
+      {
+        "label": "feePayer/minter5",
+        "bytes": 8248
+      },
+      {
+        "label": "feePayer/mintercollide",
+        "bytes": 10388
+      },
+      {
+        "label": "feePayer/mintercollide",
+        "bytes": 8246
+      },
+      {
+        "label": "feePayer/mintercollide",
+        "bytes": 8246
+      },
+      {
+        "label": "feePayer/mintercollide",
+        "bytes": 13927
+      },
+      {
+        "label": "feePayer/mintercollide",
+        "bytes": 8904
+      },
+      {
+        "label": "OwnerM-spender-9-pcoll-shielded/manager",
+        "bytes": 18823
+      },
+      {
+        "label": "OwnerM-spender-10-pcoll-unshielded/manager",
+        "bytes": 8830
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 24624
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 9286
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8274
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8276
+      },
+      {
+        "label": "feePayer/minter5",
+        "bytes": 13927
+      },
+      {
+        "label": "feePayer/minter5",
+        "bytes": 8909
+      },
+      {
+        "label": "OwnerM-spender-11-m3-compose-try1/manager",
+        "bytes": 24171
+      },
+      {
+        "label": "OwnerM-spender-12-m3-compose-try2/manager",
+        "bytes": 24166
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8270
+      },
+      {
+        "label": "feePayer/manager",
+        "bytes": 8276
+      }
+    ]
+  },
+  "finalObservationAfterProbes": {
+    "colours": [
+      {
+        "name": "S1",
+        "family": "shielded",
+        "hex": "af0cf3315634a046dab2734b721b8d3f923e346d878a3d414edcd2164cec8a31",
+        "issuer": "Minter1"
+      },
+      {
+        "name": "U1",
+        "family": "unshielded",
+        "hex": "df6c4aa1b76bd3b559685a2dbabd38ab5ca5250b40a9e591783ff52ef34a71b6",
+        "issuer": "Minter1"
+      },
+      {
+        "name": "S2",
+        "family": "shielded",
+        "hex": "22d2a436b6554a4eb773a6b9222f09b2901af4e34473bb40e7f0499ca75c690d",
+        "issuer": "Minter2"
+      },
+      {
+        "name": "U2",
+        "family": "unshielded",
+        "hex": "945184e96f853231a70e09a5210a252cdff6ede55f5a871c87ac0417efa24e37",
+        "issuer": "Minter2"
+      },
+      {
+        "name": "S3",
+        "family": "shielded",
+        "hex": "560e94176de2b692c51c516a7daff0ae8c13c9e244834e4296093aaa91361a90",
+        "issuer": "Minter3"
+      },
+      {
+        "name": "U3",
+        "family": "unshielded",
+        "hex": "027dcccf6a6def7577ebe335efe2a1aa1eaa0ab7a5d5d869ed3ef1cfab279ff8",
+        "issuer": "Minter3"
+      },
+      {
+        "name": "S4",
+        "family": "shielded",
+        "hex": "1830d810691419a4a0aacae99deb76d5bc59c881178d559a9be0fb674b9c5337",
+        "issuer": "Minter4"
+      },
+      {
+        "name": "U4",
+        "family": "unshielded",
+        "hex": "21472fe902aa4a4fb7b528b9d96464d7b3091b2baeed8d07ee55841af4a43d6a",
+        "issuer": "Minter4"
+      },
+      {
+        "name": "S5",
+        "family": "shielded",
+        "hex": "5646230bed383e0dffae1c1442f2152118cffa8761a3f0b347cdf017c9a7300e",
+        "issuer": "Minter5"
+      },
+      {
+        "name": "U5",
+        "family": "unshielded",
+        "hex": "cd56842f5052d16b8b220698637f5d54d7bd7d72539a85034fc5eb98641b3a50",
+        "issuer": "Minter5"
+      },
+      {
+        "name": "XS",
+        "family": "shielded",
+        "hex": "9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd",
+        "issuer": "MinterCollide"
+      },
+      {
+        "name": "XU",
+        "family": "unshielded",
+        "hex": "9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd",
+        "issuer": "MinterCollide"
+      }
+    ],
+    "table": {
+      "OwnerN": {
+        "S1": "4",
+        "U1": "5",
+        "S2": "2",
+        "U2": "0",
+        "S3": "0",
+        "U3": "0",
+        "S4": "0",
+        "U4": "0",
+        "S5": "0",
+        "U5": "0",
+        "XS": "0",
+        "XU": "0"
+      },
+      "OwnerM": {
+        "S1": "0",
+        "U1": "2",
+        "S2": "4",
+        "U2": "5",
+        "S3": "6",
+        "U3": "0",
+        "S4": "0",
+        "U4": "0",
+        "S5": "0",
+        "U5": "0",
+        "XS": "1",
+        "XU": "1"
+      },
+      "AA_A": {
+        "S1": "3",
+        "U1": "3",
+        "S2": "0",
+        "U2": "0",
+        "S3": "4",
+        "U3": "0",
+        "S4": "7",
+        "U4": "0",
+        "S5": "0",
+        "U5": "0",
+        "XS": "0",
+        "XU": "0"
+      },
+      "AA_B": {
+        "S1": "3",
+        "U1": "0",
+        "S2": "4",
+        "U2": "5",
+        "S3": "0",
+        "U3": "0",
+        "S4": "0",
+        "U4": "4",
+        "S5": "3",
+        "U5": "3",
+        "XS": "2",
+        "XU": "1"
+      }
+    },
+    "custody": {
+      "S1": "6",
+      "U1": "3",
+      "S2": "4",
+      "U2": "5",
+      "S3": "4",
+      "U3": "0",
+      "S4": "7",
+      "U4": "4",
+      "S5": "3",
+      "U5": "3",
+      "XS": "2",
+      "XU": "1"
+    },
+    "pools": {
+      "S1": {
+        "present": true,
+        "value": "6",
+        "nonce": "4f2fc65115e4e96646d196485bcba5b3bea247d3f8016ba2a2b371d6b16fcfbe"
+      },
+      "U1": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "S2": {
+        "present": true,
+        "value": "4",
+        "nonce": "6617c5f1f6a8312f1f7902eca768cf099b29fa2fe05a539fa7e001bf53565700"
+      },
+      "U2": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "S3": {
+        "present": true,
+        "value": "4",
+        "nonce": "d6e31542a41b9d4ecf88d3ad602d2ada2cf3541c21e6f9b2bdc6c79523ad7cbe"
+      },
+      "U3": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "S4": {
+        "present": true,
+        "value": "7",
+        "nonce": "6e7607c23e8fa5039fb96784606caa2835563ed22445952d86974f8748b1e28b"
+      },
+      "U4": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "S5": {
+        "present": true,
+        "value": "3",
+        "nonce": "6aa1ecb242bdc14ba9a60e5bdaa169659bf4b84b156ad2523edd3cd8e5f1ac20"
+      },
+      "U5": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "XS": {
+        "present": true,
+        "value": "2",
+        "nonce": "5b989c6136941ab2e8f541eb5e70a1f7cdaddf087365e6fc22ce5df8dee53300"
+      },
+      "XU": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      }
+    },
+    "sizes": {
+      "pools": 6,
+      "shieldedCells": 7,
+      "unshieldedCells": 5
+    },
+    "accounts": [
+      "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904"
+    ],
+    "shieldedBalances": {
+      "a17f1e33c386b53c28728ebbbe1d393fa05c6ed63e8ff8ec3564305af547035d": "3",
+      "255aae2d86f3eb41654cb04fcafe0304dbf67383f58261976a1c7263b7d8f400": "3",
+      "d59267d5469361c0a0ee047eccd7b40b4c31cc7d852e8173bf24eee5e11547d2": "4",
+      "bb4ea121eb6f82b4d735fe5e82f733718a652c74c4aadccb12aaacbb877ba9e9": "3",
+      "c6f6a04f8be7a636d59a2c62cc42fd185d21822a22edf0aea0045308569ed155": "4",
+      "10e27aacb3f07384fc2a97bbb9056abc4c051798583374b79523a393fc771fb1": "2",
+      "7b74d6142177014ae24d9f27fba67fa61776948904430f7c81711ecad2033e34": "7"
+    },
+    "unshieldedBalances": {
+      "d5da919354311e4fd7118da0b1c864c8735bf0728f7d23623b747f0d8de9caad": "3",
+      "3df0f0dbff1f55eb8f67168d4c4b2ddc290d17005497da5f88df2c63684860b0": "3",
+      "92903947a5d86664fb6b677db7681fc2a6da9618652c1db97346a91bb343ac3f": "1",
+      "c6115bb032bb1e9ff65168af4f037457be5b75a6f9180494c11dc58d0ed38085": "4",
+      "1f660c9ed31a8fc37abc0afd92ffb910a45bcb64d00f00945b89e6b1ba5d894c": "5"
+    },
+    "poolsRaw": {
+      "af0cf3315634a046dab2734b721b8d3f923e346d878a3d414edcd2164cec8a31": {
+        "nonce": "4f2fc65115e4e96646d196485bcba5b3bea247d3f8016ba2a2b371d6b16fcfbe",
+        "color": "af0cf3315634a046dab2734b721b8d3f923e346d878a3d414edcd2164cec8a31",
+        "value": "6",
+        "mt_index": "32"
+      },
+      "5646230bed383e0dffae1c1442f2152118cffa8761a3f0b347cdf017c9a7300e": {
+        "nonce": "6aa1ecb242bdc14ba9a60e5bdaa169659bf4b84b156ad2523edd3cd8e5f1ac20",
+        "color": "5646230bed383e0dffae1c1442f2152118cffa8761a3f0b347cdf017c9a7300e",
+        "value": "3",
+        "mt_index": "46"
+      },
+      "560e94176de2b692c51c516a7daff0ae8c13c9e244834e4296093aaa91361a90": {
+        "nonce": "d6e31542a41b9d4ecf88d3ad602d2ada2cf3541c21e6f9b2bdc6c79523ad7cbe",
+        "color": "560e94176de2b692c51c516a7daff0ae8c13c9e244834e4296093aaa91361a90",
+        "value": "4",
+        "mt_index": "36"
+      },
+      "22d2a436b6554a4eb773a6b9222f09b2901af4e34473bb40e7f0499ca75c690d": {
+        "nonce": "6617c5f1f6a8312f1f7902eca768cf099b29fa2fe05a539fa7e001bf53565700",
+        "color": "22d2a436b6554a4eb773a6b9222f09b2901af4e34473bb40e7f0499ca75c690d",
+        "value": "4",
+        "mt_index": "38"
+      },
+      "9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd": {
+        "nonce": "5b989c6136941ab2e8f541eb5e70a1f7cdaddf087365e6fc22ce5df8dee53300",
+        "color": "9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd",
+        "value": "2",
+        "mt_index": "43"
+      },
+      "1830d810691419a4a0aacae99deb76d5bc59c881178d559a9be0fb674b9c5337": {
+        "nonce": "6e7607c23e8fa5039fb96784606caa2835563ed22445952d86974f8748b1e28b",
+        "color": "1830d810691419a4a0aacae99deb76d5bc59c881178d559a9be0fb674b9c5337",
+        "value": "7",
+        "mt_index": "40"
+      }
+    },
+    "kernelUnshielded": {
+      "df6c4aa1b76bd3b559685a2dbabd38ab5ca5250b40a9e591783ff52ef34a71b6": "3",
+      "9d27bcf49db7cd1b7a844c7cd4516c2efd7b118bc5b016164650ff067217c2fd": "1",
+      "cd56842f5052d16b8b220698637f5d54d7bd7d72539a85034fc5eb98641b3a50": "3",
+      "21472fe902aa4a4fb7b528b9d96464d7b3091b2baeed8d07ee55841af4a43d6a": "4",
+      "945184e96f853231a70e09a5210a252cdff6ede55f5a871c87ac0417efa24e37": "5"
+    },
+    "coins": {
+      "OwnerN": {
+        "S1": [
+          {
+            "nonce": "056ae666930abfd85b017ba794691bee927359b933e4e0076d8078c8d81d77a3",
+            "value": "4",
+            "commitment": "2983fa83d211cc584cfdeb32f7c89b204473ed96218f68757aa4e36f22a55d9d",
+            "nullifier": "b0f50f50d5fa3244b71b2f5b6b0785e5b8f00f577d32c76a27f6e744935ac2b0"
+          }
+        ],
+        "U1": [],
+        "S2": [
+          {
+            "nonce": "74c74a2df4ef57379f9373b1ad019ee76a421888700105646ee3cd51c85fd100",
+            "value": "2",
+            "commitment": "7c5874682ef011d60017b1ff4514ee2bff5660cec7dcc8bee8e24a0c7eb355bc",
+            "nullifier": "b8287df962da3d1b02ef74f5c2b7c4d798ddcb495c17086c80eeb5c4a8567c3d"
+          }
+        ],
+        "U2": [],
+        "S3": [],
+        "U3": [],
+        "S4": [],
+        "U4": [],
+        "S5": [],
+        "U5": [],
+        "XS": [],
+        "XU": []
+      },
+      "OwnerM": {
+        "S1": [],
+        "U1": [],
+        "S2": [
+          {
+            "nonce": "c0263992e4dc2bd0b4e3a1fb790441a35fb2735dadbfc0ff447ede5afee994d4",
+            "value": "4",
+            "commitment": "a25484fc9210b394d26e4a4d16990ce8eecd8ef68918c37318fe1cf79de39492",
+            "nullifier": "3eb622c05eba86925d241a5c823e6b67a6e57babe3936766e87bec31588574cf"
+          }
+        ],
+        "U2": [],
+        "S3": [
+          {
+            "nonce": "e9ce220f444bbcd529b773a458a0d286b881a68f0b88fb46ee87a00724c476e1",
+            "value": "6",
+            "commitment": "115c5365e6dd6bcb1beece8f431072f296a14f56c0dd614805ef0b99358bfd3c",
+            "nullifier": "b854890743ab158a91f0f58f33a431b76b19d37e1008bb0880e681ebbc77c762"
+          }
+        ],
+        "U3": [],
+        "S4": [],
+        "U4": [],
+        "S5": [],
+        "U5": [],
+        "XS": [
+          {
+            "nonce": "2948d4a3e4f99e20b3ae55ab997d39cb2562bbf317d1133f6f026dfa98c9ab00",
+            "value": "1",
+            "commitment": "c56ef767b7dd45baac6fadd67e7a619172a799dcb7f0930bde72003bc6e0214a",
+            "nullifier": "51940b3480d03e540d1c74485829f025f646236d39a1fdff6a0fed161d7a8048"
+          }
+        ],
+        "XU": [
+          {
+            "nonce": "2948d4a3e4f99e20b3ae55ab997d39cb2562bbf317d1133f6f026dfa98c9ab00",
+            "value": "1",
+            "commitment": "c56ef767b7dd45baac6fadd67e7a619172a799dcb7f0930bde72003bc6e0214a",
+            "nullifier": "51940b3480d03e540d1c74485829f025f646236d39a1fdff6a0fed161d7a8048"
+          }
+        ]
+      }
+    },
+    "utxos": {
+      "OwnerN": {
+        "S1": [],
+        "U1": [
+          {
+            "value": "5",
+            "intentHash": "efad3058e1d333917aeee4e077863ee61718dc144083db651d1b81cf5979467c",
+            "outputNo": "0"
+          }
+        ],
+        "S2": [],
+        "U2": [],
+        "S3": [],
+        "U3": [],
+        "S4": [],
+        "U4": [],
+        "S5": [],
+        "U5": [],
+        "XS": [],
+        "XU": []
+      },
+      "OwnerM": {
+        "S1": [],
+        "U1": [
+          {
+            "value": "2",
+            "intentHash": "e4f3f795eef7b224a3c22c635c2bb9d924a53a1f86cded272041337e6578fbc3",
+            "outputNo": "0"
+          }
+        ],
+        "S2": [],
+        "U2": [
+          {
+            "value": "5",
+            "intentHash": "cc40c3d7bea1baa4a01db97c27cb66b5f8ec2ebb64abbc37d266ac56b4d4758d",
+            "outputNo": "0"
+          }
+        ],
+        "S3": [],
+        "U3": [],
+        "S4": [],
+        "U4": [],
+        "S5": [],
+        "U5": [],
+        "XS": [
+          {
+            "value": "1",
+            "intentHash": "4a5dc579ac346582e615659ecd469a86d6ce86bcabf4548dd98a542dcab9edaf",
+            "outputNo": "0"
+          }
+        ],
+        "XU": [
+          {
+            "value": "1",
+            "intentHash": "4a5dc579ac346582e615659ecd469a86d6ce86bcabf4548dd98a542dcab9edaf",
+            "outputNo": "0"
+          }
+        ]
+      }
+    }
+  },
+  "finalMarkdownAfterProbes": [
+    "|  | S1 | U1 | S2 | U2 | S3 | U3 | S4 | U4 | S5 | U5 | XS | XU |",
+    "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+    "| OwnerN | 4 | 5 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |",
+    "| OwnerM | 0 | 2 | 4 | 5 | 6 | 0 | 0 | 0 | 0 | 0 | 1 | 1 |",
+    "| AA_A | 3 | 3 | 0 | 0 | 4 | 0 | 7 | 0 | 0 | 0 | 0 | 0 |",
+    "| AA_B | 3 | 0 | 4 | 5 | 0 | 0 | 0 | 4 | 3 | 3 | 2 | 1 |",
+    "| pool / ledger | 6 | 3 | 4 | 5 | 4 | 0 | 7 | 4 | 3 | 3 | 2 | 1 |"
+  ]
+}

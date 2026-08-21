@@ -1,15 +1,28 @@
-// G3 — the token-movement operations the step ledger is built from.
+// G3 — the token-movement operations the 18-row step ledger is built from.
 //
-// One function per matrix cell shape, so the ordered runner, the negative controls and the
-// atomicity probes all exercise the SAME code path. Each returns the submitted transaction id;
-// none of them asserts — assertion is the runner's job, against the spec's expected table.
+// One function per shape, so the ordered runner, the negative controls and the probes exercise the
+// SAME code path. Each returns the submitted transaction id (and any detail the evidence needs);
+// none of them asserts — assertion is the runner's job, against the spec's normative table.
+//
+// Every operation takes its COLOUR AS RAW BYTES. That is the difference from 00004: there, a colour
+// argument could be one of four names the Manager had been configured with. Manager v3 has no
+// colour knowledge whatsoever, so a colour here is just 32 bytes, and the harness's own registry —
+// not the contract — is what gives those bytes a name.
 //
 // COMPOSITION LEVEL per shape (recorded per cell in CELLS.md):
-//   * mint(contract) -> Manager      LEDGER level  — both call prototypes in one Intent
-//   * everything else                SDK level     — a single call, or a plain wallet transfer
+//   * mint -> user wallet                    SDK  — a single Minter call
+//   * user -> Manager account (deposit)      SDK  — a single Manager call balanced by the
+//                                                   depositor's own wallet: the Manager declares
+//                                                   the receive and the wallet supplies the input,
+//                                                   so both sit in one transaction by construction
+//   * Manager account -> user (withdraw)     SDK  — a single Manager call, owner-authorized
+//   * account -> account (internal)          SDK  — a single Manager call, NO token operation
+//   * double lazy-init (probe M3)            SDK  — TWO Manager calls in ONE transaction via the
+//                                                   SDK's own contract-scoped batch (decision
+//                                                   D-203; see `doubleLazyInitDeposit`)
 import { randomBytes } from 'node:crypto';
 import { buildCall, type CallSpec } from './compose.js';
-import { composeOneIntent, proveBalanceSubmit } from './ledger-compose.js';
+import { withContractScopedTransaction, submitCallTx } from '@midnight-ntwrk/midnight-js-contracts';
 import { withDustRetry } from '../night.js';
 import type { Party } from '../wallet.js';
 
@@ -39,22 +52,38 @@ export const unshieldedToUser = (addressHex: string) => ({
   right: { bytes: Buffer.from(addressHex, 'hex') },
 });
 
+export type MinterKind = 'minter' | 'minter-collide';
+
+/** One deployed issuing contract, with the providers (and therefore ZK artifacts) it needs. */
+export type MinterHandle = {
+  label: string;
+  kind: MinterKind;
+  address: string;
+  providers: any;
+  /** The `deployContract` result, for direct `callTx.*` reads. */
+  deployed: any;
+};
+
 export type Ctx = {
-  minterAddress: string;
   managerAddress: string;
-  shieldedColor: Uint8Array;
-  unshieldedColor: Uint8Array;
+  /** Every issuing deployment known so far, by label. Grows mid-run (TOKD at step 15). */
+  minters: Record<string, MinterHandle>;
   compiledMinter: () => any;
+  compiledMinterCollide: () => any;
   compiledManager: () => any;
-  /** Minter providers backed by the fee wallet — every mint is issued and paid for by the demo operator. */
-  minterProviders: any;
   /** Manager providers backed by the fee wallet — used for every owner-authorized circuit. */
   managerFee: any;
-  /** Proof provider that can serve BOTH contracts (ZKConfigRegistry). */
-  composedProof: any;
   /** Sets the owner secret the Manager's witness will read on the next call through `providers`. */
   actAs: (providers: any, secret: Uint8Array) => Promise<void>;
 };
+
+const minterOf = (c: Ctx, label: string): MinterHandle => {
+  const m = c.minters[label];
+  if (!m) throw new Error(`minter ${label} has not been deployed yet`);
+  return m;
+};
+
+const compiledFor = (c: Ctx, m: MinterHandle) => (m.kind === 'minter' ? c.compiledMinter() : c.compiledMinterCollide());
 
 /** Build one call, prove it with its own contract's providers, balance it, submit it. */
 const submitSingle = async (spec: CallSpec, payer: Party | undefined): Promise<string> => {
@@ -67,111 +96,30 @@ const submitSingle = async (spec: CallSpec, payer: Party | undefined): Promise<s
   return payer ? withDustRetry(payer, spec.circuitId, run) : run();
 };
 
-/**
- * Build, prove and balance a call WITHOUT submitting it. The atomicity probes need this: they
- * prepare a transaction against one state, let the chain move underneath it, and only then submit.
- */
-export const prepareCall = async (spec: CallSpec): Promise<any> => {
-  const built = await buildCall(spec);
-  const proven = await spec.providers.proofProvider.proveTx(built.private.unprovenTx);
-  return spec.providers.walletProvider.balanceTx(proven);
-};
-
-/** Submit a transaction prepared earlier by `prepareCall`. */
-export const submitPrepared = async (spec: CallSpec, tx: any): Promise<string> =>
-  String(await spec.providers.midnightProvider.submitTx(tx));
-
 // ---------------------------------------------------------------------------------------------
-// MINT — contract -> manager account (LEDGER-LEVEL composition) and contract -> user (SDK level)
+// MINT — contract -> user wallet
 // ---------------------------------------------------------------------------------------------
 
 /**
- * Mint `value` of the shielded colour straight into a Manager account.
+ * Mint `value` of a deployment's SHIELDED colour to a user wallet.
  *
- * The stdlib auto-receives only for `kernel.self()`, so the Minter's spend claim and the Manager's
- * receive claim must share one transaction — and midnight-js cannot express that, so the two call
- * prototypes are assembled into ONE ledger `Intent` (see `ledger-compose.ts`). The mint nonce is
- * chosen here and `mintShieldedToken` uses it verbatim, so the coin the Manager claims is known
- * exactly before either call runs.
+ * Sending a shielded coin to ANOTHER party needs that party's ENCRYPTION public key, or the builder
+ * fails with "Unable to resolve encryption public key for recipient".
  */
-export const mintShieldedToAccount = async (
+export const mintShieldedToUser = async (
   c: Ctx,
+  minter: string,
   value: bigint,
-  accountId: Uint8Array,
-  payer?: Party,
-): Promise<{ txId: string; nonce: Uint8Array; segment: number }> => {
-  const nonce = randomBytes(32);
-  // The MANAGER's call is the carrier: its transaction holds every zswap part the composed
-  // transaction needs, including the merge input/output when the pool already holds a coin.
-  const composed = await composeOneIntent(
-    {
-      providers: c.managerFee,
-      compiledContract: c.compiledManager(),
-      contractAddress: c.managerAddress,
-      circuitId: 'depositShielded',
-      args: [{ nonce, color: c.shieldedColor, value }, accountId],
-      privateStateId: 'manager',
-    },
-    [
-      {
-        providers: c.minterProviders,
-        compiledContract: c.compiledMinter(),
-        contractAddress: c.minterAddress,
-        circuitId: 'mintShieldedTo',
-        args: [value, nonce, shieldedToContract(c.managerAddress)],
-      },
-    ],
-  );
-  const run = () => proveBalanceSubmit(composed.tx, c.composedProof, c.managerFee);
-  const txId = payer ? await withDustRetry(payer, 'mintShieldedToAccount', run) : await run();
-  return { txId, nonce, segment: composed.segment };
-};
-
-/** Mint `amount` of the unshielded colour into a Manager account (LEDGER-LEVEL composition). */
-export const mintUnshieldedToAccount = async (
-  c: Ctx,
-  amount: bigint,
-  accountId: Uint8Array,
-  payer?: Party,
-): Promise<{ txId: string; segment: number }> => {
-  // Carrier discipline as above; the unshielded side needs no zswap parts at all, but keeping the
-  // same shape in both families means one rule to reason about rather than two.
-  const composed = await composeOneIntent(
-    {
-      providers: c.managerFee,
-      compiledContract: c.compiledManager(),
-      contractAddress: c.managerAddress,
-      circuitId: 'depositUnshielded',
-      args: [c.unshieldedColor, amount, accountId],
-      privateStateId: 'manager',
-    },
-    [
-      {
-        providers: c.minterProviders,
-        compiledContract: c.compiledMinter(),
-        contractAddress: c.minterAddress,
-        circuitId: 'mintUnshieldedTo',
-        args: [amount, unshieldedToContract(c.managerAddress)],
-      },
-    ],
-  );
-  const run = () => proveBalanceSubmit(composed.tx, c.composedProof, c.managerFee);
-  const txId = payer ? await withDustRetry(payer, 'mintUnshieldedToAccount', run) : await run();
-  return { txId, segment: composed.segment };
-};
-
-/**
- * Mint `value` of the shielded colour to a user wallet. A single Minter call — but sending a
- * shielded coin to ANOTHER party needs that party's ENCRYPTION public key, or the builder fails
- * with "Unable to resolve encryption public key for recipient".
- */
-export const mintShieldedToUser = async (c: Ctx, value: bigint, to: Party, payer?: Party): Promise<string> => {
+  to: Party,
+  payer: Party,
+): Promise<string> => {
+  const m = minterOf(c, minter);
   const coinPk = to.shieldedSecretKeys.coinPublicKey;
   return submitSingle(
     {
-      providers: c.minterProviders,
-      compiledContract: c.compiledMinter(),
-      contractAddress: c.minterAddress,
+      providers: m.providers,
+      compiledContract: compiledFor(c, m),
+      contractAddress: m.address,
       circuitId: 'mintShieldedTo',
       args: [value, randomBytes(32), shieldedToUser(coinPk)],
       encMappings: new Map<unknown, unknown>([[coinPk, to.shieldedSecretKeys.encryptionPublicKey]]),
@@ -180,54 +128,25 @@ export const mintShieldedToUser = async (c: Ctx, value: bigint, to: Party, payer
   );
 };
 
-/** Mint `amount` of the unshielded colour to a user wallet's unshielded address. */
-export const mintUnshieldedToUser = async (c: Ctx, amount: bigint, to: Party, payer?: Party): Promise<string> => {
-  const addr = String((await (to.wallet as any).unshielded.getAddress()).hexString);
+/** Mint `amount` of a deployment's UNSHIELDED colour to a user wallet's unshielded address. */
+export const mintUnshieldedToUser = async (
+  c: Ctx,
+  minter: string,
+  amount: bigint,
+  toAddressHex: string,
+  payer: Party,
+): Promise<string> => {
+  const m = minterOf(c, minter);
   return submitSingle(
     {
-      providers: c.minterProviders,
-      compiledContract: c.compiledMinter(),
-      contractAddress: c.minterAddress,
+      providers: m.providers,
+      compiledContract: compiledFor(c, m),
+      contractAddress: m.address,
       circuitId: 'mintUnshieldedTo',
-      args: [amount, unshieldedToUser(addr)],
+      args: [amount, unshieldedToUser(toAddressHex)],
     },
     payer,
   );
-};
-
-// ---------------------------------------------------------------------------------------------
-// USER -> USER (and user -> self): a plain wallet transfer, no contract involved
-// ---------------------------------------------------------------------------------------------
-
-/**
- * Send `amount` of `color` from one wallet to another — or to the sender's own address, which is
- * the self-send cell. The wallet performs the split itself: it consumes the input coin/UTXO and
- * creates the sent output plus a change output back to the sender.
- */
-export const userSend = async (
-  from: Party,
-  to: Party,
-  family: 'shielded' | 'unshielded',
-  color: string,
-  amount: bigint,
-): Promise<string> => {
-  const receiverAddress =
-    family === 'shielded'
-      ? await (to.wallet as any).shielded.getAddress()
-      : await (to.wallet as any).unshielded.getAddress();
-  const transfers: any[] = [{ type: family, outputs: [{ amount, receiverAddress, type: color }] }];
-  const ttl = new Date(Date.now() + 30 * 60 * 1000);
-
-  return withDustRetry(from, `${from.name} -${amount}-> ${to.name} (${family})`, async () => {
-    const recipe = await (from.wallet as any).transferTransaction(
-      transfers,
-      { shieldedSecretKeys: from.shieldedSecretKeys, dustSecretKey: from.dustSecretKey },
-      { ttl },
-    );
-    const signed = await (from.wallet as any).signRecipe(recipe, (from.unshieldedKeystore as any).signDataAsync);
-    const finalized = await (from.wallet as any).finalizeRecipe(signed);
-    return String(await (from.wallet as any).submitTransaction(finalized));
-  });
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -235,20 +154,22 @@ export const userSend = async (
 // ---------------------------------------------------------------------------------------------
 
 /**
- * Deposit `value` of the shielded colour from `depositor`'s wallet into `accountId`.
+ * Deposit `value` of shielded `colour` from `depositor`'s wallet into `accountId`.
  *
- * No cross-contract composition is needed: `depositShielded` declares the receive, and the
- * depositor's wallet supplies the input during `balanceTx`, so the sender's spend and the
- * Manager's receive are in one transaction by construction (spec FR-003). The deposited coin's
- * nonce is chosen here because the COIN IS CREATED BY THE CONTRACT — the wallet only has to fund
- * it, splitting a larger coin and taking the change back.
+ * No composition is needed: `depositShielded` declares the receive and the depositor's wallet
+ * supplies the input during `balanceTx`, so the sender's spend and the Manager's receive are in one
+ * transaction by construction. The deposited coin's nonce is chosen here because the COIN IS
+ * CREATED BY THE CONTRACT — the wallet only has to fund it, splitting a larger coin and taking the
+ * change back.
  *
- * `depositorManagerProviders` must be Manager providers bound to the depositor's wallet.
+ * `accountId` need NOT be the depositor's own account: spec step 10 has OwnerM deposit into AA_A.
+ * Credit is open to any REGISTERED account; only spends are owner-gated (FR-204).
  */
 export const userDepositShielded = async (
   c: Ctx,
   depositor: Party,
   depositorManagerProviders: any,
+  colour: Uint8Array,
   value: bigint,
   accountId: Uint8Array,
 ): Promise<{ txId: string; nonce: Uint8Array }> => {
@@ -259,7 +180,7 @@ export const userDepositShielded = async (
       compiledContract: c.compiledManager(),
       contractAddress: c.managerAddress,
       circuitId: 'depositShielded',
-      args: [{ nonce, color: c.shieldedColor, value }, accountId],
+      args: [{ nonce, color: colour, value }, accountId],
       privateStateId: 'manager',
     },
     depositor,
@@ -267,11 +188,12 @@ export const userDepositShielded = async (
   return { txId, nonce };
 };
 
-/** Deposit `amount` of the unshielded colour from `depositor`'s wallet into `accountId`. */
+/** Deposit `amount` of unshielded `colour` from `depositor`'s wallet into `accountId`. */
 export const userDepositUnshielded = async (
   c: Ctx,
   depositor: Party,
   depositorManagerProviders: any,
+  colour: Uint8Array,
   amount: bigint,
   accountId: Uint8Array,
 ): Promise<string> =>
@@ -281,27 +203,28 @@ export const userDepositUnshielded = async (
       compiledContract: c.compiledManager(),
       contractAddress: c.managerAddress,
       circuitId: 'depositUnshielded',
-      args: [c.unshieldedColor, amount, accountId],
+      args: [colour, amount, accountId],
       privateStateId: 'manager',
     },
     depositor,
   );
 
 // ---------------------------------------------------------------------------------------------
-// MANAGER ACCOUNT -> USER (withdraw), ACCOUNT -> ACCOUNT (internal), and the pool self-sends
+// MANAGER ACCOUNT -> USER (withdraw) and ACCOUNT -> ACCOUNT (internal)
 // ---------------------------------------------------------------------------------------------
 
 /**
- * Pay `value` of the shielded colour out of the pool to `to`, debiting the account whose owner
- * secret authorizes the call. The pool retains the change coin; when the pool is fully spent the
- * empty-change arm resets it.
+ * Pay `value` of shielded `colour` out of THAT COLOUR's pool to `to`, debiting the account whose
+ * owner secret authorizes the call. The pool retains the change coin; a fully spent colour leaves
+ * the pool map entirely.
  */
 export const accountWithdrawShielded = async (
   c: Ctx,
   ownerSecret: Uint8Array,
+  colour: Uint8Array,
   value: bigint,
   to: Party,
-  payer?: Party,
+  payer: Party,
 ): Promise<string> => {
   await c.actAs(c.managerFee, ownerSecret);
   const coinPk = to.shieldedSecretKeys.coinPublicKey;
@@ -311,7 +234,7 @@ export const accountWithdrawShielded = async (
       compiledContract: c.compiledManager(),
       contractAddress: c.managerAddress,
       circuitId: 'withdrawShielded',
-      args: [value, shieldedToUser(coinPk)],
+      args: [colour, value, shieldedToUser(coinPk)],
       privateStateId: 'manager',
       encMappings: new Map<unknown, unknown>([[coinPk, to.shieldedSecretKeys.encryptionPublicKey]]),
     },
@@ -319,23 +242,23 @@ export const accountWithdrawShielded = async (
   );
 };
 
-/** Pay `amount` of the unshielded colour out of the contract's ledger balance to `to`. */
+/** Pay `amount` of unshielded `colour` out of the contract's ledger balance to a user address. */
 export const accountWithdrawUnshielded = async (
   c: Ctx,
   ownerSecret: Uint8Array,
+  colour: Uint8Array,
   amount: bigint,
-  to: Party,
-  payer?: Party,
+  toAddressHex: string,
+  payer: Party,
 ): Promise<string> => {
   await c.actAs(c.managerFee, ownerSecret);
-  const addr = String((await (to.wallet as any).unshielded.getAddress()).hexString);
   return submitSingle(
     {
       providers: c.managerFee,
       compiledContract: c.compiledManager(),
       contractAddress: c.managerAddress,
       circuitId: 'withdrawUnshielded',
-      args: [c.unshieldedColor, amount, unshieldedToUser(addr)],
+      args: [colour, amount, unshieldedToUser(toAddressHex)],
       privateStateId: 'manager',
     },
     payer,
@@ -343,16 +266,21 @@ export const accountWithdrawUnshielded = async (
 };
 
 /**
- * Move ownership between accounts INSIDE the Manager. No token operation happens: the pooled coin
- * and the contract's ledger balances must be byte-identical before and after (spec FR-005).
+ * Move ownership of ONE SHIELDED colour between accounts INSIDE the Manager. No token operation
+ * happens: that colour's pooled coin (value AND nonce) and the contract's ledger balances must be
+ * byte-identical before and after, and no OTHER colour may be touched at all.
+ *
+ * The CREDIT SIDE creates the destination's cell lazily (FR-202; spec step 12). The circuit is
+ * per-family by owner decision D-204 — with byte-identical colours possible across families
+ * (P-COLL), `(to, colour, amount)` alone could not say which family it meant.
  */
-export const transferInternal = async (
+export const transferInternalShielded = async (
   c: Ctx,
   ownerSecret: Uint8Array,
   to: Uint8Array,
-  shieldedFamily: boolean,
+  colour: Uint8Array,
   amount: bigint,
-  payer?: Party,
+  payer: Party,
 ): Promise<string> => {
   await c.actAs(c.managerFee, ownerSecret);
   return submitSingle(
@@ -360,36 +288,22 @@ export const transferInternal = async (
       providers: c.managerFee,
       compiledContract: c.compiledManager(),
       contractAddress: c.managerAddress,
-      circuitId: 'transferInternal',
-      args: [to, shieldedFamily, amount],
+      circuitId: 'transferInternalShielded',
+      args: [to, colour, amount],
       privateStateId: 'manager',
     },
     payer,
   );
 };
 
-/** Pool self-send, shielded: exercises the stdlib auto-receive branch. Balance- and ownership-neutral. */
-export const poolSelfSendShielded = async (c: Ctx, ownerSecret: Uint8Array, payer?: Party): Promise<string> => {
-  await c.actAs(c.managerFee, ownerSecret);
-  return submitSingle(
-    {
-      providers: c.managerFee,
-      compiledContract: c.compiledManager(),
-      contractAddress: c.managerAddress,
-      circuitId: 'selfSendShielded',
-      args: [],
-      privateStateId: 'manager',
-    },
-    payer,
-  );
-};
-
-/** Pool self-send, unshielded: same auto-receive branch on the unshielded side. */
-export const poolSelfSendUnshielded = async (
+/** The unshielded family's internal transfer — same shape, different map and key domain. */
+export const transferInternalUnshielded = async (
   c: Ctx,
   ownerSecret: Uint8Array,
+  to: Uint8Array,
+  colour: Uint8Array,
   amount: bigint,
-  payer?: Party,
+  payer: Party,
 ): Promise<string> => {
   await c.actAs(c.managerFee, ownerSecret);
   return submitSingle(
@@ -397,8 +311,8 @@ export const poolSelfSendUnshielded = async (
       providers: c.managerFee,
       compiledContract: c.compiledManager(),
       contractAddress: c.managerAddress,
-      circuitId: 'selfSendUnshielded',
-      args: [c.unshieldedColor, amount],
+      circuitId: 'transferInternalUnshielded',
+      args: [to, colour, amount],
       privateStateId: 'manager',
     },
     payer,
@@ -406,36 +320,184 @@ export const poolSelfSendUnshielded = async (
 };
 
 // ---------------------------------------------------------------------------------------------
-// Negative-control building blocks
+// PROBE M3 — ATOMIC DOUBLE LAZY-INIT (FR-207, decision D-203)
 // ---------------------------------------------------------------------------------------------
 
 /**
- * A mint straight into the Manager with the Manager's receive claim DELIBERATELY OMITTED — the
- * claim-mechanics negative control (spec User Story 1, scenario 3). Returns the submitted id if
- * the ledger somehow accepted it, or throws with the rejection reason.
+ * Every MESSAGE in an error's `cause` chain, with stack frames stripped.
+ *
+ * The pinned SDK reports a node-side refusal as a bare `Transaction submission error`, with the
+ * substance — the node's `1010: Invalid Transaction: Custom error: NNN` — one or more links down
+ * the chain. Recording only `e.message` would put "Transaction submission error" in the evidence as
+ * if it were a diagnosis.
+ *
+ * **Stripping the frames is load-bearing, not cosmetic** (00005 G3 run 1). The Effect-based
+ * submission service inlines its whole stack INTO the message on a single line, so the first link
+ * alone ran to several thousand characters and the truncation budget was exhausted before any
+ * `cause` was reached — leaving FR-207's "record the verbatim error" satisfied only by a stack
+ * trace. Frames are dropped both as whole lines and as the inline ` at <fn> (<file>:L:C)` form.
  */
-export const mintToManagerWithoutClaim = async (
+export const errorChain = (e: unknown, depth = 8): string => {
+  const stripFrames = (raw: string): string =>
+    raw
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l && !/^at\s/.test(l))
+      .join(' ')
+      // the inline form: ` at file:///…:31:279`, ` at body (/…/Utils.ts:786:14)`
+      .replace(/\s+at\s+\S+(?:\s+\([^)]*\))?/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const parts: string[] = [];
+  let cur: any = e;
+  for (let i = 0; i < depth && cur; i++) {
+    const msg = stripFrames(cur instanceof Error ? cur.message : String(cur));
+    if (msg && !parts.includes(msg)) parts.push(msg);
+    cur = cur?.cause;
+  }
+  return parts.join(' | cause: ').slice(0, 1500);
+};
+
+export const SDK_SCOPED = 'sdk-scoped batch (one transaction, one segment per call, state threaded)';
+export const SEPARATE_TXS = 'two separate transactions (FR-207 fallback — composition refused)';
+
+export type DoubleLazyInitLegs = {
+  shieldedColour: Uint8Array;
+  shieldedValue: bigint;
+  unshieldedColour: Uint8Array;
+  unshieldedAmount: bigint;
+  accountId: Uint8Array;
+};
+
+export type DoubleLazyInitAttempt = { shape: string; attempt: number; ok: boolean; error?: string };
+
+const legSpecs = (
   c: Ctx,
-  family: 'shielded' | 'unshielded',
-  value: bigint,
-): Promise<string> => {
-  const spec: CallSpec =
-    family === 'shielded'
-      ? {
-          providers: c.minterProviders,
-          compiledContract: c.compiledMinter(),
-          contractAddress: c.minterAddress,
-          circuitId: 'mintShieldedTo',
-          args: [value, randomBytes(32), shieldedToContract(c.managerAddress)],
-        }
-      : {
-          providers: c.minterProviders,
-          compiledContract: c.compiledMinter(),
-          contractAddress: c.minterAddress,
-          circuitId: 'mintUnshieldedTo',
-          args: [value, unshieldedToContract(c.managerAddress)],
-        };
-  return submitSingle(spec, undefined);
+  providers: any,
+  legs: DoubleLazyInitLegs,
+  nonce: Uint8Array,
+): { shielded: CallSpec; unshielded: CallSpec } => ({
+  shielded: {
+    providers,
+    compiledContract: c.compiledManager(),
+    contractAddress: c.managerAddress,
+    circuitId: 'depositShielded',
+    args: [{ nonce, color: legs.shieldedColour, value: legs.shieldedValue }, legs.accountId],
+    privateStateId: 'manager',
+  },
+  unshielded: {
+    providers,
+    compiledContract: c.compiledManager(),
+    contractAddress: c.managerAddress,
+    circuitId: 'depositUnshielded',
+    args: [legs.unshieldedColour, legs.unshieldedAmount, legs.accountId],
+    privateStateId: 'manager',
+  },
+});
+
+/**
+ * midnight-js's OWN same-contract batching: both calls, ONE transaction.
+ *
+ * This is the shape decision D-203 names, and it is the shape 00004's probe M1 landed on this lane
+ * (`archive/00004/evidence/g3-ledger/run-context.json`): a same-address sequence assembled into one
+ * ledger Intent was refused (the 223 `CausalityConstraintViolation` family), while
+ * `withContractScopedTransaction` — which threads the running contract state between the calls and
+ * places each in its own SEGMENT of one transaction — was accepted. 00005 does not re-run the
+ * refused one-Intent shape; it attempts the one 00004 proved, and records what happens.
+ */
+export const scopedDoubleDeposit = async (
+  c: Ctx,
+  providers: any,
+  legs: DoubleLazyInitLegs,
+  nonce: Uint8Array,
+): Promise<any> => {
+  const specs = legSpecs(c, providers, legs, nonce);
+  return (withContractScopedTransaction as any)(
+    providers,
+    async (txCtx: any) => {
+      for (const spec of [specs.shielded, specs.unshielded]) {
+        // `submitCallTx` with an OUTER transaction context is the SDK's own batching entry point:
+        // it builds the call AND registers it with the scope. `createUnprovenCallTx` alone builds
+        // the call but never registers it, so the scope would end with "No calls were submitted."
+        await (submitCallTx as any)(
+          spec.providers,
+          {
+            compiledContract: spec.compiledContract,
+            circuitId: spec.circuitId,
+            contractAddress: spec.contractAddress,
+            args: spec.args,
+            ...(spec.privateStateId ? { privateStateId: spec.privateStateId } : {}),
+          },
+          txCtx,
+        );
+      }
+    },
+    { scopeName: 'aa00005-double-lazy-init' },
+  );
+};
+
+/**
+ * ONE attempt at probe M3's composition (FR-207): the first deposits of two brand-new colours, one
+ * per family, in ONE transaction.
+ *
+ * It never falls back and never throws — the caller decides whether to retry on a fresh wallet and
+ * when to apply FR-207's fallback, because those are two different claims and FR-207 forbids
+ * conflating them. **The retry exists for a diagnosed reason** (00004 F-107, and 00005 G3 run 1):
+ * the failure mode this shape actually exhibits on this lane is a node-side refusal that a wallet
+ * which had fully caught up did not reproduce, so a single attempt cannot distinguish "the ledger
+ * refuses this composition" from "this wallet was not ready".
+ */
+export const tryScopedDoubleDeposit = async (
+  c: Ctx,
+  depositor: Party,
+  depositorManagerProviders: any,
+  legs: DoubleLazyInitLegs,
+): Promise<{ ok: true; txId: string; nonce: string } | { ok: false; error: string }> => {
+  const nonce = randomBytes(32);
+  try {
+    const finalized: any = await withDustRetry(depositor, 'M3/scoped-double-deposit', () =>
+      scopedDoubleDeposit(c, depositorManagerProviders, legs, nonce),
+    );
+    return {
+      ok: true,
+      txId: String(finalized?.public?.txId ?? finalized?.public?.txHash ?? finalized),
+      nonce: hex(nonce),
+    };
+  } catch (e) {
+    return { ok: false, error: errorChain(e) };
+  }
+};
+
+/**
+ * FR-207's fallback: prove the LAZY-INIT half on its own, with SEPARATE transactions.
+ *
+ * Reported separately from the composition attempt, always — a composition refusal is never
+ * conflated with a lazy-init failure.
+ */
+export const separateDoubleDeposit = async (
+  c: Ctx,
+  depositor: Party,
+  depositorManagerProviders: any,
+  legs: DoubleLazyInitLegs,
+): Promise<{ txIds: string[]; nonce: string }> => {
+  const shieldedTx = await userDepositShielded(
+    c,
+    depositor,
+    depositorManagerProviders,
+    legs.shieldedColour,
+    legs.shieldedValue,
+    legs.accountId,
+  );
+  const unshieldedTx = await userDepositUnshielded(
+    c,
+    depositor,
+    depositorManagerProviders,
+    legs.unshieldedColour,
+    legs.unshieldedAmount,
+    legs.accountId,
+  );
+  return { txIds: [shieldedTx.txId, unshieldedTx], nonce: hex(shieldedTx.nonce) };
 };
 
 export { hex };

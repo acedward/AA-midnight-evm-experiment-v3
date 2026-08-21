@@ -10,9 +10,15 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
+# shellcheck source=../lib/compactc.sh
+source "$ROOT/scripts/lib/compactc.sh"
 
-IMAGE="aa00003-compactc:0.33.0"
+IMAGE="$COMPACTC_IMAGE"
 MODE="${1:---skip-zk}"
+
+# The three contracts 00005 builds. `minter` is 00004's, reused UNCHANGED; `manager` is v3
+# (fully open); `minter-collide` is the P-COLL fixture whose two family colours are identical.
+CONTRACTS=(minter manager minter-collide)
 
 # Output lands INSIDE the harness package on purpose: the generated modules `import
 # '@midnight-ntwrk/compact-runtime'`, and Node resolves both module type and node_modules from the
@@ -24,12 +30,9 @@ else
 fi
 
 # Build the compiler image if it is not present (idempotent; content-pinned by SHA-256).
-if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
-  echo "building compiler image $IMAGE"
-  docker build -q -f docker/compactc.Dockerfile -t "$IMAGE" . >/dev/null
-fi
+compactc_ensure_image "$ROOT"
 
-for c in minter manager; do
+for c in "${CONTRACTS[@]}"; do
   echo "compiling ${c} (${MODE}) -> ${OUT}/${c}"
   rm -rf "${OUT:?}/${c}"
   mkdir -p "${OUT}/${c}"
@@ -41,29 +44,94 @@ done
 
 # harness/package.json already declares "type": "module", which these subdirectories inherit.
 
-# A BUILD-TIME COLLISION CHECK, not a proving input. A transaction spanning both contracts is
-# proved through a `ZKConfigRegistry` over the two per-contract artifact directories, because each
-# call's key location embeds the hash of its DEPLOYED verifier key and resolution joins on that —
-# a flattened directory could never serve two contracts. What this combined copy still buys is the
-# assertion below: it fails loudly if the two contracts ever export a circuit under the same name,
-# which would make per-name reasoning about artifacts ambiguous for a reader.
+# CIRCUIT-NAME OVERLAP REPORT.
+#
+# 00004 kept a flattened `_combined` copy of both contracts' artifacts purely as a build-time
+# assertion that no circuit NAME appeared in two contracts. 00005 cannot keep that assertion and
+# should not want to: `minter-collide` deliberately mirrors `minter`'s API (`mintShieldedTo`,
+# `mintUnshieldedTo`, `shieldedColor`, `unshieldedColor`) so the P-COLL probe can be driven by the
+# same harness code paths as an ordinary Minter. Shared names were never a proving hazard anyway —
+# a transaction spanning two contracts is proved through a `ZKConfigRegistry` over the PER-CONTRACT
+# artifact directories, and each call's key location embeds the hash of its DEPLOYED verifier key,
+# so resolution joins on that hash and never on the circuit name.
+#
+# What replaces the assertion is evidence PLUS a sharper assertion. FINDING F-201, discovered by
+# this very report on 00005's first ZK build: a verifier key identifies the CIRCUIT SHAPE, not the
+# contract. `minter.shieldedColor` and `minter-collide.shieldedColor` compile to BYTE-IDENTICAL
+# prover AND verifier keys, because both are the same circuit body reading the same ledger-field
+# index — and so do `mintShieldedTo` in both contracts. `ZKConfigRegistry` therefore has two sources
+# matching one key hash for those circuits, which is harmless precisely because the artifacts are
+# identical: whichever source it picks, the bytes it hands to the prover are the same.
+#
+# So the check below is the one that would actually matter: two contracts sharing a VERIFIER key
+# while having DIFFERENT PROVER keys would mean resolution could pick a prover key that does not
+# correspond to the circuit being proved. That is a FATAL condition. Identical-on-both is reported
+# as an expected observation, not a failure.
 if [ "$MODE" = "--zk" ]; then
-  COMBINED="${OUT}/_combined"
-  rm -rf "$COMBINED"; mkdir -p "$COMBINED/keys" "$COMBINED/zkir"
-  for c in minter manager; do
-    for sub in keys zkir; do
-      for f in "${OUT}/${c}/${sub}"/*; do
-        [ -e "$f" ] || continue
-        base="$(basename "$f")"
-        if [ -e "${COMBINED}/${sub}/${base}" ]; then
-          echo "FATAL: circuit name collision on ${sub}/${base} between contracts" >&2
-          exit 1
-        fi
-        cp "$f" "${COMBINED}/${sub}/${base}"
-      done
+  echo
+  echo "-- verifier keys by contract (SHA-256; resolution is by key hash, not by circuit name)"
+  for c in "${CONTRACTS[@]}"; do
+    for f in "${OUT}/${c}/keys/"*.verifier; do
+      [ -e "$f" ] || continue
+      printf '   %-14s %-26s %s\n' "$c" "$(basename "$f" .verifier)" "$(shasum -a 256 "$f" | cut -d' ' -f1)"
     done
   done
-  echo "combined zk view: $(find "$COMBINED/keys" -name '*.verifier' | wc -l | tr -d ' ') verifier keys"
+
+  echo
+  echo "-- circuit names exported by MORE THAN ONE contract (expected: the MinterCollide mirror)"
+  for c in "${CONTRACTS[@]}"; do
+    for f in "${OUT}/${c}/keys/"*.verifier; do
+      [ -e "$f" ] || continue
+      echo "$(basename "$f" .verifier) ${c}"
+    done
+  done | sort | awk '{ n[$1] = n[$1] " " $2; k[$1]++ } END { for (x in n) if (k[x] > 1) print "   " x ":" n[x] }' | sort
+
+  echo
+  echo "-- F-201: verifier keys SHARED between contracts (must share their prover key too)"
+  python3 - "$OUT" "${CONTRACTS[@]}" <<'PY'
+import hashlib, os, sys
+out, contracts = sys.argv[1], sys.argv[2:]
+def sha(p):
+    with open(p, 'rb') as fh:
+        return hashlib.sha256(fh.read()).hexdigest()
+by_vk = {}
+for c in contracts:
+    d = os.path.join(out, c, 'keys')
+    if not os.path.isdir(d):
+        continue
+    for f in sorted(os.listdir(d)):
+        if not f.endswith('.verifier'):
+            continue
+        name = f[: -len('.verifier')]
+        vk = sha(os.path.join(d, f))
+        pk_path = os.path.join(d, name + '.prover')
+        pk = sha(pk_path) if os.path.exists(pk_path) else None
+        by_vk.setdefault(vk, []).append((c, name, pk))
+bad = []
+shared = 0
+for vk, entries in sorted(by_vk.items()):
+    if len({c for c, _n, _p in entries}) < 2:
+        continue
+    shared += 1
+    pks = {p for _c, _n, p in entries}
+    label = ', '.join(f'{c}.{n}' for c, n, _p in entries)
+    if len(pks) == 1:
+        print(f'   {vk[:16]}…  {label}')
+        print(f'      prover key IDENTICAL too ({next(iter(pks))[:16]}…) — same circuit, so '
+              f'resolution by key hash is unambiguous in effect')
+    else:
+        print(f'   {vk[:16]}…  {label}')
+        print(f'      **PROVER KEYS DIFFER**: {sorted(x[:16] for x in pks)}')
+        bad.append(label)
+if shared == 0:
+    print('   (none)')
+if bad:
+    print('FATAL: a verifier key is shared between contracts whose PROVER keys differ; '
+          'ZKConfigRegistry could resolve a call to the wrong prover key.', file=sys.stderr)
+    for b in bad:
+        print(f'  - {b}', file=sys.stderr)
+    sys.exit(1)
+PY
 fi
 
 echo "compiled: $(find "${OUT}" -name '*.zkir' | wc -l | tr -d ' ') zkir, $(find "${OUT}" -name '*.verifier' 2>/dev/null | wc -l | tr -d ' ') verifier keys"

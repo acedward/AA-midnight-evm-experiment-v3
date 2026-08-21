@@ -1,0 +1,56 @@
+host clean: no containers, volumes or networks named aa00006-g3-20260820111931-17884*
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-PsfF8U)
+ Container aa00006-g3-20260820112118-18824-indexer-1  Stopping
+ Container aa00006-g3-20260820112118-18824-proof-server-1  Stopping
+ Container aa00006-g3-20260820112118-18824-indexer-1  Stopped
+ Container aa00006-g3-20260820112118-18824-indexer-1  Removing
+ Container aa00006-g3-20260820112118-18824-indexer-1  Removed
+ Container aa00006-g3-20260820112118-18824-node-1  Stopping
+ Container aa00006-g3-20260820112118-18824-proof-server-1  Stopped
+ Container aa00006-g3-20260820112118-18824-proof-server-1  Removing
+ Container aa00006-g3-20260820112118-18824-proof-server-1  Removed
+ Container aa00006-g3-20260820112118-18824-node-1  Stopped
+ Container aa00006-g3-20260820112118-18824-node-1  Removing
+ Container aa00006-g3-20260820112118-18824-node-1  Removed
+ Volume aa00006-g3-20260820112118-18824_node-data  Removing
+ Network aa00006-g3-20260820112118-18824_default  Removing
+ Volume aa00006-g3-20260820112118-18824_node-data  Removed
+ Network aa00006-g3-20260820112118-18824_default  Removed
+host clean: no containers, volumes or networks named aa00006-g3-20260820112118-18824*
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-p3oL8B)
+ Container aa00006-g3-20260820113449-22713-indexer-1  Stopping
+ Container aa00006-g3-20260820113449-22713-proof-server-1  Stopping
+ Container aa00006-g3-20260820113449-22713-indexer-1  Stopped
+ Container aa00006-g3-20260820113449-22713-indexer-1  Removing
+ Container aa00006-g3-20260820113449-22713-indexer-1  Removed
+ Container aa00006-g3-20260820113449-22713-node-1  Stopping
+ Container aa00006-g3-20260820113449-22713-proof-server-1  Stopped
+ Container aa00006-g3-20260820113449-22713-proof-server-1  Removing
+ Container aa00006-g3-20260820113449-22713-proof-server-1  Removed
+ Container aa00006-g3-20260820113449-22713-node-1  Stopped
+ Container aa00006-g3-20260820113449-22713-node-1  Removing
+ Container aa00006-g3-20260820113449-22713-node-1  Removed
+ Network aa00006-g3-20260820113449-22713_default  Removing
+ Volume aa00006-g3-20260820113449-22713_node-data  Removing
+ Volume aa00006-g3-20260820113449-22713_node-data  Removed
+ Network aa00006-g3-20260820113449-22713_default  Removed
+host clean: no containers, volumes or networks named aa00006-g3-20260820113449-22713*
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-bXe6fm)
+ Container aa00006-g3-20260820121725-34122-indexer-1  Stopping
+ Container aa00006-g3-20260820121725-34122-proof-server-1  Stopping
+ Container aa00006-g3-20260820121725-34122-indexer-1  Stopped
+ Container aa00006-g3-20260820121725-34122-indexer-1  Removing
+ Container aa00006-g3-20260820121725-34122-indexer-1  Removed
+ Container aa00006-g3-20260820121725-34122-node-1  Stopping
+ Container aa00006-g3-20260820121725-34122-proof-server-1  Stopped
+ Container aa00006-g3-20260820121725-34122-proof-server-1  Removing
+ Container aa00006-g3-20260820121725-34122-proof-server-1  Removed
+ Container aa00006-g3-20260820121725-34122-node-1  Stopped
+ Container aa00006-g3-20260820121725-34122-node-1  Removing
+ Container aa00006-g3-20260820121725-34122-node-1  Removed
+ Volume aa00006-g3-20260820121725-34122_node-data  Removing
+ Network aa00006-g3-20260820121725-34122_default  Removing
+ Volume aa00006-g3-20260820121725-34122_node-data  Removed
+ Network aa00006-g3-20260820121725-34122_default  Removed
+host clean: no containers, volumes or networks named aa00006-g3-20260820121725-34122*
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-EW9tXN)

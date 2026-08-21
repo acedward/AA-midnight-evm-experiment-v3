@@ -1,0 +1,88 @@
+{
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-18T22:39:36.370Z",
+  "purpose": "diagnose the node refusal (RpcError 1010 Custom error 223) behind spec step 13 / decision D-102",
+  "managerAddress": "c3d8df91ace4444bb9d2feac097d4922931606b76990a7d55141e0138116f6fb",
+  "colours": {
+    "S1": "3645f637cbf57f5ab940c8067b55edf8b35528e3c3aa89bbaf2889609b61a7cd",
+    "S2": "c54aeabc2c291fd5b188fafe2df9c5b46513bf2db19becc6b451959aee58e296",
+    "U1": "37d69c7a90453caf001287d9f431fe38d5d4e2075f64a8fdb964ba2eaf0b8b39",
+    "U2": "c72c545f9d8f28c3e2650d11a2153047244a5b0ff207920e5a7a5fa73084cf0a"
+  },
+  "verdict": "the step-13 shape was ACCEPTED here — re-examine the gate run rather than the shape",
+  "attempts": [
+    {
+      "id": "two-shielded-one-intent",
+      "question": "Are TWO calls to the SAME contract in one intent refused, when both are the same family?",
+      "shape": "Manager.depositShielded(S1,2) + Manager.depositShielded(S2,2), one ledger Intent",
+      "calls": [
+        "depositShielded",
+        "depositShielded"
+      ],
+      "ok": false,
+      "error": "Transaction submission error",
+      "managerStateMoved": false
+    },
+    {
+      "id": "two-unshielded-one-intent",
+      "question": "Same question, other family.",
+      "shape": "Manager.depositUnshielded(U1,2) + Manager.depositUnshielded(U2,2), one ledger Intent",
+      "calls": [
+        "depositUnshielded",
+        "depositUnshielded"
+      ],
+      "ok": true,
+      "txId": "004ba8a39b7ad803cdcca9add90249f2311cf88da7f745269040682e75fc8d63f2",
+      "managerStateMoved": true
+    },
+    {
+      "id": "mixed-one-intent",
+      "question": "The spec step-13 shape. Does mixing the two FAMILIES in one transaction break it?",
+      "shape": "Manager.depositShielded(S2,2) + Manager.depositUnshielded(U2,2), one ledger Intent",
+      "calls": [
+        "depositShielded",
+        "depositUnshielded"
+      ],
+      "ok": true,
+      "txId": "00266cc4735027f25ac21277b136a2fd6e1d17ab00cc489e0c32ae48dfce5286a9",
+      "managerStateMoved": true
+    },
+    {
+      "id": "two-shielded-scoped",
+      "question": "Does the SDK's own same-contract batching accept what the ledger-level assembly does?",
+      "shape": "Manager.depositShielded(S1,2) + Manager.depositShielded(S2,2), withContractScopedTransaction",
+      "calls": [
+        "depositShielded",
+        "depositShielded"
+      ],
+      "ok": true,
+      "txId": "003d6491b9afdfc43e053161e7426f832be7dccce7f6c759b10e3cfc026e7de302",
+      "managerStateMoved": true
+    },
+    {
+      "id": "r8-cross-contract-control",
+      "question": "POSITIVE CONTROL: does 00003's proven mint->receive shape still work on this stack?",
+      "shape": "Minter1.mintShieldedTo(S1,3 -> Manager) + Manager.depositShielded(S1,3), one ledger Intent",
+      "calls": [
+        "mintShieldedTo",
+        "depositShielded"
+      ],
+      "ok": true,
+      "txId": "001fefcd48d14fae09adc09cae5136c5b83401f2954a4a7e79c0d7d3c4135f4505",
+      "managerStateMoved": true
+    },
+    {
+      "id": "fr107-cross-contract-mixed",
+      "question": "Does FR-107's named cross-contract fallback survive family-mixing?",
+      "shape": "Manager.depositShielded(S1,2) + Minter1.mintUnshieldedTo(U1,2 -> Manager) + Manager.depositUnshielded(U1,2), one ledger Intent",
+      "calls": [
+        "depositShielded",
+        "mintUnshieldedTo",
+        "depositUnshielded"
+      ],
+      "ok": false,
+      "error": "Insufficient funds",
+      "managerStateMoved": false
+    }
+  ]
+}

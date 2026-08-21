@@ -1,237 +1,206 @@
-# Contract token custody on Midnight 2.x (`v2.0.0-rc.4`)
+# Unbalanced ZSwaps from contract custody — a contract that makes offers a stranger can take
 
-Can tokens **minted by a contract** be held, sent, received, split, merged and re-spent across
-every combination of **user wallets** and **contract-held custody accounts** — in both the
-**shielded** and the **unshielded** family? This repo answers that live, as a ten-step balance
-ledger with **26/26 combination-matrix cells GREEN**, five must-fail negative controls, two
-atomicity probes, and a clean-clone reproduction that matches cell for cell on a demonstrably
-different chain (different contract addresses, zero transaction ids in common).
+A contract holds tokens. It emits a **proven, serialized transaction that is deliberately
+unbalanced**: it gives colour A out of custody and requires colour B into custody, attaches **no
+DUST and no fees**, and **cannot be submitted on its own** — the node refuses it. That artifact is a
+file. Anyone who has the file can settle it: an ordinary wallet balances the missing side with its
+own coins, merges, pays the whole fee, and the swap executes **atomically under one transaction id**.
+Custody loses A **iff** custody gains B.
 
-> **`EXPERIMENTAL_LANE`.** Everything here runs on a pinned **prerelease** component slot
-> (node `2.0.0-rc.4`, ledger `9.1.0.0-rc.3`, `midnight-js v5.0.0-beta.6`, wallet-sdk
-> `2.0.0-beta.2`, compactc `0.33.0` under recorded deviation `LANE-DEV-1`) on a local, fresh
-> dev chain. No result extrapolates to a supported or production lane. Full pin manifest:
-> [`evidence/g1-lane/LANE.md`](evidence/g1-lane/LANE.md).
+Two halves are demonstrated and they are never conflated:
 
-The headline: tokens are **equally spendable regardless of whether their previous holder was a
-contract account or a normal wallet** — the run ends with all four parties at `5/5` after value
-has crossed every boundary in both directions. Final report: [`REPORT.md`](REPORT.md).
+- **v1 — named taker.** The offer pays A to a key the maker chose. Proven end to end.
+- **v2 — the OPEN offer**, which is what the owner actually required: *"we need a way to make this
+  zswap useful in real cases - so that it can be used somehow by any user that has access to it."*
+  The contract releases A's value **addressed to nobody at all** — a genuine positive imbalance at
+  segment 0 — and a wallet whose keys the maker never knew sweeps it with **stock facade calls only**
+  while funding the −B deficit. **This settled. FR-308 openness is GREEN**, via the preferred
+  floating-surplus shape.
+
+> **`EXPERIMENTAL_LANE`.** Everything here runs on a pinned **prerelease** component slot (node
+> `2.0.0-rc.4`, ledger `9.1.0.0-rc.3`, `midnight-js v5.0.0-beta.6`, wallet-sdk `2.0.0-beta.2`,
+> compactc `0.33.0` under recorded deviation **`LANE-DEV-1`**) on a local, fresh dev chain — the
+> **same** lane as projects 00003, 00004 and 00005, verified as INHERITED rather than re-pinned, hop
+> by hop across all three ancestors at every gate. No result extrapolates to a supported or
+> production lane. Pin manifest: [`evidence/g1-lane/LANE.md`](evidence/g1-lane/LANE.md).
+
+> **Two limits are measured, and they are not footnotes.**
+> **F-310:** an offer is only **publishable while the Manager holds ONE shielded custody cell** — a
+> second cell pushes the whole transcript into the fallible section, where no independent taker can
+> settle it, and the builder then refuses to publish it (fail-closed, by design).
+> **D-307:** because of F-310, the specification's 13-row single-Manager step ledger **cannot run as
+> literally written**, so it ran **partitioned across three fresh Managers on one chain in one
+> scripted run**, every row keeping the spec's exact amounts and assertions. The owner's decision
+> (2026-08-20) is that **this deviation stands as the record of what was tested**; the spec file is
+> byte-identical and unedited, and the partitioned run is **never** presented as the spec's literal
+> table. Lifting the F-310 boundary is a separate, scheduled measurement — it does not change the
+> Manager shipped here.
+
+Full report: [`REPORT.md`](REPORT.md) — start there. Command-by-command ledger:
+[`VERIFICATION.md`](VERIFICATION.md).
+
+This project (00006) extends [00005](archive/00005/ARCHIVE.md) (`00005-open-colour-custody` @
+`e9701e9`, PR #3 held OPEN by the owner), whose Manager custodies any colour it is ever credited
+with. 00003's, 00004's and 00005's own deliverables are preserved unmodified under
+[`archive/00003/`](archive/00003/ARCHIVE.md), [`archive/00004/`](archive/00004/ARCHIVE.md) and
+[`archive/00005/`](archive/00005/ARCHIVE.md).
+
+## How a swap actually happens
+
+```mermaid
+sequenceDiagram
+    participant OwnerA as OwnerA (maker's witness)
+    participant Maker as maker process
+    participant File as offer envelope (a file)
+    participant Taker as taker process (stock wallet)
+    participant Node as node + ledger
+    participant Mgr as Manager v4 custody
+
+    OwnerA->>Maker: open an offer: give A valA, want B valB
+    Maker->>Maker: build openSwapShielded call
+    Maker->>Maker: prove (proof server)
+    Maker->>Maker: FR-302 assert — imbalances(0) EXACTLY the intended deltas,<br/>no other segment carries anything, no DUST attached
+    Note over Maker: a fallible placement FAILS CLOSED here:<br/>nothing is published (F-308 / F-310)
+    Maker->>File: Transaction.serialize() + terms + SHA-256 content address
+    Note over Maker,File: the maker process EXITS. No balancing, no dust, no submission.
+
+    File->>Node: (control) submit the offer alone
+    Node-->>File: REFUSED — verbatim, and no state created
+
+    File->>Taker: any holder reads the envelope
+    Taker->>Taker: deserialize -> validate (recorded, NEVER gating: F-303)
+    Taker->>Taker: balanceUnboundTransaction -> signRecipe -> finalizeRecipe (the merge)
+    Taker->>Node: submitTransaction — ONE transaction
+    Node->>Mgr: apply: pool A debited, pool B created/merged,<br/>maker's cells −A +B
+    Node-->>Taker: +A swept to the taker, −B funded by the taker, taker paid ALL the DUST
+    Note over Mgr,Taker: ONE transaction id. The maker's intent carries ZERO dust spends.
+```
+
+The two FR-308 shapes differ in **exactly one zswap output**, which is the whole difference between
+"a swap with somebody" and "a swap with anybody":
+
+```mermaid
+flowchart LR
+    subgraph v1["v1 / v2b — recipientA = some(key)"]
+      A1[pooled coin A] -->|sendShielded valA| K[recipient key]
+      A1 -->|change| P1[re-pooled]
+      B1[coinB from the taker] -->|receiveShielded| P2[pool B + cell credit]
+      note1["the A leg is INTERNALLY BALANCED,<br/>so the only imbalance is −B"]
+    end
+    subgraph v2["v2a — recipientA = none (the OPEN offer)"]
+      A2[pooled coin A] -->|createZswapInput + claimZswapNullifier| N2[consumed]
+      A2 -->|change only| P3[re-pooled]
+      N2 -->|NO OUTPUT — value released| S["+A SURPLUS at segment 0<br/>swept by the taker's own balancer"]
+      B2[coinB from the taker] -->|receiveShielded| P4[pool B + cell credit]
+    end
+```
 
 ## Repository structure
 
 ```
-contracts/                      <- the heart of the repo: two Compact contracts
-  minter.compact                   the issuer — two contract-scoped colours, mints to ANY recipient
-  manager.compact                  the custodian — per-owner accounts over POOLED holdings
+contracts/
+  manager.compact                Manager v4 = 00005's v3 + ONE new circuit (F-307: the deploy budget
+                                 on this lane is ~13 provable circuits and v3 already had 12)
+                                   openSwapShielded(colourA, valA,
+                                                    recipientA: Maybe<Either<ZswapCoinPublicKey,
+                                                                             ContractAddress>>,
+                                                    coinB, creditAccount)
+                                 some(key) = v1 named taker / v2b bearer;  none = v2a OPEN offer.
+                                 Withdraw and deposit legs are FUSED into one circuit, so a swap is
+                                 atomic BY CONSTRUCTION rather than by composing two calls.
+  minter.compact                 the issuer — REUSED UNCHANGED from 00004, byte-identical
+  minter-collide.compact         00005's P-COLL fixture, inherited untouched
 
-harness/                        TypeScript driver (midnight-js v5.0.0-beta.6, wallet-sdk 2.0.0-beta.2)
-  src/lane.ts                      pinned endpoints + deterministic dev-chain seeds
-  src/wallet.ts                    wallet facades: shielded + unshielded + DUST (fees)
-  src/g1/                          wallet creation, NIGHT funding, DUST registration
-  src/g3/                          the step-ledger run itself
-    contracts.ts                     compact-js CompiledContract wrappers (the owner witness lives here)
-    observe.ts                       the two independent observation points behind every assertion
-    compose.ts                       SDK-level transaction building
-    ledger-compose.ts                LEDGER-level composition: two contract calls in ONE Intent
-    run.ts / actions.ts / table.ts   ordered steps 0..9, halt on first divergence
-    negative-controls.ts             5 must-fail cases, state AND funds proven unchanged
-    atomicity.ts                     2 deferred-failure probes: nothing survives a failed tx
-  src/g5/multi-input.ts            ADDENDUM A1 — can the wallet COMBINE inputs? (outside the matrix)
-  src/test/                        27 simulator unit tests, incl. every authorization guard
+harness/                       TypeScript driver (midnight-js v5.0.0-beta.6, wallet-sdk 2.0.0-beta.2)
+  src/offer/envelope.ts          the offer format: `AA00006-OFFER/1`, one line of JSON terms, then the
+                                 RAW transaction bytes; content address = SHA-256 of those bytes
+  src/offer/build.ts             build -> prove -> FR-302 fail-closed placement assert -> publish
+  src/offer/take.ts              the taker: FOUR fail-closed gates (envelope, expiry, fundability,
+                                 pre-submit) then STOCK facade calls only — no transaction surgery
+  src/offer/reader.ts            an offline reader: no network, no wallet, no proof server
+  src/swap/expected.ts           the spec's rows and amounts, import-free — one source of numbers
+  src/swap/{maker,taker,direct-submit}-process.ts
+                                 maker, taker and third-party submitter as SEPARATE OS PROCESSES
+  src/swap/stage-{a,b,c}.ts      the three stages of the D-307 partition
+  src/swap/record.ts             the evidence index: LEDGER / CELLS / NEGATIVES / DEVIATION
+  src/g1/                        spikes S1-S3 (foreign-wallet balancing, segment order, round-trip)
+  src/g2/                        spikes S4/S4b/S5b/S5/S6 + the OFFLINE deploy coster (F-307)
+  src/g3/                        00005's inherited 18-row ledger machinery, untouched
+  src/g4/swap-report.ts          renders REPORT.md from retained evidence — nothing restated by hand
+  src/node-error.ts              recovers the node's `Custom error: NNN` from inside the facade's
+                                 wrapper and decodes it from the pinned node source
+  src/test/                      121 offline assertions (00005's 56 unchanged + 39 swap + 26 envelope)
 
-scripts/                        fail-safe gate wrappers — exit 0 (incl. teardown) = gate GREEN
-  g1/verify-g1-lane.sh             pin digests, boot isolated stack, fund wallets       (~90 s)
-  g2/verify-g2-contracts.sh        compile both contracts, run unit suites, record VKs
-  g3/verify-g3-ledger.sh           THE run: fresh stack -> steps 0..9 -> controls -> teardown (~27 min)
-  g4/verify-g4-closeout.sh         clean-clone reproduction + final report              (~45 min)
-  g5/verify-g5-multi-input.sh      ADDENDUM A1: multi-input coin selection, both families (~9 min)
-  lib/failsafe.sh                  UTC/argv/exit-code recording; a teardown failure fails the gate
+scripts/                       fail-safe gate wrappers — exit 0 (INCLUDING teardown) = gate GREEN
+  g1/verify-g1-spikes.sh         lane inheritance (every hop), W-1, W-2, spikes S1-S3    (~40 min)
+  g2/verify-g2-contracts.sh      compile, deploy, unit negatives, spikes S4..S6          (~82 min)
+  g3/verify-g3-swap-ledger.sh    THE run: stages A, B, C — 23 rows, 217 checks           (~40 min)
+  g4/verify-g4-closeout.sh       clean-clone reproduction of G1+G2+G3, then compare      (~3 hours)
+  g4/compare-swap-runs.py        the reproduction comparison, incl. the non-vacuous freshness guard
+  lib/lane-pins.sh               the lane-inheritance proof, hop by hop from 00003 onward
+  lib/docker-w1.sh               W-1 — scratch DOCKER_CONFIG, step 01 of every gate
+  lib/nosleep.sh                 W-2 — `caffeinate -is` re-exec, so the host cannot idle-sleep
+  lib/failsafe.sh                UTC/argv/exit recording; a teardown failure fails the gate
 
-docker/                         node + indexer + proof server pinned by sha256 digest; compiler image
-evidence/                       retained per gate: run logs, per-step JSON, the 26-cell index
-REPORT.md                       the final report — start here
-VERIFICATION.md                 append-only, command-by-command ledger of the entire project
+docker/                        node + indexer + proof server pinned by sha256 digest
+evidence/                      retained per gate: run logs, JSON records, generated index pages
+archive/0000{3,4,5}/           the three earlier projects, relocated unmodified
+REPORT.md                      the final report — start here
+VERIFICATION.md                append-only, command-by-command ledger of the whole project
 ```
 
-## The contracts
+## What was proven, in one table
 
-### [`minter.compact`](contracts/minter.compact) — the issuer
+| Claim | Where |
+|---|---|
+| a contract emits a proven, unbalanced, DUST-free offer; submitted alone it is REFUSED at three layers | `evidence/g3-swap-ledger/` rows `row-3`, `row-4` |
+| ONE transaction id settles it; custody −A +B; the taker paid every SPECK; the maker's intent carries **zero** dust spends | row `row-5` |
+| **the OPEN offer**: a wallet the maker never knew swept a surplus addressed to nobody and funded −B | rows `row-7`, `row-8`; `evidence/g2-spikes/OPENNESS.md` |
+| the envelope round-trips a real process boundary byte-identically, content address stable | row `row-3`, `evidence/g1-spikes/s3-offer-roundtrip.json` |
+| double-take, expiry, tamper, unauthorized make, unbacked make — all refused, verbatim, with no state created | `evidence/g3-swap-ledger/NEGATIVES.md` |
+| cancellation by spend works — and the spec's two forms are **two different mechanisms** (codes 239 and 104) | rows `row-12a`, `row-12b` |
+| the staleness rule, MEASURED: an intervening same-colour deposit kills a live offer with `239`, not the predicted `104` | row `row-11`, `evidence/g2-spikes/s5.json` |
+| a swap offer is publishable only at ONE custody cell — the dose-response, monotone, both shapes flipping together | `evidence/g2-spikes/s5b.json` (**F-310**) |
+| the spec's literal row 7 at two cells FAILS CLOSED — so D-307 is evidenced, not asserted | rows `p-f310` (stages A and C) |
+| the whole demonstration reproduces from a clean clone on a provably different chain | `evidence/g4-closeout/` |
 
-Derives two token colours scoped to its own address — `tokenType(domainSep, kernel.self())` —
-and mints either to **any recipient**: `mintShieldedTo(value, nonce, recipient)` and
-`mintUnshieldedTo(amount, recipient)`.
+## Reproduce it
 
-The deliberate design point: the Compact standard library **auto-receives a token only when the
-recipient is `kernel.self()`**. Minting to a *different* contract therefore requires that
-contract's receive circuit to run **in the same transaction** — the constraint the whole test is
-built around.
+Each gate boots its own disposable Docker Compose stack with a unique project name on ports it
+verifies free above 10000, and is GREEN only if the wrapper exits 0 **including teardown**.
 
-### [`manager.compact`](contracts/manager.compact) — the custodian
+```bash
+./scripts/g1/verify-g1-spikes.sh          # lane inheritance + spikes S1-S3
+./scripts/g2/verify-g2-contracts.sh       # Manager v4 + the offer kit + spikes S4/S4b/S5b/S5/S6
+./scripts/g3/verify-g3-swap-ledger.sh     # the swap step ledger: stages A, B, C
+./scripts/g4/verify-g4-closeout.sh        # clean-clone reproduction of all three, then compare
 
-- **Accounts are commitments, not addresses.** `registerAccount(owner)` stores a hash-commitment
-  of an owner secret; every mutation authorizes by the `localOwnerSecret()` **witness** — the
-  caller proves in zero knowledge that their secret opens a registered commitment. No
-  `kernel.caller()`, no address comparison.
-- **Custody is pooled.** All shielded deposits merge into **one pool coin** (`mergeCoin`); all
-  unshielded deposits sit in the contract's kernel balance. Who owns what is tracked in per-account
-  ledger maps — so an *internal* transfer between accounts moves **no tokens at all** on chain.
-- Circuits: `depositShielded` / `depositUnshielded`, `withdrawShielded` / `withdrawUnshielded`,
-  `selfSendShielded` / `selfSendUnshielded`, `transferInternal`, plus read-only views.
-- **Standing invariant**, asserted after *every* step in *both* families:
-  `pooled holdings = AA_A + AA_B`. Its two sides are maintained by entirely different mechanisms
-  (zswap coin / kernel balance vs. account maps), which is what makes it a real cross-check.
-
-## What the test does with the tokens
-
-Four value-holding parties: custody accounts **AA_A** (OwnerA) and **AA_B** (OwnerB) inside the
-Manager, and user wallets **OwnerN** and **OwnerM**. The Minter issues 20 shielded + 20
-unshielded, then the run redistributes until **every party holds `5/5`**, then proves self-sends
-change identifiers but not balances.
-
-Every movement happens **twice** — once shielded, once unshielded. Edge labels give both step
-numbers as `S<n>/U<m>`:
-
-```mermaid
-flowchart LR
-    Minter["Minter contract"]
-
-    subgraph manager["Manager contract — pooled custody, invariant pool = AA_A + AA_B"]
-        A["AA_A (OwnerA)"]
-        B["AA_B (OwnerB)"]
-    end
-
-    subgraph users["User wallets"]
-        N["OwnerN"]
-        M["OwnerM"]
-    end
-
-    Minter -- "S1/U2 · mint 10" --> A
-    Minter -- "S1/U2 · mint 10" --> N
-    N -- "S3/U5 · send 5" --> M
-    A -- "S3/U5 · internal 5 — no tokens move" --> B
-    N -- "S4/U6 · deposit 5" --> B
-    A -- "S4/U6 · withdraw 5" --> M
-    M -- "S7/U8 · deposit 5 — re-spends contract-made coins" --> A
-    B -- "S7/U8 · withdraw 5 — re-spends user-made value" --> N
-    M -- "S9 · self-send, both families" --> M
+./scripts/g2/verify-g2-contracts.sh --offline   # compile + 121 unit assertions + typecheck, no chain
+./scripts/g3/verify-g3-swap-ledger.sh --offline  # same, for the ledger machinery
+./scripts/g4/verify-g4-closeout.sh --offline     # clone + spec hash + the freshness self-test
 ```
 
-Step 9 also self-sends the **Manager pool itself** in both families (under OwnerB's
-authorization): the balance table and account maps are byte-identical before and after, while the
-pool coin nonce / UTXO identifiers provably change.
+## Things worth knowing before reusing this harness
 
-The ledger as **observed** (balances are `shielded/unshielded` of the Minter's colours only; every
-row was asserted against the specification's expected value before the run continued — the first
-divergence would have halted it):
+- **`validateTransaction` cannot validate a contract-call transaction on this lane, and its refusal
+  is a FALSE NEGATIVE** (F-303). The pinned facade validates against a blank `LedgerState`, so it
+  reports `call to non-existant contract` for transactions the node then accepts and commits. Run it,
+  record it, **never gate on it**.
+- **`Transaction.segments()` is not bound to JS** (F-304). `tx.segments?.() ?? [0]` silently degrades
+  a placement check to "segment 0 looks right" and would miss a leg parked in a fallible segment. Use
+  the harness's `segmentsOf`.
+- **`dustBalance` reads 0 for every wallet**, including wallets demonstrably paying fees. "The maker
+  paid nothing" is asserted from the settled transaction's **per-intent dust actions**, never from a
+  balance.
+- **The offer's own `fees()` figure is not the settlement fee** and must never be quoted as a price:
+  the fee belongs to the MERGED transaction, whose size the maker cannot know in advance.
+- **Segment assignment is a build-time decision** (F-301 / F-306): re-keying a merged transaction's
+  intents afterwards is accepted by the wasm setter and then refused by the node with `235`, even for
+  transactions that would have been accepted untouched.
+- **Cost the deploy before designing circuits** (F-307): `harness/src/g2/diag-deploy-cost.ts` does it
+  offline in seconds. The Manager is now AT the ~13-circuit ceiling.
+- **W-1 and W-2 are HOST workarounds**, not lane properties: a scratch `DOCKER_CONFIG`, and a
+  `caffeinate -is` re-exec because this Mac idle-slept mid-gate and the resulting `AbortError` is
+  indistinguishable from a real refusal in an evidence table.
 
-| Step | Action | AA_A | OwnerN | AA_B | OwnerM |
-|---|---|---|---|---|---|
-| 0 | Deploy both contracts; register AA_A, AA_B | 0/0 | 0/0 | 0/0 | 0/0 |
-| 1 | Mint **shielded** 10 → AA_A and 10 → OwnerN | 10/0 | 10/0 | 0/0 | 0/0 |
-| 2 | Mint **unshielded** 10 → AA_A and 10 → OwnerN | 10/10 | 10/10 | 0/0 | 0/0 |
-| 3 | Shielded half: OwnerN →5→ OwnerM; AA_A →5→ AA_B internal | 5/10 | 5/10 | 5/0 | 5/0 |
-| 4 | Shielded rest, crossed: OwnerN →5→ AA_B; AA_A →5→ OwnerM | 0/10 | 0/10 | 10/0 | 10/0 |
-| 5 | Unshielded half: OwnerN →5→ OwnerM; AA_A →5→ AA_B internal | 0/5 | 0/5 | 10/5 | 10/5 |
-| 6 | Unshielded rest, crossed: OwnerN →5→ AA_B; AA_A →5→ OwnerM | 0/0 | 0/0 | 10/10 | 10/10 |
-| 7 | Provenance re-send, shielded: OwnerM →5→ AA_A; AA_B →5→ OwnerN | 5/0 | 5/0 | 5/10 | 5/10 |
-| 8 | Provenance re-send, unshielded mirror | 5/5 | 5/5 | 5/5 | 5/5 |
-| 9 | Self-send round (balance-neutral by design) | 5/5 | 5/5 | 5/5 | 5/5 |
-
-Per-step before/after observations — coin nonces, commitments, UTXO detail, transaction ids — are
-in [`evidence/g3-ledger/step-N/`](evidence/g3-ledger/); the per-cell index is
-[`evidence/g3-ledger/CELLS.md`](evidence/g3-ledger/CELLS.md).
-
-### The interesting transaction: minting *into* custody
-
-Most edges above are a **single SDK-level call**: a user deposit is just `depositShielded` — the
-depositor's wallet supplies the input while balancing, so sender spend and Manager receive land in
-one transaction by construction. But the `Minter → AA_A` edge needs **two contracts in one
-transaction**, and `midnight-js v5.0.0-beta.6` cannot express that (a scoped transaction refuses a
-second contract; merging separately-proven transactions strands each call in its own segment). It
-is solved at **ledger level**: one `Intent` carrying both call prototypes, so both sit in one
-segment around the single zswap output they both reference —
-
-```mermaid
-flowchart TB
-    subgraph tx["ONE transaction — one ledger Intent, one segment"]
-        mint["Minter.mintShieldedTo(10, nonce, Manager)"]
-        dep["Manager.depositShielded(coin, AA_A)<br/>merges into the pool coin, credits AA_A"]
-        out(("the one minted output<br/>owner = Manager"))
-        mint -. "claims as spend" .-> out
-        dep -. "claims as receive" .-> out
-    end
-```
-
-The Manager's call is the **carrier** (its transaction is a strict superset of the needed zswap
-parts once the pool is non-empty). Implementation:
-[`harness/src/g3/ledger-compose.ts`](harness/src/g3/ledger-compose.ts); full derivation and the
-ruled-out SDK routes: [`evidence/g3-ledger/COMPOSITION.md`](evidence/g3-ledger/COMPOSITION.md).
-`CELLS.md` records the level (`SDK` or `LEDGER`) that produced every cell.
-
-### Proving it can fail — and fails clean
-
-Five negative controls, each asserting the exact failure reason **and** that state and funds are
-byte-identical afterwards: `wrong-owner-witness`, `unregistered-witness`, `per-account-overdraw`
-(pool has enough, the account does not), `omitted-claim-shielded` and `omitted-claim-unshielded`
-(a mint to the Manager *without* its receive call must not land). Two atomicity probes (one per
-family) submit a withdraw whose on-chain replay diverges, and prove **neither** the token effect
-**nor** the account-state change survived. Every assertion in the run reads **two independent
-observation points** (contract state vs. pool mechanics; wallet view vs. indexer reconstruction).
-
-## Addendum A1 — multi-input sends
-
-**Verdict: PROVEN in both families.** A wallet holding only pieces **smaller than the amount it
-wants to send** combines them into **one** transaction.
-
-This addendum sits **outside the 26-cell matrix** — it claims no matrix cell, and the approved
-specification is **unchanged**. It exists because the ordered ledger never forced the case: every
-amount it sent was coverable by a single held coin/UTXO, so whether the pinned wallet SDK could
-select **two or more inputs** of a contract-minted colour was genuinely untested.
-
-The probe mints **2** and **3** to OwnerN as *two separate transactions*, so OwnerN holds two
-discrete pieces and **no single piece covers a send of 4**. OwnerN then sends **4** to OwnerM.
-
-| family | held set | send | after | one transaction |
-|---|---|---|---|---|
-| shielded | `{2, 3}`, distinct nonces | 4 → OwnerM | OwnerN `{1}`, OwnerM `{4}` — both under **new** nonces | `0054c8910f…b5b81b` |
-| unshielded | `{2, 3}`, distinct intent hashes | 4 → OwnerM | OwnerN `{1}`, OwnerM `{4}` — both under a **new** intent hash | `009476730b…60c903` |
-
-The claim is made on **identifier sets**, not balances: both original identifiers are gone from
-OwnerN's held set and the change carries a new one. For the unshielded family the indexer confirms
-it independently — both consumed outputs report the **same** spending transaction, which is the
-send transaction itself, and that transaction created exactly the `4` to OwnerM and the `1` change.
-For the shielded family (where a coin is private by construction, so the indexer cannot attribute
-it to an owner) the second observation point is the ledger conservation identity: minted `5` =
-pool `0` + OwnerN `1` + OwnerM `4`.
-
-Why the ordered ledger never saw it: the pinned balancer accumulates one input per pass until the
-imbalance is covered, and its default picker takes the **smallest** coin of the type. In steps 7/8
-OwnerM held two 5-pieces and sent 5 — one coin already covered it.
-
-Evidence: [`evidence/g5-multi-input/summary.md`](evidence/g5-multi-input/summary.md) ·
-[`shielded.json`](evidence/g5-multi-input/shielded.json) ·
-[`unshielded.json`](evidence/g5-multi-input/unshielded.json) ·
-[`run.log`](evidence/g5-multi-input/run.log).
-
-## Reproducing
-
-Prerequisites: Docker, Node 22+, pnpm. The Compact compiler runs inside a pinned Docker image —
-nothing else to install. Each wrapper boots its own disposable stack (unique compose project,
-random verified-free ports above 10000) and tears it down; the gate is green only if the process
-**exits 0 including teardown**.
-
-```sh
-./scripts/g1/verify-g1-lane.sh        # lane pins + stack + funded wallets   (~90 s)
-./scripts/g2/verify-g2-contracts.sh   # compile + 27 unit tests + artifacts
-./scripts/g3/verify-g3-ledger.sh      # the whole ledger from nothing        (~27 min)
-./scripts/g4/verify-g4-closeout.sh    # clean-clone reproduction + report    (~45 min)
-./scripts/g5/verify-g5-multi-input.sh # ADDENDUM A1: multi-input sends       (~9 min)
-```
-
-## Reading order
-
-[`REPORT.md`](REPORT.md) →
-[`evidence/g3-ledger/CELLS.md`](evidence/g3-ledger/CELLS.md) →
-[`evidence/g3-ledger/COMPOSITION.md`](evidence/g3-ledger/COMPOSITION.md) →
-[`evidence/g1-lane/LANE.md`](evidence/g1-lane/LANE.md) →
-[`VERIFICATION.md`](VERIFICATION.md).
+`EXPERIMENTAL_LANE` / `LANE-DEV-1` — every artifact in this repository carries both labels (FR-309).

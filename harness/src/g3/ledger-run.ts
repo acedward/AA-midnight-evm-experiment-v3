@@ -1,162 +1,274 @@
-// G3 — the ordered step ledger, spec steps 0 through 9, in ONE scripted process (SC-001).
+// G3 — the spec's 18-row step ledger (steps 0 through 17), the five negative controls and both
+// probes, in ONE scripted process. EXPERIMENTAL_LANE / LANE-DEV-1.
 //
-// After every step the harness reads every observation point, asserts the spec's expected
-// four-party table EXACTLY, asserts both halves of the standing invariant `pool = AA_A + AA_B`,
-// and halts on the first divergence. Per-step evidence lands in `evidence/g3-ledger/step-N/`,
-// and every matrix cell records its own transaction ids, observation points and composition
-// level into `evidence/g3-ledger/cells.json`, from which `CELLS.md` is rendered.
+// After every step the harness reads every observation point and asserts, against the spec's
+// NORMATIVE transcription in `expected.ts`:
+//
+//   * the FULL table over every colour that exists at that row x four parties;
+//   * every shielded pool value and every unshielded contract-ledger balance;
+//   * the EXACT size of all three custody maps — the lazy-creation bookkeeping;
+//   * ZERO UNACCOUNTED KEYS, dynamically: every key in the Manager's raw maps must be reproducible
+//     from (AA account x registered colour) by the contract's OWN pure key circuits, so an extra
+//     colour or an extra cell is a hard failure;
+//   * the per-colour invariant `custody[c] == AA_A[c] + AA_B[c]`, over the DISCOVERED colour set;
+//   * the ledger conservation identity per colour;
+//   * the dormant colour U3, absent from every map;
+//
+// and halts on the first divergence. Per-step evidence lands in `evidence/g3-ledger/step-N/`; every
+// row, control and probe records itself into `evidence/g3-ledger/cells.json`, from which `CELLS.md`
+// is rendered.
+//
+// The step table, the amounts, the final table and the end-state map sizes are NORMATIVE in the
+// specification — `expected.ts` is a transcription of them and must not be "fixed" to match an
+// observation.
+//
+// F-104 discipline: no balance in this run is ever read from a wallet that submitted a transaction.
+// User cells come from read-only OBSERVER wallets, cross-checked against the indexer (unshielded)
+// and against ledger conservation (shielded); every user-submitted transaction is built by a FRESH
+// spender wallet that is closed immediately afterwards. See `setup.ts`.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { REPO_ROOT } from '../lane.js';
-import { bootstrap, type Rig } from './setup.js';
+import { bootstrap, resultOf, type Rig, type Spender } from './setup.js';
 import { metricsReport } from './metrics.js';
+import { withDustRetry } from '../night.js';
+import { existenceAtBlock } from './chain.js';
 import {
   accountWithdrawShielded,
   accountWithdrawUnshielded,
-  mintShieldedToAccount,
   mintShieldedToUser,
-  mintUnshieldedToAccount,
   mintUnshieldedToUser,
-  poolSelfSendShielded,
-  poolSelfSendUnshielded,
-  transferInternal,
+  transferInternalShielded,
   userDepositShielded,
   userDepositUnshielded,
-  userSend,
 } from './actions.js';
 import {
   assertAll,
+  emptyRow,
   observe,
-  withIndexerCheck,
+  renderCustody,
+  renderMarkdownTable,
+  renderSizes,
   renderTable,
-  row,
-  snapshot,
+  snapshotObject,
   waitForTable,
-  waitUntil,
+  withIndexerCheck,
+  type Custody,
+  type ExpectedState,
   type Observation,
   type Table,
 } from './table.js';
+import { snapshot as managerSnapshot } from '../manager-view.js';
+import { AA_PARTIES, PARTIES, type ColourInfo, type PartyName } from './observe.js';
+import { runControls, type ControlResult } from './controls.js';
+import { runProbes, type ProbeHarness, type ProbeResults, type Requirement } from './probes.js';
+import { makeCellSink, type CellRecord } from './cells.js';
+// The spec's step table lives in ONE place — `expected.ts` — because it is the only thing in this
+// harness copied from a document rather than derived, and the offline suite checks that
+// transcription against itself (and against the spec's separately written final table and
+// end-state map sizes) before any stack is booted.
+import { ACTIONS, DORMANT, END_SIZES, EXPECTED, FINAL_TABLE, LAST_STEP, MINTS } from './expected.js';
 
 const stamp = () => new Date().toISOString();
 const log = (m: string) => console.log(`[${stamp()}] ${m}`);
 const EVID = join(REPO_ROOT, 'evidence', 'g3-ledger');
-
 const bigints = (_k: string, v: unknown) => (typeof v === 'bigint' ? `${v}` : v);
 
-// ---------------------------------------------------------------------------------------------
-// The spec's expected table, verbatim. Column order is the spec's: AA_A | OwnerN | AA_B | OwnerM.
-// ---------------------------------------------------------------------------------------------
-const t = (a: [bigint, bigint], n: [bigint, bigint], b: [bigint, bigint], m: [bigint, bigint]): Table => ({
-  AA_A: row(a[0], a[1]),
-  OwnerN: row(n[0], n[1]),
-  AA_B: row(b[0], b[1]),
-  OwnerM: row(m[0], m[1]),
-});
+/** Running totals the Minters have issued of each colour, by harness name. */
+const minted: Custody = {};
 
-const EXPECTED: Record<number, Table> = {
-  0: t([0n, 0n], [0n, 0n], [0n, 0n], [0n, 0n]),
-  1: t([10n, 0n], [10n, 0n], [0n, 0n], [0n, 0n]),
-  2: t([10n, 10n], [10n, 10n], [0n, 0n], [0n, 0n]),
-  3: t([5n, 10n], [5n, 10n], [5n, 0n], [5n, 0n]),
-  4: t([0n, 10n], [0n, 10n], [10n, 0n], [10n, 0n]),
-  5: t([0n, 5n], [0n, 5n], [10n, 5n], [10n, 5n]),
-  6: t([0n, 0n], [0n, 0n], [10n, 10n], [10n, 10n]),
-  7: t([5n, 0n], [5n, 0n], [5n, 10n], [5n, 10n]),
-  8: t([5n, 5n], [5n, 5n], [5n, 5n], [5n, 5n]),
-  9: t([5n, 5n], [5n, 5n], [5n, 5n], [5n, 5n]),
-};
-
-/** Running totals the Minter has issued — the ledger side of the conservation cross-check. */
-const minted = { shielded: 0n, unshielded: 0n };
-
-// ---------------------------------------------------------------------------------------------
-// Cell records — one per spec checklist item, written out for CELLS.md
-// ---------------------------------------------------------------------------------------------
-export type CellRecord = {
-  id: string;
-  label: string;
-  step: number;
-  txs: string[];
-  level: 'LEDGER' | 'SDK' | 'wallet' | 'derived';
-  points: string;
-  status: 'GREEN' | 'RED';
-  evidence: string;
-  note?: string;
-};
 const cells: CellRecord[] = [];
-const cell = (c: CellRecord) => {
-  cells.push(c);
-  console.log(`  CELL ${c.status.padEnd(5)} ${c.id} — ${c.label}`);
+const cell = makeCellSink(cells);
+
+/** The spec's transcription for row `n`, in the generic shape `assertAll` consumes. */
+const expectedOf = (n: number): ExpectedState => {
+  const e = EXPECTED[n]!;
+  const colours = [...e.colours] as string[];
+  const table = {} as Table;
+  for (const p of PARTIES) {
+    table[p] = emptyRow(colours);
+    for (const c of colours) table[p][c] = e.table[p as keyof typeof e.table][c as keyof typeof e.custody];
+  }
+  const custody: Custody = {};
+  for (const c of colours) custody[c] = e.custody[c as keyof typeof e.custody];
+  return { colours, table, custody, sizes: { ...e.sizes } };
+};
+
+// ---------------------------------------------------------------------------------------------
+// The rotating on-chain spot check: one real balance circuit call per step, cycling through every
+// (AA account, colour) cell that exists, so each is confirmed at least once by a mechanism entirely
+// independent of the state decode (FR-208).
+// ---------------------------------------------------------------------------------------------
+const spotCheck = async (rig: Rig, step: number, o: Observation): Promise<Observation> => {
+  const pairs: Array<[PartyName, ColourInfo | null]> = [];
+  for (const p of AA_PARTIES) for (const c of rig.registry.list()) pairs.push([p, c]);
+  await rig.ctx.actAs(rig.ctx.managerFee, new Uint8Array(32));
+
+  if (pairs.length === 0) {
+    // Row 0: no colour exists anywhere. The discriminating on-chain read is therefore a balance for
+    // a colour the Manager has never been told about — it must answer 0, and must create nothing.
+    const unknownColour = new Uint8Array(32);
+    const r: any = await withDustRetry(rig.fee, 'shieldedAccountBalance(AA_A, <no colour exists>)', () =>
+      rig.managerDeployed.callTx.shieldedAccountBalance(rig.raw.AA_A, unknownColour),
+    );
+    const onChain = resultOf<bigint>(r);
+    const txish = String(r?.public?.txId ?? r?.public?.txHash ?? '');
+    log(`  spot check: on-chain shieldedAccountBalance(AA_A, <a colour that does not exist>) = ${onChain} (tx ${txish})`);
+    return {
+      ...o,
+      spotCheck: {
+        account: 'AA_A',
+        colour: '<a colour that does not exist>',
+        circuit: 'shieldedAccountBalance',
+        onChain,
+        ledgerState: 0n,
+        txish,
+      },
+    };
+  }
+
+  const [account, colour] = pairs[step % pairs.length]!;
+  const id = rig.raw[account as 'AA_A' | 'AA_B'];
+  const circuit = colour!.family === 'shielded' ? 'shieldedAccountBalance' : 'unshieldedAccountBalance';
+  const r: any = await withDustRetry(rig.fee, `${circuit}(${account}, ${colour!.name})`, () =>
+    (rig.managerDeployed.callTx as any)[circuit](id, colour!.raw),
+  );
+  const onChain = resultOf<bigint>(r);
+  const txish = String(r?.public?.txId ?? r?.public?.txHash ?? '');
+  log(`  spot check: on-chain ${circuit}(${account}, ${colour!.name}) = ${onChain} (tx ${txish})`);
+  return {
+    ...o,
+    spotCheck: {
+      account,
+      colour: colour!.name,
+      circuit,
+      onChain,
+      ledgerState: o.table[account][colour!.name] ?? 0n,
+      txish,
+    },
+  };
 };
 
 // ---------------------------------------------------------------------------------------------
 // Per-step evidence
 // ---------------------------------------------------------------------------------------------
-type Operation = { label: string; txs: string[]; level: string; before: unknown; after: unknown; detail?: unknown };
+type Operation = { label: string; txs: string[]; level: string; detail?: unknown };
 
 class StepEvidence {
   private ops: Operation[] = [];
   constructor(
-    readonly n: number,
+    readonly n: number | string,
     readonly action: string,
   ) {}
 
-  op(label: string, txs: string[], level: string, before: Observation, after: Observation, detail?: unknown): void {
+  op(label: string, txs: string[], level: string, detail?: unknown): void {
     this.ops.push({
       label,
       txs,
       level,
-      before: JSON.parse(snapshot(before)),
-      after: JSON.parse(snapshot(after)),
       detail: detail === undefined ? undefined : JSON.parse(JSON.stringify(detail, bigints)),
     });
   }
 
-  write(expected: Table, observed: Observation): void {
+  write(expected: ExpectedState, observed: Observation): void {
     const dir = join(EVID, `step-${this.n}`);
     mkdirSync(dir, { recursive: true });
+    const cols = expected.colours;
+
+    const flat = (t: Table) => {
+      const out: Record<string, Record<string, string>> = {};
+      for (const p of PARTIES) {
+        out[p] = {};
+        for (const c of cols) out[p][c] = String(t[p][c] ?? 0n);
+      }
+      return out;
+    };
+
     writeFileSync(
       join(dir, 'step.json'),
-      JSON.stringify(
+      `${JSON.stringify(
         {
           label: 'EXPERIMENTAL_LANE / LANE-DEV-1',
           step: this.n,
           action: this.action,
           utc: stamp(),
-          expected,
-          observed: JSON.parse(snapshot(observed)),
+          colourSet: cols,
+          expected: {
+            table: flat(expected.table),
+            custody: Object.fromEntries(cols.map((c) => [c, String(expected.custody[c] ?? 0n)])),
+            mapSizes: expected.sizes,
+          },
+          observed: snapshotObject(observed),
+          observedMapSizes: observed.sizes,
+          unaccountedKeys: observed.unaccounted,
+          observationPoints: {
+            AA_cells:
+              "the Manager's shieldedBalances / unshieldedBalances maps decoded from contract state, every key " +
+              "derived by RUNNING the contract's own pure shieldedKey/unshieldedKey circuits",
+            AA_cells_second:
+              'the per-colour custody side — pooled zswap coin (shielded) / ledger-kernel unshielded balance — ' +
+              'via the invariant custody[c] == AA_A[c] + AA_B[c]',
+            AA_cells_third: observed.spotCheck
+              ? `on-chain ${observed.spotCheck.circuit}(${observed.spotCheck.account}, ${observed.spotCheck.colour}) = ${observed.spotCheck.onChain}`
+              : '(no spot check this step)',
+            user_cells: 'read-only OBSERVER wallet facades (never submitters — finding F-104)',
+            user_cells_second_unshielded: 'UTXO set reconstructed from the indexer transaction history, per colour',
+            user_cells_second_shielded:
+              'ledger conservation identity minted[c] == custody[c] + OwnerN[c] + OwnerM[c]',
+          },
+          indexerUnshielded: observed.indexerUnshielded,
+          spotCheck: observed.spotCheck,
           mintedTotals: minted,
+          perColourInvariant: Object.fromEntries(
+            cols.map((c) => [c, `${observed.custody[c] ?? 0n} == ${observed.table.AA_A[c] ?? 0n} + ${observed.table.AA_B[c] ?? 0n}`]),
+          ),
           operations: this.ops,
         },
         bigints,
         2,
-      ),
+      )}\n`,
     );
+
     const lines = [
       `# Step ${this.n} — ${this.action}`,
       '',
       '**Label:** `EXPERIMENTAL_LANE` / `LANE-DEV-1`',
       '',
-      `| party | expected | observed |`,
-      `|---|---|---|`,
-      ...(['AA_A', 'OwnerN', 'AA_B', 'OwnerM'] as const).map(
-        (k) =>
-          `| ${k} | ${expected[k].shielded}/${expected[k].unshielded} | ` +
-          `${observed.table[k].shielded}/${observed.table[k].unshielded} |`,
-      ),
+      `Colour set at this row (${cols.length}): ${cols.length ? cols.map((c) => `\`${c}\``).join(', ') : '**none — no Minter exists yet**'}`,
       '',
-      `Manager pooled shielded coin: **${observed.manager.poolValue}** (nonce \`${observed.manager.poolNonce}\`)`,
-      `Manager unshielded ledger balance: **${observed.managerUnshieldedLedger}**`,
-      `Invariant \`pool = AA_A + AA_B\` asserted in BOTH families.`,
-      `Indexer reconstruction of user unshielded balances (independent of the wallet): ` +
-        `OwnerN=${observed.indexerUnshielded?.OwnerN}, OwnerM=${observed.indexerUnshielded?.OwnerM}.`,
+      "## Observed table (asserted equal to the spec's expected state)",
+      '',
+      ...(cols.length
+        ? renderMarkdownTable(observed.table, observed.custody, cols)
+        : ['_(no colour exists at this row; the Manager holds nothing and knows nothing)_']),
+      '',
+      `Exact map sizes: **${renderSizes(observed.sizes)}** (expected ${renderSizes(expected.sizes)}).`,
+      '',
+      `Zero unaccounted keys: pools ${observed.unaccounted.pools.length}, shielded cells ` +
+        `${observed.unaccounted.shieldedCells.length}, unshielded cells ${observed.unaccounted.unshieldedCells.length}.`,
+      '',
+      `Per-colour invariant: ${cols.map((c) => `${c}: ${observed.custody[c] ?? 0n} == ${observed.table.AA_A[c] ?? 0n}+${observed.table.AA_B[c] ?? 0n}`).join('; ') || '(no colours)'}`,
+      '',
+      `Conservation: ${cols.map((c) => `${c}: minted ${minted[c] ?? 0n} == ${observed.custody[c] ?? 0n}+${observed.table.OwnerN[c] ?? 0n}+${observed.table.OwnerM[c] ?? 0n}`).join('; ') || '(no colours)'}`,
+      '',
+      observed.indexerUnshielded
+        ? `Indexer reconstruction (independent of every wallet): ${(['OwnerN', 'OwnerM'] as const)
+            .map((p) => `${p} ${Object.entries(observed.indexerUnshielded![p]).map(([k, v]) => `${k}=${v}`).join(' ') || '—'}`)
+            .join(', ')}.`
+        : 'No indexer reconstruction this step.',
+      '',
+      observed.spotCheck
+        ? `On-chain spot check: \`${observed.spotCheck.circuit}(${observed.spotCheck.account}, ${observed.spotCheck.colour})\` = ${observed.spotCheck.onChain} (ledger state says ${observed.spotCheck.ledgerState}).`
+        : 'No on-chain spot check this step.',
       '',
       '## Operations',
       '',
-      ...this.ops.flatMap((o) => [`- **${o.label}** (${o.level}) — tx ${o.txs.map((x) => `\`${x}\``).join(', ')}`]),
+      ...(this.ops.length
+        ? this.ops.map((o) => `- **${o.label}** (${o.level}) — tx ${o.txs.map((x) => `\`${x}\``).join(', ') || '—'}`)
+        : ['- (none — this row asserts a state, not an operation)']),
       '',
     ];
-    writeFileSync(join(dir, 'summary.md'), lines.join('\n'));
+    writeFileSync(join(dir, 'summary.md'), `${lines.join('\n')}\n`);
     log(`  evidence -> evidence/g3-ledger/step-${this.n}/`);
   }
 }
@@ -165,732 +277,717 @@ class StepEvidence {
 // The run
 // ---------------------------------------------------------------------------------------------
 const main = async () => {
-  console.log(`# G3 STEP LEDGER — steps 0-9 — EXPERIMENTAL_LANE / LANE-DEV-1 — ${stamp()}`);
+  console.log(
+    `# G3 OPEN-COLOUR STEP LEDGER — steps 0-17 + NC-1..5 + P-COLL + M3 — EXPERIMENTAL_LANE / LANE-DEV-1 — ${stamp()}`,
+  );
   mkdirSync(EVID, { recursive: true });
   let rig: Rig | undefined;
+  let controls: ControlResult[] = [];
+  let probes: ProbeResults | undefined;
 
   try {
     rig = await bootstrap();
-    const { ctx, deps, raw, ids } = rig;
-    const settle = async (pred: (o: Observation) => boolean, what: string) => waitUntil(deps, pred, what);
+    const { ctx, deps, raw, registry } = rig;
+
     /**
      * Every submitted transaction is logged here, because observation point 2 for user unshielded
-     * holdings is a replay of exactly these through the indexer (see `withIndexerCheck`). A
-     * transaction that moved value but was never logged would silently weaken that check, so the
-     * recording happens at the single place each id is first seen.
+     * holdings is a replay of exactly these through the indexer. A transaction that moved value but
+     * was never logged would silently weaken that check, so the recording happens at the single
+     * place each id is first seen.
      */
+    const seenTxs = new Set<string>();
     const tx = <T extends string>(id: T): T => {
-      deps.submittedTxs.push(id);
+      // De-duplicated: the replay costs one indexer query per identifier, and an id recorded twice
+      // would pay for the same answer twice without strengthening anything.
+      if (id && !seenTxs.has(id)) {
+        seenTxs.add(id);
+        deps.submittedTxs.push(id);
+      }
       return id;
     };
-    // The deploy transactions create no unshielded outputs, but replaying them costs nothing and
-    // keeps "every transaction this run submitted" literally true.
-    tx(rig.deployTxs.minter);
-    tx(rig.deployTxs.manager);
+    for (const id of Object.values(rig.deployTxs)) if (/^[0-9a-f]{6,}$/i.test(id)) tx(id);
     for (const id of Object.values(rig.fundingTxs)) if (/^[0-9a-f]{6,}$/i.test(id)) tx(id);
 
+    /** Run one user-submitted operation on a FRESH spender wallet, then close it (F-104). */
+    const withSpender = async <T>(
+      who: 'OwnerN' | 'OwnerM',
+      tag: string,
+      fn: (s: Spender) => Promise<T>,
+      require?: Requirement[],
+    ): Promise<T> => {
+      const s = await rig!.openSpender(who, tag, require);
+      try {
+        return await fn(s);
+      } finally {
+        await s.close();
+      }
+    };
+
+    /**
+     * Wait for the step's expected state, add the rotating on-chain spot check and the indexer
+     * reconstruction, then assert everything. Writing the evidence is deliberately NOT part of this:
+     * a step with post-hoc detail to record (step 12 compares custody across the operation) adds its
+     * operations first and calls `finish` once.
+     */
+    const settle = async (n: number): Promise<Observation> => {
+      const expected = expectedOf(n);
+      let o = await waitForTable(deps, expected, String(n));
+      o = await spotCheck(rig!, n, o);
+      o = await withIndexerCheck(deps, o);
+      if (o.spotCheck?.txish) tx(o.spotCheck.txish);
+      assertAll(o, expected, String(n), minted, deps, [DORMANT]);
+      return o;
+    };
+
+    const finish = (n: number, e: StepEvidence, o: Observation): Observation => {
+      const expected = expectedOf(n);
+      e.write(expected, o);
+      console.log(
+        `STEP ${n} ASSERTED — ${renderTable(o.table, expected.colours)}  ` +
+          `${renderCustody(o.custody, expected.colours, rig!.registry)}  ${renderSizes(o.sizes)}`,
+      );
+      return o;
+    };
+
+    const settleAndAssert = async (n: number, e: StepEvidence): Promise<Observation> => finish(n, e, await settle(n));
+
     // =========================================================================================
-    // STEP 0 — deploy, register, empty table
+    // STEP 0 — the Manager exists; NOTHING that can mint a colour does
     // =========================================================================================
-    console.log('\n## STEP 0 — deploy Minter + Manager; register AA_A (OwnerA), AA_B (OwnerB)');
-    const e0 = new StepEvidence(0, 'Deploy Minter + Manager; register AA_A and AA_B; create OwnerN, OwnerM');
-    let o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[0]!, '0'));
-    if (!o.manager.configured) throw new Error('STEP 0 DIVERGENCE — Manager is not configured');
-    if (o.manager.accounts.length !== 2) {
-      throw new Error(`STEP 0 DIVERGENCE — expected 2 registered accounts, saw ${o.manager.accounts.length}`);
-    }
-    if (o.manager.shieldedColor !== rig.colors.shielded || o.manager.unshieldedColor !== rig.colors.unshielded) {
-      throw new Error('STEP 0 DIVERGENCE — the Manager is not bound to the Minter colours');
-    }
-    assertAll(o, EXPECTED[0]!, '0', minted);
-    e0.op('deploy + configure + register', [rig.deployTxs.minter, rig.deployTxs.manager], 'SDK', o, o, {
-      minterAddress: rig.minterAddress,
+    console.log(`\n## STEP 0 — ${ACTIONS[0]}`);
+    const e0 = new StepEvidence(0, ACTIONS[0]!);
+    e0.op('deploy the Manager FIRST, then register AA_A and AA_B', [rig.deployTxs.Manager!], 'SDK', {
+      chainTipBeforeAnyDeploy: rig.chainTipBeforeAnyDeploy,
       managerAddress: rig.managerAddress,
-      colors: rig.colors,
-      accounts: { AA_A: ids.idA, AA_B: ids.idB },
+      managerDeploy: rig.managerDeploy,
+      accounts: rig.ids,
       fundingTxs: rig.fundingTxs,
+      claim:
+        'the Manager was deployed before ANY minting contract of this demonstration existed, and registering ' +
+        'both accounts created NO custody state at all',
     });
-    e0.write(EXPECTED[0]!, o);
-    console.log(`STEP 0 ASSERTED — ${renderTable(o.table)}; pool = AA_A + AA_B = 0 in both families`);
-
-    // =========================================================================================
-    // STEP 1 — mint shielded 10 -> AA_A (paired) and 10 -> OwnerN
-    // =========================================================================================
-    console.log('\n## STEP 1 — mint shielded 10 -> AA_A (paired receive+credit) and 10 -> OwnerN');
-    const e1 = new StepEvidence(1, 'Mint shielded 10 to AA_A and 10 to OwnerN');
-    let before = o;
-
-    const m1a = await mintShieldedToAccount(ctx, 10n, raw.idA, rig.fee);
-    tx(m1a.txId);
-    minted.shielded += 10n;
-    log(`  mint shielded -> AA_A: tx ${m1a.txId} (one intent, segment ${m1a.segment})`);
-    let after = await settle((x) => x.table.AA_A.shielded === 10n && x.manager.poolValue === 10n, 'AA_A credited 10');
-    e1.op('mint shielded 10 -> AA_A', [m1a.txId], 'LEDGER', before, after, {
-      mintNonce: Buffer.from(m1a.nonce).toString('hex'),
-      poolNonceAfter: after.manager.poolNonce,
-      intentSegment: m1a.segment,
-    });
+    let o = await settleAndAssert(0, e0);
+    const step0ManagerState = managerSnapshot(o.manager);
+    if (o.manager.accounts.length !== 2) throw new Error(`step 0: ${o.manager.accounts.length} accounts, expected 2`);
     cell({
-      id: 'mint-shielded-account',
-      label: 'Mint shielded → manager account (paired Manager receive+credit in the same tx)',
+      id: 'step-0',
+      label: 'Step 0 — Manager deployed, NO Minter exists; AA_A and AA_B registered; all maps size 0',
+      step: 0,
+      txs: [rig.deployTxs.Manager!],
+      level: 'SDK',
+      points:
+        'decoded Manager ledger state (accounts 2, pools 0, shielded cells 0, unshielded cells 0) + an on-chain ' +
+        'balance call for a colour that does not exist, which answered 0 and created nothing',
+      status: 'GREEN',
+      evidence: 'evidence/g3-ledger/step-0/step.json',
+      note: `Manager deployed in block ${rig.managerDeploy.blockHeight}; chain tip before any deploy was block ${rig.chainTipBeforeAnyDeploy.height}.`,
+    });
+
+    // =========================================================================================
+    // STEP 1 — only NOW do the Minters exist. The Manager must not move a byte.
+    // =========================================================================================
+    console.log(`\n## STEP 1 — ${ACTIONS[1]}`);
+    const e1 = new StepEvidence(1, ACTIONS[1]!);
+    for (const [label, tagText, s, u] of [
+      ['Minter1', 'TOKA', 'S1', 'U1'],
+      ['Minter2', 'TOKB', 'S2', 'U2'],
+      ['Minter3', 'TOKC', 'S3', 'U3'],
+    ] as const) {
+      await rig.deployMinter({ label, tagText, kind: 'minter', shieldedName: s, unshieldedName: u });
+    }
+    for (const id of Object.values(rig.deployTxs)) if (/^[0-9a-f]{6,}$/i.test(id)) tx(id);
+
+    // The deploy-order proof, from the chain's own index, inside THIS run (spec success criterion 2).
+    const H = rig.managerDeploy.blockHeight!;
+    const orderRows: Array<Record<string, unknown>> = [];
+    for (const m of rig.minters) {
+      const e = await existenceAtBlock(m.address, H);
+      const row = {
+        contract: m.label,
+        address: m.address,
+        deployBlock: m.deploy.blockHeight,
+        managerBlock: H,
+        strictlyLater: (m.deploy.blockHeight ?? -1) > H,
+        absentAtManagerBlock: e.action === null,
+        absentAtManagerBlockAtOrBefore: e.contractQueryError === null ? e.contract === null : null,
+        contractQueryError: e.contractQueryError,
+      };
+      orderRows.push(row);
+      log(
+        `  ${m.label.padEnd(14)} deploy block ${String(m.deploy.blockHeight).padStart(4)} > Manager ${H}: ` +
+          `${row.strictlyLater ? 'YES' : 'NO'}; existed at block ${H}: ${row.absentAtManagerBlock ? 'no' : 'YES'}`,
+      );
+      if (!row.strictlyLater) throw new Error(`${m.label} was NOT deployed strictly after the Manager`);
+      if (!row.absentAtManagerBlock) throw new Error(`${m.label} ALREADY EXISTED at the Manager's deploy block ${H}`);
+    }
+    const managerSelf = await existenceAtBlock(rig.managerAddress, H);
+    if (managerSelf.action === null) {
+      throw new Error('the existence query returned null for the MANAGER at its own deploy block — not discriminating');
+    }
+
+    // 6 colours, pairwise distinct (15 comparisons), all from on-chain circuit reads.
+    const six = registry.list();
+    let sixComparisons = 0;
+    let sixDistinct = 0;
+    for (let i = 0; i < six.length; i++) {
+      for (let k = i + 1; k < six.length; k++) {
+        sixComparisons++;
+        if (six[i]!.hex !== six[k]!.hex) sixDistinct++;
+      }
+    }
+    if (six.length !== 6 || sixComparisons !== 15 || sixDistinct !== 15) {
+      throw new Error(`step 1: expected 6 colours and 15/15 distinct, got ${six.length} and ${sixDistinct}/${sixComparisons}`);
+    }
+    e1.op('deploy Minter1 (TOKA), Minter2 (TOKB), Minter3 (TOKC)', rig.minters.map((m) => m.deploy.txHash ?? ''), 'SDK', {
+      minters: rig.minters,
+      deployOrder: orderRows,
+      managerPresentAtOwnDeployBlock: managerSelf.action !== null,
+      colours: Object.fromEntries(six.map((c) => [c.name, { hex: c.hex, family: c.family, issuer: c.issuer }])),
+      distinctness: { comparisons: sixComparisons, distinct: sixDistinct },
+    });
+    o = await settleAndAssert(1, e1);
+    if (managerSnapshot(o.manager) !== step0ManagerState) {
+      throw new Error('STEP 1 DIVERGENCE — deploying the Minters changed the Manager state');
+    }
+    cell({
+      id: 'step-1',
+      label: 'Step 1 — TOKA/TOKB/TOKC deployed AFTER the Manager; 6 colours distinct; Manager byte-identical',
       step: 1,
-      txs: [m1a.txId],
-      level: 'LEDGER',
-      points: 'Manager account map (AA_A 0→10) + pooled zswap coin (0→10, nonce == the mint nonce)',
+      txs: rig.minters.map((m) => m.deploy.txHash ?? ''),
+      level: 'SDK',
+      points:
+        `indexer block ordering (Manager ${H} < ${rig.minters.map((m) => m.deploy.blockHeight).join('/')}) plus a ` +
+        `point-in-time existence query answering null for every Minter address at block ${H}, with the Manager ` +
+        `itself as the discriminating control; ${sixDistinct}/${sixComparisons} colours distinct from on-chain reads`,
       status: 'GREEN',
       evidence: 'evidence/g3-ledger/step-1/step.json',
-      note: 'Both call prototypes in ONE ledger Intent — the only cell midnight-js cannot express at SDK level.',
+      note: 'The whole decoded Manager state is byte-identical to step 0 — deploying an issuer touches nothing.',
     });
-
-    before = after;
-    const m1b = tx(await mintShieldedToUser(ctx, 10n, rig.ownerN, rig.fee));
-    minted.shielded += 10n;
-    log(`  mint shielded -> OwnerN: tx ${m1b}`);
-    after = await settle((x) => x.table.OwnerN.shielded === 10n, 'OwnerN credited 10 shielded');
-    e1.op('mint shielded 10 -> OwnerN', [m1b], 'SDK', before, after, { coinsAfter: after.coins.OwnerN });
-    cell({
-      id: 'mint-shielded-user',
-      label: 'Mint shielded → user',
-      step: 1,
-      txs: [m1b],
-      level: 'SDK',
-      points: "OwnerN wallet SDK (0→10) + ledger conservation (minted == pool + users' holdings)",
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-1/step.json',
-    });
-
-    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[1]!, '1'));
-    assertAll(o, EXPECTED[1]!, '1', minted);
-    e1.write(EXPECTED[1]!, o);
-    console.log(`STEP 1 ASSERTED — ${renderTable(o.table)}`);
 
     // =========================================================================================
-    // STEP 2 — mint unshielded 10 -> AA_A and 10 -> OwnerN
+    // STEPS 2-6 — the five mints
     // =========================================================================================
-    console.log('\n## STEP 2 — mint unshielded 10 -> AA_A and 10 -> OwnerN');
-    const e2 = new StepEvidence(2, 'Mint unshielded 10 to AA_A and 10 to OwnerN');
-    before = o;
-
-    const m2a = await mintUnshieldedToAccount(ctx, 10n, raw.idA, rig.fee);
-    tx(m2a.txId);
-    minted.unshielded += 10n;
-    log(`  mint unshielded -> AA_A: tx ${m2a.txId} (one intent, segment ${m2a.segment})`);
-    after = await settle((x) => x.table.AA_A.unshielded === 10n, 'AA_A credited 10 unshielded');
-    e2.op('mint unshielded 10 -> AA_A', [m2a.txId], 'LEDGER', before, after, {
-      managerUnshieldedLedgerAfter: after.managerUnshieldedLedger,
-      intentSegment: m2a.segment,
-    });
-    cell({
-      id: 'mint-unshielded-account',
-      label: 'Mint unshielded → manager account',
-      step: 2,
-      txs: [m2a.txId],
-      level: 'LEDGER',
-      points: "Manager account map (AA_A 0→10) + the contract's unshielded ledger balance from the indexer (0→10)",
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-2/step.json',
-      note: 'No zswap output at all: the mint claims an unshielded spend to the Manager and the Manager claims the input — both are transcript effects, so they offset only inside one intent.',
-    });
-
-    before = after;
-    const m2b = tx(await mintUnshieldedToUser(ctx, 10n, rig.ownerN, rig.fee));
-    minted.unshielded += 10n;
-    log(`  mint unshielded -> OwnerN: tx ${m2b}`);
-    after = await settle((x) => x.table.OwnerN.unshielded === 10n, 'OwnerN credited 10 unshielded');
-    e2.op('mint unshielded 10 -> OwnerN', [m2b], 'SDK', before, after, { utxosAfter: after.utxos.OwnerN });
-    cell({
-      id: 'mint-unshielded-user',
-      label: 'Mint unshielded → user',
-      step: 2,
-      txs: [m2b],
-      level: 'SDK',
-      points: 'OwnerN wallet SDK (0→10) + indexer `unshieldedUtxos` for OwnerN (0→10)',
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-2/step.json',
-    });
-
-    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[2]!, '2'));
-    assertAll(o, EXPECTED[2]!, '2', minted);
-    e2.write(EXPECTED[2]!, o);
-    console.log(`STEP 2 ASSERTED — ${renderTable(o.table)}`);
+    for (const n of [2, 3, 4, 5, 6]) {
+      console.log(`\n## STEP ${n} — ${ACTIONS[n]}`);
+      const e = new StepEvidence(n, ACTIONS[n]!);
+      const ids: string[] = [];
+      for (const m of MINTS[n]!) {
+        const c = registry.get(m.colour);
+        const id =
+          c.family === 'shielded'
+            ? tx(await mintShieldedToUser(ctx, m.minter, m.amount, rig.observers[m.to], rig.fee))
+            : tx(await mintUnshieldedToUser(ctx, m.minter, m.amount, rig.addresses[m.to], rig.fee));
+        minted[m.colour] = (minted[m.colour] ?? 0n) + m.amount;
+        ids.push(id);
+        log(`  ${m.minter} minted ${m.colour} ${m.amount} -> ${m.to}: tx ${id}`);
+        e.op(`${m.minter} mints ${m.colour} ${m.amount} -> ${m.to}`, [id], 'SDK', { colour: c.hex, family: c.family });
+      }
+      o = await settleAndAssert(n, e);
+      const m0 = MINTS[n]![0]!;
+      cell({
+        id: `step-${n}`,
+        label: `Step ${n} — ${ACTIONS[n]}`,
+        step: n,
+        txs: ids,
+        level: 'SDK',
+        points:
+          `${m0.to} observer wallet + ` +
+          `${registry.get(m0.colour).family === 'shielded' ? 'ledger conservation' : 'indexer UTXO reconstruction'} ` +
+          `for ${m0.colour}; every other cell unchanged; all three custody maps still size 0`,
+        status: 'GREEN',
+        evidence: `evidence/g3-ledger/step-${n}/step.json`,
+      });
+    }
 
     // =========================================================================================
-    // STEP 3 — shielded: OwnerN -5-> OwnerM ; AA_A -5-> AA_B internal
+    // STEPS 7-11 — the deposits, with the lazy-creation assertions
     // =========================================================================================
-    console.log('\n## STEP 3 — shielded half: OwnerN -5-> OwnerM; AA_A -5-> AA_B (internal)');
-    const e3 = new StepEvidence(3, 'Send shielded half: OwnerN→OwnerM (wallet split); AA_A→AA_B (internal)');
-    before = o;
+    const deposits: Array<{
+      n: number;
+      colour: string;
+      who: 'OwnerN' | 'OwnerM';
+      account: 'AA_A' | 'AA_B';
+      amount: bigint;
+      note: string;
+    }> = [
+      { n: 7, colour: 'S1', who: 'OwnerN', account: 'AA_A', amount: 6n, note: 'the FIRST pool this Manager has ever held' },
+      { n: 8, colour: 'U1', who: 'OwnerN', account: 'AA_A', amount: 5n, note: 'the first unshielded cell' },
+      { n: 9, colour: 'S2', who: 'OwnerM', account: 'AA_B', amount: 6n, note: 'a second pool, created lazily' },
+      {
+        n: 10,
+        colour: 'S3',
+        who: 'OwnerM',
+        account: 'AA_A',
+        amount: 4n,
+        note: 'DEPOSITOR != CREDITED OWNER — credit is open, spend is not (FR-204)',
+      },
+      { n: 11, colour: 'U2', who: 'OwnerM', account: 'AA_B', amount: 5n, note: 'a second unshielded cell' },
+    ];
+    for (const dep of deposits) {
+      console.log(`\n## STEP ${dep.n} — ${ACTIONS[dep.n]}`);
+      const e = new StepEvidence(dep.n, ACTIONS[dep.n]!);
+      const c = registry.get(dep.colour);
+      const shielded = c.family === 'shielded';
+      const before = o.sizes;
+      const detail = await withSpender(
+        dep.who,
+        `step${dep.n}`,
+        async (s) =>
+          shielded
+            ? await userDepositShielded(ctx, s.party, s.managerProviders, c.raw, dep.amount, raw[dep.account])
+            : { txId: await userDepositUnshielded(ctx, s.party, s.managerProviders, c.raw, dep.amount, raw[dep.account]) },
+        [{ colour: c.hex, shielded, amount: dep.amount }],
+      );
+      const id = tx((detail as any).txId as string);
+      log(`  ${dep.who} deposited ${dep.colour} ${dep.amount} -> ${dep.account}: tx ${id}`);
+      e.op(`${dep.who} deposits ${dep.colour} ${dep.amount} -> ${dep.account}`, [id], 'SDK', {
+        colour: c.hex,
+        family: c.family,
+        depositCoinNonce: (detail as any).nonce ? Buffer.from((detail as any).nonce).toString('hex') : undefined,
+        mapSizesBefore: before,
+      });
+      o = await settleAndAssert(dep.n, e);
+      cell({
+        id: `step-${dep.n}`,
+        label: `Step ${dep.n} — ${ACTIONS[dep.n]}`,
+        step: dep.n,
+        txs: [id],
+        level: 'SDK',
+        points:
+          `map sizes ${JSON.stringify(before)} -> ${JSON.stringify(o.sizes)} (lazy creation, exactly as specced); ` +
+          `${dep.account} ${dep.colour} 0->${dep.amount} with ` +
+          `${shielded ? "that colour's pooled coin" : "the ledger kernel's unshielded balance"} matching`,
+        status: 'GREEN',
+        evidence: `evidence/g3-ledger/step-${dep.n}/step.json`,
+        note: dep.note,
+      });
+    }
 
-    const s3a = tx(await userSend(rig.ownerN, rig.ownerM, 'shielded', rig.colors.shielded, 5n));
-    log(`  OwnerN -5-> OwnerM shielded: tx ${s3a}`);
-    after = await settle(
-      (x) => x.table.OwnerN.shielded === 5n && x.table.OwnerM.shielded === 5n,
-      'OwnerN 5 / OwnerM 5 shielded',
-    );
-    e3.op('OwnerN -5-> OwnerM (shielded)', [s3a], 'wallet', before, after, {
-      ownerNCoinsBefore: before.coins.OwnerN,
-      ownerNCoinsAfter: after.coins.OwnerN,
-      ownerMCoinsAfter: after.coins.OwnerM,
-    });
-    cell({
-      id: 'send-shielded-user-user',
-      label: 'Send shielded user→user',
-      step: 3,
-      txs: [s3a],
-      level: 'wallet',
-      points: 'OwnerN + OwnerM wallet SDK states + ledger conservation identity',
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-3/step.json',
-    });
-    cell({
-      id: 'split-shielded-user-change',
-      label: 'Split: shielded user wallet change (OwnerN)',
-      step: 3,
-      txs: [s3a],
-      level: 'wallet',
-      points: "OwnerN's enumerated coins before/after: the 10-coin is consumed and a 5 change coin created",
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-3/step.json',
-      note: `coins before ${JSON.stringify(before.coins.OwnerN.map((c) => c.value))} → after ${JSON.stringify(after.coins.OwnerN.map((c) => c.value))}`,
-    });
-
-    before = after;
-    const poolBefore3 = { value: before.manager.poolValue, nonce: before.manager.poolNonce };
-    const s3b = tx(await transferInternal(ctx, raw.secretA, raw.idB, true, 5n, rig.fee));
-    log(`  AA_A -5-> AA_B internal (shielded): tx ${s3b}`);
-    after = await settle(
-      (x) => x.table.AA_A.shielded === 5n && x.table.AA_B.shielded === 5n,
-      'AA_A 5 / AA_B 5 shielded',
-    );
-    const poolUntouched3 =
-      after.manager.poolValue === poolBefore3.value && after.manager.poolNonce === poolBefore3.nonce;
-    if (!poolUntouched3) {
+    // =========================================================================================
+    // STEP 12 — internal transfer: the CREDIT SIDE creates the (AA_B, S1) cell; no token operation
+    // =========================================================================================
+    console.log(`\n## STEP 12 — ${ACTIONS[12]}`);
+    const e12 = new StepEvidence(12, ACTIONS[12]!);
+    const poolsBefore12 = JSON.stringify(o.pools, bigints);
+    const custodyBefore12 = JSON.stringify(o.custody, bigints);
+    const sizesBefore12 = o.sizes;
+    const t12 = tx(await transferInternalShielded(ctx, raw.secretA, raw.AA_B, registry.raw('S1'), 3n, rig.fee));
+    log(`  internal transfer S1 3: AA_A -> AA_B: tx ${t12}`);
+    o = await settle(12);
+    const poolsAfter12 = JSON.stringify(o.pools, bigints);
+    const custodyAfter12 = JSON.stringify(o.custody, bigints);
+    if (poolsBefore12 !== poolsAfter12 || custodyBefore12 !== custodyAfter12) {
       throw new Error(
-        `STEP 3 DIVERGENCE — internal transfer moved the pool (FR-005): ` +
-          `${poolBefore3.value}@${poolBefore3.nonce} -> ${after.manager.poolValue}@${after.manager.poolNonce}`,
+        'STEP 12 DIVERGENCE — an internal transfer moved custody, which performs no token operation:\n' +
+          `  pools    ${poolsBefore12} -> ${poolsAfter12}\n  custody  ${custodyBefore12} -> ${custodyAfter12}`,
       );
     }
-    e3.op('AA_A -5-> AA_B (internal, shielded)', [s3b], 'SDK', before, after, {
-      poolBefore: poolBefore3,
-      poolAfter: { value: after.manager.poolValue, nonce: after.manager.poolNonce },
-      poolByteIdentical: poolUntouched3,
+    e12.op('internal transfer S1 3 (owner A) -> AA_B', [t12], 'SDK', {
+      poolsBefore: JSON.parse(poolsBefore12),
+      poolsAfter: JSON.parse(poolsAfter12),
+      custodyBefore: JSON.parse(custodyBefore12),
+      custodyAfter: JSON.parse(custodyAfter12),
+      byteIdentical: true,
+      mapSizesBefore: sizesBefore12,
+      mapSizesAfter: o.sizes,
+      circuit: 'transferInternalShielded (owner decision D-204: the split is per family)',
     });
+    finish(12, e12, o);
     cell({
-      id: 'internal-shielded',
-      label: 'Shielded account→account internal ownership transfer, no ledger movement',
-      step: 3,
-      txs: [s3b],
+      id: 'step-12',
+      label: `Step 12 — ${ACTIONS[12]}`,
+      step: 12,
+      txs: [t12],
       level: 'SDK',
-      points: 'Manager account map (AA_A 10→5, AA_B 0→5) + pooled coin value AND nonce byte-identical before/after',
+      points:
+        `shielded cells ${sizesBefore12.shieldedCells}->${o.sizes.shieldedCells}: the (AA_B,S1) cell was created by ` +
+        'an INTERNAL TRANSFER, not a deposit; EVERY pooled coin (value AND nonce) and every custody figure ' +
+        'byte-identical before/after',
       status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-3/step.json',
-      note: `pool ${poolBefore3.value}@${poolBefore3.nonce} unchanged — FR-005 forward case`,
+      evidence: 'evidence/g3-ledger/step-12/step.json',
+      note:
+        "The spec's \"credit-side lazy cell / poolS1 UNCHANGED\" row, asserted over the whole custody surface " +
+        'rather than one colour. The circuit is `transferInternalShielded` — owner decision D-204.',
     });
-
-    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[3]!, '3'));
-    assertAll(o, EXPECTED[3]!, '3', minted);
-    e3.write(EXPECTED[3]!, o);
-    console.log(`STEP 3 ASSERTED — ${renderTable(o.table)}`);
 
     // =========================================================================================
-    // STEP 4 — shielded crossed: OwnerN -5-> AA_B (deposit, merge) ; AA_A -5-> OwnerM (payout)
+    // STEPS 13-14 — withdrawals back out to users, one per family
     // =========================================================================================
-    console.log('\n## STEP 4 — shielded crossed: OwnerN -5-> AA_B (deposit); AA_A -5-> OwnerM (payout)');
-    const e4 = new StepEvidence(4, 'Send shielded remaining half crossed: OwnerN→AA_B deposit; AA_A→OwnerM payout');
-    before = o;
-
-    // Deposit FIRST, so the pool has a held coin to MERGE the deposited coin with.
-    const poolBefore4 = { value: before.manager.poolValue, nonce: before.manager.poolNonce };
-    const d4 = await userDepositShielded(ctx, rig.ownerN, rig.managerN, 5n, raw.idB);
-    tx(d4.txId);
-    log(`  OwnerN -5-> AA_B deposit: tx ${d4.txId}`);
-    after = await settle((x) => x.table.AA_B.shielded === 10n && x.manager.poolValue === 15n, 'AA_B 10, pool 15');
-    e4.op('OwnerN -5-> AA_B (shielded deposit, merged into the pool)', [d4.txId], 'SDK', before, after, {
-      depositCoinNonce: Buffer.from(d4.nonce).toString('hex'),
-      poolBefore: poolBefore4,
-      poolAfter: { value: after.manager.poolValue, nonce: after.manager.poolNonce },
-      ownerNCoinsAfter: after.coins.OwnerN,
-    });
+    console.log(`\n## STEP 13 — ${ACTIONS[13]}`);
+    const e13 = new StepEvidence(13, ACTIONS[13]!);
+    const w13 = tx(await accountWithdrawShielded(ctx, raw.secretB, registry.raw('S2'), 2n, rig.observers.OwnerN, rig.fee));
+    log(`  AA_B withdrew S2 2 -> OwnerN: tx ${w13}`);
+    e13.op('AA_B withdraws S2 2 -> OwnerN', [w13], 'SDK', { colour: registry.hex('S2') });
+    o = await settleAndAssert(13, e13);
     cell({
-      id: 'send-shielded-user-account',
-      label: 'Send shielded user→account (deposit credited to AA_B)',
-      step: 4,
-      txs: [d4.txId],
+      id: 'step-13',
+      label: `Step 13 — ${ACTIONS[13]}`,
+      step: 13,
+      txs: [w13],
       level: 'SDK',
-      points: 'Manager account map (AA_B 5→10) + pooled coin (10→15); OwnerN wallet 5→0',
+      points:
+        'Manager cells (AA_B S2 6->4) + poolS2 6->4 (change coin retained); OwnerN observer wallet 0->2 — a user ' +
+        'now holds a colour it never minted; every other pool byte-identical; map sizes unchanged',
       status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-4/step.json',
-      note: 'A SINGLE wallet-balanced call: the Manager declares the receive and the depositor’s wallet supplies the input, so sender spend and Manager receive are in one transaction by construction (FR-003).',
-    });
-    cell({
-      id: 'merge-pool-deposit',
-      label: 'Merge: pool combines the deposited coin with the held coin',
-      step: 4,
-      txs: [d4.txId],
-      level: 'SDK',
-      points: `pooled coin ${poolBefore4.value}@${poolBefore4.nonce} → ${after.manager.poolValue}@${after.manager.poolNonce} — one coin, value 10+5`,
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-4/step.json',
-      note: 'The pool stays a SINGLE coin: mergeCoinImmediate consumes both and writes one merged coin with a new nonce.',
+      evidence: 'evidence/g3-ledger/step-13/step.json',
     });
 
-    before = after;
-    const poolBeforeW4 = { value: before.manager.poolValue, nonce: before.manager.poolNonce };
-    const w4 = tx(await accountWithdrawShielded(ctx, raw.secretA, 5n, rig.ownerM, rig.fee));
-    log(`  AA_A -5-> OwnerM payout: tx ${w4}`);
-    after = await settle(
-      (x) => x.table.AA_A.shielded === 0n && x.table.OwnerM.shielded === 10n,
-      'AA_A drained, OwnerM at 10 shielded',
-    );
-    e4.op('AA_A -5-> OwnerM (shielded payout from the pool)', [w4], 'SDK', before, after, {
-      poolBefore: poolBeforeW4,
-      poolAfter: { value: after.manager.poolValue, nonce: after.manager.poolNonce },
-      ownerMCoinsAfter: after.coins.OwnerM,
-    });
+    console.log(`\n## STEP 14 — ${ACTIONS[14]}`);
+    const e14 = new StepEvidence(14, ACTIONS[14]!);
+    const w14 = tx(await accountWithdrawUnshielded(ctx, raw.secretA, registry.raw('U1'), 2n, rig.addresses.OwnerM, rig.fee));
+    log(`  AA_A withdrew U1 2 -> OwnerM: tx ${w14}`);
+    e14.op('AA_A withdraws U1 2 -> OwnerM', [w14], 'SDK', { colour: registry.hex('U1') });
+    o = await settleAndAssert(14, e14);
     cell({
-      id: 'send-shielded-account-user',
-      label: 'Send shielded account→user (pool pays OwnerM)',
-      step: 4,
-      txs: [w4],
+      id: 'step-14',
+      label: `Step 14 — ${ACTIONS[14]}`,
+      step: 14,
+      txs: [w14],
       level: 'SDK',
-      points: 'Manager account map (AA_A 5→0) + pooled coin (15→10); OwnerM wallet 5→10',
+      points:
+        "Manager cells (AA_A U1 5->3) + the ledger kernel's U1 balance 5->3; OwnerM observer wallet AND the " +
+        'indexer reconstruction both 0->2; map sizes unchanged (a spend creates nothing)',
       status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-4/step.json',
-      note: 'The wallet detected and can spend the CONTRACT-CREATED output — proven when OwnerM re-spends it in step 7.',
+      evidence: 'evidence/g3-ledger/step-14/step.json',
     });
-    cell({
-      id: 'split-shielded-contract-change',
-      label: 'Split: shielded contract change coin retained in the pool',
-      step: 4,
-      txs: [w4],
-      level: 'SDK',
-      points: `pooled coin ${poolBeforeW4.value}@${poolBeforeW4.nonce} → ${after.manager.poolValue}@${after.manager.poolNonce}`,
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-4/step.json',
-      note: 'sendShielded returned a non-empty change arm; the Manager wrote the change coin back to itself.',
-    });
-
-    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[4]!, '4'));
-    assertAll(o, EXPECTED[4]!, '4', minted);
-    e4.write(EXPECTED[4]!, o);
-    console.log(`STEP 4 ASSERTED — ${renderTable(o.table)}`);
 
     // =========================================================================================
-    // STEP 5 — unshielded: OwnerN -5-> OwnerM ; AA_A -5-> AA_B internal
+    // STEP 15 — TOKD deployed MID-LEDGER; two colours that did not exist for 14 rows
     // =========================================================================================
-    console.log('\n## STEP 5 — unshielded half: OwnerN -5-> OwnerM (UTXO split); AA_A -5-> AA_B (internal)');
-    const e5 = new StepEvidence(5, 'Send unshielded half: OwnerN→OwnerM (UTXO split); AA_A→AA_B (internal)');
-    before = o;
-
-    const s5a = tx(await userSend(rig.ownerN, rig.ownerM, 'unshielded', rig.colors.unshielded, 5n));
-    log(`  OwnerN -5-> OwnerM unshielded: tx ${s5a}`);
-    after = await settle(
-      (x) => x.table.OwnerN.unshielded === 5n && x.table.OwnerM.unshielded === 5n,
-      'OwnerN 5 / OwnerM 5 unshielded',
-    );
-    e5.op('OwnerN -5-> OwnerM (unshielded)', [s5a], 'wallet', before, after, {
-      ownerNUtxosBefore: before.utxos.OwnerN,
-      ownerNUtxosAfter: after.utxos.OwnerN,
-      ownerMUtxosAfter: after.utxos.OwnerM,
+    console.log(`\n## STEP 15 — ${ACTIONS[15]}`);
+    const e15 = new StepEvidence(15, ACTIONS[15]!);
+    const managerBefore15 = managerSnapshot(o.manager);
+    const tokd = await rig.deployMinter({
+      label: 'Minter4',
+      tagText: 'TOKD',
+      kind: 'minter',
+      shieldedName: 'S4',
+      unshieldedName: 'U4',
     });
-    cell({
-      id: 'send-unshielded-user-user',
-      label: 'Send unshielded user→user',
-      step: 5,
-      txs: [s5a],
-      level: 'wallet',
-      points: 'OwnerN + OwnerM wallet SDK states + the indexer’s `unshieldedUtxos` for both addresses',
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-5/step.json',
-    });
-    cell({
-      id: 'split-unshielded-user-utxo',
-      label: 'Split: unshielded user UTXO split into sent + change (OwnerN)',
-      step: 5,
-      txs: [s5a],
-      level: 'wallet',
-      points: `OwnerN UTXOs ${JSON.stringify(before.utxos.OwnerN.map((u) => u.value))} → ${JSON.stringify(after.utxos.OwnerN.map((u) => u.value))}; OwnerM gained ${JSON.stringify(after.utxos.OwnerM.map((u) => u.value))}`,
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-5/step.json',
-      note: 'The consumed 10-UTXO and the two 5 outputs are both recorded.',
-    });
-
-    before = after;
-    const ledgerBefore5 = before.managerUnshieldedLedger;
-    const s5b = tx(await transferInternal(ctx, raw.secretA, raw.idB, false, 5n, rig.fee));
-    log(`  AA_A -5-> AA_B internal (unshielded): tx ${s5b}`);
-    after = await settle(
-      (x) => x.table.AA_A.unshielded === 5n && x.table.AA_B.unshielded === 5n,
-      'AA_A 5 / AA_B 5 unshielded',
-    );
-    if (after.managerUnshieldedLedger !== ledgerBefore5) {
-      throw new Error(
-        `STEP 5 DIVERGENCE — internal transfer moved the contract's unshielded ledger balance ` +
-          `(${ledgerBefore5} -> ${after.managerUnshieldedLedger}); FR-005 requires it untouched`,
-      );
+    tx(rig.deployTxs.Minter4!);
+    const tokdOrder = await existenceAtBlock(tokd.address, H);
+    const ids15: string[] = [];
+    for (const m of MINTS[15]!) {
+      const c = registry.get(m.colour);
+      const id =
+        c.family === 'shielded'
+          ? tx(await mintShieldedToUser(ctx, m.minter, m.amount, rig.observers[m.to], rig.fee))
+          : tx(await mintUnshieldedToUser(ctx, m.minter, m.amount, rig.addresses[m.to], rig.fee));
+      minted[m.colour] = (minted[m.colour] ?? 0n) + m.amount;
+      ids15.push(id);
+      log(`  ${m.minter} minted ${m.colour} ${m.amount} -> ${m.to}: tx ${id}`);
     }
-    e5.op('AA_A -5-> AA_B (internal, unshielded)', [s5b], 'SDK', before, after, {
-      contractLedgerBalanceBefore: ledgerBefore5,
-      contractLedgerBalanceAfter: after.managerUnshieldedLedger,
+    e15.op('deploy Minter4 (TOKD) MID-LEDGER, then mint S4 7 -> OwnerN and U4 4 -> OwnerM', [rig.deployTxs.Minter4!, ...ids15], 'SDK', {
+      minter: tokd,
+      deployBlock: tokd.deploy.blockHeight,
+      managerDeployBlock: H,
+      absentAtManagerBlock: tokdOrder.action === null,
+      claim:
+        'these two colours did not exist when the Manager was deployed, and did not exist while the Manager ' +
+        'processed the first 14 rows of this ledger',
     });
-    cell({
-      id: 'internal-unshielded',
-      label: 'Unshielded account→account internal ownership transfer, no ledger movement',
-      step: 5,
-      txs: [s5b],
-      level: 'SDK',
-      points: `Manager account map (AA_A 10→5, AA_B 0→5) + the contract's unshielded ledger balance unchanged at ${ledgerBefore5}`,
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-5/step.json',
-    });
-
-    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[5]!, '5'));
-    assertAll(o, EXPECTED[5]!, '5', minted);
-    e5.write(EXPECTED[5]!, o);
-    console.log(`STEP 5 ASSERTED — ${renderTable(o.table)}`);
-
-    // =========================================================================================
-    // STEP 6 — unshielded crossed: OwnerN -5-> AA_B ; AA_A -5-> OwnerM
-    // =========================================================================================
-    console.log('\n## STEP 6 — unshielded crossed: OwnerN -5-> AA_B; AA_A -5-> OwnerM');
-    const e6 = new StepEvidence(6, 'Send unshielded remaining half crossed: OwnerN→AA_B; AA_A→OwnerM');
-    before = o;
-
-    const d6 = tx(await userDepositUnshielded(ctx, rig.ownerN, rig.managerN, 5n, raw.idB));
-    log(`  OwnerN -5-> AA_B deposit (unshielded): tx ${d6}`);
-    after = await settle((x) => x.table.AA_B.unshielded === 10n && x.table.OwnerN.unshielded === 0n, 'AA_B 10 unshielded');
-    e6.op('OwnerN -5-> AA_B (unshielded deposit)', [d6], 'SDK', before, after, {
-      contractLedgerBalanceAfter: after.managerUnshieldedLedger,
-      ownerNUtxosAfter: after.utxos.OwnerN,
-    });
-    cell({
-      id: 'send-unshielded-user-account',
-      label: 'Send unshielded user→account',
-      step: 6,
-      txs: [d6],
-      level: 'SDK',
-      points: `Manager account map (AA_B 5→10) + contract unshielded ledger balance (${before.managerUnshieldedLedger}→${after.managerUnshieldedLedger}); OwnerN wallet and indexer both 5→0`,
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-6/step.json',
-    });
-
-    before = after;
-    const ledgerBeforeW6 = before.managerUnshieldedLedger;
-    const w6 = tx(await accountWithdrawUnshielded(ctx, raw.secretA, 5n, rig.ownerM, rig.fee));
-    log(`  AA_A -5-> OwnerM (unshielded payout): tx ${w6}`);
-    after = await settle(
-      (x) => x.table.AA_A.unshielded === 0n && x.table.OwnerM.unshielded === 10n,
-      'AA_A drained, OwnerM at 10 unshielded',
-    );
-    e6.op('AA_A -5-> OwnerM (unshielded payout)', [w6], 'SDK', before, after, {
-      contractLedgerBalanceBefore: ledgerBeforeW6,
-      contractLedgerBalanceAfter: after.managerUnshieldedLedger,
-      ownerMUtxosAfter: after.utxos.OwnerM,
-    });
-    cell({
-      id: 'send-unshielded-account-user',
-      label: 'Send unshielded account→user',
-      step: 6,
-      txs: [w6],
-      level: 'SDK',
-      points: `Manager account map (AA_A 5→0) + contract unshielded ledger balance (${ledgerBeforeW6}→${after.managerUnshieldedLedger}); OwnerM wallet and indexer 5→10`,
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-6/step.json',
-    });
-    cell({
-      id: 'split-unshielded-partial-pool',
-      label: 'Split: unshielded partial pooled-balance spend',
-      step: 6,
-      txs: [w6],
-      level: 'SDK',
-      points: `the contract held ${ledgerBeforeW6} and paid out 5, retaining ${after.managerUnshieldedLedger}`,
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-6/step.json',
-    });
-
-    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[6]!, '6'));
-    assertAll(o, EXPECTED[6]!, '6', minted);
-    e6.write(EXPECTED[6]!, o);
-    console.log(`STEP 6 ASSERTED — ${renderTable(o.table)}`);
-
-    // =========================================================================================
-    // STEP 7 — provenance, shielded: OwnerM -5-> AA_A ; AA_B -5-> OwnerN
-    // =========================================================================================
-    console.log('\n## STEP 7 — provenance (shielded): OwnerM -5-> AA_A; AA_B -5-> OwnerN');
-    const e7 = new StepEvidence(7, 'Provenance re-send, shielded: OwnerM→AA_A; AA_B→OwnerN');
-    before = o;
-
-    const p7a = await userDepositShielded(ctx, rig.ownerM, rig.managerM, 5n, raw.idA);
-    tx(p7a.txId);
-    log(`  OwnerM -5-> AA_A (re-spending AA-originated coins): tx ${p7a.txId}`);
-    after = await settle((x) => x.table.AA_A.shielded === 5n && x.table.OwnerM.shielded === 5n, 'AA_A 5, OwnerM 5');
-    e7.op('OwnerM -5-> AA_A (shielded, AA-originated coins)', [p7a.txId], 'SDK', before, after, {
-      ownerMCoinsBefore: before.coins.OwnerM,
-      ownerMCoinsAfter: after.coins.OwnerM,
-    });
-    cell({
-      id: 'provenance-user-resends-shielded',
-      label: 'Provenance: user re-sends AA-originated shielded coins',
-      step: 7,
-      txs: [p7a.txId],
-      level: 'SDK',
-      points: "OwnerM's wallet spent coins CREATED BY THE MANAGER in step 4 (10→5) + Manager account map AA_A 0→5",
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-7/step.json',
-      note: 'This is the direct proof that the pinned wallet SDK detects and can spend contract-created zswap outputs — the spec’s Edge Case risk does not apply.',
-    });
-
-    before = after;
-    const p7b = tx(await accountWithdrawShielded(ctx, raw.secretB, 5n, rig.ownerN, rig.fee));
-    log(`  AA_B -5-> OwnerN (account re-spends user-deposited value): tx ${p7b}`);
-    after = await settle((x) => x.table.AA_B.shielded === 5n && x.table.OwnerN.shielded === 5n, 'AA_B 5, OwnerN 5');
-    e7.op('AA_B -5-> OwnerN (shielded, user-originated value)', [p7b], 'SDK', before, after, {
-      poolAfter: { value: after.manager.poolValue, nonce: after.manager.poolNonce },
-      ownerNCoinsAfter: after.coins.OwnerN,
-    });
-    cell({
-      id: 'provenance-account-resends-shielded',
-      label: 'Provenance: AA account re-sends user-originated shielded value',
-      step: 7,
-      txs: [p7b],
-      level: 'SDK',
-      points: "AA_B's holdings include OwnerN's step-4 deposit; account map 10→5 + pooled coin pays out and retains change",
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-7/step.json',
-    });
-
-    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[7]!, '7'));
-    assertAll(o, EXPECTED[7]!, '7', minted);
-    e7.write(EXPECTED[7]!, o);
-    console.log(`STEP 7 ASSERTED — ${renderTable(o.table)}`);
-
-    // =========================================================================================
-    // STEP 8 — provenance, unshielded: OwnerM -5-> AA_A ; AA_B -5-> OwnerN
-    // =========================================================================================
-    console.log('\n## STEP 8 — provenance (unshielded): OwnerM -5-> AA_A; AA_B -5-> OwnerN');
-    const e8 = new StepEvidence(8, 'Provenance re-send, unshielded: OwnerM→AA_A; AA_B→OwnerN');
-    before = o;
-
-    const p8a = tx(await userDepositUnshielded(ctx, rig.ownerM, rig.managerM, 5n, raw.idA));
-    log(`  OwnerM -5-> AA_A (unshielded, AA-originated): tx ${p8a}`);
-    after = await settle((x) => x.table.AA_A.unshielded === 5n && x.table.OwnerM.unshielded === 5n, 'AA_A 5 unshielded');
-    e8.op('OwnerM -5-> AA_A (unshielded, AA-originated)', [p8a], 'SDK', before, after, {
-      ownerMUtxosBefore: before.utxos.OwnerM,
-      ownerMUtxosAfter: after.utxos.OwnerM,
-    });
-    cell({
-      id: 'provenance-user-resends-unshielded',
-      label: 'Provenance: user re-sends AA-originated unshielded tokens',
-      step: 8,
-      txs: [p8a],
-      level: 'SDK',
-      points: "OwnerM spends UTXOs paid out by the Manager in step 6 (wallet + indexer both 10→5) + account map AA_A 0→5",
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-8/step.json',
-    });
-
-    before = after;
-    const p8b = tx(await accountWithdrawUnshielded(ctx, raw.secretB, 5n, rig.ownerN, rig.fee));
-    log(`  AA_B -5-> OwnerN (unshielded, user-originated): tx ${p8b}`);
-    after = await settle((x) => x.table.AA_B.unshielded === 5n && x.table.OwnerN.unshielded === 5n, 'AA_B 5 unshielded');
-    e8.op('AA_B -5-> OwnerN (unshielded, user-originated)', [p8b], 'SDK', before, after, {
-      contractLedgerBalanceAfter: after.managerUnshieldedLedger,
-      ownerNUtxosAfter: after.utxos.OwnerN,
-    });
-    cell({
-      id: 'provenance-account-resends-unshielded',
-      label: 'Provenance: AA account re-sends user-originated unshielded tokens',
-      step: 8,
-      txs: [p8b],
-      level: 'SDK',
-      points: "AA_B re-spends OwnerN's step-6 deposit; account map 10→5 + contract ledger balance falls by 5",
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-8/step.json',
-    });
-
-    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[8]!, '8'));
-    assertAll(o, EXPECTED[8]!, '8', minted);
-    e8.write(EXPECTED[8]!, o);
-    console.log(`STEP 8 ASSERTED — ${renderTable(o.table)} — every party at 5/5`);
-
-    // =========================================================================================
-    // STEP 9 — the self-send round: balance-neutral, identifier-changing
-    // =========================================================================================
-    console.log('\n## STEP 9 — self-send round: OwnerM shielded + unshielded; pool both families');
-    const e9 = new StepEvidence(9, 'Self-send round: OwnerM self-sends both families; the pool self-sends both families');
-    const step8Snapshot = snapshot(o);
-    before = o;
-
-    // --- OwnerM shielded self-send (2 of 5) ---------------------------------------------------
-    const beforeCoinsM = before.coins.OwnerM.map((c) => c.commitment).join(',');
-    const s9a = tx(await userSend(rig.ownerM, rig.ownerM, 'shielded', rig.colors.shielded, 2n));
-    log(`  OwnerM self-send shielded 2 of 5: tx ${s9a}`);
-    after = await settle(
-      (x) => x.table.OwnerM.shielded === 5n && x.coins.OwnerM.map((c) => c.commitment).join(',') !== beforeCoinsM,
-      'OwnerM shielded coin identifiers to change under an unchanged balance',
-    );
-    e9.op('OwnerM self-send shielded 2 of 5', [s9a], 'wallet', before, after, {
-      coinsBefore: before.coins.OwnerM,
-      coinsAfter: after.coins.OwnerM,
-    });
-    cell({
-      id: 'selfsend-user-shielded',
-      label: 'Self-send: user shielded to own key',
-      step: 9,
-      txs: [s9a],
-      level: 'wallet',
-      points: `OwnerM balance unchanged at 5; coins ${JSON.stringify(before.coins.OwnerM.map((c) => c.value))} → ${JSON.stringify(after.coins.OwnerM.map((c) => c.value))} with new commitments`,
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-9/step.json',
-    });
-
-    // --- OwnerM unshielded self-send (2 of 5) --------------------------------------------------
-    before = after;
-    const beforeUtxosM = JSON.stringify(before.utxos.OwnerM);
-    const s9b = tx(await userSend(rig.ownerM, rig.ownerM, 'unshielded', rig.colors.unshielded, 2n));
-    log(`  OwnerM self-send unshielded 2 of 5: tx ${s9b}`);
-    after = await settle(
-      (x) => x.table.OwnerM.unshielded === 5n && JSON.stringify(x.utxos.OwnerM) !== beforeUtxosM,
-      'OwnerM UTXO identifiers to change under an unchanged balance',
-    );
-    e9.op('OwnerM self-send unshielded 2 of 5', [s9b], 'wallet', before, after, {
-      utxosBefore: before.utxos.OwnerM,
-      utxosAfter: after.utxos.OwnerM,
-    });
-    cell({
-      id: 'selfsend-user-unshielded',
-      label: 'Self-send: user unshielded UTXO self-split',
-      step: 9,
-      txs: [s9b],
-      level: 'wallet',
-      points: `OwnerM balance unchanged at 5 (wallet AND indexer); UTXOs ${JSON.stringify(before.utxos.OwnerM.map((u) => u.value))} → ${JSON.stringify(after.utxos.OwnerM.map((u) => u.value))}`,
-      status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-9/step.json',
-    });
-
-    // --- pool shielded self-send (stdlib auto-receive branch) -----------------------------------
-    before = after;
-    const poolNonceBefore9 = before.manager.poolNonce;
-    const accountsBefore9 = JSON.stringify(before.manager.shieldedOf, bigints);
-    const s9c = tx(await poolSelfSendShielded(ctx, raw.secretB, rig.fee));
-    log(`  pool self-send shielded (authorized by OwnerB): tx ${s9c}`);
-    after = await settle(
-      (x) => x.manager.poolNonce !== poolNonceBefore9,
-      'the pooled coin nonce to change under an unchanged balance',
-    );
-    if (JSON.stringify(after.manager.shieldedOf, bigints) !== accountsBefore9) {
-      throw new Error('STEP 9 DIVERGENCE — the pool self-send changed the account map; it must be ownership-neutral');
+    o = await settleAndAssert(15, e15);
+    if (managerSnapshot(o.manager) !== managerBefore15) {
+      throw new Error('STEP 15 DIVERGENCE — deploying TOKD and minting to users changed Manager custody state');
     }
-    e9.op('pool self-send shielded', [s9c], 'SDK', before, after, {
-      poolBefore: { value: before.manager.poolValue, nonce: poolNonceBefore9 },
-      poolAfter: { value: after.manager.poolValue, nonce: after.manager.poolNonce },
-      accountMapByteIdentical: true,
-    });
     cell({
-      id: 'selfsend-pool-shielded',
-      label: 'Self-send: pool shielded to `kernel.self()` via auto-receive',
-      step: 9,
-      txs: [s9c],
+      id: 'step-15',
+      label: `Step 15 — ${ACTIONS[15]}`,
+      step: 15,
+      txs: [rig.deployTxs.Minter4!, ...ids15],
       level: 'SDK',
-      points: `pool value unchanged at ${after.manager.poolValue}; nonce ${poolNonceBefore9} → ${after.manager.poolNonce}; account map byte-identical`,
+      points:
+        `TOKD deployed in block ${tokd.deploy.blockHeight}, ${(tokd.deploy.blockHeight ?? 0) - H} blocks after the ` +
+        `Manager, and absent from the indexer at the Manager's deploy block; the Manager's whole decoded state is ` +
+        'byte-identical across this row',
       status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-9/step.json',
-      note: 'The only cell that reaches the standard library’s auto-receive branch: sendShielded to kernel.self() re-claims its own output.',
+      evidence: 'evidence/g3-ledger/step-15/step.json',
+      note: 'The colour set grows from 6 to 8 here — dynamically, with no configuration step of any kind.',
     });
 
-    // --- pool unshielded self-send --------------------------------------------------------------
-    before = after;
-    const unshieldedAccountsBefore9 = JSON.stringify(before.manager.unshieldedOf, bigints);
-    const ledgerBefore9 = before.managerUnshieldedLedger;
-    const s9d = tx(await poolSelfSendUnshielded(ctx, raw.secretB, 5n, rig.fee));
-    log(`  pool self-send unshielded (authorized by OwnerB): tx ${s9d}`);
-    // Nothing observable may change, so wait for the transaction to be applied by watching the
-    // Manager's state for the block, then assert byte-identity.
-    await new Promise((r) => setTimeout(r, 12_000));
-    after = await observe(deps);
-    if (JSON.stringify(after.manager.unshieldedOf, bigints) !== unshieldedAccountsBefore9) {
-      throw new Error('STEP 9 DIVERGENCE — the unshielded pool self-send changed the account map');
-    }
-    if (after.managerUnshieldedLedger !== ledgerBefore9) {
-      throw new Error(
-        `STEP 9 DIVERGENCE — the unshielded pool self-send changed the contract ledger balance ` +
-          `(${ledgerBefore9} -> ${after.managerUnshieldedLedger})`,
-      );
-    }
-    e9.op('pool self-send unshielded', [s9d], 'SDK', before, after, {
-      contractLedgerBalanceBefore: ledgerBefore9,
-      contractLedgerBalanceAfter: after.managerUnshieldedLedger,
-      accountMapByteIdentical: true,
+    // =========================================================================================
+    // STEP 16 — THE HEADLINE: custody of a colour that did not exist at Manager deploy
+    // =========================================================================================
+    console.log(`\n## STEP 16 — ${ACTIONS[16]}`);
+    const e16 = new StepEvidence(16, ACTIONS[16]!);
+    const sizesBefore16 = o.sizes;
+    const d16 = await withSpender(
+      'OwnerN',
+      'step16',
+      (s) => userDepositShielded(ctx, s.party, s.managerProviders, registry.raw('S4'), 7n, raw.AA_A),
+      [{ colour: registry.hex('S4'), shielded: true, amount: 7n }],
+    );
+    const id16 = tx(d16.txId);
+    log(`  OwnerN deposited S4 7 -> AA_A: tx ${id16}`);
+    e16.op('OwnerN deposits S4 7 -> AA_A', [id16], 'SDK', {
+      colour: registry.hex('S4'),
+      depositCoinNonce: Buffer.from(d16.nonce).toString('hex'),
+      mapSizesBefore: sizesBefore16,
+      claim:
+        'the Manager creates a pool for a colour that was minted by a contract deployed 15 rows after the ' +
+        'Manager itself — no configuration, no admin, no allowlist',
     });
+    o = await settleAndAssert(16, e16);
     cell({
-      id: 'selfsend-pool-unshielded',
-      label: 'Self-send: pool unshielded to self via auto-receive',
-      step: 9,
-      txs: [s9d],
+      id: 'step-16',
+      label: 'Step 16 — HEADLINE: custody of a colour that did not exist when the Manager was deployed',
+      step: 16,
+      txs: [id16],
       level: 'SDK',
-      points: `contract ledger balance and account map BOTH byte-identical at ${ledgerBefore9}`,
+      points:
+        `pools ${sizesBefore16.pools}->${o.sizes.pools} and shielded cells ${sizesBefore16.shieldedCells}->` +
+        `${o.sizes.shieldedCells}: poolS4 = 7 with (AA_A,S4) = 7, for a colour whose issuing contract was ` +
+        `deployed in block ${tokd.deploy.blockHeight} against the Manager's ${H}`,
       status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-9/step.json',
-      note: 'sendUnshielded to kernel.self() takes the auto-receive branch (incUnshieldedInputs), so the contract balance nets to zero.',
+      evidence: 'evidence/g3-ledger/step-16/step.json',
     });
 
-    o = await withIndexerCheck(deps, await waitForTable(deps, EXPECTED[9]!, '9'));
-    assertAll(o, EXPECTED[9]!, '9', minted);
-    e9.write(EXPECTED[9]!, o);
-    console.log(`STEP 9 ASSERTED — ${renderTable(o.table)} — balance-neutral, identifiers changed`);
-
-    // The standing invariant across the whole run.
+    // =========================================================================================
+    // STEP 17 — the unshielded half of the same claim
+    // =========================================================================================
+    console.log(`\n## STEP 17 — ${ACTIONS[17]}`);
+    const e17 = new StepEvidence(17, ACTIONS[17]!);
+    const sizesBefore17 = o.sizes;
+    const id17 = tx(
+      await withSpender(
+        'OwnerM',
+        'step17',
+        (s) => userDepositUnshielded(ctx, s.party, s.managerProviders, registry.raw('U4'), 4n, raw.AA_B),
+        [{ colour: registry.hex('U4'), shielded: false, amount: 4n }],
+      ),
+    );
+    log(`  OwnerM deposited U4 4 -> AA_B: tx ${id17}`);
+    e17.op('OwnerM deposits U4 4 -> AA_B', [id17], 'SDK', {
+      colour: registry.hex('U4'),
+      mapSizesBefore: sizesBefore17,
+      note:
+        '`receiveUnshielded` is SELF-ENFORCING at the ledger: a transaction that names a colour it is not ' +
+        'actually carrying fails to balance and is refused by the node. This deposit committing is that ' +
+        'assumption asserted rather than assumed (spec Assumptions).',
+    });
+    o = await settleAndAssert(17, e17);
     cell({
-      id: 'invariant-pool-equals-accounts',
-      label: 'Invariant: `pooled holdings = AA_A + AA_B` per family, after EVERY step',
-      step: 9,
+      id: 'step-17',
+      label: `Step 17 — ${ACTIONS[17]}`,
+      step: 17,
+      txs: [id17],
+      level: 'SDK',
+      points:
+        `unshielded cells ${sizesBefore17.unshieldedCells}->${o.sizes.unshieldedCells}; the contract's ledger ` +
+        'balance for U4 = 4 with (AA_B,U4) = 4 — the unshielded half of the mid-ledger colour claim',
+      status: 'GREEN',
+      evidence: 'evidence/g3-ledger/step-17/step.json',
+    });
+
+    // --- the final table, against the spec's separately written one --------------------------------
+    const finalExpected = expectedOf(LAST_STEP);
+    console.log('\n## FINAL TABLE');
+    for (const line of renderMarkdownTable(o.table, o.custody, finalExpected.colours)) console.log(line);
+    console.log(`map sizes: ${renderSizes(o.sizes)}`);
+    for (const p of PARTIES) {
+      for (const c of finalExpected.colours) {
+        const want = FINAL_TABLE.table[p as keyof typeof FINAL_TABLE.table][c as keyof typeof FINAL_TABLE.custody];
+        if ((o.table[p][c] ?? 0n) !== want) {
+          throw new Error(`FINAL TABLE mismatch at ${p}.${c}: observed ${o.table[p][c]}, spec says ${want}`);
+        }
+      }
+    }
+    for (const c of finalExpected.colours) {
+      const want = FINAL_TABLE.custody[c as keyof typeof FINAL_TABLE.custody];
+      if ((o.custody[c] ?? 0n) !== want) {
+        throw new Error(`FINAL TABLE custody mismatch at ${c}: observed ${o.custody[c]}, spec says ${want}`);
+      }
+    }
+    if (JSON.stringify(o.sizes) !== JSON.stringify(END_SIZES)) {
+      throw new Error(`END-STATE MAP SIZES mismatch: observed ${JSON.stringify(o.sizes)}, spec says ${JSON.stringify(END_SIZES)}`);
+    }
+    const finalTableMarkdown = renderMarkdownTable(o.table, o.custody, finalExpected.colours);
+    const finalWalkObservation = o;
+
+    cell({
+      id: 'invariant-per-colour',
+      label: 'Invariant — `custody[c] == AA_A[c] + AA_B[c]` for every DISCOVERED colour, after EVERY step',
+      step: '0-17 + probes',
       txs: [],
       level: 'derived',
-      points: 'asserted in `assertAll` after all ten steps, in both families, against two independently maintained mechanisms',
+      points:
+        'asserted in `assertAll` after every row and every probe step, per colour, between two independently ' +
+        "maintained mechanisms (the Manager's balance maps vs the pooled zswap coin / ledger-kernel unshielded " +
+        'balance)',
       status: 'GREEN',
-      evidence: 'evidence/g3-ledger/step-0..9/step.json',
-      note: 'Shielded: pooled zswap coin value vs the account map. Unshielded: the contract’s ledger balance from the indexer vs the account map.',
+      evidence: 'evidence/g3-ledger/step-0..17/step.json',
+    });
+    cell({
+      id: 'map-sizes',
+      label: 'Exact map sizes after EVERY step, and ZERO unaccounted keys over the dynamic colour set',
+      step: '0-17 + probes',
+      txs: [],
+      level: 'derived',
+      points:
+        `every row asserts {pools, shieldedCells, unshieldedCells} exactly against the spec's transcription ` +
+        `(0/0/0 at rows 0-6 … ${JSON.stringify(END_SIZES)} at row 17), and every key in the raw ledger maps is ` +
+        "reproduced from (AA account x registered colour) by the contract's own pure key circuits",
+      status: 'GREEN',
+      evidence: 'evidence/g3-ledger/step-0..17/step.json',
+    });
+    cell({
+      id: 'dormant-U3',
+      label: 'FR-206 — U3 is minted by no one, deposited by no one, and absent from EVERY map at every row',
+      step: '0-17',
+      txs: [],
+      level: 'derived',
+      points:
+        'asserted after every row: U3 reads 0 for all four parties and for custody, and has no pool, no cell in ' +
+        "either family map, and no entry in the ledger kernel's balance map",
+      status: 'GREEN',
+      evidence: 'evidence/g3-ledger/step-17/step.json',
     });
 
-    // --- final report ---------------------------------------------------------------------------
+    // =========================================================================================
+    // NEGATIVE CONTROLS — against the post-step-17 state (the spec's exact final table)
+    // =========================================================================================
+    controls = await runControls(rig, o);
+    for (const c of controls) {
+      cell({
+        id: c.id,
+        label: c.label,
+        step: c.id,
+        txs: c.setupTxs,
+        level: 'SDK',
+        points:
+          `${c.rejectedAt}; full table + every pool + every ledger balance byte-identical before/after; map sizes ` +
+          `${JSON.stringify(c.mapSizesBefore)} -> ${JSON.stringify(c.mapSizesAfter)}; ` +
+          Object.entries(c.noStateCreated)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join('; '),
+        status: c.status,
+        evidence: 'evidence/g3-ledger/negative-controls.json',
+        note: c.reason,
+      });
+    }
+
+    // =========================================================================================
+    // PROBES — P-COLL, M3, distinctness
+    // =========================================================================================
+    const probeExpected: ExpectedState = expectedOf(LAST_STEP);
+    const harness: ProbeHarness = {
+      rig,
+      tx,
+      withSpender,
+      addColours: (namesToAdd) => {
+        for (const name of namesToAdd) {
+          if (probeExpected.colours.includes(name)) continue;
+          probeExpected.colours.push(name);
+          for (const p of PARTIES) probeExpected.table[p][name] = 0n;
+          probeExpected.custody[name] = 0n;
+          if (minted[name] === undefined) minted[name] = 0n;
+        }
+      },
+      expect: (fn) => fn(probeExpected),
+      assertNow: async (label) => {
+        let obs = await waitForTable(deps, probeExpected, label);
+        obs = await withIndexerCheck(deps, obs);
+        assertAll(obs, probeExpected, label, minted, deps, [DORMANT]);
+        console.log(
+          `PROBE STEP ASSERTED (${label}) — ${renderTable(obs.table, probeExpected.colours)}  ` +
+            `${renderCustody(obs.custody, probeExpected.colours, registry)}  ${renderSizes(obs.sizes)}`,
+        );
+        const ev = new StepEvidence(`probe-${label.replace(/[^a-z0-9]+/gi, '-').slice(0, 60)}`, label);
+        ev.write(probeExpected, obs);
+        return obs;
+      },
+      minted,
+      cell,
+      evidenceDir: EVID,
+    };
+    probes = await runProbes(harness);
+
+    // --- final artifacts ---------------------------------------------------------------------------
+    const finalObservation = await withIndexerCheck(deps, await observe(deps));
+    const allNames = registry.names();
+
+    const deployOrderRows: Array<Record<string, unknown>> = [];
+    for (const m of rig.minters) {
+      const ex = await existenceAtBlock(m.address, H);
+      deployOrderRows.push({
+        contract: m.label,
+        tag: m.tagText,
+        address: m.address,
+        deployBlock: m.deploy.blockHeight,
+        managerBlock: H,
+        strictlyLater: (m.deploy.blockHeight ?? -1) > H,
+        absentAtManagerBlock: ex.action === null,
+        absentAtManagerBlockAtOrBefore: ex.contractQueryError === null ? ex.contract === null : null,
+        contractQueryError: ex.contractQueryError,
+      });
+    }
+
     writeFileSync(
       join(EVID, 'cells.json'),
-      JSON.stringify({ label: 'EXPERIMENTAL_LANE / LANE-DEV-1', utc: stamp(), cells }, bigints, 2),
+      `${JSON.stringify({ label: 'EXPERIMENTAL_LANE / LANE-DEV-1', utc: stamp(), cells }, bigints, 2)}\n`,
     );
     writeFileSync(
       join(EVID, 'run-context.json'),
-      JSON.stringify(
+      `${JSON.stringify(
         {
           label: 'EXPERIMENTAL_LANE / LANE-DEV-1',
           utc: stamp(),
-          minterAddress: rig.minterAddress,
           managerAddress: rig.managerAddress,
-          colors: rig.colors,
+          managerDeploy: rig.managerDeploy,
+          chainTipBeforeAnyDeploy: rig.chainTipBeforeAnyDeploy,
+          deployOrder: {
+            managerBlock: H,
+            rows: deployOrderRows,
+            claim:
+              'the Manager was deployed in a strictly earlier block than every issuing contract, and at the ' +
+              "Manager's deploy block the indexer reports NO contract action for any of their addresses",
+          },
+          minters: rig.minters,
+          colours: Object.fromEntries(
+            registry.list().map((c) => [c.name, { hex: c.hex, family: c.family, issuer: c.issuer }]),
+          ),
+          colourNames: allNames,
           accounts: rig.ids,
           deployTxs: rig.deployTxs,
           fundingTxs: rig.fundingTxs,
           mintedTotals: minted,
+          endStateMapSizes: finalWalkObservation.sizes,
+          specEndStateMapSizes: END_SIZES,
+          finalWalkTable: snapshotObject(finalWalkObservation),
+          finalTableMarkdown,
+          probes,
           metrics: metricsReport(),
-          step8Snapshot: JSON.parse(step8Snapshot),
-          finalSnapshot: JSON.parse(snapshot(o)),
+          finalObservationAfterProbes: snapshotObject(finalObservation),
+          finalMarkdownAfterProbes: renderMarkdownTable(
+            finalObservation.table,
+            finalObservation.custody,
+            registry.names(),
+          ),
         },
         bigints,
         2,
-      ),
+      )}\n`,
     );
 
+    const red = cells.filter((c) => c.status === 'RED');
     console.log('\n## RESULT');
-    console.log(`all ten step rows asserted live; ${cells.length} matrix cells recorded`);
-    console.log(`final table: ${renderTable(o.table)}`);
-    console.log(`minter_address:  ${rig.minterAddress}`);
+    console.log(`18/18 step rows asserted live; ${cells.length} records written`);
+    console.log(`final walk table: ${renderTable(finalWalkObservation.table, finalExpected.colours)}`);
+    console.log(`                  ${renderCustody(finalWalkObservation.custody, finalExpected.colours, registry)}`);
+    console.log(`end-state map sizes: ${renderSizes(finalWalkObservation.sizes)} (spec: ${renderSizes(END_SIZES)})`);
     console.log(`manager_address: ${rig.managerAddress}`);
+    console.log(`M3 transaction(s): ${(probes.m3 as any).txIds.join(', ')} — ${(probes.m3 as any).shape}`);
+    if (red.length > 0) {
+      console.error(`\n${red.length} record(s) RED: ${red.map((c) => c.id).join(', ')}`);
+      process.exitCode = 1;
+    }
   } finally {
     if (rig) await rig.close();
   }
 };
 
 main().then(
-  () => process.exit(0),
+  () => process.exit(process.exitCode ?? 0),
   (e) => {
     console.error(`\nFAILED: ${e instanceof Error ? `${e.message}\n${e.stack}` : String(e)}`);
     process.exit(1);

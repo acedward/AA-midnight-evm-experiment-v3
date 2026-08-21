@@ -1,0 +1,60 @@
+// PROBE P2 — 00004-multi-token-custody, Plan 01 Phase 3 (EXPERIMENTAL_LANE / LANE-DEV-1)
+//
+// THROWAWAY as a contract, but it IS deployed: P2 has two halves and both must pass.
+//
+//   (a) compile-time — does the pinned compactc accept a `constructor` that takes a `Bytes<32>`
+//       tag and writes tag-DERIVED per-family domain separators into ledger cells?
+//   (b) deploy-time  — does the pinned midnight-js deploy path actually accept and apply
+//       constructor arguments, so that a second deployment with a different tag yields different
+//       colours from the SAME source?
+//
+// This is the shape FR-101 needs: one Minter source, deployed twice (TOKA, TOKB), four colours.
+//
+// Constructor arguments are witness data under the compiler's witness-protection program, so the
+// tag must be `disclose`d before it can reach ledger state.
+
+import CompactStandardLibrary;
+
+export { shieldedSep, unshieldedSep, shieldedColour, unshieldedColour, mintShieldedTo, tag }
+
+// The deployment tag and the two separators derived from it, fixed at construction.
+export ledger tag: Bytes<32>;
+export ledger shieldedSep: Bytes<32>;
+export ledger unshieldedSep: Bytes<32>;
+
+// Per-family constants. Distinct by construction, so the two derived separators cannot collide
+// however the tag is chosen.
+circuit shieldedFamilyTag(): Bytes<32> { return pad(32, "aa00004:probe:shielded"); }
+circuit unshieldedFamilyTag(): Bytes<32> { return pad(32, "aa00004:probe:unshielded"); }
+
+circuit deriveSep(t: Bytes<32>, family: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([t, family]);
+}
+
+constructor(deploymentTag: Bytes<32>) {
+  const t = disclose(deploymentTag);
+  tag = t;
+  shieldedSep = deriveSep(t, shieldedFamilyTag());
+  unshieldedSep = deriveSep(t, unshieldedFamilyTag());
+}
+
+/// Colours stay contract-scoped: `tokenType(sep, kernel.self())`. Two deployments of this source
+/// therefore differ twice over — different tag AND different contract address.
+export circuit shieldedColour(): Bytes<32> {
+  return tokenType(shieldedSep, kernel.self());
+}
+
+export circuit unshieldedColour(): Bytes<32> {
+  return tokenType(unshieldedSep, kernel.self());
+}
+
+/// A real mint, so the deployed probe proves the derived separator is usable as a mint domain
+/// separator and not merely storable.
+export circuit mintShieldedTo(
+  value: Uint<64>,
+  nonce: Bytes<32>,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): ShieldedCoinInfo {
+  assert(value > 0, "mint value must be positive");
+  return mintShieldedToken(shieldedSep, disclose(value), disclose(nonce), disclose(recipient));
+}

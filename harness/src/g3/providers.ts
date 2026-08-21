@@ -7,7 +7,6 @@
 import { NodeZkConfigProvider } from '@midnight-ntwrk/midnight-js-node-zk-config-provider';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
-import { ZKConfigRegistry } from '@midnight-ntwrk/midnight-js-types';
 import { recordTxSize, timedProofProvider } from './metrics.js';
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
 import { randomBytes } from 'node:crypto';
@@ -15,8 +14,14 @@ import { join } from 'node:path';
 import { endpoints, readLaneEnv, REPO_ROOT } from '../lane.js';
 import type { Party } from '../wallet.js';
 
-/** Where scripts/g2/compile.sh --zk puts prover/verifier keys and zkir. */
-export const zkDir = (contract: 'minter' | 'manager' | '_combined') => join(REPO_ROOT, 'harness', 'generated-zk', contract);
+/**
+ * Where scripts/g2/compile.sh --zk puts prover/verifier keys and zkir.
+ *
+ * `contract` is a plain string rather than a union because a deployment's artifact directory is
+ * chosen per DEPLOYMENT (five Minter deployments share `minter`, MinterCollide has its own), not
+ * per provider name.
+ */
+export const zkDir = (contract: string) => join(REPO_ROOT, 'harness', 'generated-zk', contract);
 
 const TTL_MS = 30 * 60 * 1000;
 
@@ -25,11 +30,17 @@ const TTL_MS = 30 * 60 * 1000;
 // midnight-js-utils enforces >=3 character classes, so a bare hex string is rejected.
 const EPHEMERAL_PRIVATE_STORE_PASSWORD = `Aa1!${randomBytes(24).toString('base64url')}`;
 
-export const makeProviders = (party: Party, contract: 'minter' | 'manager' | '_combined', privateStateDir: string) => {
+export const makeProviders = (
+  party: Party,
+  contract: string,
+  privateStateDir: string,
+  /** Override the ZK artifact directory (the G1 probes compile outside `generated-zk`). */
+  zkArtifactDir: string = zkDir(contract),
+) => {
   const ep = endpoints(readLaneEnv());
   const facade: any = party.wallet;
   // The proof provider needs the ZK config to look up prover keys per circuit.
-  const zkConfigProvider = new NodeZkConfigProvider(zkDir(contract));
+  const zkConfigProvider = new NodeZkConfigProvider(zkArtifactDir);
 
   return {
     privateStateProvider: levelPrivateStateProvider({
@@ -68,21 +79,12 @@ export const makeProviders = (party: Party, contract: 'minter' | 'manager' | '_c
   } as any;
 };
 
-/**
- * Proof provider for a transaction whose single intent spans BOTH contracts (ledger-level
- * composition — see `ledger-compose.ts`).
- *
- * A flattened "all keys in one directory" provider does NOT work: each call's key location embeds
- * the hash of its DEPLOYED verifier key, and resolution joins on that hash rather than on the
- * circuit name. `ZKConfigRegistry` is the pinned SDK's own answer — it takes one artifact source
- * per compiled contract and selects the source whose verifier key matches, which is immune to the
- * `mintShieldedTo`-style name collisions between our two contracts.
- */
-export const makeComposedProofProvider = () => {
-  const ep = endpoints(readLaneEnv());
-  const registry = new ZKConfigRegistry([
-    new NodeZkConfigProvider(zkDir('minter')),
-    new NodeZkConfigProvider(zkDir('manager')),
-  ]);
-  return timedProofProvider(httpClientProofProvider(ep.provingServerUrl.toString(), registry as any));
-};
+// A `ZKConfigRegistry`-backed proof provider — one artifact source per compiled contract, selected
+// by DEPLOYED verifier-key hash rather than by circuit name — used to live here for transactions
+// whose single intent spanned several contracts (00003's R8 / 00004's probe M1 round 1). 00005 has
+// no such transaction: probe M3's two calls are both on the Manager and are proved by the Manager's
+// own provider, and every mint is a single call on its own issuer. The registry helper was removed
+// with the one-Intent composer it served (see `archive/00004/ARCHIVE.md`); each deployment simply
+// gets `makeProviders(..., zkDir(kind))` with the artifact directory its verifier keys live in,
+// which is what keeps `minter` and `minter-collide` apart even though they deliberately share
+// circuit NAMES (finding F-201: a verifier key identifies a circuit shape, not a contract).

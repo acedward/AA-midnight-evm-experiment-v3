@@ -1,0 +1,109 @@
+{
+  "kind": "direct-submit",
+  "label": "row-4",
+  "lane": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T12:28:54.757Z",
+  "process": {
+    "pid": 37528,
+    "ppid": 37522
+  },
+  "opts": {
+    "label": "row-4",
+    "envelope": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/offer-1.offer",
+    "submitterSeedName": "feePayer",
+    "out": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/io/row4-direct.report.json"
+  },
+  "attempts": [
+    {
+      "form": "as-published (unbound, D-306)",
+      "submitted": false,
+      "error": "Transaction submission error",
+      "nodeRefusal": {
+        "code": 1,
+        "decoded": "LedgerApiError::Deserialization(DeserializationError::Transaction) (types.rs:363)",
+        "verbatim": "1010: Invalid Transaction: Custom error: 1",
+        "beforeSubmission": false
+      },
+      "errorDump": "(FiberFailure) SubmissionError: Transaction submission error\n    at file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@midnightntwrk+wallet-sdk-capabilities@4.0.0-beta.2_ws@8.21.3/node_modules/@midnightntwrk/wallet-sdk-capabilities/dist/submission/submissionService.js:31:279\n    at /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/core.ts:1078:35\n    at <anonymous> (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1161:41)\n    at body (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/Utils.ts:786:14)\n    at FiberRuntime.Sync (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1161:19)\n    at <anonymous> (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1398:53)\n    at Object.f (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/tracer.ts:101:19)\n    at FiberRuntime.runLoop (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1384:34)\n    at FiberRuntime.evaluateEffect (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:950:27)\n    at FiberRuntime.evaluateMessageWhileSuspended (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:918:14) {\n  [cause]: SubmissionError: Transaction submission failed\n      at file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@midnightntwrk+wallet-sdk-node-client@2.0.0-beta.2_@midnightntwrk+ledger-v9@1.0.0-rc.3__9fdca0ce4a97c2531cda791ff76bb4dc/node_modules/@midnightntwrk/wallet-sdk-node-client/dist/effect/PolkadotNodeClient.js:86:27\n      at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {\n    [cause]: RpcError: 1010: Invalid Transaction: Custom error: 1\n        at checkError (file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/coder/index.js:19:15)\n        at RpcCoder.decodeResponse (file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/coder/index.js:35:9)\n        at #onSocketMessageResult (file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/ws/index.js:429:40)\n        at #onSocketMessage (file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/ws/index.js:418:42)\n        at [nodejs.internal.kHybridDispatch] (node:internal/event_target:827:20)\n        at WebSocket.dispatchEvent (node:internal/event_target:762:26)\n        at fireEvent (node:internal/deps/undici/undici:12652:14)\n        at #onMessage (node:internal/deps/undici/undici:13883:9)\n        at Object.onMessage (node:internal/deps/undici/undici:13596:76)\n        at websocketMessageReceived (node:internal/deps/undici/undici:12656:15)\n  }\n}",
+      "layer": "node (submitted and refused, Custom error: 1)"
+    },
+    {
+      "form": "bound",
+      "submitted": false,
+      "error": "Transaction submission error",
+      "nodeRefusal": {
+        "code": null,
+        "decoded": "(no numeric code found)",
+        "verbatim": null,
+        "beforeSubmission": false
+      },
+      "errorDump": "(FiberFailure) SubmissionError: Transaction submission error\n    at file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@midnightntwrk+wallet-sdk-capabilities@4.0.0-beta.2_ws@8.21.3/node_modules/@midnightntwrk/wallet-sdk-capabilities/dist/submission/submissionService.js:31:279\n    at /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/core.ts:1078:35\n    at <anonymous> (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1161:41)\n    at body (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/Utils.ts:786:14)\n    at FiberRuntime.Sync (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1161:19)\n    at <anonymous> (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1398:53)\n    at Object.f (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/tracer.ts:101:19)\n    at FiberRuntime.runLoop (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1384:34)\n    at FiberRuntime.evaluateEffect (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:950:27)\n    at FiberRuntime.evaluateMessageWhileSuspended (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:918:14) {\n  [cause]: SubmissionError: Transaction submission failed\n      at file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@midnightntwrk+wallet-sdk-node-client@2.0.0-beta.2_@midnightntwrk+ledger-v9@1.0.0-rc.3__9fdca0ce4a97c2531cda791ff76bb4dc/node_modules/@midnightntwrk/wallet-sdk-node-client/dist/effect/PolkadotNodeClient.js:86:27 {\n    [cause]: Error: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure\n        at #onSocketClose (file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/ws/index.js:371:23)\n        at [nodejs.internal.kHybridDispatch] (node:internal/event_target:827:20)\n        at WebSocket.dispatchEvent (node:internal/event_target:762:26)\n        at fireEvent (node:internal/deps/undici/undici:12652:14)\n        at #onSocketClose (node:internal/deps/undici/undici:13911:9)\n        at Socket.onSocketClose (node:internal/deps/undici/undici:13611:72)\n        at Socket.emit (node:events:520:35)\n        at TCP.<anonymous> (node:net:346:12)\n  }\n}",
+      "layer": "unclassified — the facade replaced the cause with its own wrapper; see errorDump"
+    }
+  ],
+  "terms": {
+    "version": 1,
+    "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+    "shape": "named-taker",
+    "circuitId": "openSwapShielded",
+    "form": "pre-binding",
+    "managerAddress": "1f8f7b515d8da46148290b4ac780ddfa333a98e845972b21cfe30d4bad234e6d",
+    "gives": {
+      "colour": "586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31",
+      "value": "4",
+      "recipient": "226fe909b3edee5d22d8ec41f643d1138f8f93bd10b023391ece325ded8821df",
+      "recipientKind": "user-coin-public-key"
+    },
+    "wants": {
+      "colour": "94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096",
+      "value": "7",
+      "nonce": "fb0d28a77bc1cd7f7d4a9d2455524c4fe462da72aea67fd644867efa27844e9b"
+    },
+    "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "createdAt": "2026-08-20T12:28:49.963Z",
+    "expiresAt": "2026-08-20T13:28:49.963Z",
+    "ttlSeconds": 3600,
+    "placement": {
+      "segments": [
+        0,
+        6653
+      ],
+      "intentSegments": [
+        6653
+      ],
+      "fallibleOfferSegments": [],
+      "imbalances": {
+        "0": {
+          "shielded:94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096": "-7"
+        },
+        "6653": {}
+      },
+      "expectedAtSegment0": {
+        "shielded:94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096": "-7"
+      },
+      "segment0Exact": true,
+      "otherSegmentsEmpty": true,
+      "offendingSegments": [],
+      "ok": true
+    },
+    "makerAttachedDust": false,
+    "contentAddress": "dde0ba1517179aae815ec60bf334d7d10bb050d50ac4772ed18e2a1daaffcf5c",
+    "transactionBytes": 26819
+  },
+  "payloadBytes": 26819,
+  "imbalances": {
+    "0": {
+      "shielded:94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096": "-7"
+    },
+    "6653": {}
+  },
+  "deficits": {
+    "0/shielded:94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096": "-7"
+  },
+  "offlineWellFormed": {
+    "refused": true,
+    "verbatim": "invalid balance -7 for token Shielded(ShieldedTokenType(94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096)) in segment 0; balance must be positive"
+  },
+  "ok": true
+}

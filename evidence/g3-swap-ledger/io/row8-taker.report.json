@@ -1,0 +1,202 @@
+{
+  "kind": "taker",
+  "label": "row-8",
+  "lane": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T12:42:00.126Z",
+  "process": {
+    "pid": 42224,
+    "ppid": 42217
+  },
+  "opts": {
+    "label": "row-8",
+    "envelope": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/offer-2-open.offer",
+    "takerSeedName": "ownerT",
+    "require": [
+      {
+        "colour": "bf3656a8eb2d34b5250209000249d89c5fe634ed9ec4dee47b7b830c650fcfa2",
+        "amount": "3"
+      }
+    ],
+    "out": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/io/row8-taker.report.json"
+  },
+  "ok": true,
+  "take": {
+    "stage": "settled",
+    "ok": true,
+    "terms": {
+      "version": 1,
+      "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+      "shape": "floating-surplus",
+      "circuitId": "openSwapShielded",
+      "form": "pre-binding",
+      "managerAddress": "95fb94dc5df1d640705fee419401b5175c58efbe5b71bbe35dfc7f0ef585ec21",
+      "gives": {
+        "colour": "b4044b0c0bcf51955c683a8854c07243d1fbd6f6a900293f8ec8c8ef38f96532",
+        "value": "2"
+      },
+      "wants": {
+        "colour": "bf3656a8eb2d34b5250209000249d89c5fe634ed9ec4dee47b7b830c650fcfa2",
+        "value": "3",
+        "nonce": "879ffca44804585c747bafbdd1a51f2864684f15aa0bed6084abf8deee5a7073"
+      },
+      "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "createdAt": "2026-08-20T12:41:55.151Z",
+      "expiresAt": "2026-08-20T13:41:55.151Z",
+      "ttlSeconds": 3600,
+      "placement": {
+        "segments": [
+          0,
+          47625
+        ],
+        "intentSegments": [
+          47625
+        ],
+        "fallibleOfferSegments": [],
+        "imbalances": {
+          "0": {
+            "shielded:b4044b0c0bcf51955c683a8854c07243d1fbd6f6a900293f8ec8c8ef38f96532": "2",
+            "shielded:bf3656a8eb2d34b5250209000249d89c5fe634ed9ec4dee47b7b830c650fcfa2": "-3"
+          },
+          "47625": {}
+        },
+        "expectedAtSegment0": {
+          "shielded:b4044b0c0bcf51955c683a8854c07243d1fbd6f6a900293f8ec8c8ef38f96532": "2",
+          "shielded:bf3656a8eb2d34b5250209000249d89c5fe634ed9ec4dee47b7b830c650fcfa2": "-3"
+        },
+        "segment0Exact": true,
+        "otherSegmentsEmpty": true,
+        "offendingSegments": [],
+        "ok": true
+      },
+      "makerAttachedDust": false,
+      "contentAddress": "0fa8a7e463c271853983886384aef13a6fd112138eb8e14d721250ac51bf078e",
+      "transactionBytes": 16346
+    },
+    "contentAddress": "0fa8a7e463c271853983886384aef13a6fd112138eb8e14d721250ac51bf078e",
+    "secondsLeft": 3595,
+    "fundability": {
+      "imbalances": {
+        "0": {
+          "shielded:b4044b0c0bcf51955c683a8854c07243d1fbd6f6a900293f8ec8c8ef38f96532": "2",
+          "shielded:bf3656a8eb2d34b5250209000249d89c5fe634ed9ec4dee47b7b830c650fcfa2": "-3"
+        },
+        "47625": {}
+      },
+      "deficits": {
+        "0/shielded:bf3656a8eb2d34b5250209000249d89c5fe634ed9ec4dee47b7b830c650fcfa2": "-3"
+      },
+      "surpluses": {
+        "0/shielded:b4044b0c0bcf51955c683a8854c07243d1fbd6f6a900293f8ec8c8ef38f96532": "2"
+      },
+      "declared": {
+        "wants": "0/shielded:bf3656a8eb2d34b5250209000249d89c5fe634ed9ec4dee47b7b830c650fcfa2",
+        "gives": "0/shielded:b4044b0c0bcf51955c683a8854c07243d1fbd6f6a900293f8ec8c8ef38f96532"
+      },
+      "matchesTerms": true
+    },
+    "settlement": {
+      "route": "unbound",
+      "ok": true,
+      "txId": "00f642666cfa697ea6e802c243423b440d7ee572a7e900fcb0f2614826de411164",
+      "txHash": "a2aa8f41682ecb4f395ab5312d829adfbbf0b6a00456aac96cc1d0a0aeaef1f8",
+      "preSubmitGuard": {
+        "imbalances": {
+          "0": {
+            "dust": "760955388634170"
+          },
+          "1": {},
+          "47625": {}
+        },
+        "unswept": {},
+        "dustActions": {
+          "1": {
+            "spends": 1,
+            "registrations": 0
+          },
+          "47625": {
+            "spends": 0,
+            "registrations": 0
+          }
+        },
+        "intentSegments": [
+          1,
+          47625
+        ]
+      },
+      "identifiers": [
+        "006f0f527ea1f7b2643f7afabb2d0481fb2dfccd73fd953d717f2c7e7ca1786a27",
+        "0081448c39d57281a70f8cfdb49e474f1c77867eee8c698df30e53657f272dfe41",
+        "00bfcd04715455898e131b347a12d067595106187938920c7b43165d84e521020d",
+        "00ec4eaca948f6614a6cc84a238d9ebb9860477c8c0fdbc05a2f937eb7c9ff0a30",
+        "00a2cc64acfdff87a18f324d16fb34b14afb98043eb0c6b67857792e6fc93d528f",
+        "00f415fe659457efc74799c8e1e433bdbaefe75f907b676386edc4bf2f30b326eb",
+        "00f642666cfa697ea6e802c243423b440d7ee572a7e900fcb0f2614826de411164"
+      ],
+      "validations": [
+        {
+          "flags": {
+            "enforceBalancing": false,
+            "verifySignatures": false,
+            "enforceLimits": false
+          },
+          "passed": false,
+          "error": "call to non-existant contract ContractAddress(95fb94dc5df1d640705fee419401b5175c58efbe5b71bbe35dfc7f0ef585ec21)"
+        },
+        {
+          "flags": {
+            "enforceBalancing": true,
+            "verifySignatures": true,
+            "enforceLimits": true
+          },
+          "passed": false,
+          "error": "call to non-existant contract ContractAddress(95fb94dc5df1d640705fee419401b5175c58efbe5b71bbe35dfc7f0ef585ec21)"
+        }
+      ],
+      "recipeShape": {
+        "keys": [
+          "balancingTransaction",
+          "baseTransaction",
+          "blockData",
+          "type"
+        ],
+        "baseTransaction": "present",
+        "balancingTransaction": "present",
+        "blockData": {
+          "height": 228,
+          "hash": "4263c6f663b19705d3"
+        }
+      },
+      "finalizedIntentSegments": [
+        1,
+        47625
+      ],
+      "feesSpecks": "605881604603524"
+    },
+    "merged": {
+      "imbalances": {
+        "0": {
+          "dust": "760955388634170"
+        },
+        "1": {},
+        "47625": {}
+      },
+      "unswept": {},
+      "dustActions": {
+        "1": {
+          "spends": 1,
+          "registrations": 0
+        },
+        "47625": {
+          "spends": 0,
+          "registrations": 0
+        }
+      },
+      "intentSegments": [
+        1,
+        47625
+      ]
+    }
+  },
+  "tookMs": 19052
+}

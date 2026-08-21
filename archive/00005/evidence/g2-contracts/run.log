@@ -1,0 +1,118 @@
+# G2 run log
+started_utc: 2026-08-19T03:22:48Z
+argv: ./scripts/g2/verify-g2-contracts.sh 
+cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+host: Darwin arm64
+docker: Docker version 29.1.3, build f52814d
+compose: 2.40.3-desktop.1
+label: EXPERIMENTAL_LANE
+--- step: 01-w1-docker-config
+    utc_start: 2026-08-19T03:22:48Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_w1
+    utc_end: 2026-08-19T03:22:48Z
+    duration_s: 0
+    exit: 0
+    output: 01-w1-docker-config.out
+--- step: 02-probe-ports
+    utc_start: 2026-08-19T03:22:48Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_probe_ports
+    utc_end: 2026-08-19T03:22:49Z
+    duration_s: 1
+    exit: 0
+    output: 02-probe-ports.out
+--- step: 03-lane-reuse
+    utc_start: 2026-08-19T03:22:49Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_lane_reuse
+    utc_end: 2026-08-19T03:22:49Z
+    duration_s: 0
+    exit: 0
+    output: 03-lane-reuse.out
+--- step: 04-lane-dev-1
+    utc_start: 2026-08-19T03:22:49Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_lane_dev_1
+    utc_end: 2026-08-19T03:22:51Z
+    duration_s: 2
+    exit: 0
+    output: 04-lane-dev-1.out
+--- step: 05-compile-fast
+    utc_start: 2026-08-19T03:22:51Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_compile_fast
+    utc_end: 2026-08-19T03:22:53Z
+    duration_s: 2
+    exit: 0
+    output: 05-compile-fast.out
+--- step: 06-install
+    utc_start: 2026-08-19T03:22:53Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_install
+    utc_end: 2026-08-19T03:22:53Z
+    duration_s: 0
+    exit: 0
+    output: 06-install.out
+--- step: 07-unit-suites
+    utc_start: 2026-08-19T03:22:53Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_unit_suites
+    utc_end: 2026-08-19T03:22:55Z
+    duration_s: 2
+    exit: 0
+    output: 07-unit-suites.out
+--- step: 08-compile-zk
+    utc_start: 2026-08-19T03:22:55Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_compile_zk
+    utc_end: 2026-08-19T03:24:00Z
+    duration_s: 65
+    exit: 0
+    output: 08-compile-zk.out
+--- step: 09-pull
+    utc_start: 2026-08-19T03:24:00Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_pull
+    utc_end: 2026-08-19T03:24:02Z
+    duration_s: 2
+    exit: 0
+    output: 09-pull.out
+--- step: 10-boot
+    utc_start: 2026-08-19T03:24:02Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_boot
+    utc_end: 2026-08-19T03:24:08Z
+    duration_s: 6
+    exit: 0
+    output: 10-boot.out
+--- step: 11-health
+    utc_start: 2026-08-19T03:24:08Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_health
+    utc_end: 2026-08-19T03:24:10Z
+    duration_s: 2
+    exit: 0
+    output: 11-health.out
+--- step: 12-deploy-order
+    utc_start: 2026-08-19T03:24:10Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_deploy_order
+    utc_end: 2026-08-19T03:32:57Z
+    duration_s: 527
+    exit: 0
+    output: 12-deploy-order.out
+--- step: 13-record-artifacts
+    utc_start: 2026-08-19T03:32:57Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_record_artifacts
+    utc_end: 2026-08-19T03:32:59Z
+    duration_s: 2
+    exit: 0
+    output: 13-record-artifacts.out
+--- teardown
+    utc: 2026-08-19T03:32:59Z
+    argv: docker compose --env-file /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody/docker/.env -f /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00005-g2-20260819032248-70327 && w1_cleanup
+    exit: 0
+finished_utc: 2026-08-19T03:33:00Z
+final_exit: 0

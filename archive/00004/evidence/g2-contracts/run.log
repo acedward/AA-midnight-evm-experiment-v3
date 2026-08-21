@@ -1,0 +1,110 @@
+# G2 run log
+started_utc: 2026-08-18T20:44:20Z
+argv: ./scripts/g2/verify-g2-contracts.sh 
+cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+host: Darwin arm64
+docker: Docker version 29.1.3, build f52814d
+compose: 2.40.3-desktop.1
+label: EXPERIMENTAL_LANE
+--- step: 01-probe-ports
+    utc_start: 2026-08-18T20:44:20Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+    argv: step_probe_ports
+    utc_end: 2026-08-18T20:44:20Z
+    duration_s: 0
+    exit: 0
+    output: 01-probe-ports.out
+--- step: 02-lane-reuse
+    utc_start: 2026-08-18T20:44:20Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+    argv: step_lane_reuse
+    utc_end: 2026-08-18T20:44:20Z
+    duration_s: 0
+    exit: 0
+    output: 02-lane-reuse.out
+--- step: 03-lane-dev-1
+    utc_start: 2026-08-18T20:44:20Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+    argv: step_lane_dev_1
+    utc_end: 2026-08-18T20:44:22Z
+    duration_s: 2
+    exit: 0
+    output: 03-lane-dev-1.out
+--- step: 04-compile-fast
+    utc_start: 2026-08-18T20:44:22Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+    argv: step_compile_fast
+    utc_end: 2026-08-18T20:44:23Z
+    duration_s: 1
+    exit: 0
+    output: 04-compile-fast.out
+--- step: 05-install
+    utc_start: 2026-08-18T20:44:23Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+    argv: step_install
+    utc_end: 2026-08-18T20:44:23Z
+    duration_s: 0
+    exit: 0
+    output: 05-install.out
+--- step: 06-unit-suites
+    utc_start: 2026-08-18T20:44:23Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+    argv: step_unit_suites
+    utc_end: 2026-08-18T20:44:25Z
+    duration_s: 2
+    exit: 0
+    output: 06-unit-suites.out
+--- step: 07-compile-zk
+    utc_start: 2026-08-18T20:44:25Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+    argv: step_compile_zk
+    utc_end: 2026-08-18T20:45:17Z
+    duration_s: 52
+    exit: 0
+    output: 07-compile-zk.out
+--- step: 08-pull
+    utc_start: 2026-08-18T20:45:17Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+    argv: step_pull
+    utc_end: 2026-08-18T20:56:30Z
+    duration_s: 673
+    exit: 0
+    output: 08-pull.out
+--- step: 09-boot
+    utc_start: 2026-08-18T20:56:30Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+    argv: step_boot
+    utc_end: 2026-08-18T20:56:38Z
+    duration_s: 8
+    exit: 0
+    output: 09-boot.out
+--- step: 10-health
+    utc_start: 2026-08-18T20:56:38Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+    argv: step_health
+    utc_end: 2026-08-18T20:56:40Z
+    duration_s: 2
+    exit: 0
+    output: 10-health.out
+--- step: 11-deploy-configure
+    utc_start: 2026-08-18T20:56:40Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+    argv: step_deploy_configure
+    utc_end: 2026-08-18T21:04:32Z
+    duration_s: 472
+    exit: 0
+    output: 11-deploy-configure.out
+--- step: 12-record-artifacts
+    utc_start: 2026-08-18T21:04:32Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody
+    argv: step_record_artifacts
+    utc_end: 2026-08-18T21:04:34Z
+    duration_s: 2
+    exit: 0
+    output: 12-record-artifacts.out
+--- teardown
+    utc: 2026-08-18T21:04:34Z
+    argv: docker compose --env-file /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/docker/.env -f /Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00004-g2-20260818204420-30120
+    exit: 0
+finished_utc: 2026-08-18T21:04:35Z
+final_exit: 0

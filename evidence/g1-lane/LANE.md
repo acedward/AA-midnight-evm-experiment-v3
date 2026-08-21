@@ -1,139 +1,121 @@
-# LANE MANIFEST — `EXPERIMENTAL_LANE`
+# LANE MANIFEST — `EXPERIMENTAL_LANE` / `LANE-DEV-1`
 
-**Project:** 00003-contract-token-custody
+**Project:** 00006-unbalanced-zswap
 **Slot:** Midnight v2.0.0-rc.4 experimental prerelease lane
-**Recorded (UTC):** 2026-08-17T22:54Z–23:0xZ
-**Host:** Darwin arm64 (aarch64), Docker Desktop 29.1.3, Compose v2.40.3-desktop.1
+**Recorded (UTC):** 2026-08-20T03:08:25Z
+**Run mode:** full
+**Host:** Darwin arm64, Docker 29.1.3, build f52814d, Compose 2.40.3-desktop.1
+**Compose project (disposable, this run only):** `aa00006-g1-20260820030435-6040`
 
-> **`EXPERIMENTAL_LANE`.** Per project 00002 G1 evidence (2026-08-14), the official compatibility
-> matrix lists **no supported coherent 2.x application bundle**; the rc4 node release is a
-> published prerelease for fresh ledger-9 development networks only. The owner directed the 2.x
-> lane anyway. **No result from this project may be extrapolated to a supported or production
-> lane.**
+> **This project PINS NOTHING.** It inherits the lane pinned and verified by project 00003
+> and re-proved by 00004 and 00005, and proves the inheritance mechanically — see
+> `03-lane-reuse.out`. The authoritative pin rationale, including findings L-1..L-5 and the
+> LANE-DEV-1 approval, is 00003's manifest, preserved verbatim at
+> `archive/00003/evidence/g1-lane/LANE.md`.
 
-## Source-level coherence (read-only reference checkouts)
+> `EXPERIMENTAL_LANE`: the official compatibility matrix lists no supported coherent 2.x
+> application bundle; rc4 is a published prerelease for fresh ledger-9 development networks
+> only. **No result from this project may be extrapolated to a supported or production lane.**
 
-Every reference checkout under `/Users/edwardalvarado/midnight-ref-ai/v2.0.0-rc.4` sits exactly on
-its pinned tag — verified with `git describe --tags`:
+## Inheritance proof — a THREE-HOP chain, walked rather than asserted
 
-| Component | Tag (verified) |
+00006 is three projects removed from the act that pinned this lane, so checking only the
+immediate base would pass even if an intermediate project had silently re-pinned something.
+`scripts/lib/lane-pins.sh` therefore compares image digests, the compactc archive pin and
+`harness/pnpm-lock.yaml` at EVERY hop:
+
+| Hop | Commit | Role |
+|---|---|---|
+| 1 | `a8ebff9614b4d2a811d90b1956c6f1d969160dd6` | 00003 merged head — the ORIGINAL pinning act |
+| 2 | `f066a09adc4bc2fd47dc045083530aab519f65c2` | 00004 head (PR #2, held OPEN) |
+| 3 | `e9701e97bb229f555f66216014bec4a5ec6e95e7` | 00005 head (PR #3, held OPEN) — this branch's base |
+
+| Check | Evidence |
 |---|---|
-| compact (compiler) | `compactc-v0.33.0-rc.2` |
-| midnight-indexer | `v4.4.0-rc.1` |
-| midnight-js | `v5.0.0-beta.6` |
-| midnight-ledger | `ledger-9.1.0.0-rc.3` |
-| midnight-node | `node-2.0.0-rc.4` |
-| midnight-wallet | `@midnightntwrk/wallet-sdk-address-format@4.0.0-beta.2` (monorepo; `@midnightntwrk/wallet-sdk` = `2.0.0-beta.2`) |
-| compact-contracts | `v0.3.0-alpha.1` (*different slot — not used*) |
-
-Cross-check: the pinned compiler source (`compact/flake.nix` at `compactc-v0.33.0-rc.2`) pins
-`midnight-ledger/ledger-9.1.0.0-rc.3` — **exactly this lane's ledger**. The pinned compiler
-declares internal `compiler 0.33.0`, `language 0.25.0`
-(`compiler/compiler-version.ss`, `compiler/language-version.ss`).
+| Pins identical at EVERY hop of the chain | `03-lane-reuse.out` (section 0) |
+| Pin values in `docker/compose.yml` unchanged since base | `03-lane-reuse.out` (section 1) |
+| Compactc archive URL + SHA-256 unchanged since base | `03-lane-reuse.out` (section 1) |
+| `harness/pnpm-lock.yaml` byte-identical to base | `03-lane-reuse.out` (section 2) |
+| `harness/package.json` dependency versions unchanged | `03-lane-reuse.out` (section 2) |
+| Images compose resolves == pinned digests | `03-lane-reuse.out` (section 3) |
 
 ## Container images — pinned by digest
 
-Resolved from the registry HTTP API on 2026-08-17 (not from a local cache).
-
-| Role | Reference | Index digest | linux/arm64 image digest |
-|---|---|---|---|
-| Node | `midnightntwrk/midnight-node:2.0.0-rc.4` | `sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e` | `sha256:d1e5fc231147e9af739a1128ae0941119fd59dca7356a2333567bad7b57d7424` |
-| Indexer (standalone) | `midnightntwrk/indexer-standalone:4.4.0-rc.1-arm64` | `sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a` | `sha256:628002a181edfc7d67d43944e84a35d920a0077c89cab6301169079b30c79316` |
-| Proof server | `midnightntwrk/proof-server:9.0.0-rc.3` | `sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f` | `sha256:8a4b29d737c1da754df0443e4a552a7934b47e17e99cd893a70120e4ce21fcaf` |
-
-Also recorded (not used): node `linux/amd64` =
-`sha256:2a36b581a5c6500d7d7a6d8b9ff1b406fb31bc851707e5494eff33cd7b9be368`; proof-server
-`linux/amd64` = `sha256:012ce876290f1940736974bc30edb1090c1cb25c8f2fa2d08f599e117cc95429`;
-indexer-standalone `4.4.0-rc.1` multi-arch index =
-`sha256:5d79f3a20da9ed86236c7f7dc9d93b1beeb0b0c47c9c43a791041322eb80b74e` (**amd64-only**).
-
-### Finding L-1 — indexer arm64 is published under an arch-suffixed tag (resolved, not a deviation)
-
-The `4.4.0-rc.1` multi-arch index contains **linux/amd64 only**. The same version is published for
-arm64 as the separate tag `4.4.0-rc.1-arm64`. This project pins `4.4.0-rc.1-arm64` to run natively
-on the aarch64 host. **This is the same component version `4.4.0-rc.1`, not a slot mix** — only
-the architecture-specific tag of the identical release. Both digests are recorded above.
-
-### Finding L-2 — proof server tag selection (resolves Plan 01 Question 1)
-
-Plan 01 asked which proof-server tag is rc4-coherent for `ledger-9.1.0.0-rc.3`. Answer:
-**`9.0.0-rc.3`** — the tag used by the pinned wallet SDK's own `undeployed` local stack
-(`midnight-wallet/infra/compose/docker-compose-dynamic.yml` and
-`packages/prover-client/src/effect/test/httpProverClient.integration.test.ts`, both at the pinned
-wallet tag). Its major `9` matches ledger `9.1.0.0-rc.3`. Published for arm64 and amd64.
-*Not used:* `midnightntwrk/proof-server:8.0.3` referenced by `compact-contracts` — that checkout is
-a different slot (`v0.3.0-alpha.1`).
-
-### Finding L-3 — the pinned wallet SDK's own stack targets rc.3, not rc.4 (recorded risk)
-
-`midnight-wallet/infra/compose/docker-compose-dynamic.yml`, at the pinned wallet-SDK tag, runs
-node `2.0.0-rc.3` and indexer `4.4.0-pre-alpha.14-…-ca3e554` — **not** node `2.0.0-rc.4` and
-**not** indexer `v4.4.0-rc.1`. That is the combination the pinned wallet SDK was actually exercised
-against upstream. This project follows the **spec-mandated** pins (node `2.0.0-rc.4`, indexer
-`4.4.0-rc.1`) and records this as a standing incoherence risk: any wallet-SDK/node/indexer
-incompatibility observed later is a **named reproducible RED** for the affected cells, never a
-license to fall back to rc.3.
-
-## npm packages — pinned by integrity hash
-
-Verified published on the public npm registry at the exact pinned versions:
-
-| Package | Version | Integrity |
+| Role | Index digest (as referenced by compose) | linux/arm64 image digest |
 |---|---|---|
-| `@midnight-ntwrk/midnight-js-contracts` | 5.0.0-beta.6 | `sha512-z8feJLi/vDhPluYMH/0lrVQ003zMyT4PLB20/aCXVSLQy5sxvNCOiahKIU4+dasUM9vXtlVinDGYB6uFHVKbwg==` |
-| `@midnight-ntwrk/midnight-js-types` | 5.0.0-beta.6 | `sha512-ea8SVd8etHO2fhwNwRre2TN0lKiwUnWoPQudTjWJMZlF19U4jHW7nRWCMPO7qYgKDAsVec7o16PUY3TR7twijA==` |
-| `@midnightntwrk/wallet-sdk` | 2.0.0-beta.2 | `sha512-XL0ZG7NuswssFnsJYlJzf7AcBizBF14Da67KhRegLFLuDb0OYj3ZQNNR/c3q+2KXoJ7TJ5s75hhPMsWfBZWakg==` |
-| `@midnightntwrk/wallet-sdk-testkit` | 0.3.0-beta.2 | `sha512-3QHV39IZp/jIiwkf0ELHPUQKntnm0Rbdz6+S8WcjLEnCH/iEKsXOtkFCEcvk+xe6duBehYyqe82BWaZPy4rzyA==` |
+| Node `2.0.0-rc.4` | `sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e` | `sha256:d1e5fc231147e9af739a1128ae0941119fd59dca7356a2333567bad7b57d7424` |
+| Indexer `4.4.0-rc.1-arm64` | `sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a` | `sha256:628002a181edfc7d67d43944e84a35d920a0077c89cab6301169079b30c79316` |
+| Proof server `9.0.0-rc.3` | `sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f` | `sha256:8a4b29d737c1da754df0443e4a552a7934b47e17e99cd893a70120e4ce21fcaf` |
 
-The complete transitive set with integrity hashes is pinned by the harness lockfile
-(`harness/pnpm-lock.yaml`) once G3 scaffolding lands.
+### Images that actually ran in this run
 
-## Finding L-4 — **OPEN / BLOCKING for G2**: pinned compiler has no published binary
+```
+node          sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e
+indexer       sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a
+proof-server  sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f
+```
 
-**The pinned compiler `compactc-v0.33.0-rc.2` is not obtainable as a binary.**
+## Components
 
-Evidence:
+    midnight-node            node-2.0.0-rc.4
+    midnight-ledger          ledger-9.1.0.0-rc.3
+    midnight-indexer         v4.4.0-rc.1 (arm64 tag 4.4.0-rc.1-arm64, finding L-1)
+    proof-server             9.0.0-rc.3 (finding L-2)
+    midnight-js              v5.0.0-beta.6
+    wallet-sdk               2.0.0-beta.2
+    compactc                 0.33.0 / language 0.25.0 (LANE-DEV-1)
 
-1. `GET /repos/midnightntwrk/compact/releases/tags/compactc-v0.33.0-rc.2` → **404**.
-2. The full release list contains **no `-rc` prerelease at all**; it goes
-   `compactc-v0.31.1` → `compactc-v0.33.0`.
-3. The `compact` CLI (the official toolchain manager, workspace version `0.5.1`) fetches compiler
-   toolchains **exclusively from GitHub releases of `midnightntwrk/compact`**
-   (`tools/compact/src/fetch.rs` uses octocrab `.releases()`; `compiler_legacy.rs` uses each
-   asset's `browser_download_url`). With no release for the rc.2 tag, `compact` cannot install it.
-4. Building from the pinned source is a **Chez Scheme** build (`compiler/*.ss`,
-   `compiler/compactc.ss`); the repo's Rust workspace is only the CLI version manager.
+## `LANE-DEV-1` — inherited lane deviation (owner-approved 2026-08-17)
 
-What *is* published: `compactc-v0.33.0` (final), with assets
-`compactc_v0.33.0_aarch64-unknown-linux-musl.zip` (31,550,294 B),
-`compactc_v0.33.0_aarch64-darwin.zip`, and the two x86_64 builds.
+The lane pins `compactc-v0.33.0-rc.2`, which has no published binary (00003 finding L-4).
+The released `compactc-v0.33.0` is used instead, pinned by SHA-256
+`3aa23812b0b086dbce07da3931a40dcb01bec9676b1ceed7f2d0be370ab2dc46` in `docker/compactc.Dockerfile`.
+**Every piece of 00006 evidence carries `LANE-DEV-1` in addition to `EXPERIMENTAL_LANE`.**
 
-Relevant nuance: the **pinned rc.2 source declares its own compiler version as exactly `0.33.0`**
-(language `0.25.0`) — the `-rc.2` suffix is a repo release-candidate tag for that same compiler
-version, not a distinct compiler version string. However, the public repo tree at the
-`compactc-v0.33.0` release commit (`5e4946cc`) **no longer contains `compiler/` or `flake.nix`**,
-so the final release's ledger target **cannot be verified from public source** — it cannot be
-confirmed from outside that `0.33.0` final still pins `ledger-9.1.0.0-rc.3` the way rc.2 does.
+Re-proven in THIS run (see `04-lane-dev-1.out`) rather than inherited on paper:
 
-### `LANE-DEV-1` — owner-approved lane deviation (2026-08-17)
+- [x] Installed `compactc` reports compiler version `0.33.0`.
+- [x] Installed `compactc` reports language version `0.25.0`.
+- [x] Artifacts compiled by it are accepted on-chain by the pinned `ledger-9.1.0.0-rc.3`
+      node — re-proven by this run's Manager and Minter deployments inside the spikes.
+- [x] Binary pinned by SHA-256 in `docker/compactc.Dockerfile`.
 
-**Decision (owner, option A):** use the published **`compactc-v0.33.0`** and verify empirically.
+## `W-1` — inherited HOST workaround (not a lane change)
 
-This is a **recorded deviation from the literal lane pin** `compactc-v0.33.0-rc.2`, approved by
-the owner after the impossibility above was demonstrated. It is *not* a silent substitution and
-*not* a slot mix: the pinned rc.2 source declares its own compiler version as exactly `0.33.0`,
-so this is the released form of the same compiler version line.
+This host's `docker-credential-desktop` can hang, wedging every `docker pull` (00004 G4 run 1
+lost 63 minutes to it). Every 00006 gate therefore runs with `DOCKER_CONFIG` pointed at a
+scratch directory holding `{}` plus a symlink to the user's real `cli-plugins` — see
+`01-w1-docker-config.out` and `scripts/lib/docker-w1.sh`.
 
-Mandatory verification before any G2 cell counts as green — if any check fails this becomes a
-**named RED**, not a workaround:
+- It is an ENVIRONMENT VARIABLE for the gate's own child processes. `~/.docker/config.json`,
+  Docker Desktop's settings and every other project on this shared host are untouched.
+- No pin, wrapper step, contract or piece of evidence was changed to accommodate it; the
+  `pull` step is still run and still asserted.
+- Pulls run anonymously. The images are public and **pinned by digest**, and the digest is the
+  identity, so the pin proof is unaffected.
 
-- [ ] Installed `compactc` reports compiler version `0.33.0`.
-- [ ] Installed `compactc` reports language version `0.25.0`.
-- [x] Artifacts compiled by it are accepted on-chain by the pinned `ledger-9.1.0.0-rc.3` node.
-      **VERIFIED 2026-08-18**: Minter and Manager both deployed and applied — see
-      `evidence/g3-ledger/deploy.txt`. (A real circuit call follows in the step-ledger run.)
-- [x] Binary pinned by SHA-256 `3aa23812b0b086dbce07da3931a40dcb01bec9676b1ceed7f2d0be370ab2dc46`
-      (`compactc_v0.33.0_aarch64-unknown-linux-musl.zip`) in `docker/compactc.Dockerfile`.
+## `W-2` — HOST workaround adopted by 00006 (not a lane change)
 
-**Every piece of G2 and G3 evidence carries the `LANE-DEV-1` label in addition to
-`EXPERIMENTAL_LANE`,** and the final report states this deviation explicitly.
+W-2 ACTIVE: this run executed under 'caffeinate -is' (idle+system sleep held off for the gate's process tree only)
+
+This Mac idle-slept mid-gate during 00006's G1 run 2, and 00005's G4 run 1 recorded the same
+failure mode. A 40-minute gate is almost entirely waiting — proving, block production, indexer
+catch-up — so it looks idle and the sleep timer fires. What comes back is not a clean failure:
+sockets drop mid-request and the SDK reports whatever it was doing, e.g.
+`'prove' returned an error: AbortError: The user aborted a request.`, which is indistinguishable
+from a real refusal in an evidence table. Every 00006 gate wrapper therefore re-execs itself
+under `caffeinate -is` — see `scripts/lib/nosleep.sh`.
+
+- It is a PROCESS WRAPPER around the gate's own process tree. No system setting is written, no
+  `pmset` value is changed, and the assertion disappears when the gate exits, so every other
+  tenant of this shared host is unaffected.
+- It changes WHEN the machine sleeps, not WHAT is executed or asserted. No pin, step, contract
+  or piece of evidence was altered to accommodate it.
+- Like W-1 it is a HOST workaround, **not** a lane property, and nothing about it may be read as
+  a statement about node, ledger, indexer or SDK behaviour.
+
+## Compile probes
+
+None. 00006 introduces no new Compact shape in Plan 01: the spikes run 00005's Manager v3 and
+Minter UNCHANGED, because `depositShielded`'s `receiveShielded` deficit already has the shape
+of the swap offer's −B leg. New circuits arrive in Plan 02 with their own gate.

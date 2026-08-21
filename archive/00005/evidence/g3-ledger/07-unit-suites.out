@@ -1,0 +1,12 @@
+
+ RUN  v4.1.9 /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody/harness
+
+Sourcemap for "/Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody/harness/generated/manager/contract/index.js" points to missing source files
+Sourcemap for "/Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody/harness/generated/minter/contract/index.js" points to missing source files
+Sourcemap for "/Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody/harness/generated/minter-collide/contract/index.js" points to missing source files
+
+ Test Files  3 passed (3)
+      Tests  56 passed (56)
+   Start at  00:52:22
+   Duration  716ms (transform 299ms, setup 0ms, import 445ms, tests 1.04s, environment 0ms)
+

@@ -1,0 +1,10 @@
+# host port probe — 2026-08-18T01:12:22Z
+# rule: random, >10000, verified free, bound to 127.0.0.1 only
+checked node_rpc: candidate 31573 -> FREE (attempt 1) 31573
+checked indexer: candidate 34299 -> FREE (attempt 1) 34299
+checked proof_server: candidate 21095 -> FREE (attempt 1) 21095
+selected node_rpc:      31573
+selected indexer:       34299
+selected proof_server:  21095
+compose project name:   aa00003-token-custody
+APP_INFRA_SECRET:       <generated, 32 bytes hex, not retained in evidence>

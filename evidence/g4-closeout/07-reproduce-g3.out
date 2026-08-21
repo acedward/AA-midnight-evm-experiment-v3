@@ -1,0 +1,26 @@
+[W-2] already running under caffeinate (pid 50973) — idle sleep is held off
+[G3] EXPERIMENTAL_LANE / LANE-DEV-1 — 00006 swap step ledger, mode=full
+[G3] compose project: aa00006-g3-20260820153554-50973
+[G3] deviation D-307: the ledger is partitioned across three fresh Managers (F-310). See
+[G3] evidence/g3-swap-ledger/DEVIATION.md — this is NOT the spec's literal single-Manager table.
+[G3] ok: 01-w1-docker-config (1s)
+[G3] ok: 02-probe-ports (0s)
+[G3] ok: 03-lane-reuse (0s)
+[G3] ok: 04-lane-dev-1 (1s)
+[G3] ok: 05-compile-fast (1s)
+[G3] ok: 06-install (1s)
+[G3] ok: 07-unit-suites (1s)
+[G3] ok: 08-typecheck (2s)
+[G3] ok: 09-compile-zk (81s)
+[G3] ok: 10-pull (2s)
+[G3] ok: 11-boot (6s)
+[G3] ok: 12-health (2s)
+[G3] ok: 13-reset-evidence (0s)
+[G3] ok: 14-loadgate (0s)
+[G3] ok: 15-stage-a (924s)
+[G3] ok: 16-stage-b (528s)
+[G3] ok: 17-stage-c (811s)
+[G3] ok: 18-record (2s)
+[G3] all stages passed; teardown runs next and must also succeed
+[G3] teardown: docker compose --env-file /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00006-g4-88MwCz/clone/docker/.env -f /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00006-g4-88MwCz/clone/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00006-g3-20260820153554-50973 && w1_cleanup
+[G3] GREEN

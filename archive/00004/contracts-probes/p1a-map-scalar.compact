@@ -1,0 +1,41 @@
+// PROBE P1(a) — 00004-multi-token-custody, Plan 01 Phase 3 (EXPERIMENTAL_LANE / LANE-DEV-1)
+//
+// THROWAWAY. Not deployed, not part of the product. Its only job is to answer, on the PINNED
+// compiler, one question that decides D-101:
+//
+//   Can per-(account, colour) balances be held in a single `Map<Bytes<32>, Uint<128>>` keyed by a
+//   `persistentHash` composite of (account, colour)?
+//
+// This is the least demanding of the three P1 shapes. If it fails, colour-keyed custody in maps is
+// impossible on this compiler and D-101 must take the fixed-per-colour-slot fallback (FR-103).
+
+import CompactStandardLibrary;
+
+export { balanceOf, credit, debit, compositeKey }
+
+// One flat map for the whole 4-party x 4-colour table.
+export ledger balances: Map<Bytes<32>, Uint<128>>;
+
+// Composite key: the exact shape the multi-colour Manager would need.
+export circuit compositeKey(account: Bytes<32>, colour: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([account, colour]);
+}
+
+export circuit balanceOf(account: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  const k = compositeKey(disclose(account), disclose(colour));
+  return balances.member(k) ? balances.lookup(k) : 0;
+}
+
+export circuit credit(account: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+  const k = compositeKey(disclose(account), disclose(colour));
+  const cur = balances.member(k) ? balances.lookup(k) : 0;
+  balances.insert(k, (cur + disclose(amount)) as Uint<128>);
+}
+
+export circuit debit(account: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+  const k = compositeKey(disclose(account), disclose(colour));
+  assert(balances.member(k), "no balance for this (account, colour)");
+  const cur = balances.lookup(k);
+  assert(cur >= disclose(amount), "per-(account,colour) balance too low");
+  balances.insert(k, (cur - disclose(amount)) as Uint<128>);
+}

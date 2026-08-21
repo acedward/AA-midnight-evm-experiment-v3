@@ -1,4 +1,4 @@
-// Lane configuration for 00003-contract-token-custody — EXPERIMENTAL_LANE (v2.0.0-rc.4 slot).
+// Lane configuration for 00006-unbalanced-zswap — EXPERIMENTAL_LANE (v2.0.0-rc.4 slot).
 //
 // Endpoints come from docker/.env, produced by scripts/g1/probe-ports.sh. Nothing here is
 // hard-coded to a port, so a fresh clone reproduces with whatever free ports it probes.
@@ -11,6 +11,8 @@ export const REPO_ROOT = join(HERE, '..', '..');
 
 export const LANE_LABEL = 'EXPERIMENTAL_LANE';
 export const LANE_DEVIATIONS = ['LANE-DEV-1 (compactc-v0.33.0 substituted for -rc.2; owner-approved)'];
+/** Every artifact this project writes carries both labels (spec FR-309). */
+export const LANE_STAMP = `${LANE_LABEL} / LANE-DEV-1`;
 
 export type LaneEnv = {
   composeProject: string;
@@ -60,6 +62,11 @@ export const SEEDS = {
   ownerM: '00000000000000000000000000000000000000000000000000000000000000a2',
   ownerA: '00000000000000000000000000000000000000000000000000000000000000b1',
   ownerB: '00000000000000000000000000000000000000000000000000000000000000b2',
+  // 00006's TAKER (spec Participants: OwnerT). A real, independent wallet that holds the wanted
+  // colour plus NIGHT/DUST and settles offers with STOCK facade calls only (FR-303). It is disjoint
+  // from every other seed here, so "a wallet the maker never knew" is literally true of it in the
+  // v2 open-offer experiments.
+  ownerT: '00000000000000000000000000000000000000000000000000000000000000c1',
 } as const;
 
 export type PartyName = keyof typeof SEEDS;
