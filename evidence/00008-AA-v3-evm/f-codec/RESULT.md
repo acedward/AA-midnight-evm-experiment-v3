@@ -7,6 +7,13 @@ Executed 2026-08-21 by Codex (`plan-task-runner`) in
 `00008-AA-v3-evm-f-codec`, from clean starting SHA
 `13a87fedcebb39ca8eacb54f4c06f33f01538b3c`. No branch was pushed and no remote was mutated.
 
+Focused implementation/evidence source commit:
+`85b4e7f6eb4ca274ce78ee30269bbdcccc8e92c4` (`feat: freeze AA v3 EIP-712 codec`), parent
+`13a87fedcebb39ca8eacb54f4c06f33f01538b3c`. The checked-out branch was clean immediately after
+that commit, had no upstream, and `git ls-remote --heads origin 00008-AA-v3-evm-f-codec` returned no
+remote worker ref. A local evidence-only bookkeeping commit may follow this source pin; canonical
+organizer records carry the final branch HEAD and clean state without altering this source pin.
+
 ## Frozen authority
 
 - Technical note: `harness/src/auth/AUTH-EIP712-AA-V3-V1.md`
