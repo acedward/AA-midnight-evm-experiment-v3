@@ -33,7 +33,7 @@ fs_init "G5-SMOKE" "$EVID" "smoke"
 
 PROJECT="aa00006-g5smoke-$(date -u +%Y%m%d%H%M%S)-$$"
 COMPOSE=(docker compose --env-file "$ROOT/docker/.env" -f "$ROOT/docker/compose.yml")
-fs_set_teardown "${COMPOSE[*]} down -v --remove-orphans && stack_assert_clean ${PROJECT} && w1_cleanup"
+fs_set_teardown "stack_teardown '$ROOT' '$PROJECT'"
 
 H() { (cd "$ROOT/harness" && "$@"); }
 

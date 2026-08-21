@@ -15,11 +15,10 @@
 //               `ZswapInvalidErrorCode::NullifierAlreadyPresent`. That is a sharper answer than 104
 //               ("a transcript did not match"), and FR-311 asks for the measured rule, so 239 is what
 //               this asserts. Measured 3/3 in gate run 1.
-//   SHORT-TTL   an offer whose INTENT ttl is a couple of minutes instead of the hardcoded hour, so
-//               node-side expiry can be observed at all. Measured twice: once with the taker's LOCAL
-//               expiry gate on (it must refuse without touching the chain) and once with it forced
-//               off (so the NODE's own verdict is recorded verbatim). This arm exists as much for
-//               Plan 03 step 9 as for FR-311 — without it the expiry negative costs an hour of
+//   SHORT-TTL   an offer whose authoritative INTENT ttl is a couple of minutes instead of the
+//               hardcoded hour, so node-side expiry can be observed at all. Amendment A-308 removed
+//               the JSON expiry gate: `expiresAt` is an advisory business note, and the NODE's own
+//               verdict is the only expiry decision. Without this arm the negative costs an hour of
 //               waiting per observation.
 //   TIME-ONLY   the same offer shape, taken after T seconds with NOTHING ELSE HAPPENING. This is the
 //               control that stops the INTERVENE result being read as "offers just go stale".
@@ -95,7 +94,6 @@ type ArmResult = {
   /** Set when the offer could not be BUILT — e.g. FR-302 placement failing closed (finding F-308). */
   buildRefusal?: { placementViolation: boolean; error: string };
   take: TakeResult;
-  localRefusal?: TakeResult;
   nodeErrorCode: number | null;
   nodeErrorDecoded: string;
   /** The node's own line, verbatim, when one could be recovered from the facade's wrapper. */
@@ -201,12 +199,12 @@ const main = async () => {
       return { offer, file: published.file, intentTtl };
     };
 
-    const takeWith = async (file: string, label: string, S_B: Colour, ignoreExpiry = false): Promise<TakeResult> => {
+    const takeWith = async (file: string, label: string, S_B: Colour): Promise<TakeResult> => {
       const spender = await rig!.base.openSpender('OwnerT', SEEDS.ownerT, [
         { colour: S_B.hex, shielded: true, amount: WANT_B },
       ]);
       try {
-        return await takeOffer(spender.party, file, { label, ignoreExpiry });
+        return await takeOffer(spender.party, file, { label });
       } finally {
         await spender.close();
       }
@@ -219,7 +217,6 @@ const main = async () => {
         waitSeconds?: number;
         intentTtlSeconds?: number;
         intervene?: () => Promise<string>;
-        alsoTakeLocallyFirst?: boolean;
       },
     ): Promise<ArmResult> => {
       console.log(`\n## arm ${arm}`);
@@ -274,14 +271,8 @@ const main = async () => {
       // can answer it.
       const preTake = opts.intervene || wait > 0 ? await observeCustody(rig!, colours, [AA_A, AA_B], { op2: false }) : before;
 
-      // For the short-TTL arm, first prove the taker's own gate refuses locally, then force it off so
-      // the NODE's verdict is on the record too.
-      let localRefusal: TakeResult | undefined;
-      if (opts.alsoTakeLocallyFirst) {
-        localRefusal = await takeWith(file, `${arm}-local`, S_B, false);
-        log(`arm ${arm}: local gate -> stage=${localRefusal.stage} ok=${localRefusal.ok}`);
-      }
-      const take = await takeWith(file, arm, S_B, Boolean(opts.alsoTakeLocallyFirst));
+      // A-308: JSON expiry is advisory. The one take proceeds to the authoritative transaction/node.
+      const take = await takeWith(file, arm, S_B);
 
       const code = take.nodeRefusal?.code ?? nodeErrorCode(take.error);
       let after = await observeCustody(rig!, colours, [AA_A, AA_B], { op2: false });
@@ -312,7 +303,6 @@ const main = async () => {
         waitedSeconds: wait,
         intervention,
         take,
-        localRefusal,
         nodeErrorCode: code,
         nodeErrorDecoded: take.nodeRefusal?.decoded ?? decodeNodeError(code),
         nodeVerbatim: take.nodeRefusal?.verbatim ?? null,
@@ -350,7 +340,6 @@ const main = async () => {
     await runArm('SHORT-TTL', 'what happens when an offer outlives its intent TTL?', {
       intentTtlSeconds: SHORT_TTL_SECONDS,
       waitSeconds: SHORT_TTL_SECONDS + 30,
-      alsoTakeLocallyFirst: true,
     });
 
     // --- arms 3..n: time only, nothing else happening -------------------------------------------
@@ -394,13 +383,8 @@ const main = async () => {
         detail: String(intervene.custodyUnchangedOnRefusal),
       },
       {
-        name: 'an expired offer is refused LOCALLY by the taker, with no network contact',
-        ok: shortTtl.localRefusal?.stage === 'expired' && shortTtl.localRefusal?.offlineRefusal === true,
-        detail: `stage=${shortTtl.localRefusal?.stage}, offline=${shortTtl.localRefusal?.offlineRefusal}`,
-      },
-      {
-        name: 'and the NODE also refuses it once the local gate is forced off',
-        ok: !shortTtl.take.ok,
+        name: 'the NODE refuses the expired serialized intent; JSON expiry is advisory (A-308)',
+        ok: !shortTtl.take.ok && shortTtl.nodeErrorCode === 228,
         detail: shortTtl.take.ok ? 'it settled — the intent TTL rewrite did not take effect' : `code ${shortTtl.nodeErrorCode ?? 'none'}`,
       },
       {
@@ -482,11 +466,7 @@ const main = async () => {
         [
           ['intent TTL rewrite took effect', String(shortTtl.offer.intentTtl ?? '(not attempted)')],
           [
-            'taker\'s LOCAL expiry gate',
-            `stage \`${shortTtl.localRefusal?.stage}\`, offline refusal: ${String(shortTtl.localRefusal?.offlineRefusal)}`,
-          ],
-          [
-            'the NODE, with the local gate forced off',
+            'the NODE (JSON expiry is advisory under A-308)',
             shortTtl.take.ok ? '**settled** — the rewrite did not reach the node' : `refused, code \`${shortTtl.nodeErrorCode ?? 'none'}\` (${shortTtl.nodeErrorDecoded})`,
           ],
         ],
@@ -509,7 +489,6 @@ const main = async () => {
       if (a.nodeVerbatim && a.take.error && a.nodeVerbatim !== a.take.error) {
         md.push(`  - what the FACADE reported instead: \`${a.take.error}\` (see \`src/node-error.ts\`)`);
       }
-      if (a.localRefusal && !a.localRefusal.ok) md.push(`  - local gate first: \`${a.localRefusal.error}\``);
     }
     if (arms.every((a) => a.take.ok)) md.push('None — every arm settled.');
     md.push('');

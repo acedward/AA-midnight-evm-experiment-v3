@@ -67,6 +67,8 @@ export const describeRecipe = (recipe: any): Record<string, unknown> => {
 export type SettlementResult = {
   route: TakerRoute;
   ok: boolean;
+  /** Where a failed settlement stopped; `presubmit` means the node was never contacted. */
+  failureStage?: 'presubmit' | 'settlement';
   /** The submitted transaction identifier the facade returns. */
   txId?: string;
   /** `transactionHash()` of the finalized transaction — the canonical chain id. */
@@ -130,6 +132,7 @@ export const settleAsTaker = async (
 ): Promise<SettlementResult> => {
   const validations: ValidationOutcome[] = [];
   let preSubmitGuard: unknown;
+  let failureStage: SettlementResult['failureStage'] = 'settlement';
   const label = opts.label ?? route;
   const ttl = new Date(Date.now() + (opts.ttlMs ?? TTL_MS));
   const facade: any = taker.wallet;
@@ -188,7 +191,11 @@ export const settleAsTaker = async (
     // The fail-closed guard, if the caller supplied one. It runs on the MERGED transaction, which is
     // the only object that can answer "is this actually submittable and does it hold what I agreed
     // to?" — the offer alone cannot, and the recipe is not the thing that gets submitted.
-    if (opts.preSubmit) preSubmitGuard = await opts.preSubmit(finalized, recipe);
+    if (opts.preSubmit) {
+      failureStage = 'presubmit';
+      preSubmitGuard = await opts.preSubmit(finalized, recipe);
+      failureStage = 'settlement';
+    }
 
     log(`taker[${label}]: submitting the merged transaction`);
     const txId = String(await facade.submitTransaction(finalized));
@@ -215,6 +222,7 @@ export const settleAsTaker = async (
     return {
       route,
       ok: false,
+      failureStage,
       validations,
       preSubmitGuard,
       error: errorChain(e),

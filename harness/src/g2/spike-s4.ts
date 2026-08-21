@@ -176,7 +176,7 @@ const main = async () => {
     const published = publishAndReread(offer, 's4-surplus');
     log(
       `S4: published ${published.file.split('/').pop()}; reader pid ${published.reader.process?.pid} ` +
-        `verified=${published.reader.envelopeVerified} byteIdentical=${published.reader.roundTripByteIdentical} ` +
+        `framing=${published.reader.envelopeFramingParsed} byteIdentical=${published.reader.roundTripByteIdentical} ` +
         `surpluses=${JSON.stringify(published.reader.surpluses)}`,
     );
 
@@ -246,8 +246,8 @@ const main = async () => {
       },
       {
         name: 'FR-306: the envelope round-tripped a real process boundary byte-identically',
-        ok: Boolean(published.reader.envelopeVerified && published.reader.roundTripByteIdentical && published.reader.contentAddressMatches),
-        detail: `reader pid ${published.reader.process?.pid}, ${published.reader.payloadBytes} bytes, sha ${String(published.reader.payloadSha256).slice(0, 16)}…`,
+        ok: Boolean(published.reader.envelopeFramingParsed && published.reader.roundTripByteIdentical),
+        detail: `reader pid ${published.reader.process?.pid}, ${published.reader.payloadIdentity?.transactionBytes} bytes, sha ${String(published.reader.payloadIdentity?.contentAddress).slice(0, 16)}… computed from payload`,
       },
       {
         name: 'the offer is unsubmittable alone (positively established offline)',

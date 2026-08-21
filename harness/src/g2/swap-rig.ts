@@ -280,7 +280,7 @@ export const classifyRefusal = (stage: string, error: string | undefined, node?:
   if (/failed to check|proof server|proving|prove' returned|bad input/.test(e)) return 'proof server';
   if (/wellformed|invalid balance|malformed/.test(e)) return 'ledger wellFormed (offline)';
   if (/1010|custom error|invalid transaction/.test(e)) return 'node (submitted and refused)';
-  if (stage === 'envelope' || stage === 'expired' || stage === 'fundability' || stage === 'deserialize') {
+  if (stage === 'envelope' || stage === 'fundability' || stage === 'deserialize') {
     return 'harness gate (offline, before any network contact)';
   }
   if (/insufficientfunds|balanc/.test(e)) return "taker's wallet balancer";

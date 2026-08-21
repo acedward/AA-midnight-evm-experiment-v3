@@ -414,11 +414,10 @@ const runCase = async (spec: CaseSpec): Promise<CaseResult> => {
       res.checks.push({
         name: 'FR-306: the envelope crossed a REAL process boundary byte-identically',
         ok: Boolean(
-          (res.readerProcess as any)?.envelopeVerified &&
-            (res.readerProcess as any)?.roundTripByteIdentical &&
-            (res.readerProcess as any)?.contentAddressMatches,
+          (res.readerProcess as any)?.envelopeFramingParsed &&
+            (res.readerProcess as any)?.roundTripByteIdentical,
         ),
-        detail: `reader pid ${(res.readerProcess as any)?.process?.pid}, ${(res.readerProcess as any)?.payloadBytes} bytes`,
+        detail: `reader pid ${(res.readerProcess as any)?.process?.pid}, ${(res.readerProcess as any)?.payloadIdentity?.transactionBytes} authoritative bytes`,
       });
       res.checks.push({
         name: 'THE OPEN CLAIM: the settler is a wallet whose keys the maker never knew',

@@ -7,15 +7,16 @@
 // and an offer that needed an indexer to be understood would not be distributable at all.
 //
 // So this program is started fresh, does not import a wallet, a provider or an indexer client, and
-// reports what can be established from the bytes alone: the envelope verifies, the transaction
-// deserializes, it re-serializes byte-identically, and its imbalances say exactly what the terms say.
+// reports what can be established from the bytes alone: the framing parses, payload identity is
+// computed, the transaction form is inferred/deserialized, it re-serializes byte-identically, and
+// its imbalances are read without consulting advisory JSON.
 //
 // Usage: tsx src/offer/reader.ts <envelope-file>
 // Emits ONE line of JSON on stdout. Exit 0 means a report was produced, not that it passed.
 import { readFileSync } from 'node:fs';
 import * as ledger from '@midnightntwrk/ledger-v9';
-import { readEnvelope, sha256Hex } from './envelope.js';
-import { readAllImbalances, nonDustDeficits, nonDustSurpluses } from './take.js';
+import { readEnvelope } from './envelope.js';
+import { deserializeOfferBytes, readAllImbalances, nonDustDeficits, nonDustSurpluses } from './take.js';
 
 const strip = (raw: string): string =>
   raw
@@ -38,16 +39,20 @@ const main = () => {
     if (!file) throw new Error('usage: reader.ts <envelope-file>');
     report.envelopeBytes = readFileSync(file).length;
 
-    // Gate 1 runs here: the content address is recomputed from the payload.
-    const { terms, bytes } = readEnvelope(file);
-    report.envelopeVerified = true;
-    report.terms = terms;
-    report.payloadBytes = bytes.length;
-    report.payloadSha256 = sha256Hex(bytes);
-    report.contentAddressMatches = report.payloadSha256 === terms.contentAddress;
+    const { terms, bytes, payload } = readEnvelope(file);
+    report.envelopeFramingParsed = true;
+    report.advisoryTerms = terms;
+    report.payloadIdentity = payload;
+    report.declaredPayloadIdentity = {
+      contentAddress: terms.contentAddress,
+      transactionBytes: terms.transactionBytes,
+      note: 'advisory only; never compared as a gate (A-308)',
+    };
 
-    const tx: any = (ledger as any).Transaction.deserialize('signature', 'proof', terms.form, bytes);
+    const { tx, form, route } = deserializeOfferBytes(bytes);
     report.deserialized = true;
+    report.serializedForm = form;
+    report.inferredRoute = route;
     const reserialized: Uint8Array = tx.serialize();
     report.roundTripByteIdentical =
       reserialized.length === bytes.length && Buffer.compare(Buffer.from(reserialized), Buffer.from(bytes)) === 0;

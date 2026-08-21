@@ -109,14 +109,13 @@ const main = async () => {
         ioName,
       );
 
-    const takeIt = (label: string, envelope: string, ioName: string, wants: bigint, ignoreExpiry = false) =>
+    const takeIt = (label: string, envelope: string, ioName: string, wants: bigint) =>
       runTaker(
         {
           label,
           envelope,
           takerSeedName: 'ownerT',
           require: [{ colour: S_B!.hex, amount: String(wants) }],
-          ...(ignoreExpiry ? { ignoreExpiry: true } : {}),
         },
         ioName,
       );
@@ -183,24 +182,16 @@ const main = async () => {
       log(`row 9: waiting ${STAGE_C.row9.waitSeconds} s for the offer to outlive its ${STAGE_C.row9.ttlSeconds} s TTL`);
       await sleep(STAGE_C.row9.waitSeconds * 1000);
 
-      const local = takeIt('row-9-local', rep.envelopeFile, 'row9-taker-local', STAGE_C.row9.wants);
-      const node = takeIt('row-9-node', rep.envelopeFile, 'row9-taker-node', STAGE_C.row9.wants, true);
+      const node = takeIt('row-9-node', rep.envelopeFile, 'row9-taker-node', STAGE_C.row9.wants);
       const after = await obs({ users: true });
       last = after;
 
       r9.observedBefore(preTake)
         .observedAfter(after)
-        .artifact('localGateTake', local)
         .artifact('nodeTake', node)
-        .verbatim(local.take?.error)
         .verbatim(node.take?.nodeRefusal?.verbatim ?? node.take?.error)
         .check(
-          "the taker's OWN gate refuses the expired offer OFFLINE, with no network contact",
-          local.take?.stage === 'expired' && local.take?.offlineRefusal === true,
-          `stage=${local.take?.stage} offline=${local.take?.offlineRefusal}`,
-        )
-        .check(
-          'and with that gate forced off, the NODE refuses it too',
+          'A-308: the NODE, not advisory JSON expiry, refuses the expired serialized intent',
           node.take?.ok === false,
           `stage=${node.take?.stage} code ${node.take?.nodeRefusal?.code ?? 'none'}`,
         )

@@ -25,9 +25,12 @@
 // `.json` beside a `.bin` can be separated in transit and then the terms are unverifiable. The reader
 // splits on the first two newlines only, so the payload can contain any bytes at all.
 //
-// The reader RECOMPUTES the content address and REFUSES on a mismatch. That makes the envelope its own
-// first line of tamper defence (NC-304's outermost layer) and it is deliberately cheap and local: a
-// flipped byte is rejected before a wallet, a proof server or a node is ever contacted.
+// Amendment A-308: the serialized transaction bytes are the ONLY authority. The JSON object is an
+// advisory business note in its entirety — including its copies of payload length/hash — and cannot
+// authorize, block or alter settlement. The reader therefore computes identity from the bytes it
+// actually received and never compares a JSON field as a gate. Invalid transaction bytes still fail
+// when the ledger deserializer/proofs/node read those bytes; a different valid payload is a different
+// offer, regardless of what its advisory wrapper claims.
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { LANE_STAMP } from '../lane.js';
@@ -90,11 +93,12 @@ export type OfferTerms = {
   /** The account debited for `gives` — always the maker's witness owner, never a parameter. */
   makerAccount: string;
   createdAt: string;
-  /** The moment after which a taker must refuse locally, ISO-8601. */
+  /** Advisory business expiry note, ISO-8601. The serialized intent TTL is authoritative (A-308). */
   expiresAt: string;
   ttlSeconds: number;
-  /** SHA-256 of the raw transaction bytes — the content address (FR-306). */
+  /** Advisory copy of SHA-256 written by the maker; readers compute identity from raw bytes (A-308). */
   contentAddress: string;
+  /** Advisory copy of the byte length; readers compute this from the payload. */
   transactionBytes: number;
   /** The FR-302 placement assert as measured at build time, carried for the taker to re-check. */
   placement: PlacementReport;
@@ -102,6 +106,12 @@ export type OfferTerms = {
   makerAttachedDust: boolean;
   bearerKey?: BearerKeyMaterial;
 };
+
+/**
+ * The parsed JSON terms line on READ. It is deliberately partial and open: A-308 makes every field
+ * advisory, so missing, added or wrong-typed fields must not affect the transaction path.
+ */
+export type AdvisoryOfferTerms = Record<string, unknown>;
 
 export const sha256Hex = (b: Uint8Array): string => createHash('sha256').update(b).digest('hex');
 
@@ -116,7 +126,7 @@ export const makeTerms = (draft: OfferTermsDraft, bytes: Uint8Array): OfferTerms
   transactionBytes: bytes.length,
 });
 
-export const encodeEnvelope = (terms: OfferTerms, bytes: Uint8Array): Uint8Array => {
+export const encodeEnvelope = (terms: AdvisoryOfferTerms, bytes: Uint8Array): Uint8Array => {
   const json = JSON.stringify(terms);
   if (json.includes('\n')) throw new Error('offer terms serialized with a raw newline — the framing would break');
   const head = Buffer.from(`${OFFER_MAGIC}\n${json}\n`, 'utf-8');
@@ -125,12 +135,20 @@ export const encodeEnvelope = (terms: OfferTerms, bytes: Uint8Array): Uint8Array
 
 export class OfferEnvelopeError extends Error {}
 
-export type DecodedEnvelope = { terms: OfferTerms; bytes: Uint8Array };
+export type PayloadIdentity = { contentAddress: string; transactionBytes: number };
+
+export type DecodedEnvelope = {
+  /** Untrusted/advisory JSON retained for display and historical evidence compatibility only. */
+  terms: AdvisoryOfferTerms;
+  /** The sole authoritative envelope payload. */
+  bytes: Uint8Array;
+  /** Derived from `bytes`, never copied from JSON. */
+  payload: PayloadIdentity;
+};
 
 /**
- * Decode and VERIFY an envelope. Every failure is an `OfferEnvelopeError` — this function never
- * returns a half-trusted result, because the whole point of the content address is to fail before a
- * tampered artifact reaches a wallet.
+ * Decode the OFFER/1 framing and compute payload identity from the serialized transaction bytes.
+ * JSON syntax/framing failures remain envelope errors; JSON field values never gate A-308's take path.
  */
 export const decodeEnvelope = (raw: Uint8Array): DecodedEnvelope => {
   const buf = Buffer.from(raw);
@@ -143,27 +161,23 @@ export const decodeEnvelope = (raw: Uint8Array): DecodedEnvelope => {
   const secondNl = buf.indexOf(NL, firstNl + 1);
   if (secondNl < 0) throw new OfferEnvelopeError('offer envelope has no terms line');
 
-  let terms: OfferTerms;
+  let parsed: unknown;
   try {
-    terms = JSON.parse(buf.subarray(firstNl + 1, secondNl).toString('utf-8')) as OfferTerms;
+    parsed = JSON.parse(buf.subarray(firstNl + 1, secondNl).toString('utf-8'));
   } catch (e) {
     throw new OfferEnvelopeError(`offer terms are not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
   }
-  if (terms?.version !== 1) throw new OfferEnvelopeError(`unsupported offer envelope version: ${String(terms?.version)}`);
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new OfferEnvelopeError('offer terms line must be a JSON object (all of its fields are advisory)');
+  }
+  const terms = parsed as AdvisoryOfferTerms;
 
   const bytes = new Uint8Array(buf.subarray(secondNl + 1));
-  if (bytes.length !== terms.transactionBytes) {
-    throw new OfferEnvelopeError(
-      `offer payload length mismatch: terms declare ${terms.transactionBytes} bytes, envelope carries ${bytes.length}`,
-    );
-  }
-  const actual = sha256Hex(bytes);
-  if (actual !== terms.contentAddress) {
-    throw new OfferEnvelopeError(
-      `offer content address mismatch: terms declare sha256 ${terms.contentAddress}, payload hashes to ${actual}`,
-    );
-  }
-  return { terms, bytes };
+  return {
+    terms,
+    bytes,
+    payload: { contentAddress: sha256Hex(bytes), transactionBytes: bytes.length },
+  };
 };
 
 export const writeEnvelope = (path: string, terms: OfferTerms, bytes: Uint8Array): string => {
@@ -173,10 +187,14 @@ export const writeEnvelope = (path: string, terms: OfferTerms, bytes: Uint8Array
 
 export const readEnvelope = (path: string): DecodedEnvelope => decodeEnvelope(readFileSync(path));
 
-/** Has the offer's declared TTL passed? The taker checks this LOCALLY, before touching the chain. */
-export const offerExpired = (terms: OfferTerms, now: Date = new Date()): boolean =>
-  now.getTime() >= Date.parse(terms.expiresAt);
-
-/** Seconds of life left, negative once expired. Recorded in evidence so expiry is measured, not guessed. */
-export const offerSecondsLeft = (terms: OfferTerms, now: Date = new Date()): number =>
-  Math.round((Date.parse(terms.expiresAt) - now.getTime()) / 1000);
+/**
+ * Advisory display only. This value MUST NOT gate settlement; the serialized intent TTL and ledger
+ * are authoritative. Missing/malformed annotations simply have no displayable value.
+ */
+export const advisoryOfferSecondsLeft = (
+  terms: AdvisoryOfferTerms,
+  now: Date = new Date(),
+): number | undefined => {
+  const expires = typeof terms.expiresAt === 'string' ? Date.parse(terms.expiresAt) : Number.NaN;
+  return Number.isFinite(expires) ? Math.round((expires - now.getTime()) / 1000) : undefined;
+};

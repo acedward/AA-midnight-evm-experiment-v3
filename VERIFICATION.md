@@ -18,14 +18,18 @@ exactly that.
 - [Gate G2 — Manager v4, the offer kit, spikes S4–S6](#gate-g2--manager-v4-the-offer-kit-spikes-s4s6)
 - [Gate G3 — the swap step ledger](#gate-g3--the-swap-step-ledger)
 - [Gate G4 — clean-clone reproduction and closeout](#gate-g4--clean-clone-reproduction-and-closeout)
+- [Gate G5 — F-310 mitigation measurements](#gate-g5--f-310-mitigation-measurements)
 - [Deviations, findings and workarounds, with where each was established](#deviations-findings-and-workarounds-with-where-each-was-established)
 - [What is NOT verified](#what-is-not-verified)
 
 ## Lane and its inheritance
 
 The lane is **not re-pinned by this project**. `scripts/lib/lane-pins.sh` walks the whole inheritance
-chain and compares, at EVERY hop, the three container image digests, the compactc archive pin and
-`harness/pnpm-lock.yaml`:
+chain and compares, at EVERY hop, the three container image digests, the compactc archive identity
+and `harness/pnpm-lock.yaml`. After F-316 it distinguishes **IDENTITY** from **TRANSPORT**:
+`COMPACTC_SHA256` is immutable and any change is a re-pin; `COMPACTC_URL` may use only a declared
+location for those exact bytes while the digest remains unchanged. The LFDT relocation passes that
+rule and the former URL remains declared history.
 
 ```
 00003 a8ebff9  (the original pinning act)
@@ -45,10 +49,12 @@ projects removed from the pinning act, so a check against the base alone would p
 | `LANE-DEV-1` (compactc `0.33.0` substituted for `-rc.2`, owner-approved) | `evidence/g1-lane/04-lane-dev-1.out` |
 | the same proof re-run at G2 and G3 | `evidence/g2-contracts/03-lane-reuse.out`, `evidence/g3-swap-ledger/03-lane-reuse.out` |
 
-The approved specification's SHA-256 is
-`6441f8ed216a4f6b48306d171a5230e33f4ec3ed2739ff04f6c055f77b672bea`, verified byte-identical by G4
-step `03-spec-hash` on the authoring host. The specification lives in the organizer repository, not
-here, so a clone on another machine reports it as NOT PRESENT rather than silently skipping it.
+G4 verified the then-approved specification byte-identical to historical SHA-256
+`6441f8ed216a4f6b48306d171a5230e33f4ec3ed2739ff04f6c055f77b672bea` on the authoring host. That
+original was later lost with a disposable worktree. The owner waived hash continuity and approved a
+canonical reconstructed latest spec in the organizer; the old digest remains provenance only. A
+clone on another machine still reports the organizer spec as NOT PRESENT rather than silently
+skipping it.
 
 ## Gate G1 — workspace, lane, spikes S1–S3
 
@@ -227,6 +233,80 @@ comparator stricter than the specification is a comparator bug:
 | `--offline` preflight | **GREEN** | clone, spec hash, the non-vacuous freshness self-test (exit **2**, every substantive check passing), report render, document checks; `final_exit: 0` including teardown, clone removal and the residue proof. Retained separately at `evidence/g4-closeout/offline-preflight/`, because the full run overwrites that directory and a preflight that established the guard is not vacuous is evidence in its own right |
 | **full run 1** | **GREEN — `final_exit: 0`**, 2 h 47 m (started `2026-08-20T13:27:53Z`, finished `2026-08-20T16:15:23Z`), including teardown, clone removal and the residue proof; host verified free of every `aa00006-*` container, volume and network | G1 46 m → G2 82 m → G3 39 m inside the clone, in series. **0 shared transaction ids** (97 original / 106 reproduced), and 0 shared Manager addresses, colours or pooled-coin nonces. All three stages GREEN: 23 rows, 217 checks, every status, check tally and refusal code identical (`1`, `244`, `228`, `239`, `239`, `104`). Both settlements landed under ONE transaction id on NEW ids — v1 `00b917f91daaad575d0827…`, v2 `003929da6f91ef0112ee71…`. FR-308 openness GREEN again via the floating surplus; the F-310 boundary identical. **One reported finding:** spike S2 diverged (see F-306, amended). Records: `run.log`, `09-compare.out`, and the reproduction's own evidence in `repro/` (99 files) |
 
+## Gate G5 — F-310 mitigation measurements
+
+Wrapper: `scripts/g5/verify-g5-mitigation.sh` (`--offline` stops after compile, unit/typecheck,
+deploy-cost and offline placement). Smoke wrapper: `scripts/g5/smoke-g5.sh`. **Canonical: full run 5,
+GREEN, `final_exit: 0`, product commit `65877d7`; fail-closed hardening at `2ada580`.** Manager v4
+and all G1–G4 evidence remained unchanged.
+
+### Every G5 run, in order
+
+| Run | Outcome | What it settled, or why it did not count |
+|---|---|---|
+| smoke | **GREEN as wiring smoke, NOT gate evidence** | `scripts/g5/smoke-g5.sh`, 2026-08-20T17:59:08Z–18:13:05Z, seven steps, `final_exit: 0` including teardown. It reproduced stock F-310 at 1→2 cells and proved arm-e's risky stage/open paths, while exposing the expected R5'' re-staging limitation. Records: `evidence/g5-smoke/`; its outputs are named `*-SMOKE` so they cannot be selected as gate evidence |
+| full run 1 | **SUPERSEDED / terminated deliberately** | 2026-08-20T18:48:09Z–18:50:12Z, steps 01–10 passed and step 11 was interrupted; `final_exit: 130`, teardown exit 0. The late U1/U2 checks were discovered to compare later sequential cases against an absolute wanted-cell value rather than each case's relative before/after delta. The tree was fixed before spending the remaining hours. Historical run log is recoverable at commit `d1a74cb` |
+| full run 2 | **SUPERSEDED / terminated deliberately** | While this run was in its early steps, review against the testing plan found that U1/U2 had only one custody observation point. It was stopped and the independent proved-circuit OP2 was added at commit `8dbbf84`. Its overwritten run log did not survive, so no timing or step completion is claimed; the interruption is recorded in that commit rather than invented here |
+| full run 3 | **RED — apparatus bookkeeping defect** | 2026-08-20T19:25:43Z–21:55:37Z; steps 01–21 passed, step 22 exited 1, teardown exit 0, `final_exit: 1`. U1 at four cells and foreign-wallet U2 at five cells settled, but `growTo` accepted a stale pre-deposit baseline and the relative post-state assertion used the wrong starting value. Fixed by waiting for the deposited holding itself to rise. Historical run log at commit `cb6ee0e` |
+| full run 4 | **RED — correct lane-identity refusal; dead/superseded** | 2026-08-21T00:17:30Z–00:17:31Z; step 03 rejected the compiler URL relocation, teardown exit 0, `final_exit: 1`. The digest was unchanged, so comparing URL and digest as one pin confused transport with identity. Commit `766e7ca` separated immutable `COMPACTC_SHA256` from the declared transport URLs and proved undeclared URL/digest changes still fail. Historical run log at `766e7ca` |
+| **full run 5** | **GREEN — canonical** | 2026-08-21T00:20:41Z–02:53:21Z; all 23 steps passed, teardown exit 0, `final_exit: 0`. Baseline/control/arms completed the live matrix, calibration was honestly DIVERGENT, stock-v4 U1 settled past publication, and arm-e U2 settled at four cells. Authoritative record: `evidence/g5-mitigation/run.log` |
+
+### Canonical run 5, step by step
+
+| Steps | Result |
+|---|---|
+| `01`–`13` | W-1, free-port probe, lane identity/transport and LANE-DEV-1, shipped/variant compile, install, **177/177 canonical-run assertions**, typecheck, ZK compile, deploy-cost and offline sweep — all exit 0 |
+| `14`–`17` | pull, boot, health and load gate — all exit 0 |
+| `18-live-matrix` | 7,423 s, exit 0 — baseline + control + five arms, both shapes, live sizes 1/2/4/8/16; every offer built and placement was monotone |
+| `19-offline-sweep-chain`, `20-calibrate` | exit 0 — chain parameters captured; **DIVERGENT**, 65/70 overlap points agree |
+| `21-u1-probe` | 503 s, exit 0 — stock v4: 1-cell guaranteed and 2-cell fallible U1 both settled, 9/9 each |
+| `22-winner-e2e` | 810 s, exit 0 — arm-e U1 at 1 and 4 cells (10/10 each), foreign-wallet published-file U2 at 4 cells (12/12) |
+| `23-ranking` | exit 0 — exact current-run inputs selected; missing, stale, corrupt or contradictory evidence is RED |
+| teardown | exit 0 — Compose down, residue check and W-1 cleanup; `final_exit: 0` |
+
+The canonical run carried 177 tests. The final audit independently re-ran its expanded HEAD suite at
+**213/213**; later Phase 8 audit remediation expanded the current total further. The exact G2/G3-era
+subset remains 121.
+
+### Measured endpoint and caveats
+
+- **U1 works on stock v4 past F-310.** A fallible two-cell floating-surplus offer self-merged and
+  settled. The publication gate was bypassed deliberately; F-310 constrains publication, not the
+  maker's own settlement.
+- **U2 is publication-bound on stock v4.** Its floating-surplus offer is fallible at two cells and the
+  normal builder correctly publishes nothing.
+- **Arm-e lifted U2 in the fixture.** A foreign wallet settled a published file at four cells, and
+  arm-e stayed guaranteed through 16 live cells for both shapes. No boundary was observed in range.
+- **Calibration is DIVERGENT (65/70).** Offline absolute boundaries are not lane facts. Live
+  boundaries and contract transcript program lengths remain valid measurements.
+- **The arm-failure policy is deliberately lenient.** A non-deploying arm is an arm verdict, and a
+  fallible placement is a measurement. Baseline contradictions, apparatus failures, failed required
+  U1/U2 cases, bad ranking inputs and teardown residue still make the gate RED.
+- Arm (a) is the strongest map-based fixture at four cells; arm (e) is the only size-independent
+  direction measured. The proposed (a)+(e) combination was not compiled, costed or measured, and no
+  fixture was productized.
+
+## Phase 8 — audit remediation and approved A-308 trust model
+
+Run on 2026-08-21 after the owner approved A-308. These are current source regressions, not edits to
+the retained G1–G5 evidence. Both Docker test runs mounted the product read-only at `/source`, copied
+it into a uniquely named disposable volume at `/workspace`, used `node:22-bookworm-slim` and frozen
+pnpm 11.5.1 dependencies, and removed the volume immediately afterward.
+
+| Command / environment | Result |
+|---|---|
+| `npx vitest run src/test/offer-envelope.test.ts` inside Docker | **PASS 31/31**. Every object field, including every nested field, in the retained OFFER/1 was changed and removed; unknown/bearer/version/expiry/form/shape/economics/hash/length values were inserted; every fixed-payload preparation decision was identical. The actual `takeOffer` path inferred `pre-binding`/`unbound` and reached the same wallet call with poisoned and empty JSON |
+| `scripts/typecheck.sh` inside Docker | **PASS**. The sole TS2322 at `src/wallet.ts:66` exactly matched the inherited baseline; A-308 introduced zero type errors |
+| complete `npx vitest run` inside Docker | **PASS 218/218 across 7 files** |
+| `scripts/g5/test-early-teardown.sh` on Docker Compose | **PASS**. Injected pre-env and post-service failures remained non-zero, normal completion remained zero, all three paths used separately verified-free ports above 10000, and no container, volume or network remained |
+| conditional live/deploy verification | **N/A**. OFFER/1 framing was preserved and neither transaction construction nor any contract/circuit changed |
+
+The corrupted-byte case flips the authoritative transaction header and repairs the advisory JSON
+hash/length. The decoder reports identity computed from those corrupt bytes, while both form
+deserializers reject them. Conversely, all JSON-only changes leave byte-derived form, route,
+deficits, surpluses and inferred shape unchanged. This proves metadata independence and invalid-byte
+failure; it deliberately does not call the computed SHA-256 maker authentication.
+
 ## Deviations, findings and workarounds, with where each was established
 
 | Id | What | Established by |
@@ -246,6 +326,10 @@ comparator stricter than the specification is a comparator bug:
 | **F-310** | **an offer is publishable only while custody holds ONE shielded cell** — dose-response, monotone, both shapes flipping together, the deciding step adding a CELL with the pool count held at 1 | G2 spike S5b, replicated in three independent runs and a **fourth** time by the G4 clean-clone reproduction. **Owner decision 2026-08-20 (Q02-2): measure the alternatives** in a follow-up rig; the Manager v4 shipped here does not change |
 | **F-311** | NC-301 is sharper than the spec expected: the published (unbound) offer is refused by the node at DESERIALIZATION (`1`), and the row records refusals at three non-overlapping layers | G3 stage A row 4 |
 | **F-312** | the double take (NC-302) is refused with `244` = `ReplayProtectionViolation(IntentAlreadyExists)` — replay protection fires before the spent coin's nullifier is consulted, so the spec's parenthetical "backing coin spent" names a mechanism that is real but second in line | G3 stage A row 6, decoded from `types.rs:411-414` |
+| **F-313** | `partitionTranscripts()` makes the guaranteed/fallible decision computable offline, but the chain-calibrated model is **DIVERGENT** (65/70 live overlap points). Program length and relative design comparisons survive; absolute modelled boundaries do not | G5 offline sweep + `CALIBRATION.md` |
+| **F-314** | an ADT-typed intermediate cannot be bound to a local at these pins, so flat-map deduplication cannot be carried intact into the nested-map arm | G5 arms (b)/(c), compiler measurement |
+| **F-315** | nested ledger maps expose no outer iterator; their reported cell count is over registered accounts and cannot make 00005's exact "zero unaccounted keys" claim | G5 live matrix, `cellsExact: false` |
+| **F-316** | the compactc archive was relocated, not re-pinned: immutable SHA-256 identity stayed unchanged while transport moved to a declared LFDT URL | G5 lane check, commit `766e7ca` |
 | **W-1** | scratch `DOCKER_CONFIG` for every gate (a credential helper can hang). HOST workaround | inherited, step 01 everywhere |
 | **W-2** | every gate re-execs under `caffeinate -is`, because this Mac idle-slept mid-gate and the resulting `AbortError` is indistinguishable from a real refusal in an evidence table. A process wrapper around the gate's own tree: no system setting written, nothing asserted changed. **HOST workaround, not a lane property** | 00006 G1 run 2 |
 
@@ -254,8 +338,9 @@ comparator stricter than the specification is a comparator bug:
 Stated plainly, because a verification document that only lists successes is a marketing document:
 
 1. **The specification's literal 13-row single-Manager step ledger did not run, and cannot at these
-   pins.** F-310 caps publishability at one shielded custody cell and row 5's settlement creates the
-   second. What ran is D-307's three-stage partition, with every row's exact amounts and assertions.
+   pins.** The row-7 floating-surplus shape is publishable at one shielded custody cell and fallible
+   at the second, which row 5's settlement creates. What ran is D-307's three-stage partition, with
+   every row's exact amounts and assertions.
    The limit itself is evidenced by P-F310 rather than asserted. **The owner's decision (2026-08-20)
    is that this record stands as what was tested**, with a full re-run left for later.
 2. **The bearer-key shape (FR-308 v2b) was implemented but NOT RUN.** FR-308 makes openness GREEN if
@@ -264,14 +349,14 @@ Stated plainly, because a verification document that only lists successes is a m
    Recorded in `evidence/g2-spikes/S4b.md`.
 3. **The unshielded swap family is out of scope** (FR-310, owner Q3 → A): it is an EXTENDED GOAL for a
    follow-up numbered project. No unshielded swap circuit exists in this contract.
-4. **Whether pool COUNT alone crosses the publishability boundary was not isolated.** S5b's steps 3–4
-   grow pools and cells together; only the cell-count sufficiency is claimed (step 2 holds the pool
-   count at 1).
-5. **The transcript-cost reduction that might buy more cells was not attempted here** — it changes the
-   contract the owner-REQUIRED openness result rests on, and its payoff is unmeasured. That was
-   question **Q02-2**; the owner has since directed that the alternatives be MEASURED in a follow-up
-   rig, explicitly without changing the Manager v4 shipped here. Nothing this project proved depends
-   on that measurement.
+4. **G5 answered the practical cell-vs-pool attribution.** Its live matrix holds pool count at one
+   while custody grows through 1/2/4/8/16 cells, so cell growth alone is a sufficient and repeatable
+   dose. It did not separately hold cell count fixed while increasing only pool count; no independent
+   pool-count boundary is claimed or needed by the G5 verdicts.
+5. **G5 measured the transcript-cost alternatives.** Arm (a) reaches four live cells and arm (e) has
+   no observed live boundary through sixteen; U1 works on stock v4 and arm-e U2 settled at four.
+   What remains unverified is productization: no fixture replaced Manager v4, and the recommended
+   (a)+(e) combination was not compiled, deploy-costed or measured.
 6. **`104` for the staleness case, as FR-311 predicted, was not observed** — the lane answers `239`,
    3/3 in G2 and again in G3. The measured rule is what is asserted.
 7. **The S5 timing arm at T600 was not measured** and is not claimed. T60 (accepted) and T1800
@@ -286,7 +371,18 @@ Stated plainly, because a verification document that only lists successes is a m
    cost budget as F-310 — is supported by the code path and by the two runs' state-growth figures, but
    the discriminating measurement (placement recorded per rewrite attempt) was **not taken**. Nothing
    the specification asks for depends on it: 00006's maker transaction is a single call.
-9. **Nothing here is a statement about a supported lane.** `EXPERIMENTAL_LANE` / `LANE-DEV-1`
+10. **The offline placement model is not an absolute lane oracle.** Calibration is DIVERGENT at
+    65/70 overlap points, so only live boundaries may be quoted as lane facts.
+11. **The G5 arm-failure policy is lenient by design.** An arm that fails deployment is recorded as
+    that arm's verdict rather than failing the whole comparison gate. This does not make the arm
+    usable; required U1/U2 outcomes, baseline integrity and apparatus correctness still gate.
+12. **Every envelope JSON field is advisory under approved amendment A-308.** The take path ignores
+    version, expiry, form, economics, bearer/attribution data and declared payload identity; it
+    computes identity and infers form/fundability from the received serialized bytes. SHA-256 is a
+    payload name, not maker authentication. A whole valid transaction replacement is a different
+    offer, while corrupt bytes still fail deserialization/proof/node validation. No metadata binding
+    is claimed or required by the owner-selected trust model.
+13. **Nothing here is a statement about a supported lane.** `EXPERIMENTAL_LANE` / `LANE-DEV-1`
    throughout, on a local fresh dev chain, with two HOST workarounds active.
 
 `EXPERIMENTAL_LANE` / `LANE-DEV-1`
