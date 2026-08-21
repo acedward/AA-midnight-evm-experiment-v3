@@ -1,0 +1,335 @@
+// ============================================================================================
+// F-310 MITIGATION RIG — ARM (c) `a + b combined`
+// 00006-unbalanced-zswap Plan 05 / gate G5. EXPERIMENTAL_LANE / LANE-DEV-1.
+// ============================================================================================
+//
+// Issue 0004's arm (c): the nested ledger layout of arm (b) WITH the read-deduplication of arm (a).
+// It exists because the two mitigations are not obviously additive — and finding F-314, discovered
+// while building arm (b), says they are in fact PARTLY INCOMPATIBLE, which is the most interesting
+// thing this arm has to report.
+//
+// F-314, restated here because it defines what this arm can and cannot do: at compactc 0.33.0 /
+// language 0.25.0 an ADT-typed intermediate CANNOT be bound to a local —
+//
+//     const inner = shieldedBalances.lookup(acct);
+//     => incomplete chain of ledger indirects: final result must be a regular type, but received
+//        ADT type Map<Bytes<32>, Uint<128>>
+//
+// so the sub-map cannot be "read once and reused" the way arm (a) reads a flat cell once and reuses
+// it. Arm (a)'s central trick is unavailable at the level where arm (b) moved the data.
+//
+// WHAT DEDUPING IS STILL POSSIBLE, and this arm applies all of it:
+//
+//   1. `pools`: one `member` + ONE `lookup`, with the coin bound to a local (a
+//      `QualifiedShieldedCoinInfo` is a regular type, so it binds fine). v4 looks it up twice.
+//   2. The outer `shieldedBalances.member(acct)` is asked ONCE per account per circuit instead of
+//      once per read and again per write.
+//   3. **The write skips the existence dance entirely.** This is the arm's own idea, and it is sound
+//      rather than a shortcut: the per-(account, colour) guard has ALREADY established
+//      `balance >= val > 0`, and a positive balance can only exist if the account's sub-map exists.
+//      So the debit can go straight to `shieldedBalances.lookup(acct).insert(colour, ...)` with no
+//      `member` and no `insertDefault`. v4-slim and arm (b) both pay for a create-if-missing check on
+//      a write that provably cannot be missing.
+//   4. The credit side keeps its create-if-missing (a fresh colour for a fresh account genuinely may
+//      not exist), but asks `member` once rather than twice.
+//
+// RELAXATIONS: R1 (unshielded family, from `v4-slim`) and R2 (the nested `shieldedBalances` layout,
+// from arm (b) — v3 raw-state decoders, the `shieldedKey` key-reproduction tooling, and the
+// separator-based family separation all break; see `arm-b-nested.compact`'s header for the full
+// statement). No relaxation is added by the deduping half, which is behaviour-preserving.
+
+import CompactStandardLibrary;
+
+export {
+  registerAccount,
+  depositShielded,
+  withdrawShielded,
+  transferInternalShielded,
+  openSwapShielded,
+  zswapNullifierOf,
+  zswapCommitmentOf,
+  myAccount,
+  isRegistered,
+  shieldedAccountBalance,
+  shieldedKey,
+  poolValue,
+  poolHasColour,
+  accounts,
+  shieldedBalances,
+  pools
+}
+
+export ledger pools: Map<Bytes<32>, QualifiedShieldedCoinInfo>;
+export ledger accounts: Set<Bytes<32>>;
+export ledger shieldedBalances: Map<Bytes<32>, Map<Bytes<32>, Uint<128>>>;
+
+witness localOwnerSecret(): Bytes<32>;
+
+circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
+  return persistentCommit<Bytes<21>>("aa00005:manager:owner", disclose(sk));
+}
+
+circuit authenticatedAccount(): Bytes<32> {
+  const acct = ownerCommitment(localOwnerSecret());
+  assert(accounts.member(acct), "caller's owner witness matches no registered account");
+  return acct;
+}
+
+circuit shieldedFamilyTag(): Bytes<32> {
+  return pad(32, "aa00005:manager:shielded");
+}
+
+/// RETAINED BUT UNUSED ON CHAIN (relaxation R2). See `arm-b-nested.compact`.
+export circuit shieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([acct, colour, shieldedFamilyTag()]);
+}
+
+circuit shieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  if (!shieldedBalances.member(acct)) {
+    return 0;
+  }
+  return shieldedBalances.lookup(acct).member(colour)
+    ? shieldedBalances.lookup(acct).lookup(colour)
+    : 0;
+}
+
+/// The cell of an account whose SUB-MAP IS KNOWN TO EXIST — one traversal fewer than
+/// `shieldedBalanceOf`, valid only where the caller has already established the outer key.
+circuit cellOfExisting(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  return shieldedBalances.lookup(acct).member(colour)
+    ? shieldedBalances.lookup(acct).lookup(colour)
+    : 0;
+}
+
+/// Write a cell whose account sub-map is KNOWN to exist. No `member`, no `insertDefault`.
+circuit writeExisting(acct: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+  shieldedBalances.lookup(acct).insert(colour, amount);
+}
+
+/// Write a cell that may be the account's first — the only place the create-if-missing is paid.
+circuit writeCell(acct: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+  if (!shieldedBalances.member(acct)) {
+    shieldedBalances.insertDefault(acct);
+  }
+  shieldedBalances.lookup(acct).insert(colour, amount);
+}
+
+export circuit registerAccount(owner: Bytes<32>): [] {
+  const acct = disclose(owner);
+  assert(!accounts.member(acct), "account already registered");
+  accounts.insert(acct);
+}
+
+export circuit myAccount(): Bytes<32> {
+  return ownerCommitment(localOwnerSecret());
+}
+
+export circuit isRegistered(owner: Bytes<32>): Boolean {
+  return accounts.member(disclose(owner));
+}
+
+export circuit shieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
+  return shieldedBalanceOf(disclose(owner), disclose(colour));
+}
+
+export circuit poolValue(colour: Bytes<32>): Uint<128> {
+  const col = disclose(colour);
+  return pools.member(col) ? pools.lookup(col).value : 0;
+}
+
+export circuit poolHasColour(colour: Bytes<32>): Boolean {
+  return pools.member(disclose(colour));
+}
+
+export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
+  const c = disclose(coin);
+  const acct = disclose(account);
+
+  assert(c.value > 0, "deposit must be positive");
+  assert(accounts.member(acct), "credit account is not registered");
+
+  receiveShielded(c);
+
+  const self = right<ZswapCoinPublicKey, ContractAddress>(kernel.self());
+  if (pools.member(c.color)) {
+    pools.insertCoin(c.color, mergeCoinImmediate(pools.lookup(c.color), c), self);
+  } else {
+    pools.insertCoin(c.color, c, self);
+  }
+
+  // ONE outer `member`, branching into the cheap write or the create-then-write.
+  if (shieldedBalances.member(acct)) {
+    writeExisting(acct, c.color, (cellOfExisting(acct, c.color) + c.value) as Uint<128>);
+  } else {
+    shieldedBalances.insertDefault(acct);
+    writeExisting(acct, c.color, c.value);
+  }
+}
+
+export circuit withdrawShielded(
+  colour: Bytes<32>,
+  value: Uint<128>,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): ShieldedCoinInfo {
+  const col = disclose(colour);
+  const val = disclose(value);
+
+  const acct = authenticatedAccount();
+  const held = shieldedBalanceOf(acct, col);
+  assert(held >= val, "account colour balance too low");
+  assert(pools.member(col), "no pooled coin for this colour");
+  const pooled = pools.lookup(col);
+  assert(pooled.value >= val, "pooled colour balance too low");
+
+  const result = sendShielded(pooled, disclose(recipient), val);
+
+  if (result.change.is_some) {
+    pools.insertCoin(col, result.change.value, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+  } else {
+    pools.remove(col);
+  }
+
+  // `held >= val > 0` proves the sub-map exists.
+  writeExisting(acct, col, (held - val) as Uint<128>);
+  return result.sent;
+}
+
+export circuit transferInternalShielded(to: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+  const dst = disclose(to);
+  const col = disclose(colour);
+  const amt = disclose(amount);
+
+  const fromAcct = authenticatedAccount();
+  assert(accounts.member(dst), "destination account is not registered");
+  assert(fromAcct != dst, "internal transfer to the same account");
+  assert(amt > 0, "internal transfer must be positive");
+  const heldFrom = shieldedBalanceOf(fromAcct, col);
+  assert(heldFrom >= amt, "account colour balance too low");
+
+  writeExisting(fromAcct, col, (heldFrom - amt) as Uint<128>);
+  writeCell(dst, col, (shieldedBalanceOf(dst, col) + amt) as Uint<128>);
+}
+
+// --- the swap maker: nested layout, everything dedupable deduped ---------------------------------
+
+struct SwapCoinPreimage {
+  domain_sep: Bytes<21>,
+  info: ShieldedCoinInfo,
+  dataType: Boolean,
+  data: Bytes<32>,
+}
+
+circuit zswapCoinCommitment(
+  coin: ShieldedCoinInfo,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): Bytes<32> {
+  return persistentHash<SwapCoinPreimage>(
+    SwapCoinPreimage {
+      domain_sep: "midnight:zswap-cc[v1]",
+      info: coin,
+      dataType: recipient.is_left,
+      data: recipient.is_left ? recipient.left.bytes : recipient.right.bytes,
+    });
+}
+
+circuit zswapCoinNullifier(coin: ShieldedCoinInfo, addr: ContractAddress): Bytes<32> {
+  return persistentHash<SwapCoinPreimage>(
+    SwapCoinPreimage {
+      domain_sep: "midnight:zswap-cn[v1]",
+      info: coin,
+      dataType: false,
+      data: addr.bytes,
+    });
+}
+
+circuit dropMerkleIndex(coin: QualifiedShieldedCoinInfo): ShieldedCoinInfo {
+  return ShieldedCoinInfo{ nonce: coin.nonce, color: coin.color, value: coin.value };
+}
+
+export circuit zswapNullifierOf(coin: ShieldedCoinInfo, addr: ContractAddress): Bytes<32> {
+  return zswapCoinNullifier(coin, addr);
+}
+
+export circuit zswapCommitmentOf(
+  coin: ShieldedCoinInfo,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): Bytes<32> {
+  return zswapCoinCommitment(coin, recipient);
+}
+
+export circuit openSwapShielded(
+  colourA: Bytes<32>,
+  valA: Uint<128>,
+  recipientA: Maybe<Either<ZswapCoinPublicKey, ContractAddress>>,
+  coinB: ShieldedCoinInfo,
+  creditAccount: Bytes<32>
+): [] {
+  const colA = disclose(colourA);
+  const val = disclose(valA);
+  const rcpt = disclose(recipientA);
+  const cb = disclose(coinB);
+  const credit = disclose(creditAccount);
+
+  // 0. parameter sanity.
+  assert(val > 0, "swap must give a positive amount");
+  assert(cb.value > 0, "swap must want a positive amount");
+  assert(colA != cb.color, "swap legs must be different colours");
+  // 1. the witness choke point.
+  const acct = authenticatedAccount();
+  // 2. THE PER-ACCOUNT, PER-COLOUR GUARD, BEFORE any pool guard.
+  const heldA = shieldedBalanceOf(acct, colA);
+  assert(heldA >= val, "account colour balance too low");
+  // 3. only now, the pool — ONE lookup, bound to a local.
+  assert(pools.member(colA), "no pooled coin for this colour");
+  const pooled = pools.lookup(colA);
+  assert(pooled.value >= val, "pooled colour balance too low");
+  // 4. the credit target.
+  assert(accounts.member(credit), "credit account is not registered");
+
+  const selfAddr = kernel.self();
+  const selfRecipient = right<ZswapCoinPublicKey, ContractAddress>(selfAddr);
+
+  if (rcpt.is_some) {
+    const result = sendShielded(pooled, rcpt.value, val);
+    if (result.change.is_some) {
+      pools.insertCoin(colA, result.change.value, selfRecipient);
+    } else {
+      pools.remove(colA);
+    }
+  } else {
+    createZswapInput(pooled);
+    kernel.claimZswapNullifier(zswapCoinNullifier(dropMerkleIndex(pooled), selfAddr));
+    const changeValue = (pooled.value - val) as Uint<128>;
+    if (changeValue == 0) {
+      pools.remove(colA);
+    } else {
+      const changeCoin = ShieldedCoinInfo{
+        nonce: evolveNonce(2, pooled.nonce),
+        color: colA,
+        value: changeValue
+      };
+      createZswapOutput(changeCoin, selfRecipient);
+      const cm = zswapCoinCommitment(changeCoin, selfRecipient);
+      kernel.claimZswapCoinSpend(cm);
+      kernel.claimZswapCoinReceive(cm);
+      pools.insertCoin(colA, changeCoin, selfRecipient);
+    }
+  }
+
+  // `heldA >= val > 0` proves the maker's sub-map exists: straight to the inner insert.
+  writeExisting(acct, colA, (heldA - val) as Uint<128>);
+
+  // --- WANT: +B ---
+  receiveShielded(cb);
+  if (pools.member(cb.color)) {
+    pools.insertCoin(cb.color, mergeCoinImmediate(pools.lookup(cb.color), cb), selfRecipient);
+  } else {
+    pools.insertCoin(cb.color, cb, selfRecipient);
+  }
+  if (shieldedBalances.member(credit)) {
+    writeExisting(credit, cb.color, (cellOfExisting(credit, cb.color) + cb.value) as Uint<128>);
+  } else {
+    shieldedBalances.insertDefault(credit);
+    writeExisting(credit, cb.color, cb.value);
+  }
+}

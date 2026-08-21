@@ -1,0 +1,183 @@
+{
+  "kind": "taker",
+  "label": "row-12a",
+  "lane": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T12:54:55.447Z",
+  "process": {
+    "pid": 48783,
+    "ppid": 48777
+  },
+  "opts": {
+    "label": "row-12a",
+    "envelope": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/row12a-maker.offer",
+    "takerSeedName": "ownerT",
+    "require": [
+      {
+        "colour": "4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25",
+        "amount": "1"
+      }
+    ],
+    "out": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/io/row12a-taker.report.json"
+  },
+  "ok": false,
+  "take": {
+    "stage": "settlement",
+    "ok": false,
+    "terms": {
+      "version": 1,
+      "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+      "shape": "named-taker",
+      "circuitId": "openSwapShielded",
+      "form": "pre-binding",
+      "managerAddress": "f6eb885f4760142781e668f7862ab2b83d2e3c057a970ca9dc30e4fa9906eb0c",
+      "gives": {
+        "colour": "3ee0a9b91f70b37ef2bfe392b9007eb45e645f96aafe5af90b6ba7390a78e46b",
+        "value": "1",
+        "recipient": "226fe909b3edee5d22d8ec41f643d1138f8f93bd10b023391ece325ded8821df",
+        "recipientKind": "user-coin-public-key"
+      },
+      "wants": {
+        "colour": "4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25",
+        "value": "1",
+        "nonce": "222d52b9f38912541f110e6fcfd40c2c18dc160b2652c015cccfeff16e792209"
+      },
+      "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "createdAt": "2026-08-20T12:54:26.260Z",
+      "expiresAt": "2026-08-20T13:54:26.260Z",
+      "ttlSeconds": 3600,
+      "placement": {
+        "segments": [
+          0,
+          31884
+        ],
+        "intentSegments": [
+          31884
+        ],
+        "fallibleOfferSegments": [],
+        "imbalances": {
+          "0": {
+            "shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25": "-1"
+          },
+          "31884": {}
+        },
+        "expectedAtSegment0": {
+          "shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25": "-1"
+        },
+        "segment0Exact": true,
+        "otherSegmentsEmpty": true,
+        "offendingSegments": [],
+        "ok": true
+      },
+      "makerAttachedDust": false,
+      "contentAddress": "cef95e44eea4a328b4fb832e8c7ba5275fd7df9be81bbecedabdc8dd0ec1c011",
+      "transactionBytes": 26818
+    },
+    "contentAddress": "cef95e44eea4a328b4fb832e8c7ba5275fd7df9be81bbecedabdc8dd0ec1c011",
+    "secondsLeft": 3570,
+    "fundability": {
+      "imbalances": {
+        "0": {
+          "shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25": "-1"
+        },
+        "31884": {}
+      },
+      "deficits": {
+        "0/shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25": "-1"
+      },
+      "surpluses": {},
+      "declared": {
+        "wants": "0/shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25"
+      },
+      "matchesTerms": true
+    },
+    "settlement": {
+      "route": "unbound",
+      "ok": false,
+      "validations": [
+        {
+          "flags": {
+            "enforceBalancing": false,
+            "verifySignatures": false,
+            "enforceLimits": false
+          },
+          "passed": false,
+          "error": "call to non-existant contract ContractAddress(f6eb885f4760142781e668f7862ab2b83d2e3c057a970ca9dc30e4fa9906eb0c)"
+        },
+        {
+          "flags": {
+            "enforceBalancing": true,
+            "verifySignatures": true,
+            "enforceLimits": true
+          },
+          "passed": false,
+          "error": "call to non-existant contract ContractAddress(f6eb885f4760142781e668f7862ab2b83d2e3c057a970ca9dc30e4fa9906eb0c)"
+        }
+      ],
+      "preSubmitGuard": {
+        "imbalances": {
+          "0": {
+            "dust": "1081556396209363"
+          },
+          "1": {},
+          "31884": {}
+        },
+        "unswept": {},
+        "dustActions": {
+          "1": {
+            "spends": 1,
+            "registrations": 0
+          },
+          "31884": {
+            "spends": 0,
+            "registrations": 0
+          }
+        },
+        "intentSegments": [
+          1,
+          31884
+        ]
+      },
+      "error": "Transaction submission error",
+      "nodeRefusal": {
+        "code": 239,
+        "decoded": "ZswapInvalidErrorCode::NullifierAlreadyPresent (types.rs:400)",
+        "verbatim": "1010: Invalid Transaction: Custom error: 239",
+        "beforeSubmission": false
+      },
+      "errorDump": "(FiberFailure) SubmissionError: Transaction submission error\n    at file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@midnightntwrk+wallet-sdk-capabilities@4.0.0-beta.2_ws@8.21.3/node_modules/@midnightntwrk/wallet-sdk-capabilities/dist/submission/submissionService.js:31:279\n    at /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/core.ts:1078:35\n    at <anonymous> (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1161:41)\n    at body (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/Utils.ts:786:14)\n    at FiberRuntime.Sync (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1161:19)\n    at <anonymous> (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1398:53)\n    at Object.f (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/tracer.ts:101:19)\n    at FiberRuntime.runLoop (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:1384:34)\n    at FiberRuntime.evaluateEffect (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:950:27)\n    at FiberRuntime.evaluateMessageWhileSuspended (/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/effect@3.22.1/node_modules/effect/src/internal/fiberRuntime.ts:918:14) {\n  [cause]: SubmissionError: Transaction submission failed\n      at file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@midnightntwrk+wallet-sdk-node-client@2.0.0-beta.2_@midnightntwrk+ledger-v9@1.0.0-rc.3__9fdca0ce4a97c2531cda791ff76bb4dc/node_modules/@midnightntwrk/wallet-sdk-node-client/dist/effect/PolkadotNodeClient.js:86:27\n      at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {\n    [cause]: RpcError: 1010: Invalid Transaction: Custom error: 239\n        at checkError (file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/coder/index.js:19:15)\n        at RpcCoder.decodeResponse (file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/coder/index.js:35:9)\n        at #onSocketMessageResult (file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/ws/index.js:429:40)\n        at #onSocketMessage (file:///Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/harness/node_modules/.pnpm/@polkadot+rpc-provider@16.5.6/node_modules/@polkadot/rpc-provider/ws/index.js:418:42)\n        at [nodejs.internal.kHybridDispatch] (node:internal/event_target:827:20)\n        at WebSocket.dispatchEvent (node:internal/event_target:762:26)\n        at fireEvent (node:internal/deps/undici/undici:12652:14)\n        at #onMessage (node:internal/deps/undici/undici:13883:9)\n        at Object.onMessage (node:internal/deps/undici/undici:13596:76)\n        at websocketMessageReceived (node:internal/deps/undici/undici:12656:15)\n  }\n}"
+    },
+    "merged": {
+      "imbalances": {
+        "0": {
+          "dust": "1081556396209363"
+        },
+        "1": {},
+        "31884": {}
+      },
+      "unswept": {},
+      "dustActions": {
+        "1": {
+          "spends": 1,
+          "registrations": 0
+        },
+        "31884": {
+          "spends": 0,
+          "registrations": 0
+        }
+      },
+      "intentSegments": [
+        1,
+        31884
+      ]
+    },
+    "error": "Transaction submission error",
+    "nodeRefusal": {
+      "code": 239,
+      "decoded": "ZswapInvalidErrorCode::NullifierAlreadyPresent (types.rs:400)",
+      "verbatim": "1010: Invalid Transaction: Custom error: 239",
+      "beforeSubmission": false
+    }
+  },
+  "tookMs": 3552
+}

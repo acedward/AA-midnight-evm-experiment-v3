@@ -1,0 +1,8 @@
+temporary clone parent: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00005-g4-k5Qm0N
+Cloning into '/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00005-g4-k5Qm0N/clone'...
+done.
+source commit: 0372527fb923155ae19b54bed75e5bc284f66d18
+cloned commit: 0372527fb923155ae19b54bed75e5bc284f66d18
+clone is clean: no generated artifacts, no docker/.env, no node_modules, no private-state store
+clone carries all three contracts, the gate wrappers, W-1 and the pinned lockfile
+clone carries the committed original evidence (the freshness self-test needs it)

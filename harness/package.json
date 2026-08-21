@@ -1,9 +1,9 @@
 {
-  "name": "aa00004-multi-token-custody-harness",
+  "name": "aa00006-unbalanced-zswap-harness",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Step-ledger harness for 00004-multi-token-custody (EXPERIMENTAL_LANE, v2.0.0-rc.4 slot)",
+  "description": "Unbalanced-ZSwap maker/taker harness for 00006-unbalanced-zswap (EXPERIMENTAL_LANE, v2.0.0-rc.4 slot)",
   "engines": {
     "node": ">=22"
   },

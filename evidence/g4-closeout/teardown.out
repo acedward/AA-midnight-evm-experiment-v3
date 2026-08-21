@@ -1,28 +1,14 @@
-removing temporary clone parent: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00004-g4-2ySPY6
+removing temporary clone parent: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-g4-TVqx1z
 temporary clone removed
--- bringing down this project's development stack (no-op if absent)
-time="2026-08-18T20:46:05-04:00" level=warning msg="Warning: No resource found to remove for project \"aa00004-multi-token-custody\"."
 -- containers matching this project:
 -- volumes matching this project:
 -- networks matching this project:
 remaining containers: 0, volumes: 0, networks: 0
-removing temporary clone parent: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00004-g4-Qkum4z
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-Q382My)
+removing temporary clone parent: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-g4-88MwCz
 temporary clone removed
--- bringing down this project's development stack (no-op if absent)
-unknown shorthand flag: 'p' in -p
-
-Usage:  docker [OPTIONS] COMMAND [ARG...]
-
-Run 'docker --help' for more information
 -- containers matching this project:
 -- volumes matching this project:
 -- networks matching this project:
 remaining containers: 0, volumes: 0, networks: 0
-removing temporary clone parent: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00004-g4-uxxKkh
-temporary clone removed
--- bringing down this project's development stack (no-op if absent)
-time="2026-08-18T21:30:31-04:00" level=warning msg="Warning: No resource found to remove for project \"aa00004-multi-token-custody\"."
--- containers matching this project:
--- volumes matching this project:
--- networks matching this project:
-remaining containers: 0, volumes: 0, networks: 0
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-uZ723A)

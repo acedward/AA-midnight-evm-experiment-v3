@@ -1,0 +1,16 @@
+[g5-compile] compiler image aa00006-compactc:0.33.0 present (attempt 1)
+[g5-compile] compactc 0.33.0
+[g5-compile] compiling v4-slim (--skip-zk) -> harness/generated/v4-slim
+[g5-compile] v4-slim: COMPILED (9 zkir, 0 verifier keys)
+[g5-compile] compiling arm-a-dedupe (--skip-zk) -> harness/generated/arm-a-dedupe
+[g5-compile] arm-a-dedupe: COMPILED (9 zkir, 0 verifier keys)
+[g5-compile] compiling arm-b-nested (--skip-zk) -> harness/generated/arm-b-nested
+[g5-compile] arm-b-nested: COMPILED (9 zkir, 0 verifier keys)
+[g5-compile] compiling arm-c-both (--skip-zk) -> harness/generated/arm-c-both
+[g5-compile] arm-c-both: COMPILED (9 zkir, 0 verifier keys)
+[g5-compile] compiling arm-d-unified (--skip-zk) -> harness/generated/arm-d-unified
+[g5-compile] arm-d-unified: COMPILED (8 zkir, 0 verifier keys)
+[g5-compile] compiling arm-e-escrow (--skip-zk) -> harness/generated/arm-e-escrow
+[g5-compile] arm-e-escrow: COMPILED (11 zkir, 0 verifier keys)
+
+[g5-compile] 6 compiled, 0 not; status table at evidence/g5-mitigation/compile/STATUS-skip-zk.tsv

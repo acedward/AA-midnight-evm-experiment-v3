@@ -1,0 +1,18 @@
+[G2] EXPERIMENTAL_LANE / LANE-DEV-1 — building and deploying Manager v3 + MinterCollide
+[G2] compose project: aa00005-g2-20260819100421-62224
+[G2] ok: 01-w1-docker-config (0s)
+[G2] ok: 02-probe-ports (1s)
+[G2] ok: 03-lane-reuse (0s)
+[G2] ok: 04-lane-dev-1 (1s)
+[G2] ok: 05-compile-fast (3s)
+[G2] ok: 06-install (0s)
+[G2] ok: 07-unit-suites (2s)
+[G2] ok: 08-compile-zk (60s)
+[G2] ok: 09-pull (1s)
+[G2] ok: 10-boot (8s)
+[G2] ok: 11-health (3s)
+[G2] ok: 12-deploy-order (773s)
+[G2] ok: 13-record-artifacts (2s)
+[G2] all steps passed; teardown runs next and must also succeed
+[G2] teardown: docker compose --env-file /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00005-g4-k5Qm0N/clone/docker/.env -f /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00005-g4-k5Qm0N/clone/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00005-g2-20260819100421-62224 && w1_cleanup
+[G2] GREEN

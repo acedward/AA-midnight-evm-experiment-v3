@@ -1,0 +1,12 @@
+[2026-08-20T12:31:09.724Z] taker[row-10b]: envelope ok — named-taker offer, give 4 of 586d312ace6d…, want 7 of 94144f1ff0b0…, 3460 s of life left
+[2026-08-20T12:31:09.739Z] taker[row-10b]: fundable — deficits {"0/shielded:94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096":"-7"}, surpluses {}
+[2026-08-20T12:31:09.844Z] taker[row-10b]: balanceUnboundTransaction on a transaction it did not build
+[2026-08-20T12:31:12.296Z] taker[row-10b]: merged transaction balances; unswept non-dust surplus {}
+[2026-08-20T12:31:12.296Z] taker[row-10b]: submitting the merged transaction
+[2026-08-20T12:31:13.342Z] taker[row-10b]: REFUSED at settlement (node code 235)
+
+--- stderr ---
+2026-08-20 08:31:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
+2026-08-20 08:31:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
+2026-08-20 08:31:13        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-20 08:31:13        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235

@@ -1,0 +1,24 @@
+{
+  "kind": "taker",
+  "label": "row-10a",
+  "lane": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T12:31:06.790Z",
+  "process": {
+    "pid": 38192,
+    "ppid": 38185
+  },
+  "opts": {
+    "label": "row-10a",
+    "envelope": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/offer-1-tampered.offer",
+    "takerSeedName": "ownerT",
+    "out": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/io/row10a-taker.report.json"
+  },
+  "ok": false,
+  "take": {
+    "stage": "envelope",
+    "ok": false,
+    "error": "offer content address mismatch: terms declare sha256 dde0ba1517179aae815ec60bf334d7d10bb050d50ac4772ed18e2a1daaffcf5c, payload hashes to c6620547b72a63ba052a35fa18ad933c08422e5bf57662273cf6ae75842addca",
+    "offlineRefusal": true
+  },
+  "tookMs": 384
+}

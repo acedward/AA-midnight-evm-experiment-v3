@@ -1,26 +1,33 @@
-// G3 — bootstrap for the four-colour step ledger: wallets, fees, three Minters, one Manager, the
-// six colours, `configure`, and the two accounts. EXPERIMENTAL_LANE / LANE-DEV-1.
+// G3 — bootstrap for the 18-row open-colour step ledger. EXPERIMENTAL_LANE / LANE-DEV-1.
 //
-// Everything here happens BEFORE spec step 0 is asserted, except the deployment, configuration and
-// account registration, which ARE step 0. The runner asserts; this module only builds.
+// What this module builds, in the order the SPECIFICATION requires it:
+//
+//   1. wallets and fees;
+//   2. a record of the chain tip BEFORE any contract of this demonstration exists;
+//   3. **the Manager, deployed FIRST** — knowing no colours, with nothing on this chain able to
+//      mint one — and both accounts registered. That IS spec step 0, and the assertion that all
+//      three custody maps are still size 0 belongs to the runner;
+//   4. `deployMinter(...)`, the factory the runner uses for step 1 (TOKA/TOKB/TOKC), for step 15
+//      (**TOKD, mid-ledger**) and for the probes (TOKE, MinterCollide). Every deployment registers
+//      its colours into the COLOUR REGISTRY from ON-CHAIN CIRCUIT READS.
+//
+// Nothing here configures anything: there is no `configure` circuit to call, and registration seeds
+// no cell. Every colour the Manager ever holds arrives through a credit.
 //
 // **Finding F-104 shapes the wallet layout.** On this pinned lane a wallet that SUBMITTED a
 // transaction under-reports its own balance afterwards and does not self-correct, while still
-// returning `progress.isStrictlyComplete() === true` (evidence:
-// `evidence/g1-lane/FINDING-F104-sender-wallet-underreports.md`). So this rig keeps the two roles
-// apart for the user parties:
+// returning `progress.isStrictlyComplete() === true`. So this rig keeps the two roles apart:
 //
 //   OBSERVER wallets  one long-lived facade per user, opened here, which NEVER submits anything.
-//                     Every user cell of the 16-cell table is read from these. They can be
-//                     re-opened on demand (`refreshObservers`) if one ever falls behind.
+//                     Every user cell of the table is read from these; they can be re-opened on
+//                     demand (`refreshObservers`) if one ever falls behind.
 //   SPENDER wallets   opened FRESH for each user-submitted transaction and closed afterwards, so no
-//                     transaction is ever built from a view that a previous submission may have
-//                     corrupted. Each gets its own private-state store, so two instances of the
-//                     same seed never contend for one LevelDB.
+//                     transaction is ever built from a view a previous submission may have
+//                     corrupted. Each gets its own private-state store.
 //
 // The fee wallet submits everything else (deploys, mints, owner-authorized Manager calls and the
 // rotating on-chain spot checks) and is never an observation point either — it holds none of the
-// four colours.
+// demonstration's colours.
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import { NetworkId } from '@midnightntwrk/wallet-sdk-abstractions';
@@ -30,16 +37,19 @@ import { join } from 'node:path';
 import { SEEDS } from '../lane.js';
 import { closeParty, openParty, unshieldedSeedOf, type Party } from '../wallet.js';
 import { fundWithNight, log, registerForDust, report, syncedState, units, waitFor, withDustRetry } from '../night.js';
-import { compiledManager, compiledMinter } from '../contracts.js';
-import { ManagerSim, MinterSim } from '../test/sim.js';
-import { balanceKeyOf, hex, waitForManager } from '../manager-view.js';
-import { makeComposedProofProvider, makeProviders } from './providers.js';
-import type { Ctx, MinterLabel } from './actions.js';
-import type { ColourSet } from './observe.js';
+import { compiledManager, compiledMinter, compiledMinterCollide } from '../contracts.js';
+import { ManagerSim, MinterCollideSim, MinterSim } from '../test/sim.js';
+import { hex, mapSizes, waitForManager } from '../manager-view.js';
+import { makeProviders, zkDir } from './providers.js';
+import { chainTip, recordDeploy, type DeployRecord } from './chain.js';
+import { ColourRegistry, type ColourInfo } from './observe.js';
+import type { Ctx, MinterHandle, MinterKind } from './actions.js';
 import type { ObserveDeps } from './table.js';
 
 // @ts-ignore — generated artifact
 import { ledger as minterLedger } from '../../generated-zk/minter/contract/index.js';
+// @ts-ignore — generated artifact
+import { ledger as minterCollideLedger } from '../../generated-zk/minter-collide/contract/index.js';
 
 /** `pad(32, s)` on the TypeScript side: right-pad the UTF-8 bytes with zeros to 32. */
 const pad32 = (s: string): Uint8Array => {
@@ -59,20 +69,34 @@ const actAs = async (providers: any, secret: Uint8Array): Promise<void> => {
 };
 
 export type MinterDeployment = {
-  label: MinterLabel;
+  label: string;
+  kind: MinterKind;
   tagText: string;
   tagIn: string;
   address: string;
   ledgerTag: string;
+  /** For MinterCollide both of these are the ONE separator — that is the fixture. */
   shieldedSep: string;
   unshieldedSep: string;
   simShieldedSep: string;
   simUnshieldedSep: string;
   shieldedColour: string;
   unshieldedColour: string;
+  /** The harness names given to the two colours (`S1`/`U1`, …, `XS`/`XU`). */
+  shieldedName: string;
+  unshieldedName: string;
+  deploy: DeployRecord;
 };
 
 export type Spender = { party: Party; managerProviders: any; close: () => Promise<void> };
+
+export type DeployMinterOptions = {
+  label: string;
+  tagText: string;
+  kind: MinterKind;
+  shieldedName: string;
+  unshieldedName: string;
+};
 
 export type Rig = {
   fee: Party;
@@ -82,29 +106,32 @@ export type Rig = {
   openSpender: (
     who: 'OwnerN' | 'OwnerM',
     tag: string,
-    /** Wait until the fresh wallet can see EVERY leg's funds before it builds anything. */
+    /** Wait until the fresh wallet can see EVERY leg's funds before it builds anything (F-107). */
     require?: Array<{ colour: string; shielded: boolean; amount: bigint }>,
   ) => Promise<Spender>;
   refreshObservers: () => Promise<void>;
   ctx: Ctx;
-  colours: ColourSet;
+  registry: ColourRegistry;
   minters: MinterDeployment[];
+  /** Deploy one more issuing contract and register its colours. Used mid-run for TOKD. */
+  deployMinter: (opts: DeployMinterOptions) => Promise<MinterDeployment>;
   managerAddress: string;
-  /** The deployed Manager handle, for the rotating on-chain `accountBalance` spot checks. */
+  /** The deployed Manager handle, for the rotating on-chain balance spot checks. */
   managerDeployed: any;
+  managerDeploy: DeployRecord;
+  chainTipBeforeAnyDeploy: { height: number; hash: string; timestamp: unknown };
   ids: { AA_A: string; AA_B: string };
   raw: { AA_A: Uint8Array; AA_B: Uint8Array; secretA: Uint8Array; secretB: Uint8Array };
   addresses: { OwnerN: string; OwnerM: string };
   deps: ObserveDeps;
   deployTxs: Record<string, string>;
   fundingTxs: Record<string, string>;
-  distinctness: { comparisons: number; distinct: number; collisions: string[] };
   close: () => Promise<void>;
 };
 
 export const bootstrap = async (): Promise<Rig> => {
   setNetworkId(NetworkId.NetworkId.Undeployed as any);
-  const psDir = mkdtempSync(join(tmpdir(), 'aa00004-g3-'));
+  const psDir = mkdtempSync(join(tmpdir(), 'aa00005-g3-'));
   const opened: Party[] = [];
   const close = async () => {
     for (const p of opened) await closeParty(p);
@@ -126,9 +153,16 @@ export const bootstrap = async (): Promise<Rig> => {
 
     // --- fees: NIGHT + DUST for every wallet that submits a transaction ---------------------------
     // The user wallets submit their own deposits, so they need their own DUST. NIGHT and DUST never
-    // appear in the demo table.
+    // appear in the demonstration's table.
+    //
+    // The amounts are larger than 00004's (1,000,000 / 200,000) for a measured reason, not caution:
+    // DUST accrues in proportion to REGISTERED NIGHT, and this run submits roughly twice as many
+    // transactions as 00004's did (18 rows, five negative controls, three probes, a rotating
+    // on-chain spot check per row and six contract deployments). More registered NIGHT means DUST is
+    // regenerated faster between calls and `withDustRetry` waits less. NIGHT and DUST never appear
+    // in any assertion, so the figures affect wall-clock only.
     const fundingTxs: Record<string, string> = {};
-    fundingTxs.feePayer = await fundWithNight(genesis, fee, units(1_000_000n));
+    fundingTxs.feePayer = await fundWithNight(genesis, fee, units(3_000_000n));
     fundingTxs.feePayerDust = await registerForDust(fee);
 
     // The funding instances of the user wallets submit their own DUST registration, so they are
@@ -140,7 +174,7 @@ export const bootstrap = async (): Promise<Rig> => {
     ] as const) {
       const funding = await openParty(`${who}-funding`, seed);
       try {
-        fundingTxs[who] = await fundWithNight(fee, funding, units(200_000n));
+        fundingTxs[who] = await fundWithNight(fee, funding, units(500_000n));
         fundingTxs[`${who}Dust`] = await registerForDust(funding);
       } finally {
         await closeParty(funding);
@@ -173,6 +207,55 @@ export const bootstrap = async (): Promise<Rig> => {
       OwnerM: String((await (observers.OwnerM.wallet as any).unshielded.getAddress()).hexString).toLowerCase(),
     };
 
+    // --- THE MANAGER GOES FIRST ----------------------------------------------------------------------
+    // Nothing that can mint has been deployed on this chain. The tip is recorded before the first
+    // deploy so the ordering evidence has a floor as well as a ceiling.
+    const chainTipBeforeAnyDeploy = await chainTip();
+    log(`chain tip before ANY contract of this demonstration: block ${chainTipBeforeAnyDeploy.height}`);
+
+    const deployTxs: Record<string, string> = {};
+    const managerFee = makeProviders(fee, 'manager', psDir);
+    log('deploying the Manager FIRST — no Minter exists on this chain yet …');
+    const managerDeployed: any = await withDustRetry(fee, 'deploy Manager', () =>
+      deployContract(managerFee, {
+        compiledContract: compiledManager(),
+        privateStateId: 'manager',
+        initialPrivateState: { ownerSecret: new Uint8Array(32) },
+      } as any),
+    );
+    const managerAddress: string = managerDeployed.deployTxData.public.contractAddress;
+    deployTxs.Manager = String(
+      managerDeployed.deployTxData.public.txId ?? managerDeployed.deployTxData.public.txHash ?? '',
+    );
+    const managerDeploy = await recordDeploy('Manager', managerAddress, managerDeployed.deployTxData.public);
+    log(`  Manager at ${managerAddress} — block ${managerDeploy.blockHeight}`);
+
+    // --- register AA_A (OwnerA) and AA_B (OwnerB) -------------------------------------------------------
+    // `myAccount` is ledger-free, so the compiler emits no proving key for it and it is not a callTx.
+    // The account ids are derived IN PROCESS by running the very same compiled circuit through the
+    // simulator, so the artifact stays the single source of truth for the commitment scheme.
+    const sim = await ManagerSim.create(new Uint8Array(32));
+    const secretA = unshieldedSeedOf(SEEDS.ownerA);
+    const secretB = unshieldedSeedOf(SEEDS.ownerB);
+    const idA = await sim.ownerCommitmentFor(secretA);
+    const idB = await sim.ownerCommitmentFor(secretB);
+    await actAs(managerFee, secretA);
+    await withDustRetry(fee, 'registerAccount(AA_A)', () => managerDeployed.callTx.registerAccount(idA));
+    await actAs(managerFee, secretB);
+    await withDustRetry(fee, 'registerAccount(AA_B)', () => managerDeployed.callTx.registerAccount(idB));
+    const registered = await waitForManager(
+      managerFee,
+      managerAddress,
+      (m) => m.accounts.length === 2,
+      'both accounts to be registered',
+    );
+    const sizes = mapSizes(registered);
+    if (sizes.pools !== 0 || sizes.shieldedCells !== 0 || sizes.unshieldedCells !== 0) {
+      throw new Error(`registration created custody state: ${JSON.stringify(sizes)} — v3 must seed NOTHING`);
+    }
+    log(`AA_A ${hex(idA)} / AA_B ${hex(idB)} registered; custody maps ${JSON.stringify(sizes)} — nothing seeded`);
+    await actAs(managerFee, new Uint8Array(32));
+
     // --- fresh spenders ------------------------------------------------------------------------------
     let spenderSeq = 0;
     const openSpender = async (
@@ -180,14 +263,12 @@ export const bootstrap = async (): Promise<Rig> => {
       tag: string,
       /**
        * Readiness conditions: wait until this fresh wallet can actually SEE the funds for EVERY leg
-       * it is about to spend. Reading a balance from a wallet BEFORE it submits anything is not what
-       * F-104 warns about (that is about a wallet's view of its own balance AFTER a send).
+       * it is about to spend (F-107). Reading a balance from a wallet BEFORE it submits anything is
+       * not what F-104 warns about.
        *
-       * It must cover every leg, not just one. A transaction whose SECOND leg's funds the wallet
-       * cannot yet see does not fail loudly: `balanceTx` produces a transaction the node then
-       * refuses with a bare `1010: Invalid Transaction: Custom error: 223`, which is exactly what
-       * gate runs 1 and 2 hit at step 13 while the diagnostic probe — whose wallet could see both
-       * legs — had the identical shape ACCEPTED.
+       * It must cover every leg. A transaction whose SECOND leg's funds the wallet cannot yet see
+       * does not fail loudly: `balanceTx` produces a transaction the node then refuses with a bare
+       * `1010: Invalid Transaction: Custom error: 223`.
        */
       require?: Array<{ colour: string; shielded: boolean; amount: bigint }>,
     ): Promise<Spender> => {
@@ -217,173 +298,114 @@ export const bootstrap = async (): Promise<Rig> => {
       };
     };
 
-    // --- three Minter deployments from ONE artifact (FR-101) --------------------------------------
-    const deployTxs: Record<string, string> = {};
-    const minterProviders = makeProviders(fee, 'minter', psDir);
+    // --- the issuing-contract factory ------------------------------------------------------------------
+    const registry = new ColourRegistry();
     const minters: MinterDeployment[] = [];
-    for (const [label, tagText] of [
-      ['Minter1', 'TOKA'],
-      ['Minter2', 'TOKB'],
-      ['Minter3', 'TOKC'],
-    ] as const) {
+    const minterHandles: Record<string, MinterHandle> = {};
+
+    const deployMinter = async (opts: DeployMinterOptions): Promise<MinterDeployment> => {
+      const { label, tagText, kind, shieldedName, unshieldedName } = opts;
       const tag = pad32(tagText);
-      log(`deploying ${label} with constructor tag "${tagText}" …`);
+      const providers = makeProviders(fee, label.toLowerCase(), psDir, zkDir(kind));
+      log(`deploying ${label} (${kind}) with constructor tag "${tagText}" …`);
+      const compiled = kind === 'minter' ? compiledMinter() : compiledMinterCollide();
       const deployed: any = await withDustRetry(fee, `deploy ${label}`, () =>
-        deployContract(minterProviders, { compiledContract: compiledMinter(), args: [tag] } as any),
+        deployContract(providers, { compiledContract: compiled, args: [tag] } as any),
       );
       const address = deployed.deployTxData.public.contractAddress;
       deployTxs[label] = String(deployed.deployTxData.public.txId ?? deployed.deployTxData.public.txHash ?? '');
+      const deploy = await recordDeploy(label, address, deployed.deployTxData.public);
 
-      // Observation point 1 — the deployment's own ledger cells; point 2 — real circuit calls;
-      // point 3 — the SEPARATELY COMPILED --skip-zk artifact re-deriving the same separators.
-      const state = await minterProviders.publicDataProvider.queryContractState(address);
+      // OP1 — the deployment's own ledger cells.
+      const state = await providers.publicDataProvider.queryContractState(address);
       if (!state) throw new Error(`no contract state for ${label} at ${address}`);
-      const l: any = (minterLedger as any)(state.data);
+      const l: any = kind === 'minter' ? (minterLedger as any)(state.data) : (minterCollideLedger as any)(state.data);
+
+      // OP2 — real on-chain circuit calls.
       const sc = await withDustRetry(fee, `${label}.shieldedColor()`, () => deployed.callTx.shieldedColor());
       const uc = await withDustRetry(fee, `${label}.unshieldedColor()`, () => deployed.callTx.unshieldedColor());
-      const sim = await MinterSim.create(tag);
+
+      // OP3 — the SEPARATELY COMPILED --skip-zk artifact, run in process on the same tag.
+      const simSeps =
+        kind === 'minter'
+          ? await (async () => {
+              const s = await MinterSim.create(tag);
+              return { shielded: hex(s.ledger.shieldedSep), unshielded: hex(s.ledger.unshieldedSep) };
+            })()
+          : await (async () => {
+              const s = await MinterCollideSim.create(tag);
+              return { shielded: hex(s.ledger.collidingSep), unshielded: hex(s.ledger.collidingSep) };
+            })();
 
       const d: MinterDeployment = {
         label,
+        kind,
         tagText,
         tagIn: hex(tag),
         address,
         ledgerTag: hex(l.deploymentTag),
-        shieldedSep: hex(l.shieldedSep),
-        unshieldedSep: hex(l.unshieldedSep),
-        simShieldedSep: hex(sim.ledger.shieldedSep),
-        simUnshieldedSep: hex(sim.ledger.unshieldedSep),
+        shieldedSep: hex(kind === 'minter' ? l.shieldedSep : l.collidingSep),
+        unshieldedSep: hex(kind === 'minter' ? l.unshieldedSep : l.collidingSep),
+        simShieldedSep: simSeps.shielded,
+        simUnshieldedSep: simSeps.unshielded,
         shieldedColour: hex(resultOf<Uint8Array>(sc)),
         unshieldedColour: hex(resultOf<Uint8Array>(uc)),
+        shieldedName,
+        unshieldedName,
+        deploy,
       };
-      minters.push(d);
-      log(`  ${label} at ${address}: shielded ${d.shieldedColour} / unshielded ${d.unshieldedColour}`);
 
       if (d.ledgerTag !== d.tagIn) throw new Error(`${label}: stored tag ${d.ledgerTag} != argument ${d.tagIn}`);
       if (d.shieldedSep !== d.simShieldedSep || d.unshieldedSep !== d.simUnshieldedSep) {
         throw new Error(`${label}: on-chain separators disagree with the in-process artifact`);
       }
-    }
-
-    // --- distinctness: 15 pairwise comparisons over 6 colours (spec Distinctness control) ----------
-    const colourList: Array<[string, string]> = [];
-    for (const d of minters) {
-      colourList.push([`${d.label}(${d.tagText}).shielded`, d.shieldedColour]);
-      colourList.push([`${d.label}(${d.tagText}).unshielded`, d.unshieldedColour]);
-    }
-    let comparisons = 0;
-    let distinct = 0;
-    const collisions: string[] = [];
-    for (let i = 0; i < colourList.length; i++) {
-      for (let k = i + 1; k < colourList.length; k++) {
-        comparisons++;
-        if (colourList[i][1] === colourList[k][1]) collisions.push(`${colourList[i][0]} == ${colourList[k][0]}`);
-        else distinct++;
+      if (kind === 'minter' && d.shieldedColour === d.unshieldedColour) {
+        throw new Error(`${label}: an ordinary Minter must NOT produce two identical family colours`);
       }
-    }
-    if (comparisons !== 15) throw new Error(`expected 15 pairwise comparisons over 6 colours, made ${comparisons}`);
-    if (collisions.length > 0) throw new Error(`colour collisions: ${collisions.join('; ')}`);
-    log(`pairwise colour distinctness: ${distinct}/${comparisons}`);
+      if (kind === 'minter-collide' && d.shieldedColour !== d.unshieldedColour) {
+        throw new Error(
+          `P-COLL FIXTURE BROKEN: ${label}'s family colours are not byte-identical ` +
+            `(${d.shieldedColour} vs ${d.unshieldedColour})`,
+        );
+      }
 
-    const [m1, m2, m3] = minters;
-    const colours: ColourSet = {
-      hex: {
-        S1: m1.shieldedColour,
-        S2: m2.shieldedColour,
-        U1: m1.unshieldedColour,
-        U2: m2.unshieldedColour,
-      },
-      raw: {
-        S1: Buffer.from(m1.shieldedColour, 'hex'),
-        S2: Buffer.from(m2.shieldedColour, 'hex'),
-        U1: Buffer.from(m1.unshieldedColour, 'hex'),
-        U2: Buffer.from(m2.unshieldedColour, 'hex'),
-      },
-      control: {
-        shielded: m3.shieldedColour,
-        unshielded: m3.unshieldedColour,
-        rawShielded: Buffer.from(m3.shieldedColour, 'hex'),
-        rawUnshielded: Buffer.from(m3.unshieldedColour, 'hex'),
-      },
+      const shielded: ColourInfo = {
+        name: shieldedName,
+        family: 'shielded',
+        hex: d.shieldedColour,
+        raw: Buffer.from(d.shieldedColour, 'hex'),
+        issuer: label,
+      };
+      const unshielded: ColourInfo = {
+        name: unshieldedName,
+        family: 'unshielded',
+        hex: d.unshieldedColour,
+        raw: Buffer.from(d.unshieldedColour, 'hex'),
+        issuer: label,
+      };
+      registry.add(shielded);
+      registry.add(unshielded);
+
+      minters.push(d);
+      minterHandles[label] = { label, kind, address, providers, deployed };
+      log(`  ${label} at ${address}: ${shieldedName} ${d.shieldedColour} / ${unshieldedName} ${d.unshieldedColour}`);
+      return d;
     };
-
-    // --- the Manager ---------------------------------------------------------------------------------
-    const managerFee = makeProviders(fee, 'manager', psDir);
-    log('deploying Manager …');
-    const managerDeployed: any = await withDustRetry(fee, 'deploy Manager', () =>
-      deployContract(managerFee, {
-        compiledContract: compiledManager(),
-        privateStateId: 'manager',
-        initialPrivateState: { ownerSecret: new Uint8Array(32) },
-      } as any),
-    );
-    const managerAddress: string = managerDeployed.deployTxData.public.contractAddress;
-    deployTxs.Manager = String(
-      managerDeployed.deployTxData.public.txId ?? managerDeployed.deployTxData.public.txHash ?? '',
-    );
-    log(`  Manager at ${managerAddress}`);
-
-    log('configure(S1, S2, U1, U2) …');
-    await withDustRetry(fee, 'configure', () =>
-      managerDeployed.callTx.configure(colours.raw.S1, colours.raw.S2, colours.raw.U1, colours.raw.U2),
-    );
-    const configured = await waitForManager(managerFee, managerAddress, (m) => m.configured, 'the Manager to configure');
-    for (const c of ['S1', 'S2', 'U1', 'U2'] as const) {
-      if (configured.colours[c] !== colours.hex[c]) {
-        throw new Error(`colour${c} is ${configured.colours[c]}, expected ${colours.hex[c]}`);
-      }
-    }
-    for (const control of [colours.control.shielded, colours.control.unshielded]) {
-      if (Object.values(configured.colours).includes(control)) {
-        throw new Error(`Minter3 control colour ${control} was admitted by configure`);
-      }
-    }
-
-    // --- register AA_A (OwnerA) and AA_B (OwnerB) ------------------------------------------------------
-    // `myAccount` is ledger-free, so the compiler emits no proving key for it and it is not a callTx.
-    // The account ids are derived IN PROCESS by running the very same compiled circuit through the
-    // simulator, so the artifact stays the single source of truth for the commitment scheme.
-    const sim = await ManagerSim.create(new Uint8Array(32));
-    const secretA = unshieldedSeedOf(SEEDS.ownerA);
-    const secretB = unshieldedSeedOf(SEEDS.ownerB);
-    const idA = await sim.ownerCommitmentFor(secretA);
-    const idB = await sim.ownerCommitmentFor(secretB);
-    await actAs(managerFee, secretA);
-    await withDustRetry(fee, 'registerAccount(AA_A)', () => managerDeployed.callTx.registerAccount(idA));
-    await actAs(managerFee, secretB);
-    await withDustRetry(fee, 'registerAccount(AA_B)', () => managerDeployed.callTx.registerAccount(idB));
-    const registered = await waitForManager(
-      managerFee,
-      managerAddress,
-      (m) => m.accounts.length === 2,
-      'both accounts to be registered',
-    );
-    if (registered.balanceCount !== 8n) {
-      throw new Error(`balances holds ${registered.balanceCount} entries after registration, expected 8`);
-    }
-    log(`AA_A ${hex(idA)} / AA_B ${hex(idB)} registered; 8 seeded cells`);
-    await actAs(managerFee, new Uint8Array(32));
 
     const ctx: Ctx = {
       managerAddress,
-      minterAddresses: {
-        Minter1: m1.address,
-        Minter2: m2.address,
-        Minter3: m3.address,
-      },
+      minters: minterHandles,
       compiledMinter,
+      compiledMinterCollide,
       compiledManager,
-      minterProviders,
       managerFee,
-      composedProof: makeComposedProofProvider(),
       actAs,
-      colours,
     };
 
     const deps: ObserveDeps = {
       managerProviders: managerFee,
       managerAddress,
-      colours,
+      registry,
       ids: { AA_A: hex(idA), AA_B: hex(idB) },
       raw: { AA_A: idA, AA_B: idB },
       observers,
@@ -398,33 +420,25 @@ export const bootstrap = async (): Promise<Rig> => {
       openSpender,
       refreshObservers,
       ctx,
-      colours,
+      registry,
       minters,
+      deployMinter,
       managerAddress,
       managerDeployed,
+      managerDeploy,
+      chainTipBeforeAnyDeploy,
       ids: { AA_A: hex(idA), AA_B: hex(idB) },
       raw: { AA_A: idA, AA_B: idB, secretA, secretB },
       addresses,
       deps,
       deployTxs,
       fundingTxs,
-      distinctness: { comparisons, distinct, collisions },
       close: async () => {
         await closeParty(observers.OwnerN);
         await closeParty(observers.OwnerM);
         await close();
       },
     };
-
-    // Sanity: every seeded cell must be reproducible by the contract's own pure circuit.
-    for (const account of [idA, idB]) {
-      for (const c of ['S1', 'S2', 'U1', 'U2'] as const) {
-        const key = balanceKeyOf(account, colours.raw[c]);
-        if (registered.balances[key] !== 0n) {
-          throw new Error(`seeded cell (${hex(account).slice(0, 8)}…, ${c}) is ${registered.balances[key]}, expected 0`);
-        }
-      }
-    }
 
     return rig;
   } catch (e) {

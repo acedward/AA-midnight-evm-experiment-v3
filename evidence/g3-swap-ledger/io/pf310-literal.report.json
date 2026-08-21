@@ -1,0 +1,32 @@
+{
+  "kind": "maker",
+  "label": "P-F310-literal",
+  "lane": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T12:31:17.266Z",
+  "process": {
+    "pid": 38457,
+    "ppid": 38448
+  },
+  "spec": {
+    "label": "P-F310-literal",
+    "managerAddress": "1f8f7b515d8da46148290b4ac780ddfa333a98e845972b21cfe30d4bad234e6d",
+    "witness": "ownerA",
+    "shape": "floating-surplus",
+    "gives": {
+      "colour": "586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31",
+      "value": "2"
+    },
+    "wants": {
+      "colour": "94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096",
+      "value": "3"
+    },
+    "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "envelopeOut": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/pf310-literal.offer",
+    "out": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/io/pf310-literal.report.json"
+  },
+  "ok": false,
+  "error": "FR-302 VIOLATED for floating-surplus offer (openSwapShielded, give 2 586d312ace6d… / want 3 94144f1ff0b0…): segments present: [0,22533] intent segments: [22533] fallible-offer segments: [22533] expected 0: {\"shielded:586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31\":\"2\",\"shielded:94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096\":\"-3\"} observed 0: {} segment-0 exact: false other segments carrying deltas: 22533: {\"shielded:586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31\":\"2\",\"shielded:94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350cc3d5ba8096\":\"-3\"} A leg outside the guaranteed section is UNSETTLEABLE by an independent taker (balancing is per (token, segment) and a taker can only reach segment 0). This is lane issue 0003 in its designed-against form — retain this output as evidence.",
+  "errorKind": "fr302-placement-fail-closed",
+  "published": false
+}

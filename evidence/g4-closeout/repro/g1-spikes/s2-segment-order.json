@@ -1,0 +1,2188 @@
+{
+  "spike": "S2",
+  "status": "complete",
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T14:09:56.773Z",
+  "host": {
+    "cores": 16,
+    "loadGate": 16,
+    "attemptTimeoutMs": 240000,
+    "infraRetries": 3
+  },
+  "rows": {
+    "independent": [
+      {
+        "attempt": 1,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 3.857421875,
+        "call1Segment": 58040,
+        "call2Segment": 30210,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-independent-1': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 2,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 4.02880859375,
+        "void": false,
+        "call1Segment": 31929,
+        "call2Segment": 63170,
+        "order": "ascending",
+        "ok": true,
+        "txId": "0050d1dea8b4e737d64478300ad8ef849846deceeae8aabc26f758761f0c6f446f",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 3,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.82373046875,
+        "void": false,
+        "call1Segment": 37556,
+        "call2Segment": 5245,
+        "order": "descending",
+        "ok": true,
+        "txId": "00f89258d19b8895dd5fc3c7bad27a3f87f003b8e74e9aa15b3a45744283460c45",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 4,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.56689453125,
+        "void": false,
+        "call1Segment": 42936,
+        "call2Segment": 6741,
+        "order": "descending",
+        "ok": true,
+        "txId": "00af4f4fd98b32e03403ff636a0bfb4e1c72b982eeb4d13fee03697e52dfebc0bd",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 5,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.140625,
+        "void": false,
+        "call1Segment": 7463,
+        "call2Segment": 28375,
+        "order": "ascending",
+        "ok": true,
+        "txId": "00390e410165edba4b0bb2b06e3b2142ad44853154d465726e8b94f72f0c5a369a",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 6,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.19580078125,
+        "void": false,
+        "call1Segment": 31586,
+        "call2Segment": 45637,
+        "order": "ascending",
+        "ok": true,
+        "txId": "00c2bbc60a86e704c36dae7845781a95be358b52aead8405e6798971026218bee9",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 7,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.77001953125,
+        "void": false,
+        "call1Segment": 49197,
+        "call2Segment": 37034,
+        "order": "descending",
+        "ok": true,
+        "txId": "00b611edcf7200f85b612fa24bc334df402eacef2b3eec89161b4aea41b2811cd7",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 8,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.38037109375,
+        "void": false,
+        "call1Segment": 14941,
+        "call2Segment": 973,
+        "order": "descending",
+        "ok": true,
+        "txId": "00d4039a12fa02fee5abf6e7691dfd966aa301fc715cdfec9e88a1f9ae4850d3ee",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 9,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.84912109375,
+        "void": false,
+        "call1Segment": 28670,
+        "call2Segment": 46909,
+        "order": "ascending",
+        "ok": true,
+        "txId": "00ee72adfa3b2f1e9653e7a96ecb0f1008309053174bbca2502b810c1fc105dcd7",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 10,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.5498046875,
+        "void": false,
+        "call1Segment": 17446,
+        "call2Segment": 65073,
+        "order": "ascending",
+        "ok": true,
+        "txId": "00c1161ef533be67e51f93c50c2d875123f1d8fed99042d139add638df0ea6625e",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 11,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.27490234375,
+        "void": false,
+        "call1Segment": 45774,
+        "call2Segment": 14877,
+        "order": "descending",
+        "ok": true,
+        "txId": "00e54d475344a0e9dda1d0c3da6cc0cd912fa250ca83620bb1e81512d8d0af549c",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 12,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.97216796875,
+        "void": false,
+        "call1Segment": 15405,
+        "call2Segment": 64551,
+        "order": "ascending",
+        "ok": true,
+        "txId": "007c03139f284c598f99267e65f1e3b1d9b1ae60978c21d6269c4a3229a186bd2a",
+        "is104": false,
+        "failedBeforeSubmission": false
+      }
+    ],
+    "dependent": [
+      {
+        "attempt": 1,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 4.865234375,
+        "call1Segment": 38785,
+        "call2Segment": 14637,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-1': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 2,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 4.498046875,
+        "void": false,
+        "call1Segment": 20945,
+        "call2Segment": 54207,
+        "order": "ascending",
+        "ok": true,
+        "txId": "0017bd956379868041f3df27612103fe421ce0526f38e7786274a81108f6418720",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 3,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.19384765625,
+        "void": false,
+        "call1Segment": 37270,
+        "call2Segment": 64031,
+        "order": "ascending",
+        "ok": true,
+        "txId": "00323e18394f58c60ac9b563a7c3a3469f9966d621a91900e5fd7f060636c3696c",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 4,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.4599609375,
+        "void": false,
+        "call1Segment": 25836,
+        "call2Segment": 46462,
+        "order": "ascending",
+        "ok": true,
+        "txId": "004424c7c2ceddda595b79960a4ed027b65f0db49e3de5a1bef2b6ab021ac10b82",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 5,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.27001953125,
+        "call1Segment": 47616,
+        "call2Segment": 43771,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-5': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 6,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.42333984375,
+        "call1Segment": 4843,
+        "call2Segment": 3306,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-6': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 7,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.72607421875,
+        "call1Segment": 51685,
+        "call2Segment": 37664,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-7': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 8,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 6.38818359375,
+        "void": false,
+        "call1Segment": 23578,
+        "call2Segment": 65281,
+        "order": "ascending",
+        "ok": true,
+        "txId": "0017522f4206bed2932f12bbbc15574bb439d462f2e16e001b0830a351d5c4125b",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 9,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 6.4326171875,
+        "call1Segment": 65208,
+        "call2Segment": 63852,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-9': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 10,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 7.11865234375,
+        "call1Segment": 55088,
+        "call2Segment": 30685,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-10': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 11,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 7.7470703125,
+        "void": false,
+        "call1Segment": 24210,
+        "call2Segment": 45378,
+        "order": "ascending",
+        "ok": true,
+        "txId": "009eb07b75f5d3ff6269066beefdc4959891da0425d17e8597a91d8724841f5e91",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 12,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 6.84521484375,
+        "call1Segment": 62862,
+        "call2Segment": 37403,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-12': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      }
+    ],
+    "fresh-lazy-init": [
+      {
+        "attempt": 1,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 6.04443359375,
+        "issuer": {
+          "label": "Minter-TD01",
+          "tag": "TD01",
+          "shielded": "c959e73cf39f627cbe037c00be5ae48cb1162d45b7c3506d6de8d2267153b448",
+          "unshielded": "f5958c807dd516a843ac957da92a2fbabec2b1401fd6857ec18d8b68cf1f1534"
+        },
+        "void": false,
+        "call1Segment": 6338,
+        "call2Segment": 14217,
+        "order": "ascending",
+        "ok": true,
+        "txId": "00fd14d66a646904514841cc91475fe8922873a265938714cbb8a3b1dd9612753d",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 2,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 4.81640625,
+        "issuer": {
+          "label": "Minter-TD02",
+          "tag": "TD02",
+          "shielded": "014e5b41ebb44c7674861646fb04e77464c4e514385c875e4c7b12156b75659c",
+          "unshielded": "0d9b53b5fba0970a5868b345d0c86f772c7d508695a8a4c30c8202a8ee367267"
+        },
+        "call1Segment": 51839,
+        "call2Segment": 17608,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-2': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 3,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 4.04443359375,
+        "issuer": {
+          "label": "Minter-TD03",
+          "tag": "TD03",
+          "shielded": "372872eec5c57dca90b178a11a6d744fd36b60944e4190aa6c390f671677114a",
+          "unshielded": "ac3dd139bb922d3057fd605ddc8c06788ea08d427e878e96a65afd6d3d296b61"
+        },
+        "call1Segment": 60673,
+        "call2Segment": 38855,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-3': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 4,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 5.33251953125,
+        "issuer": {
+          "label": "Minter-TD04",
+          "tag": "TD04",
+          "shielded": "799d2f2c798adbf8e534f14d3d8c80c46f843f065c2df8a339530c6437bbd8e3",
+          "unshielded": "ea29e43abc2546df05e16427a8b3e5b6aa57a95c56b53adebe9f9e7004229b5c"
+        },
+        "call1Segment": 27727,
+        "call2Segment": 20980,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-4': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 5,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 5.40869140625,
+        "issuer": {
+          "label": "Minter-TD05",
+          "tag": "TD05",
+          "shielded": "f65172c75748fd6099cc784e6490296c8e29f4b0a82e401d4da5e75758c3179d",
+          "unshielded": "33df1fc78b655b4aa8ce921fbd39ef66bbe8f9634ba86871eae8acc7399e1eee"
+        },
+        "call1Segment": 35940,
+        "call2Segment": 7661,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-5': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 6,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 3.65966796875,
+        "issuer": {
+          "label": "Minter-TD06",
+          "tag": "TD06",
+          "shielded": "b7755e527e5438c76ca4ef28f2d49333f0bf4e73501b23350076cfb796cb77a1",
+          "unshielded": "92bc3526ae87994817c963e3388482a5b6245fe46421c93061bebff57f1089bb"
+        },
+        "call1Segment": 62650,
+        "call2Segment": 46850,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-6': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 7,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 4.255859375,
+        "issuer": {
+          "label": "Minter-TD07",
+          "tag": "TD07",
+          "shielded": "51a27efc00d32e598b09adbd561623997ec41b7d5a83c05bf7c5c81d401ea564",
+          "unshielded": "42f885983bba125c8eca78ccd1283338b65c3f2618988c901632a8de82313b75"
+        },
+        "call1Segment": 55374,
+        "call2Segment": 45654,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-7': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 8,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 3.84375,
+        "issuer": {
+          "label": "Minter-TD08",
+          "tag": "TD08",
+          "shielded": "de0fa85afc6aa9fc7f991f10862baac7c407b37bc4eb9a8e01e4156235c58ad5",
+          "unshielded": "e955c038a296e8ad07ccf60033df710b632723f11b6317fe6827e69721394386"
+        },
+        "call1Segment": 60190,
+        "call2Segment": 24602,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-8': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      }
+    ],
+    "dependent-fixed": [
+      {
+        "attempt": 1,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.302734375,
+        "void": false,
+        "call1Segment": 64283,
+        "call2Segment": 31322,
+        "order": "descending",
+        "resegmented": {
+          "from": [
+            64283,
+            31322
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "00ac4268325d860d5fd76a6da2a925227743f74c2f8f4e9d8efaf0c69b2ff94044",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 2,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.85791015625,
+        "void": false,
+        "call1Segment": 55485,
+        "call2Segment": 55672,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            55485,
+            55672
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "00a7d5c45676d29434ca1fb5171683df668eae1156acb9a22494e28b4f60e48e0b",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 3,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.28369140625,
+        "void": false,
+        "call1Segment": 1490,
+        "call2Segment": 6729,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            1490,
+            6729
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "004dc37d8d4225177de5c9da6c94236a631f7948ab29251f8c9bd673f7b133ad03",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 4,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.7470703125,
+        "void": false,
+        "call1Segment": 8589,
+        "call2Segment": 19031,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            8589,
+            19031
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "0021f5315e8fb587c08841d29322ba32a404cc3f1c28a02e6e23c6537b37cdbcac",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 5,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.671875,
+        "void": false,
+        "call1Segment": 27371,
+        "call2Segment": 54229,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            27371,
+            54229
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "009c7562a3b1aabf710384dc4677d72d730ab1375919da70ddaf01b7a792659d38",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 6,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 3.7705078125,
+        "void": false,
+        "call1Segment": 56210,
+        "call2Segment": 29741,
+        "order": "descending",
+        "resegmented": {
+          "from": [
+            56210,
+            29741
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "004bacfee7361722387be7324b6c7d3f7e127d1fe76d3f03ea00c645a90494aa6f",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 7,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.8515625,
+        "void": false,
+        "call1Segment": 10283,
+        "call2Segment": 37932,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            10283,
+            37932
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "00d8cf7a4f018b5451f07607ec280fd5e431cd6a63072e40be052d00695fff4bbe",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 8,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.681640625,
+        "void": false,
+        "call1Segment": 55801,
+        "call2Segment": 65221,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            55801,
+            65221
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "001198234143f9fbdf6fededfb3e20d5f901f030f1090936f063ecfdc5b86fb232",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 9,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.640625,
+        "void": false,
+        "call1Segment": 49063,
+        "call2Segment": 41033,
+        "order": "descending",
+        "resegmented": {
+          "from": [
+            49063,
+            41033
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "00ff76645ea01a51b0e75bc2c89772225416f5ba52e7c462a0f3434a926772231f",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 10,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.4462890625,
+        "void": false,
+        "call1Segment": 54618,
+        "call2Segment": 26050,
+        "order": "descending",
+        "resegmented": {
+          "from": [
+            54618,
+            26050
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "007aa5209e04edaf3108be979d106f12c8e500e20d80cda2c78083ec1f8ecb3d5f",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 11,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.9990234375,
+        "void": false,
+        "call1Segment": 16333,
+        "call2Segment": 43440,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            16333,
+            43440
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "004cd4c10d1496917706a8e9c0838e8987ed57e88e92596d0808396ffaf0b7b049",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 12,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.52587890625,
+        "void": false,
+        "call1Segment": 54983,
+        "call2Segment": 9504,
+        "order": "descending",
+        "resegmented": {
+          "from": [
+            54983,
+            9504
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "00586ebdde62262a2bbacab6891c7fb327189ae6e1f96a9a87da5ec18649ef254d",
+        "is104": false,
+        "failedBeforeSubmission": false
+      }
+    ]
+  },
+  "summaries": {
+    "independent": {
+      "attemptsRun": 12,
+      "voided": 0,
+      "infraRetriesAbsorbed": 0,
+      "attempts": 12,
+      "accepted": 11,
+      "refused": 1,
+      "refusedWith104": 1,
+      "refusedBeforeSubmission": 0,
+      "ascending": {
+        "n": 6,
+        "accepted": 6,
+        "refused": 0
+      },
+      "descending": {
+        "n": 6,
+        "accepted": 5,
+        "refused": 1
+      },
+      "lazyInit": {
+        "n": 2,
+        "accepted": 1,
+        "refused": 1
+      },
+      "unknownOrder": 0
+    },
+    "dependent": {
+      "attemptsRun": 12,
+      "voided": 0,
+      "infraRetriesAbsorbed": 0,
+      "attempts": 12,
+      "accepted": 5,
+      "refused": 7,
+      "refusedWith104": 7,
+      "refusedBeforeSubmission": 0,
+      "ascending": {
+        "n": 5,
+        "accepted": 5,
+        "refused": 0
+      },
+      "descending": {
+        "n": 7,
+        "accepted": 0,
+        "refused": 7
+      },
+      "lazyInit": {
+        "n": 2,
+        "accepted": 1,
+        "refused": 1
+      },
+      "unknownOrder": 0
+    },
+    "fresh-lazy-init": {
+      "attemptsRun": 8,
+      "voided": 0,
+      "infraRetriesAbsorbed": 0,
+      "attempts": 8,
+      "accepted": 1,
+      "refused": 7,
+      "refusedWith104": 7,
+      "refusedBeforeSubmission": 0,
+      "ascending": {
+        "n": 1,
+        "accepted": 1,
+        "refused": 0
+      },
+      "descending": {
+        "n": 7,
+        "accepted": 0,
+        "refused": 7
+      },
+      "lazyInit": {
+        "n": 8,
+        "accepted": 1,
+        "refused": 7
+      },
+      "unknownOrder": 0
+    },
+    "dependent-fixed": {
+      "attemptsRun": 12,
+      "voided": 0,
+      "infraRetriesAbsorbed": 0,
+      "attempts": 12,
+      "accepted": 12,
+      "refused": 0,
+      "refusedWith104": 0,
+      "refusedBeforeSubmission": 0,
+      "ascending": {
+        "n": 7,
+        "accepted": 7,
+        "refused": 0
+      },
+      "descending": {
+        "n": 5,
+        "accepted": 5,
+        "refused": 0
+      },
+      "lazyInit": {
+        "n": 0,
+        "accepted": 0,
+        "refused": 0
+      },
+      "unknownOrder": 0
+    }
+  },
+  "question": "is node `Custom error: 104` the segment-order bug F-301 predicts?",
+  "decode": {
+    "104": "InvalidError::Transcript — midnight-node/ledger/src/versions/common/types.rs:406 (read from the pinned reference)",
+    "171": "still undecoded (issue 0002); it is not in the InvalidError arm of that enum",
+    "235": "MalformedZswapErrorCode::InvalidProof — midnight-node/ledger/src/versions/common/types.rs:446 (decoded here because the post-hoc re-keying fix provokes it)",
+    "mechanismSources": [
+      "midnight-js-contracts/dist/index.mjs:1025 — each scoped call is Transaction.fromPartsRandomized (RANDOM segment)",
+      "midnight-js-contracts/dist/index.mjs:1228 — the scope merges them: current.unprovenTx.merge(next.unprovenTx)",
+      "midnight-ledger/ledger/src/semantics.rs:1097 — the ledger applies intents via tx.intents.sorted_iter() (ASCENDING segment)",
+      "midnight-ledger/ledger/src/structure.rs:1826 — \"Segment: logical segment index used in ... ledger application order\""
+    ]
+  },
+  "shapes": {
+    "independent": "A — INDEPENDENT pair (00005 M3: depositShielded S5 + depositUnshielded U5 -> AA_B; DISJOINT state)",
+    "dependent": "B — DEPENDENT pair (depositShielded S5 -> AA_B, then transferInternalShielded AA_B -> AA_A; call 2 reads the cell call 1 wrote)",
+    "fresh-lazy-init": "D — FRESH LAZY-INIT (shape A with a brand-new issuer and colour pair per attempt: every attempt creates a new pool key and two new cells)",
+    "dependent-fixed": "C — THE FIX (shape B with the merged intents re-keyed to segments 1,2 in CALL order before proving)"
+  },
+  "whyFourShapes": "shape A is 00005's M3 pair, but its two calls touch DISJOINT contract state, so it has no power to detect an ordering bug reliably; shape B adds a genuine read-after-write and is the shape the verdict is decided on; shape D holds lazy-init constant with brand-new colours per attempt and characterises WHEN a disjoint pair inherits the problem; shape C applies the fix to shape B, run only if B confirms.",
+  "managerAddress": "7e7f33526bc57fec42a6ddeeb8e0d7f154ab6dbe9b8a770e8791e519aa23a73c",
+  "accounts": {
+    "AA_A": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "AA_B": "755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904"
+  },
+  "sharedIssuer": {
+    "label": "Minter5",
+    "tag": "TOKE",
+    "address": "3662d952c568966cd7e782b83477a9bcb1fa00914ab2a2ed8bcb756792ad7f8b",
+    "S5": "fc6c34a696c5726f777bd5ca5e95c9a79dda3f3c4741d34dc68fab04e87146da",
+    "U5": "07aec17e45059fe9723178297eca6d08253958a9245a2acbe3c74b2cc336c53d"
+  },
+  "mintTxs": {
+    "sTx": "003812982dd814f901146a2d7afd900550a87c88a00869eae35d2c840d78b33456",
+    "uTx": "00b79520bc2568ad87a7fcf407394fad7d1a0d1e8f8ea257860219c6307f0629a6"
+  },
+  "attempts": {
+    "sharedShapes": 12,
+    "freshShapes": 8
+  },
+  "shapeA_independent": {
+    "rows": [
+      {
+        "attempt": 1,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 3.857421875,
+        "call1Segment": 58040,
+        "call2Segment": 30210,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-independent-1': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 2,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 4.02880859375,
+        "void": false,
+        "call1Segment": 31929,
+        "call2Segment": 63170,
+        "order": "ascending",
+        "ok": true,
+        "txId": "0050d1dea8b4e737d64478300ad8ef849846deceeae8aabc26f758761f0c6f446f",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 3,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.82373046875,
+        "void": false,
+        "call1Segment": 37556,
+        "call2Segment": 5245,
+        "order": "descending",
+        "ok": true,
+        "txId": "00f89258d19b8895dd5fc3c7bad27a3f87f003b8e74e9aa15b3a45744283460c45",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 4,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.56689453125,
+        "void": false,
+        "call1Segment": 42936,
+        "call2Segment": 6741,
+        "order": "descending",
+        "ok": true,
+        "txId": "00af4f4fd98b32e03403ff636a0bfb4e1c72b982eeb4d13fee03697e52dfebc0bd",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 5,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.140625,
+        "void": false,
+        "call1Segment": 7463,
+        "call2Segment": 28375,
+        "order": "ascending",
+        "ok": true,
+        "txId": "00390e410165edba4b0bb2b06e3b2142ad44853154d465726e8b94f72f0c5a369a",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 6,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.19580078125,
+        "void": false,
+        "call1Segment": 31586,
+        "call2Segment": 45637,
+        "order": "ascending",
+        "ok": true,
+        "txId": "00c2bbc60a86e704c36dae7845781a95be358b52aead8405e6798971026218bee9",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 7,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.77001953125,
+        "void": false,
+        "call1Segment": 49197,
+        "call2Segment": 37034,
+        "order": "descending",
+        "ok": true,
+        "txId": "00b611edcf7200f85b612fa24bc334df402eacef2b3eec89161b4aea41b2811cd7",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 8,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.38037109375,
+        "void": false,
+        "call1Segment": 14941,
+        "call2Segment": 973,
+        "order": "descending",
+        "ok": true,
+        "txId": "00d4039a12fa02fee5abf6e7691dfd966aa301fc715cdfec9e88a1f9ae4850d3ee",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 9,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.84912109375,
+        "void": false,
+        "call1Segment": 28670,
+        "call2Segment": 46909,
+        "order": "ascending",
+        "ok": true,
+        "txId": "00ee72adfa3b2f1e9653e7a96ecb0f1008309053174bbca2502b810c1fc105dcd7",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 10,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.5498046875,
+        "void": false,
+        "call1Segment": 17446,
+        "call2Segment": 65073,
+        "order": "ascending",
+        "ok": true,
+        "txId": "00c1161ef533be67e51f93c50c2d875123f1d8fed99042d139add638df0ea6625e",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 11,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.27490234375,
+        "void": false,
+        "call1Segment": 45774,
+        "call2Segment": 14877,
+        "order": "descending",
+        "ok": true,
+        "txId": "00e54d475344a0e9dda1d0c3da6cc0cd912fa250ca83620bb1e81512d8d0af549c",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 12,
+        "shape": "independent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.97216796875,
+        "void": false,
+        "call1Segment": 15405,
+        "call2Segment": 64551,
+        "order": "ascending",
+        "ok": true,
+        "txId": "007c03139f284c598f99267e65f1e3b1d9b1ae60978c21d6269c4a3229a186bd2a",
+        "is104": false,
+        "failedBeforeSubmission": false
+      }
+    ],
+    "summary": {
+      "attemptsRun": 12,
+      "voided": 0,
+      "infraRetriesAbsorbed": 0,
+      "attempts": 12,
+      "accepted": 11,
+      "refused": 1,
+      "refusedWith104": 1,
+      "refusedBeforeSubmission": 0,
+      "ascending": {
+        "n": 6,
+        "accepted": 6,
+        "refused": 0
+      },
+      "descending": {
+        "n": 6,
+        "accepted": 5,
+        "refused": 1
+      },
+      "lazyInit": {
+        "n": 2,
+        "accepted": 1,
+        "refused": 1
+      },
+      "unknownOrder": 0
+    }
+  },
+  "shapeB_dependent": {
+    "rows": [
+      {
+        "attempt": 1,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 4.865234375,
+        "call1Segment": 38785,
+        "call2Segment": 14637,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-1': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 2,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 4.498046875,
+        "void": false,
+        "call1Segment": 20945,
+        "call2Segment": 54207,
+        "order": "ascending",
+        "ok": true,
+        "txId": "0017bd956379868041f3df27612103fe421ce0526f38e7786274a81108f6418720",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 3,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.19384765625,
+        "void": false,
+        "call1Segment": 37270,
+        "call2Segment": 64031,
+        "order": "ascending",
+        "ok": true,
+        "txId": "00323e18394f58c60ac9b563a7c3a3469f9966d621a91900e5fd7f060636c3696c",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 4,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.4599609375,
+        "void": false,
+        "call1Segment": 25836,
+        "call2Segment": 46462,
+        "order": "ascending",
+        "ok": true,
+        "txId": "004424c7c2ceddda595b79960a4ed027b65f0db49e3de5a1bef2b6ab021ac10b82",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 5,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.27001953125,
+        "call1Segment": 47616,
+        "call2Segment": 43771,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-5': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 6,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.42333984375,
+        "call1Segment": 4843,
+        "call2Segment": 3306,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-6': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 7,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.72607421875,
+        "call1Segment": 51685,
+        "call2Segment": 37664,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-7': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 8,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 6.38818359375,
+        "void": false,
+        "call1Segment": 23578,
+        "call2Segment": 65281,
+        "order": "ascending",
+        "ok": true,
+        "txId": "0017522f4206bed2932f12bbbc15574bb439d462f2e16e001b0830a351d5c4125b",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 9,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 6.4326171875,
+        "call1Segment": 65208,
+        "call2Segment": 63852,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-9': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 10,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 7.11865234375,
+        "call1Segment": 55088,
+        "call2Segment": 30685,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-10': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 11,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 7.7470703125,
+        "void": false,
+        "call1Segment": 24210,
+        "call2Segment": 45378,
+        "order": "ascending",
+        "ok": true,
+        "txId": "009eb07b75f5d3ff6269066beefdc4959891da0425d17e8597a91d8724841f5e91",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 12,
+        "shape": "dependent",
+        "resegment": false,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 6.84521484375,
+        "call1Segment": 62862,
+        "call2Segment": 37403,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-dependent-12': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      }
+    ],
+    "summary": {
+      "attemptsRun": 12,
+      "voided": 0,
+      "infraRetriesAbsorbed": 0,
+      "attempts": 12,
+      "accepted": 5,
+      "refused": 7,
+      "refusedWith104": 7,
+      "refusedBeforeSubmission": 0,
+      "ascending": {
+        "n": 5,
+        "accepted": 5,
+        "refused": 0
+      },
+      "descending": {
+        "n": 7,
+        "accepted": 0,
+        "refused": 7
+      },
+      "lazyInit": {
+        "n": 2,
+        "accepted": 1,
+        "refused": 1
+      },
+      "unknownOrder": 0
+    }
+  },
+  "shapeD_freshLazyInit": {
+    "rows": [
+      {
+        "attempt": 1,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 6.04443359375,
+        "issuer": {
+          "label": "Minter-TD01",
+          "tag": "TD01",
+          "shielded": "c959e73cf39f627cbe037c00be5ae48cb1162d45b7c3506d6de8d2267153b448",
+          "unshielded": "f5958c807dd516a843ac957da92a2fbabec2b1401fd6857ec18d8b68cf1f1534"
+        },
+        "void": false,
+        "call1Segment": 6338,
+        "call2Segment": 14217,
+        "order": "ascending",
+        "ok": true,
+        "txId": "00fd14d66a646904514841cc91475fe8922873a265938714cbb8a3b1dd9612753d",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 2,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 4.81640625,
+        "issuer": {
+          "label": "Minter-TD02",
+          "tag": "TD02",
+          "shielded": "014e5b41ebb44c7674861646fb04e77464c4e514385c875e4c7b12156b75659c",
+          "unshielded": "0d9b53b5fba0970a5868b345d0c86f772c7d508695a8a4c30c8202a8ee367267"
+        },
+        "call1Segment": 51839,
+        "call2Segment": 17608,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-2': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 3,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 4.04443359375,
+        "issuer": {
+          "label": "Minter-TD03",
+          "tag": "TD03",
+          "shielded": "372872eec5c57dca90b178a11a6d744fd36b60944e4190aa6c390f671677114a",
+          "unshielded": "ac3dd139bb922d3057fd605ddc8c06788ea08d427e878e96a65afd6d3d296b61"
+        },
+        "call1Segment": 60673,
+        "call2Segment": 38855,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-3': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 4,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 5.33251953125,
+        "issuer": {
+          "label": "Minter-TD04",
+          "tag": "TD04",
+          "shielded": "799d2f2c798adbf8e534f14d3d8c80c46f843f065c2df8a339530c6437bbd8e3",
+          "unshielded": "ea29e43abc2546df05e16427a8b3e5b6aa57a95c56b53adebe9f9e7004229b5c"
+        },
+        "call1Segment": 27727,
+        "call2Segment": 20980,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-4': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 5,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 5.40869140625,
+        "issuer": {
+          "label": "Minter-TD05",
+          "tag": "TD05",
+          "shielded": "f65172c75748fd6099cc784e6490296c8e29f4b0a82e401d4da5e75758c3179d",
+          "unshielded": "33df1fc78b655b4aa8ce921fbd39ef66bbe8f9634ba86871eae8acc7399e1eee"
+        },
+        "call1Segment": 35940,
+        "call2Segment": 7661,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-5': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 6,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 3.65966796875,
+        "issuer": {
+          "label": "Minter-TD06",
+          "tag": "TD06",
+          "shielded": "b7755e527e5438c76ca4ef28f2d49333f0bf4e73501b23350076cfb796cb77a1",
+          "unshielded": "92bc3526ae87994817c963e3388482a5b6245fe46421c93061bebff57f1089bb"
+        },
+        "call1Segment": 62650,
+        "call2Segment": 46850,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-6': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 7,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 4.255859375,
+        "issuer": {
+          "label": "Minter-TD07",
+          "tag": "TD07",
+          "shielded": "51a27efc00d32e598b09adbd561623997ec41b7d5a83c05bf7c5c81d401ea564",
+          "unshielded": "42f885983bba125c8eca78ccd1283338b65c3f2618988c901632a8de82313b75"
+        },
+        "call1Segment": 55374,
+        "call2Segment": 45654,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-7': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      },
+      {
+        "attempt": 8,
+        "shape": "fresh-lazy-init",
+        "resegment": false,
+        "lazyInit": true,
+        "infraRetries": 0,
+        "loadAtStart": 3.84375,
+        "issuer": {
+          "label": "Minter-TD08",
+          "tag": "TD08",
+          "shielded": "de0fa85afc6aa9fc7f991f10862baac7c407b37bc4eb9a8e01e4156235c58ad5",
+          "unshielded": "e955c038a296e8ad07ccf60033df710b632723f11b6317fe6827e69721394386"
+        },
+        "call1Segment": 60190,
+        "call2Segment": 24602,
+        "order": "descending",
+        "ok": false,
+        "error": "Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-8': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error",
+        "is104": true,
+        "errorCode": 104,
+        "failedBeforeSubmission": false,
+        "void": false
+      }
+    ],
+    "summary": {
+      "attemptsRun": 8,
+      "voided": 0,
+      "infraRetriesAbsorbed": 0,
+      "attempts": 8,
+      "accepted": 1,
+      "refused": 7,
+      "refusedWith104": 7,
+      "refusedBeforeSubmission": 0,
+      "ascending": {
+        "n": 1,
+        "accepted": 1,
+        "refused": 0
+      },
+      "descending": {
+        "n": 7,
+        "accepted": 0,
+        "refused": 7
+      },
+      "lazyInit": {
+        "n": 8,
+        "accepted": 1,
+        "refused": 7
+      },
+      "unknownOrder": 0
+    }
+  },
+  "shapeC_dependentFixed": {
+    "rows": [
+      {
+        "attempt": 1,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.302734375,
+        "void": false,
+        "call1Segment": 64283,
+        "call2Segment": 31322,
+        "order": "descending",
+        "resegmented": {
+          "from": [
+            64283,
+            31322
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "00ac4268325d860d5fd76a6da2a925227743f74c2f8f4e9d8efaf0c69b2ff94044",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 2,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.85791015625,
+        "void": false,
+        "call1Segment": 55485,
+        "call2Segment": 55672,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            55485,
+            55672
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "00a7d5c45676d29434ca1fb5171683df668eae1156acb9a22494e28b4f60e48e0b",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 3,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.28369140625,
+        "void": false,
+        "call1Segment": 1490,
+        "call2Segment": 6729,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            1490,
+            6729
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "004dc37d8d4225177de5c9da6c94236a631f7948ab29251f8c9bd673f7b133ad03",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 4,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.7470703125,
+        "void": false,
+        "call1Segment": 8589,
+        "call2Segment": 19031,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            8589,
+            19031
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "0021f5315e8fb587c08841d29322ba32a404cc3f1c28a02e6e23c6537b37cdbcac",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 5,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.671875,
+        "void": false,
+        "call1Segment": 27371,
+        "call2Segment": 54229,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            27371,
+            54229
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "009c7562a3b1aabf710384dc4677d72d730ab1375919da70ddaf01b7a792659d38",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 6,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 3.7705078125,
+        "void": false,
+        "call1Segment": 56210,
+        "call2Segment": 29741,
+        "order": "descending",
+        "resegmented": {
+          "from": [
+            56210,
+            29741
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "004bacfee7361722387be7324b6c7d3f7e127d1fe76d3f03ea00c645a90494aa6f",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 7,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.8515625,
+        "void": false,
+        "call1Segment": 10283,
+        "call2Segment": 37932,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            10283,
+            37932
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "00d8cf7a4f018b5451f07607ec280fd5e431cd6a63072e40be052d00695fff4bbe",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 8,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.681640625,
+        "void": false,
+        "call1Segment": 55801,
+        "call2Segment": 65221,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            55801,
+            65221
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "001198234143f9fbdf6fededfb3e20d5f901f030f1090936f063ecfdc5b86fb232",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 9,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.640625,
+        "void": false,
+        "call1Segment": 49063,
+        "call2Segment": 41033,
+        "order": "descending",
+        "resegmented": {
+          "from": [
+            49063,
+            41033
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "00ff76645ea01a51b0e75bc2c89772225416f5ba52e7c462a0f3434a926772231f",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 10,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 5.4462890625,
+        "void": false,
+        "call1Segment": 54618,
+        "call2Segment": 26050,
+        "order": "descending",
+        "resegmented": {
+          "from": [
+            54618,
+            26050
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "007aa5209e04edaf3108be979d106f12c8e500e20d80cda2c78083ec1f8ecb3d5f",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 11,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.9990234375,
+        "void": false,
+        "call1Segment": 16333,
+        "call2Segment": 43440,
+        "order": "ascending",
+        "resegmented": {
+          "from": [
+            16333,
+            43440
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "004cd4c10d1496917706a8e9c0838e8987ed57e88e92596d0808396ffaf0b7b049",
+        "is104": false,
+        "failedBeforeSubmission": false
+      },
+      {
+        "attempt": 12,
+        "shape": "dependent-fixed",
+        "resegment": true,
+        "lazyInit": false,
+        "infraRetries": 0,
+        "loadAtStart": 4.52587890625,
+        "void": false,
+        "call1Segment": 54983,
+        "call2Segment": 9504,
+        "order": "descending",
+        "resegmented": {
+          "from": [
+            54983,
+            9504
+          ],
+          "to": [
+            1,
+            2
+          ]
+        },
+        "ok": true,
+        "txId": "00586ebdde62262a2bbacab6891c7fb327189ae6e1f96a9a87da5ec18649ef254d",
+        "is104": false,
+        "failedBeforeSubmission": false
+      }
+    ],
+    "summary": {
+      "attemptsRun": 12,
+      "voided": 0,
+      "infraRetriesAbsorbed": 0,
+      "attempts": 12,
+      "accepted": 12,
+      "refused": 0,
+      "refusedWith104": 0,
+      "refusedBeforeSubmission": 0,
+      "ascending": {
+        "n": 7,
+        "accepted": 7,
+        "refused": 0
+      },
+      "descending": {
+        "n": 5,
+        "accepted": 5,
+        "refused": 0
+      },
+      "lazyInit": {
+        "n": 0,
+        "accepted": 0,
+        "refused": 0
+      },
+      "unknownOrder": 0
+    }
+  },
+  "necessityAcrossAllShapes": {
+    "ascending": {
+      "n": 12,
+      "refused": 0
+    },
+    "descending": {
+      "n": 20,
+      "refused": 15
+    }
+  },
+  "lazyInitOrderBreakdown": {
+    "note": "shape D only: every attempt is a lazy-init, so this is the order breakdown of a constant-lazy-init population",
+    "descending": {
+      "n": 7,
+      "refused": 7
+    },
+    "ascending": {
+      "n": 1,
+      "refused": 0
+    }
+  },
+  "bookkeeping": {
+    "acceptedByShape": {
+      "A": 11,
+      "B": 5,
+      "D": 1,
+      "C": 12
+    },
+    "expected": {
+      "AA_B S5": "11",
+      "AA_B U5": "11",
+      "AA_A S5": "17"
+    },
+    "observed": {
+      "AA_B S5": "11",
+      "AA_B U5": "11",
+      "AA_A S5": "17"
+    },
+    "freshPerAttemptCells": [
+      {
+        "shape": "fresh-lazy-init",
+        "attempt": 1,
+        "tag": "TD01",
+        "accepted": true,
+        "shieldedCell": "1",
+        "unshieldedCell": "1",
+        "ok": true
+      },
+      {
+        "shape": "fresh-lazy-init",
+        "attempt": 2,
+        "tag": "TD02",
+        "accepted": false,
+        "shieldedCell": "0",
+        "unshieldedCell": "0",
+        "ok": true
+      },
+      {
+        "shape": "fresh-lazy-init",
+        "attempt": 3,
+        "tag": "TD03",
+        "accepted": false,
+        "shieldedCell": "0",
+        "unshieldedCell": "0",
+        "ok": true
+      },
+      {
+        "shape": "fresh-lazy-init",
+        "attempt": 4,
+        "tag": "TD04",
+        "accepted": false,
+        "shieldedCell": "0",
+        "unshieldedCell": "0",
+        "ok": true
+      },
+      {
+        "shape": "fresh-lazy-init",
+        "attempt": 5,
+        "tag": "TD05",
+        "accepted": false,
+        "shieldedCell": "0",
+        "unshieldedCell": "0",
+        "ok": true
+      },
+      {
+        "shape": "fresh-lazy-init",
+        "attempt": 6,
+        "tag": "TD06",
+        "accepted": false,
+        "shieldedCell": "0",
+        "unshieldedCell": "0",
+        "ok": true
+      },
+      {
+        "shape": "fresh-lazy-init",
+        "attempt": 7,
+        "tag": "TD07",
+        "accepted": false,
+        "shieldedCell": "0",
+        "unshieldedCell": "0",
+        "ok": true
+      },
+      {
+        "shape": "fresh-lazy-init",
+        "attempt": 8,
+        "tag": "TD08",
+        "accepted": false,
+        "shieldedCell": "0",
+        "unshieldedCell": "0",
+        "ok": true
+      }
+    ],
+    "ok": true,
+    "mapSizesBefore": {
+      "pools": 0,
+      "shieldedCells": 0,
+      "unshieldedCells": 0
+    },
+    "mapSizesAfter": {
+      "pools": 2,
+      "shieldedCells": 3,
+      "unshieldedCells": 2
+    }
+  },
+  "verdict": "CONFIRMED + FIX DEMONSTRATED",
+  "note": "in shape B every descending pair was refused with 104 (7/7) and every ascending pair was accepted (5/5); re-keying the intents into CALL ORDER made 12/12 attempts of the SAME shape succeed. ACROSS EVERY SHAPE: ascending pairs refused 0/12, descending pairs refused 15/20 — so descending order is a NECESSARY condition for 104 in this family. Whether it is also SUFFICIENT depends on the pair: for a genuine read-after-write (shape B) it is; for disjoint pairs (shapes A+D) descending refused 8/13 and ascending 0/7, so something further is needed there. Either way the MITIGATION is the same and is deterministic: assign segments in call order, never randomly, and a descending pair can never arise.",
+  "feedsIssue0001": "organizer: contract-token-custody-6d6cd3/AA/issues/0001-composed-tx-first-attempt-refused.md"
+}

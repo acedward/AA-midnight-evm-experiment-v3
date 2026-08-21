@@ -1,0 +1,74 @@
+# SPIKE S1 — foreign wallet balances a contract-call transaction — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-20T13:32:05.191Z
+[2026-08-20T13:32:05.267Z] wallets open; syncing genesis …
+2026-08-20 09:32:05        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+2026-08-20 09:32:05        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+[2026-08-20T13:32:05.697Z] genesis: NIGHT=249000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+2026-08-20 09:32:05        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+2026-08-20 09:32:05        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+[2026-08-20T13:32:05.723Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-20T13:32:24.714Z]   submitted tx 00933d1d25813daae573c91c10aea83c2d00393921c56c109324b22d1ff4cd414d (hash d150f58e0032d89ef44102b0fecf288c178c3f9ffb0631e5bd1ffa6703c99019)
+[2026-08-20T13:32:24.715Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-20T13:32:24.883Z]   waiting for genesis to observe its own spend (NIGHT at or below 247000000000000) …
+[2026-08-20T13:32:38.133Z]   feePayer: NIGHT already registered for DUST
+2026-08-20 09:32:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+2026-08-20 09:32:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+[2026-08-20T13:32:38.403Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T13:32:55.478Z]   submitted tx 00c127054d0b360b5119902a793b732d7cd9c3de2d475930c3ab2c26d12ec930d5 (hash da8b6eee0ad3577f36db390a5cdbc623b3cf7147de67ad65af9e4eefbba62f1a)
+[2026-08-20T13:32:55.478Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-20T13:32:55.654Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2599999000000) …
+[2026-08-20T13:33:11.891Z]   OwnerN-funding: registering 2 NIGHT utxo(s) for DUST generation
+[2026-08-20T13:33:31.631Z]   OwnerN-funding: DUST registration tx 00e84e86fa50f758e154ba872afa12770e40f88de80826c1a62c045b65f3cc1642
+[2026-08-20T13:33:31.631Z]   waiting for OwnerN-funding NIGHT utxos to show registeredForDustGeneration=true …
+[2026-08-20T13:33:32.062Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+2026-08-20 09:33:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+2026-08-20 09:33:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+[2026-08-20T13:33:49.025Z]   submitted tx 00f5243092b58b006d13405d3f40bdd7f46b6599e0f2848f9fe9a2118c4c4974e4 (hash 87f33a92dbac8346b268ebd949ec572e53080f26244dae8afde841f69605c9ea)
+[2026-08-20T13:33:49.025Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-20T13:33:49.145Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2199999000000) …
+[2026-08-20T13:34:07.285Z]   OwnerT-funding: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-20T13:34:25.168Z]   OwnerT-funding: DUST registration tx 00a26ccbbb47eb6142e3448c656175423b73f05688b7c39d8de92bdce04e2b406b
+[2026-08-20T13:34:25.169Z]   waiting for OwnerT-funding NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-20 09:34:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+2026-08-20 09:34:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+[2026-08-20T13:34:25.625Z] deploying Manager v3 (UNCHANGED from 00005) …
+[2026-08-20T13:34:45.065Z]   Manager at dd416ac60c02d9aa8f66b01da0275147bb85782f86b7811e95a863f8976d9b84
+[2026-08-20T13:35:26.502Z] AA_A 009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b / AA_B 755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904 registered; custody maps {"pools":0,"shieldedCells":0,"unshieldedCells":0}
+[2026-08-20T13:35:26.597Z] deploying Minter1 (TOKA) …
+[2026-08-20T13:36:19.927Z]   Minter1 at b7a1b14a85553d30797003c8fa60c7106ada1981bc8e9b8fd7310e2774ae723a: shielded 1bb954bdc6847c4c3d691990e86876626719b14171b348b13bd04a2fb4e5e507 / unshielded 774a95244ae0245283c14e7a706cd991f271f02d9319f66ed4dfc156b8be2933
+[2026-08-20T13:36:37.624Z] minted 10 S_A to OwnerT in 00ca5318e7ce1ba6187bfab20f58f79412e59a56b2f10e39fb2d01df32f00cb8b8
+2026-08-20 09:36:37        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+2026-08-20 09:36:37        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+[2026-08-20T13:36:37.984Z] OwnerT holds 10 S_A before any deposit (read from a fresh observer)
+[2026-08-20T13:36:37.997Z] Manager custody maps before any deposit: {"pools":0,"shieldedCells":0,"unshieldedCells":0}
+
+## S1a — unbound route, 3 S_A
+[2026-08-20T13:36:37.998Z] maker: building depositShielded(colour 1bb954bdc6847c4c…, value 3) -> 009a77de97356f5c…
+[2026-08-20T13:36:38.077Z] maker: proving (this is the LAST thing the maker does — no balance, no dust, no submit)
+[2026-08-20T13:36:43.643Z] S1a: maker artifact proven; imbalances(0) = {"shielded:1bb954bdc6847c4c3d691990e86876626719b14171b348b13bd04a2fb4e5e507":"-3"}
+[2026-08-20T13:36:43.644Z] S1a: maker attached dust actions: false (FR-301 requires false)
+2026-08-20 09:36:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+2026-08-20 09:36:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+[2026-08-20T13:36:43.942Z]   waiting for OwnerT-spender-2 to see 3 of shielded 1bb954bdc684… before spending it …
+[2026-08-20T13:36:44.070Z] taker[S1a]: balanceUnboundTransaction on a transaction it did not build
+[2026-08-20T13:36:45.954Z] taker[S1a]: submitting the merged transaction
+[2026-08-20T13:37:01.705Z] S1a: submitted 009b512cc173d458ba5877289d94c4c395fa47b5567cdbd38f5bff1aad38cd0037 (hash 80fb6e0fd2882d58e44d54b543e24339267eddeddd1fc8fd27470a9c64da16f2)
+2026-08-20 09:37:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+2026-08-20 09:37:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+[2026-08-20T13:37:20.459Z] S1a: pool(S_A)=3 cell=3 onChain=3 OwnerT holds 7 S_A; maps {"pools":1,"shieldedCells":1,"unshieldedCells":0}
+
+## S1b — bound route, 2 S_A
+[2026-08-20T13:37:20.459Z] maker: building depositShielded(colour 1bb954bdc6847c4c…, value 2) -> 009a77de97356f5c…
+[2026-08-20T13:37:20.577Z] maker: proving (this is the LAST thing the maker does — no balance, no dust, no submit)
+[2026-08-20T13:37:24.848Z] S1b: maker artifact proven; imbalances(0) = {"shielded:1bb954bdc6847c4c3d691990e86876626719b14171b348b13bd04a2fb4e5e507":"-2"}
+[2026-08-20T13:37:24.851Z] S1b: maker attached dust actions: false (FR-301 requires false)
+2026-08-20 09:37:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+2026-08-20 09:37:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+[2026-08-20T13:37:25.151Z]   waiting for OwnerT-spender-4 to see 2 of shielded 1bb954bdc684… before spending it …
+[2026-08-20T13:37:25.299Z] taker[S1b]: balanceFinalizedTransaction on a BOUND transaction it did not build
+[2026-08-20T13:37:26.970Z] taker[S1b]: submitting the merged transaction
+[2026-08-20T13:37:43.169Z] S1b: submitted 003fbd1a5030174895d69bb96927eeb67a334ca324f75e4bb2b52dd744ecbc6385 (hash ba5aa0d37f89f75828327137753dde41b175252eecb76766457ae0c7ccb75584)
+2026-08-20 09:38:03        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+2026-08-20 09:38:03        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:40327/: 1000:: Normal Closure
+[2026-08-20T13:38:03.297Z] S1b: pool(S_A)=5 cell=5 onChain=5 OwnerT holds 5 S_A; maps {"pools":1,"shieldedCells":1,"unshieldedCells":0}
+
+## S1 VERDICT: GREEN — a foreign wallet CAN balance and submit a contract-call transaction on this lane; working route(s): S1a/unbound, S1b/bound

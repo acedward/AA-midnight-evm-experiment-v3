@@ -1,0 +1,710 @@
+# G5 LIVE MATRIX — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-21T00:27:36.936Z
+# variants: manager, v4-slim, arm-a-dedupe, arm-b-nested, arm-c-both, arm-d-unified, arm-e-escrow
+# cells: 1, 2, 4, 8, 16   shapes: named-taker, floating-surplus
+# BUILD + PROVE ONLY. Nothing in this run is balanced, signed or submitted as an offer.
+
+===== manager (baseline) — Manager v4 (SHIPPED, unchanged) =====
+2026-08-20 20:27:37        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:27:37        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:27:37        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:27:37        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T00:27:37.445Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-21T00:27:55.423Z]   submitted tx 00742130dc25345cbaac2c0c0bde7ce2fea40bf0561b8ce106eeadb36b731ec959 (hash 7ca265e60abe25a6231309f3d22cf3f8d7eda2500ac8760e3a904332bd032ebf)
+[2026-08-21T00:27:55.424Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-21T00:27:55.591Z]   waiting for genesis to observe its own spend (NIGHT at or below 248000000000000) …
+[2026-08-21T00:28:01.386Z]   feePayer: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-21T00:28:19.519Z]   feePayer: DUST registration tx 00ec3976955a6c423065b0a969af38395391eceb3e9d410d32f4c48868111afac0
+[2026-08-21T00:28:19.519Z]   waiting for feePayer NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-20 20:28:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:28:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T00:28:31.665Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T00:28:48.972Z]   submitted tx 0006da2a022335f838957a8ecdefde772367eeb594909f1f4717051ba392c2d6ba (hash 7487b04084f577c6c9f617cc5c12ade1c05d1b38a899add981a6d6ac58d39925)
+[2026-08-21T00:28:48.972Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-21T00:28:49.155Z]   waiting for feePayer to observe its own spend (NIGHT at or below 1600000000000) …
+[2026-08-21T00:28:53.225Z]   OwnerN-funding: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-21T00:29:13.068Z]   OwnerN-funding: DUST registration tx 00b4b8c4fe00d0571c7133759de33505a20c2a7be155aed59f86501f770b18cf5c
+[2026-08-21T00:29:13.069Z]   waiting for OwnerN-funding NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-20 20:29:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:29:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T00:29:13.500Z]   funding OwnerA-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T00:29:31.825Z]   submitted tx 00edbd5e1ad8938637a094e047df95686db553a2416ce3a4167b6f69fa414c6ed6 (hash e8944239d90ee15a951b409f4c8c039beab2b4016e3890012d90557dc6757757)
+[2026-08-21T00:29:31.825Z]   waiting for OwnerA-funding NIGHT to arrive …
+[2026-08-21T00:29:32.013Z]   waiting for feePayer to observe its own spend (NIGHT at or below 1200000000000) …
+[2026-08-21T00:29:40.959Z]   OwnerA-funding: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-21T00:29:55.927Z]   OwnerA-funding: DUST registration tx 00734a147093bdb7fd2e86197503149b6b34d0ba88d08db411611b4badfa0a1c70
+[2026-08-21T00:29:55.928Z]   waiting for OwnerA-funding NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-20 20:29:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:29:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T00:29:56.369Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T00:30:20.017Z]   submitted tx 002352b1a98f2d7dbc67ac54800703d40efabf897c20ed6de701f6b5c2b12ec7e0 (hash 409a354a3272bef64513d2472e700b5265c1daa5525e2dd05e3ab162fdeb8778)
+[2026-08-21T00:30:20.017Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-21T00:30:20.301Z]   waiting for feePayer to observe its own spend (NIGHT at or below 800000000000) …
+[2026-08-21T00:30:22.639Z]   OwnerT-funding: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-21T00:30:37.404Z]   OwnerT-funding: DUST registration tx 006ca98a126f47a04dbc03430735ac4de05659e4cda4a4b398e07c6191e360be3e
+[2026-08-21T00:30:37.405Z]   waiting for OwnerT-funding NIGHT utxos to show registeredForDustGeneration=true …
+[2026-08-21T00:30:37.621Z] deploying G5 variant 'manager' (Manager v4 (SHIPPED, unchanged)) …
+[2026-08-21T00:30:55.977Z]   manager at a46dc27cb6393a18131651cd8ff038aa02cae387226e3ea3f488c441ca3100f1
+[2026-08-21T00:30:55.991Z]   chain ledger parameters fetched (7282 chars rendered)
+2026-08-20 20:30:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:30:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T00:30:56.245Z] captured the chain's ledger parameters to evidence/g5-mitigation/chain-params.json
+[2026-08-21T00:31:31.970Z]   colour G = cd6644b48f4b… from Minter1 at ad18cc7899e161381430f32bc9576b19f61cfec38f0e0dd8f860d93ba9b03959
+[2026-08-21T00:32:08.096Z]   colour W = b99065318356… from Minter2 at 16fc1bc778f313d45e285bfbc37d11e509ae3edf7134fdabe11ec3d196c33f46
+[2026-08-21T00:32:44.321Z]   account AA_A = 009a77de97356f5c… registered
+[2026-08-21T00:33:03.052Z]   account AA_1 = 890d6086517f8271… registered
+[2026-08-21T00:33:20.450Z]   account AA_2 = ef648aeca4dba301… registered
+[2026-08-21T00:33:37.839Z]   account AA_3 = 4c8608738d24fefd… registered
+[2026-08-21T00:33:56.573Z]   account AA_4 = 8f0cefa5da77eeee… registered
+[2026-08-21T00:34:13.966Z]   account AA_5 = e80f5e49cd2b7e24… registered
+[2026-08-21T00:34:32.700Z]   account AA_6 = 34cb50d28a0cffd0… registered
+[2026-08-21T00:34:50.101Z]   account AA_7 = 6e6cef369f949130… registered
+[2026-08-21T00:35:08.853Z]   account AA_8 = 9538270df9238f4c… registered
+[2026-08-21T00:35:26.239Z]   account AA_9 = 90f52dee02a347ec… registered
+[2026-08-21T00:35:44.958Z]   account AA_10 = 2bd2e6006a0f9518… registered
+[2026-08-21T00:36:02.360Z]   account AA_11 = 1f012f860206d859… registered
+[2026-08-21T00:36:21.028Z]   account AA_12 = febd1d406f531069… registered
+[2026-08-21T00:36:38.412Z]   account AA_13 = d567b23d5ceaeb9b… registered
+[2026-08-21T00:36:55.775Z]   account AA_14 = 69f8cb6ee6557312… registered
+[2026-08-21T00:37:14.444Z]   account AA_15 = c9137cad34c70473… registered
+2026-08-20 20:37:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:37:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T00:37:14.797Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:37:39.495Z] ## manager: custody at 1 cell(s) / 1 pool(s)
+[2026-08-21T00:37:39.569Z] g5[manager/named-taker]: building openSwapShielded(give 1 of cd6644b48f4b…, want 1 of b99065318356…)
+[2026-08-21T00:37:50.338Z] g5[manager/named-taker]: GUARANTEED — publishable; built 125 ms, proved 10643 ms, 26819 B; imbalances(0) = {"shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3":"-1"}
+[2026-08-21T00:37:50.395Z] g5[manager/floating-surplus]: building openSwapShielded(give 1 of cd6644b48f4b…, want 1 of b99065318356…)
+[2026-08-21T00:37:56.230Z] g5[manager/floating-surplus]: GUARANTEED — publishable; built 110 ms, proved 5723 ms, 21581 B; imbalances(0) = {"shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3":"-1","shielded:cd6644b48f4b19c67d2f7cf09739bf8f358474bd752c6b1044ca4de1b5995bf9":"1"}
+[2026-08-21T00:37:56.231Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:38:20.847Z] ## manager: custody at 2 cell(s) / 1 pool(s)
+[2026-08-21T00:38:20.910Z] g5[manager/named-taker]: building openSwapShielded(give 1 of cd6644b48f4b…, want 1 of b99065318356…)
+[2026-08-21T00:38:28.000Z] g5[manager/named-taker]: GUARANTEED — publishable; built 120 ms, proved 6968 ms, 26818 B; imbalances(0) = {"shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3":"-1"}
+[2026-08-21T00:38:28.065Z] g5[manager/floating-surplus]: building openSwapShielded(give 1 of cd6644b48f4b…, want 1 of b99065318356…)
+[2026-08-21T00:38:34.423Z] g5[manager/floating-surplus]: FALLIBLE — NOT publishable; built 117 ms, proved 6238 ms, 21630 B; imbalances(0) = {}
+[2026-08-21T00:38:34.424Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:38:56.887Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:39:20.905Z] ## manager: custody at 4 cell(s) / 1 pool(s)
+[2026-08-21T00:39:20.969Z] g5[manager/named-taker]: building openSwapShielded(give 1 of cd6644b48f4b…, want 1 of b99065318356…)
+[2026-08-21T00:39:27.998Z] g5[manager/named-taker]: FALLIBLE — NOT publishable; built 122 ms, proved 6904 ms, 26870 B; imbalances(0) = {}
+[2026-08-21T00:39:28.064Z] g5[manager/floating-surplus]: building openSwapShielded(give 1 of cd6644b48f4b…, want 1 of b99065318356…)
+[2026-08-21T00:39:34.338Z] g5[manager/floating-surplus]: FALLIBLE — NOT publishable; built 116 ms, proved 6157 ms, 21632 B; imbalances(0) = {}
+[2026-08-21T00:39:34.339Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:39:56.989Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:40:21.096Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:40:45.171Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:41:09.252Z] ## manager: custody at 8 cell(s) / 1 pool(s)
+[2026-08-21T00:41:09.322Z] g5[manager/named-taker]: building openSwapShielded(give 1 of cd6644b48f4b…, want 1 of b99065318356…)
+[2026-08-21T00:41:15.636Z] g5[manager/named-taker]: FALLIBLE — NOT publishable; built 116 ms, proved 6195 ms, 26871 B; imbalances(0) = {}
+[2026-08-21T00:41:15.710Z] g5[manager/floating-surplus]: building openSwapShielded(give 1 of cd6644b48f4b…, want 1 of b99065318356…)
+[2026-08-21T00:41:21.463Z] g5[manager/floating-surplus]: FALLIBLE — NOT publishable; built 112 ms, proved 5639 ms, 21633 B; imbalances(0) = {}
+[2026-08-21T00:41:21.463Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:41:45.333Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:42:09.419Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:42:33.499Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:42:57.531Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:43:21.663Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:43:45.689Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:44:09.777Z]   waiting for OwnerN to see 8 of shielded cd6644b48f4b… before depositing it …
+[2026-08-21T00:44:33.877Z] ## manager: custody at 16 cell(s) / 1 pool(s)
+[2026-08-21T00:44:33.940Z] g5[manager/named-taker]: building openSwapShielded(give 1 of cd6644b48f4b…, want 1 of b99065318356…)
+[2026-08-21T00:44:40.183Z] g5[manager/named-taker]: FALLIBLE — NOT publishable; built 129 ms, proved 6111 ms, 26928 B; imbalances(0) = {}
+[2026-08-21T00:44:40.244Z] g5[manager/floating-surplus]: building openSwapShielded(give 1 of cd6644b48f4b…, want 1 of b99065318356…)
+[2026-08-21T00:44:49.628Z] g5[manager/floating-surplus]: FALLIBLE — NOT publishable; built 115 ms, proved 9267 ms, 21633 B; imbalances(0) = {}
+
+===== v4-slim (control) — v4-slim — v4 minus the unshielded family =====
+2026-08-20 20:44:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:44:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:44:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:44:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T00:44:50.855Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-21T00:45:07.828Z]   submitted tx 007ad23e9c9fb19beccac0c74e4d4c01e8960da07cde637cfed2f3930f3e865354 (hash 1fd4f1305ee413f2a2f8485bd5b6a048674349ae8a54ed60f52abb848fcab052)
+[2026-08-21T00:45:07.828Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-21T00:45:07.990Z]   waiting for genesis to observe its own spend (NIGHT at or below 246000000000000) …
+[2026-08-21T00:45:14.026Z]   feePayer: NIGHT already registered for DUST
+2026-08-20 20:45:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:45:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T00:45:14.534Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T00:45:31.872Z]   submitted tx 00df238f6d6e3f61c27a716a30e805f9879d36d48efbd400b74515756f88f3d3a9 (hash ae88b253c919ef3068c0c92bebe913fb2c4f732c3115a6e031c0354c28684e96)
+[2026-08-21T00:45:31.872Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-21T00:45:32.097Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2400000000000) …
+[2026-08-21T00:45:41.143Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-20 20:45:41        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:45:41        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T00:45:41.662Z]   funding OwnerA-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T00:46:01.300Z]   submitted tx 007a22f5f402f4084aafd643c0647db2b57f3464b4746a48116169cab8e0adc11a (hash 9a8ffa05b67ffe331dd08aef64cd5bfe16a2dd5c591d3e79b4f3b641c1aa5a75)
+[2026-08-21T00:46:01.300Z]   waiting for OwnerA-funding NIGHT to arrive …
+[2026-08-21T00:46:01.491Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2000000000000) …
+[2026-08-21T00:46:15.018Z]   OwnerA-funding: NIGHT already registered for DUST
+2026-08-20 20:46:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:46:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T00:46:15.504Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T00:46:30.750Z]   submitted tx 00f0ac744f0f1b63daddece844995e0618df001bc44b0bd99146f3fd6d4a4f8b87 (hash 566bed59ba58586badac14311c86c2d08c0e46b151435c6a2ce6a44b7b2162ef)
+[2026-08-21T00:46:30.751Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-21T00:46:30.931Z]   waiting for feePayer to observe its own spend (NIGHT at or below 1600000000000) …
+[2026-08-21T00:46:45.364Z]   OwnerT-funding: NIGHT already registered for DUST
+[2026-08-21T00:46:45.381Z] deploying G5 variant 'v4-slim' (v4-slim — v4 minus the unshielded family) …
+[2026-08-21T00:47:02.657Z]   v4-slim at c0869cb13f4ae9fa25949b68794869a8642f17ca3fe7cc5839cab820ef638bec
+[2026-08-21T00:47:02.667Z]   chain ledger parameters fetched (7266 chars rendered)
+2026-08-20 20:47:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:47:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T00:47:38.669Z]   colour G = 8a3481a1890e… from Minter1 at 9943dce2036579778ecda036631842719d19198b7ac2e35d79d7d74683f67786
+[2026-08-21T00:48:14.784Z]   colour W = 160abe09a739… from Minter2 at ab8e1b6471b34b1e45194a27dbeaaa4a8b1130db08d9544fcb9981de62a04571
+[2026-08-21T00:48:51.007Z]   account AA_A = 009a77de97356f5c… registered
+[2026-08-21T00:49:08.414Z]   account AA_1 = 890d6086517f8271… registered
+[2026-08-21T00:49:25.804Z]   account AA_2 = ef648aeca4dba301… registered
+[2026-08-21T00:49:44.549Z]   account AA_3 = 4c8608738d24fefd… registered
+[2026-08-21T00:50:01.971Z]   account AA_4 = 8f0cefa5da77eeee… registered
+[2026-08-21T00:50:20.722Z]   account AA_5 = e80f5e49cd2b7e24… registered
+[2026-08-21T00:50:38.112Z]   account AA_6 = 34cb50d28a0cffd0… registered
+[2026-08-21T00:50:56.846Z]   account AA_7 = 6e6cef369f949130… registered
+[2026-08-21T00:51:14.208Z]   account AA_8 = 9538270df9238f4c… registered
+[2026-08-21T00:51:32.952Z]   account AA_9 = 90f52dee02a347ec… registered
+[2026-08-21T00:51:50.366Z]   account AA_10 = 2bd2e6006a0f9518… registered
+[2026-08-21T00:52:09.104Z]   account AA_11 = 1f012f860206d859… registered
+[2026-08-21T00:52:26.490Z]   account AA_12 = febd1d406f531069… registered
+[2026-08-21T00:52:43.844Z]   account AA_13 = d567b23d5ceaeb9b… registered
+[2026-08-21T00:53:02.529Z]   account AA_14 = 69f8cb6ee6557312… registered
+[2026-08-21T00:53:19.855Z]   account AA_15 = c9137cad34c70473… registered
+2026-08-20 20:53:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 20:53:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T00:53:20.458Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:53:44.892Z] ## v4-slim: custody at 1 cell(s) / 1 pool(s)
+[2026-08-21T00:53:44.970Z] g5[v4-slim/named-taker]: building openSwapShielded(give 1 of 8a3481a1890e…, want 1 of 160abe09a739…)
+[2026-08-21T00:53:53.736Z] g5[v4-slim/named-taker]: GUARANTEED — publishable; built 133 ms, proved 8630 ms, 26820 B; imbalances(0) = {"shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a":"-1"}
+[2026-08-21T00:53:53.794Z] g5[v4-slim/floating-surplus]: building openSwapShielded(give 1 of 8a3481a1890e…, want 1 of 160abe09a739…)
+[2026-08-21T00:54:00.078Z] g5[v4-slim/floating-surplus]: GUARANTEED — publishable; built 106 ms, proved 6177 ms, 21582 B; imbalances(0) = {"shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a":"-1","shielded:8a3481a1890e0bce7766595890ece7687cdcb68f8ae454b4ef297e482cf362b8":"1"}
+[2026-08-21T00:54:00.078Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:54:27.540Z] ## v4-slim: custody at 2 cell(s) / 1 pool(s)
+[2026-08-21T00:54:27.602Z] g5[v4-slim/named-taker]: building openSwapShielded(give 1 of 8a3481a1890e…, want 1 of 160abe09a739…)
+[2026-08-21T00:54:34.268Z] g5[v4-slim/named-taker]: GUARANTEED — publishable; built 115 ms, proved 6549 ms, 26819 B; imbalances(0) = {"shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a":"-1"}
+[2026-08-21T00:54:34.326Z] g5[v4-slim/floating-surplus]: building openSwapShielded(give 1 of 8a3481a1890e…, want 1 of 160abe09a739…)
+[2026-08-21T00:54:40.542Z] g5[v4-slim/floating-surplus]: FALLIBLE — NOT publishable; built 111 ms, proved 6104 ms, 21630 B; imbalances(0) = {}
+[2026-08-21T00:54:40.542Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:55:08.960Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:55:39.729Z] ## v4-slim: custody at 4 cell(s) / 1 pool(s)
+[2026-08-21T00:55:39.873Z] g5[v4-slim/named-taker]: building openSwapShielded(give 1 of 8a3481a1890e…, want 1 of 160abe09a739…)
+[2026-08-21T00:55:47.475Z] g5[v4-slim/named-taker]: FALLIBLE — NOT publishable; built 145 ms, proved 7453 ms, 26870 B; imbalances(0) = {}
+[2026-08-21T00:55:47.549Z] g5[v4-slim/floating-surplus]: building openSwapShielded(give 1 of 8a3481a1890e…, want 1 of 160abe09a739…)
+[2026-08-21T00:55:55.469Z] g5[v4-slim/floating-surplus]: FALLIBLE — NOT publishable; built 111 ms, proved 7806 ms, 21641 B; imbalances(0) = {}
+[2026-08-21T00:55:55.469Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:56:21.025Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:56:45.108Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:57:09.191Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:57:33.257Z] ## v4-slim: custody at 8 cell(s) / 1 pool(s)
+[2026-08-21T00:57:33.325Z] g5[v4-slim/named-taker]: building openSwapShielded(give 1 of 8a3481a1890e…, want 1 of 160abe09a739…)
+[2026-08-21T00:57:39.570Z] g5[v4-slim/named-taker]: FALLIBLE — NOT publishable; built 116 ms, proved 6126 ms, 26871 B; imbalances(0) = {}
+[2026-08-21T00:57:39.645Z] g5[v4-slim/floating-surplus]: building openSwapShielded(give 1 of 8a3481a1890e…, want 1 of 160abe09a739…)
+[2026-08-21T00:57:45.325Z] g5[v4-slim/floating-surplus]: FALLIBLE — NOT publishable; built 110 ms, proved 5568 ms, 21633 B; imbalances(0) = {}
+[2026-08-21T00:57:45.325Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:58:09.320Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:58:33.416Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:58:57.471Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:59:21.556Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T00:59:45.651Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T01:00:09.709Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T01:00:33.776Z]   waiting for OwnerN to see 8 of shielded 8a3481a1890e… before depositing it …
+[2026-08-21T01:00:57.848Z] ## v4-slim: custody at 16 cell(s) / 1 pool(s)
+[2026-08-21T01:00:57.909Z] g5[v4-slim/named-taker]: building openSwapShielded(give 1 of 8a3481a1890e…, want 1 of 160abe09a739…)
+[2026-08-21T01:01:04.113Z] g5[v4-slim/named-taker]: FALLIBLE — NOT publishable; built 125 ms, proved 6076 ms, 26871 B; imbalances(0) = {}
+[2026-08-21T01:01:04.187Z] g5[v4-slim/floating-surplus]: building openSwapShielded(give 1 of 8a3481a1890e…, want 1 of 160abe09a739…)
+[2026-08-21T01:01:09.546Z] g5[v4-slim/floating-surplus]: FALLIBLE — NOT publishable; built 112 ms, proved 5247 ms, 21633 B; imbalances(0) = {}
+
+===== arm-a-dedupe (a) — arm (a) dedupe-flat =====
+2026-08-20 21:01:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:01:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:01:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:01:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:01:10.822Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-21T01:01:31.840Z]   submitted tx 001bd249f06b7b1b4d76ed5533b64d4a6df7d81d51d437a03d1abae8d0a44d8f5f (hash a0972ec415b969ac26f52eb5e98df0a3eddef86edca1fc8bdd3e91a3b834991e)
+[2026-08-21T01:01:31.840Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-21T01:01:32.006Z]   waiting for genesis to observe its own spend (NIGHT at or below 244000000000000) …
+[2026-08-21T01:01:34.203Z]   feePayer: NIGHT already registered for DUST
+2026-08-20 21:01:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:01:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:01:34.936Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T01:01:55.919Z]   submitted tx 000f51ad89629cf8088f58ef33abed253fe827e35d3349a75bc64fbf4cce5c2bd1 (hash 317f141b168a0c35c816af927b021e51a7d4d4f32bc35696748ca961a1cf431e)
+[2026-08-21T01:01:55.920Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-21T01:01:56.090Z]   waiting for feePayer to observe its own spend (NIGHT at or below 3200000000000) …
+[2026-08-21T01:02:08.806Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-20 21:02:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:02:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:02:09.487Z]   funding OwnerA-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T01:02:25.355Z]   submitted tx 005a5be2421b3e72915019de8ef4c13144bf5d167ad8537ab97e1d402593f70e83 (hash 9fd9585889b1f82f91cc6ad106d0350ea49c71defdb5dade2725aa60c61dbc40)
+[2026-08-21T01:02:25.355Z]   waiting for OwnerA-funding NIGHT to arrive …
+[2026-08-21T01:02:25.520Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2800000000000) …
+[2026-08-21T01:02:44.573Z]   OwnerA-funding: NIGHT already registered for DUST
+2026-08-20 21:02:44        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:02:44        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:02:45.260Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T01:03:01.490Z]   submitted tx 00c7967b952dcedc2da098e1194667898025a99bd7f23c1603411ca4727983bb92 (hash 077198223dc761d2feab0f85cd0a18360ec3dd15c16e3341b4f82fff4d5f9dca)
+[2026-08-21T01:03:01.490Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-21T01:03:01.670Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2400000000000) …
+[2026-08-21T01:03:14.599Z]   OwnerT-funding: NIGHT already registered for DUST
+[2026-08-21T01:03:14.618Z] deploying G5 variant 'arm-a-dedupe' (arm (a) dedupe-flat) …
+[2026-08-21T01:03:32.096Z]   arm-a-dedupe at 53ea3fd1bf4588ba593cd41ddb631aef309a592f693371c9f769a6cd9e733ffb
+[2026-08-21T01:03:32.108Z]   chain ledger parameters fetched (7268 chars rendered)
+2026-08-20 21:03:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:03:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:04:08.098Z]   colour G = 2b207682c3d4… from Minter1 at f2f3e895780e86f6384252153252a2c45014d3322ade408248484d0f95ee14a2
+[2026-08-21T01:04:44.246Z]   colour W = f9dd35b734f7… from Minter2 at 2da3c4a1080f925e831982bc816ceb62b9c5dcc7a08627faa683093208e7fbc2
+[2026-08-21T01:05:20.463Z]   account AA_A = 009a77de97356f5c… registered
+[2026-08-21T01:05:37.846Z]   account AA_1 = 890d6086517f8271… registered
+[2026-08-21T01:05:56.592Z]   account AA_2 = ef648aeca4dba301… registered
+[2026-08-21T01:06:13.984Z]   account AA_3 = 4c8608738d24fefd… registered
+[2026-08-21T01:06:32.714Z]   account AA_4 = 8f0cefa5da77eeee… registered
+[2026-08-21T01:06:50.107Z]   account AA_5 = e80f5e49cd2b7e24… registered
+[2026-08-21T01:07:08.865Z]   account AA_6 = 34cb50d28a0cffd0… registered
+[2026-08-21T01:07:26.258Z]   account AA_7 = 6e6cef369f949130… registered
+[2026-08-21T01:07:44.999Z]   account AA_8 = 9538270df9238f4c… registered
+[2026-08-21T01:08:02.401Z]   account AA_9 = 90f52dee02a347ec… registered
+[2026-08-21T01:08:19.819Z]   account AA_10 = 2bd2e6006a0f9518… registered
+[2026-08-21T01:08:38.533Z]   account AA_11 = 1f012f860206d859… registered
+[2026-08-21T01:08:55.925Z]   account AA_12 = febd1d406f531069… registered
+[2026-08-21T01:09:14.656Z]   account AA_13 = d567b23d5ceaeb9b… registered
+[2026-08-21T01:09:32.050Z]   account AA_14 = 69f8cb6ee6557312… registered
+[2026-08-21T01:09:50.740Z]   account AA_15 = c9137cad34c70473… registered
+2026-08-20 21:09:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:09:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:09:51.500Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:10:15.790Z] ## arm-a-dedupe: custody at 1 cell(s) / 1 pool(s)
+[2026-08-21T01:10:15.863Z] g5[arm-a-dedupe/named-taker]: building openSwapShielded(give 1 of 2b207682c3d4…, want 1 of f9dd35b734f7…)
+[2026-08-21T01:10:23.588Z] g5[arm-a-dedupe/named-taker]: GUARANTEED — publishable; built 109 ms, proved 7611 ms, 26770 B; imbalances(0) = {"shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9":"-1"}
+[2026-08-21T01:10:23.663Z] g5[arm-a-dedupe/floating-surplus]: building openSwapShielded(give 1 of 2b207682c3d4…, want 1 of f9dd35b734f7…)
+[2026-08-21T01:10:29.322Z] g5[arm-a-dedupe/floating-surplus]: GUARANTEED — publishable; built 100 ms, proved 5557 ms, 21565 B; imbalances(0) = {"shielded:2b207682c3d47611c9be0f784352f61ca0626039b9961dfae833890ed7bf4642":"1","shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9":"-1"}
+[2026-08-21T01:10:29.322Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:10:57.230Z] ## arm-a-dedupe: custody at 2 cell(s) / 1 pool(s)
+[2026-08-21T01:10:57.301Z] g5[arm-a-dedupe/named-taker]: building openSwapShielded(give 1 of 2b207682c3d4…, want 1 of f9dd35b734f7…)
+[2026-08-21T01:11:03.475Z] g5[arm-a-dedupe/named-taker]: GUARANTEED — publishable; built 110 ms, proved 6061 ms, 26768 B; imbalances(0) = {"shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9":"-1"}
+[2026-08-21T01:11:03.549Z] g5[arm-a-dedupe/floating-surplus]: building openSwapShielded(give 1 of 2b207682c3d4…, want 1 of f9dd35b734f7…)
+[2026-08-21T01:11:09.120Z] g5[arm-a-dedupe/floating-surplus]: GUARANTEED — publishable; built 99 ms, proved 5470 ms, 21556 B; imbalances(0) = {"shielded:2b207682c3d47611c9be0f784352f61ca0626039b9961dfae833890ed7bf4642":"1","shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9":"-1"}
+[2026-08-21T01:11:09.121Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:11:33.318Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:11:57.422Z] ## arm-a-dedupe: custody at 4 cell(s) / 1 pool(s)
+[2026-08-21T01:11:57.494Z] g5[arm-a-dedupe/named-taker]: building openSwapShielded(give 1 of 2b207682c3d4…, want 1 of f9dd35b734f7…)
+[2026-08-21T01:12:03.367Z] g5[arm-a-dedupe/named-taker]: GUARANTEED — publishable; built 116 ms, proved 5754 ms, 26769 B; imbalances(0) = {"shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9":"-1"}
+[2026-08-21T01:12:03.443Z] g5[arm-a-dedupe/floating-surplus]: building openSwapShielded(give 1 of 2b207682c3d4…, want 1 of f9dd35b734f7…)
+[2026-08-21T01:12:08.693Z] g5[arm-a-dedupe/floating-surplus]: GUARANTEED — publishable; built 101 ms, proved 5147 ms, 21557 B; imbalances(0) = {"shielded:2b207682c3d47611c9be0f784352f61ca0626039b9961dfae833890ed7bf4642":"1","shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9":"-1"}
+[2026-08-21T01:12:08.693Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:12:33.524Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:12:57.570Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:13:21.640Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:13:45.704Z] ## arm-a-dedupe: custody at 8 cell(s) / 1 pool(s)
+[2026-08-21T01:13:45.771Z] g5[arm-a-dedupe/named-taker]: building openSwapShielded(give 1 of 2b207682c3d4…, want 1 of f9dd35b734f7…)
+[2026-08-21T01:13:51.840Z] g5[arm-a-dedupe/named-taker]: FALLIBLE — NOT publishable; built 120 ms, proved 5945 ms, 26821 B; imbalances(0) = {}
+[2026-08-21T01:13:51.915Z] g5[arm-a-dedupe/floating-surplus]: building openSwapShielded(give 1 of 2b207682c3d4…, want 1 of f9dd35b734f7…)
+[2026-08-21T01:13:57.563Z] g5[arm-a-dedupe/floating-surplus]: FALLIBLE — NOT publishable; built 106 ms, proved 5539 ms, 21608 B; imbalances(0) = {}
+[2026-08-21T01:13:57.563Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:14:21.799Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:14:45.849Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:15:09.918Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:15:34.005Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:15:58.068Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:16:20.803Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:16:44.875Z]   waiting for OwnerN to see 8 of shielded 2b207682c3d4… before depositing it …
+[2026-08-21T01:17:08.940Z] ## arm-a-dedupe: custody at 16 cell(s) / 1 pool(s)
+[2026-08-21T01:17:09.003Z] g5[arm-a-dedupe/named-taker]: building openSwapShielded(give 1 of 2b207682c3d4…, want 1 of f9dd35b734f7…)
+[2026-08-21T01:17:15.194Z] g5[arm-a-dedupe/named-taker]: FALLIBLE — NOT publishable; built 120 ms, proved 6067 ms, 26821 B; imbalances(0) = {}
+[2026-08-21T01:17:15.268Z] g5[arm-a-dedupe/floating-surplus]: building openSwapShielded(give 1 of 2b207682c3d4…, want 1 of f9dd35b734f7…)
+[2026-08-21T01:17:20.462Z] g5[arm-a-dedupe/floating-surplus]: FALLIBLE — NOT publishable; built 111 ms, proved 5081 ms, 21608 B; imbalances(0) = {}
+
+===== arm-b-nested (b) — arm (b) nested-balances =====
+2026-08-20 21:17:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:17:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:17:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:17:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:17:22.198Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-21T01:17:37.599Z]   submitted tx 00f6d3a3843c12dcf451461fba5eb752a227275b9161ccfd57d6c54a5b1e62319d (hash 57a2b525983d0d95abf10fddf279597179eb77fc2c1478e1092f3b3f186b6f9b)
+[2026-08-21T01:17:37.600Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-21T01:17:37.721Z]   waiting for genesis to observe its own spend (NIGHT at or below 242000000000000) …
+[2026-08-21T01:17:46.651Z]   feePayer: NIGHT already registered for DUST
+2026-08-20 21:17:46        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:17:46        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:17:47.544Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T01:18:07.040Z]   submitted tx 00845b798fd4d59101f90acc60ea76b46c70516dbf67b566e143ee1ea5d67e9c86 (hash e606e8b4bd82e5ef368e794c5b203b53f38b4f1373cda2a1902df4ce3966f708)
+[2026-08-21T01:18:07.040Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-21T01:18:07.204Z]   waiting for feePayer to observe its own spend (NIGHT at or below 4000000000000) …
+[2026-08-21T01:18:11.004Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-20 21:18:11        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:18:11        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:18:20.318Z]   funding OwnerA-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T01:18:37.828Z]   submitted tx 004d06480fdfa108aad264dae55af1468cb094013529fb135c7d000dce937a2912 (hash 18eb7b83ae40364c0adc9378703cda4375f65b071dd4803c03a31493bc7b8cb0)
+[2026-08-21T01:18:37.829Z]   waiting for OwnerA-funding NIGHT to arrive …
+[2026-08-21T01:18:37.937Z]   waiting for feePayer to observe its own spend (NIGHT at or below 3600000000000) …
+[2026-08-21T01:19:43.062Z]   OwnerA-funding: NIGHT already registered for DUST
+2026-08-20 21:19:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:19:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:19:43.975Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T01:20:00.825Z]   submitted tx 00a8ea46c641ebaba5649638f691d087dcf00fc00c1131adb514d0e8e9a8bf7ede (hash cd9f710609f484d19ad3bd94f67abedbd034eaeac975244b30d901adccb4afa9)
+[2026-08-21T01:20:00.825Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-21T01:20:01.003Z]   waiting for feePayer to observe its own spend (NIGHT at or below 3200000000000) …
+[2026-08-21T01:20:09.263Z]   OwnerT-funding: NIGHT already registered for DUST
+[2026-08-21T01:20:09.285Z] deploying G5 variant 'arm-b-nested' (arm (b) nested-balances) …
+[2026-08-21T01:20:26.075Z]   arm-b-nested at fb9f393122c1ef911fc815f9770b606f1454777e267e908ee433893871ba11f7
+[2026-08-21T01:20:26.087Z]   chain ledger parameters fetched (7266 chars rendered)
+2026-08-20 21:20:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:20:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:21:02.059Z]   colour G = 6b9766eb2344… from Minter1 at d48ecac7063077834ad99f8687e27e0d093797927bd425a7ffd279a1dbf1ef3a
+[2026-08-21T01:21:38.182Z]   colour W = f0e6c573345e… from Minter2 at c992082c1a2b22d03b609e6e4ed664a5b5fcbc4c7318182567044963237ad3ed
+[2026-08-21T01:22:14.381Z]   account AA_A = 009a77de97356f5c… registered
+[2026-08-21T01:22:33.102Z]   account AA_1 = 890d6086517f8271… registered
+[2026-08-21T01:22:50.504Z]   account AA_2 = ef648aeca4dba301… registered
+[2026-08-21T01:23:07.884Z]   account AA_3 = 4c8608738d24fefd… registered
+[2026-08-21T01:23:26.617Z]   account AA_4 = 8f0cefa5da77eeee… registered
+[2026-08-21T01:23:44.014Z]   account AA_5 = e80f5e49cd2b7e24… registered
+[2026-08-21T01:24:02.752Z]   account AA_6 = 34cb50d28a0cffd0… registered
+[2026-08-21T01:24:20.113Z]   account AA_7 = 6e6cef369f949130… registered
+[2026-08-21T01:24:38.839Z]   account AA_8 = 9538270df9238f4c… registered
+[2026-08-21T01:24:56.246Z]   account AA_9 = 90f52dee02a347ec… registered
+[2026-08-21T01:25:14.962Z]   account AA_10 = 2bd2e6006a0f9518… registered
+[2026-08-21T01:25:32.287Z]   account AA_11 = 1f012f860206d859… registered
+[2026-08-21T01:25:50.991Z]   account AA_12 = febd1d406f531069… registered
+[2026-08-21T01:26:08.399Z]   account AA_13 = d567b23d5ceaeb9b… registered
+[2026-08-21T01:26:27.081Z]   account AA_14 = 69f8cb6ee6557312… registered
+[2026-08-21T01:26:44.452Z]   account AA_15 = c9137cad34c70473… registered
+2026-08-20 21:26:44        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:26:44        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:26:45.483Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:27:09.456Z] ## arm-b-nested: custody at 1 cell(s) / 1 pool(s)
+[2026-08-21T01:27:09.528Z] g5[arm-b-nested/named-taker]: building openSwapShielded(give 1 of 6b9766eb2344…, want 1 of f0e6c573345e…)
+[2026-08-21T01:27:18.720Z] g5[arm-b-nested/named-taker]: GUARANTEED — publishable; built 121 ms, proved 9070 ms, 26783 B; imbalances(0) = {"shielded:f0e6c573345e10b1a129b1af62f295dd5d59caad86079c4f1f62e2152c33c0df":"-1"}
+[2026-08-21T01:27:18.777Z] g5[arm-b-nested/floating-surplus]: building openSwapShielded(give 1 of 6b9766eb2344…, want 1 of f0e6c573345e…)
+[2026-08-21T01:27:26.415Z] g5[arm-b-nested/floating-surplus]: FALLIBLE — NOT publishable; built 134 ms, proved 7503 ms, 21608 B; imbalances(0) = {}
+[2026-08-21T01:27:26.415Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:27:57.501Z] ## arm-b-nested: custody at 2 cell(s) / 1 pool(s)
+[2026-08-21T01:27:57.565Z] g5[arm-b-nested/named-taker]: building openSwapShielded(give 1 of 6b9766eb2344…, want 1 of f0e6c573345e…)
+[2026-08-21T01:28:11.585Z] g5[arm-b-nested/named-taker]: FALLIBLE — NOT publishable; built 124 ms, proved 13895 ms, 26832 B; imbalances(0) = {}
+[2026-08-21T01:28:11.699Z] g5[arm-b-nested/floating-surplus]: building openSwapShielded(give 1 of 6b9766eb2344…, want 1 of f0e6c573345e…)
+[2026-08-21T01:28:31.566Z] g5[arm-b-nested/floating-surplus]: FALLIBLE — NOT publishable; built 172 ms, proved 19693 ms, 21606 B; imbalances(0) = {}
+[2026-08-21T01:28:31.566Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:29:09.598Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:29:45.615Z] ## arm-b-nested: custody at 4 cell(s) / 1 pool(s)
+[2026-08-21T01:29:45.682Z] g5[arm-b-nested/named-taker]: building openSwapShielded(give 1 of 6b9766eb2344…, want 1 of f0e6c573345e…)
+[2026-08-21T01:29:58.624Z] g5[arm-b-nested/named-taker]: FALLIBLE — NOT publishable; built 142 ms, proved 12797 ms, 26833 B; imbalances(0) = {}
+[2026-08-21T01:29:58.686Z] g5[arm-b-nested/floating-surplus]: building openSwapShielded(give 1 of 6b9766eb2344…, want 1 of f0e6c573345e…)
+[2026-08-21T01:30:09.910Z] g5[arm-b-nested/floating-surplus]: FALLIBLE — NOT publishable; built 134 ms, proved 11087 ms, 21607 B; imbalances(0) = {}
+[2026-08-21T01:30:09.910Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:30:45.648Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:31:21.663Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:31:57.724Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:32:33.739Z] ## arm-b-nested: custody at 8 cell(s) / 1 pool(s)
+[2026-08-21T01:32:33.818Z] g5[arm-b-nested/named-taker]: building openSwapShielded(give 1 of 6b9766eb2344…, want 1 of f0e6c573345e…)
+[2026-08-21T01:32:43.502Z] g5[arm-b-nested/named-taker]: FALLIBLE — NOT publishable; built 138 ms, proved 9542 ms, 26834 B; imbalances(0) = {}
+[2026-08-21T01:32:43.562Z] g5[arm-b-nested/floating-surplus]: building openSwapShielded(give 1 of 6b9766eb2344…, want 1 of f0e6c573345e…)
+[2026-08-21T01:32:53.021Z] g5[arm-b-nested/floating-surplus]: FALLIBLE — NOT publishable; built 132 ms, proved 9323 ms, 21608 B; imbalances(0) = {}
+[2026-08-21T01:32:53.021Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:33:27.098Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:34:03.119Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:34:33.815Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:35:03.217Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:35:45.894Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:36:21.915Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:36:57.973Z]   waiting for OwnerN to see 8 of shielded 6b9766eb2344… before depositing it …
+[2026-08-21T01:37:27.357Z] ## arm-b-nested: custody at 16 cell(s) / 1 pool(s)
+[2026-08-21T01:37:27.440Z] g5[arm-b-nested/named-taker]: building openSwapShielded(give 1 of 6b9766eb2344…, want 1 of f0e6c573345e…)
+[2026-08-21T01:37:46.424Z] g5[arm-b-nested/named-taker]: FALLIBLE — NOT publishable; built 155 ms, proved 18826 ms, 26833 B; imbalances(0) = {}
+[2026-08-21T01:37:46.507Z] g5[arm-b-nested/floating-surplus]: building openSwapShielded(give 1 of 6b9766eb2344…, want 1 of f0e6c573345e…)
+[2026-08-21T01:37:58.833Z] g5[arm-b-nested/floating-surplus]: FALLIBLE — NOT publishable; built 152 ms, proved 12169 ms, 21608 B; imbalances(0) = {}
+
+===== arm-c-both (c) — arm (c) nested + deduped =====
+2026-08-20 21:37:59        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:37:59        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:37:59        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:37:59        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:38:01.635Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-21T01:38:19.974Z]   submitted tx 00e485e1926b01786cdbfd7fc792df9fb56f6625f081ec7770f3eda6a1b9888958 (hash 2bd95d2e7c99f858b3700d69304a98839033cc9c4cceb825ad01f091b9482891)
+[2026-08-21T01:38:19.975Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-21T01:38:20.209Z]   waiting for genesis to observe its own spend (NIGHT at or below 240000000000000) …
+[2026-08-21T01:38:34.665Z]   feePayer: NIGHT already registered for DUST
+2026-08-20 21:38:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:38:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:38:35.958Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T01:38:56.028Z]   submitted tx 006903de2e3f9070ef577555bc71d0dfd153b3161098175a92b4f6b3b29b92ef06 (hash bfeb96029c49ea363f3a664d08a7617501e8607b140a4e03ae4d3cd1effc953d)
+[2026-08-21T01:38:56.029Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-21T01:38:57.149Z]   waiting for feePayer to observe its own spend (NIGHT at or below 4800000000000) …
+[2026-08-21T01:39:08.262Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-20 21:39:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:39:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:39:10.971Z]   funding OwnerA-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T01:39:30.802Z]   submitted tx 00ffdd8bdb2c86048cec35d41550c86aad17f68a07e9a19840c9008d7f23cf7111 (hash 7bffca682edf9b7a8407d603d80606db5f373c1f1fc24be16297bae46f9b42bd)
+[2026-08-21T01:39:30.802Z]   waiting for OwnerA-funding NIGHT to arrive …
+[2026-08-21T01:39:31.186Z]   waiting for feePayer to observe its own spend (NIGHT at or below 4400000000000) …
+[2026-08-21T01:39:43.160Z]   OwnerA-funding: NIGHT already registered for DUST
+2026-08-20 21:39:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:39:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:40:41.233Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T01:41:01.866Z]   submitted tx 0053237b9e9a2628eab66f79fe2ab11ed1ac49591bb3eff15f7bf0e67b42b3af69 (hash 9f1f36e71dd816837752562b4710e059faf823d1b9a12f65bb9eb46887aa68c3)
+[2026-08-21T01:41:01.866Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-21T01:41:02.022Z]   waiting for feePayer to observe its own spend (NIGHT at or below 4000000000000) …
+[2026-08-21T01:41:12.238Z]   OwnerT-funding: NIGHT already registered for DUST
+[2026-08-21T01:41:12.277Z] deploying G5 variant 'arm-c-both' (arm (c) nested + deduped) …
+[2026-08-21T01:41:32.435Z]   arm-c-both at 7a1c8ace8a11915a558ff5c74d77d90a4f902d5461d59aa90dda866957a10122
+[2026-08-21T01:41:32.448Z]   chain ledger parameters fetched (7268 chars rendered)
+2026-08-20 21:41:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:41:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:42:08.379Z]   colour G = 2aac6aa11624… from Minter1 at f0fac92c92db93e3dd04f28cf1e38aea69fdd7f068a14d91b063a3de96f8eb66
+[2026-08-21T01:42:44.479Z]   colour W = 1f65cec42256… from Minter2 at ebeeea3eec8f4f822a8360ceecef37c57c74f496d4f1e8f5628436c3dd90120c
+[2026-08-21T01:43:20.690Z]   account AA_A = 009a77de97356f5c… registered
+[2026-08-21T01:43:38.077Z]   account AA_1 = 890d6086517f8271… registered
+[2026-08-21T01:43:56.801Z]   account AA_2 = ef648aeca4dba301… registered
+[2026-08-21T01:44:14.168Z]   account AA_3 = 4c8608738d24fefd… registered
+[2026-08-21T01:44:32.898Z]   account AA_4 = 8f0cefa5da77eeee… registered
+[2026-08-21T01:44:50.267Z]   account AA_5 = e80f5e49cd2b7e24… registered
+[2026-08-21T01:45:09.004Z]   account AA_6 = 34cb50d28a0cffd0… registered
+[2026-08-21T01:45:26.403Z]   account AA_7 = 6e6cef369f949130… registered
+[2026-08-21T01:45:45.108Z]   account AA_8 = 9538270df9238f4c… registered
+[2026-08-21T01:46:02.480Z]   account AA_9 = 90f52dee02a347ec… registered
+[2026-08-21T01:46:19.917Z]   account AA_10 = 2bd2e6006a0f9518… registered
+[2026-08-21T01:46:38.636Z]   account AA_11 = 1f012f860206d859… registered
+[2026-08-21T01:46:56.039Z]   account AA_12 = febd1d406f531069… registered
+[2026-08-21T01:47:14.764Z]   account AA_13 = d567b23d5ceaeb9b… registered
+[2026-08-21T01:47:32.179Z]   account AA_14 = 69f8cb6ee6557312… registered
+[2026-08-21T01:47:50.935Z]   account AA_15 = c9137cad34c70473… registered
+2026-08-20 21:47:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:47:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:47:52.120Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:48:15.958Z] ## arm-c-both: custody at 1 cell(s) / 1 pool(s)
+[2026-08-21T01:48:16.027Z] g5[arm-c-both/named-taker]: building openSwapShielded(give 1 of 2aac6aa11624…, want 1 of 1f65cec42256…)
+[2026-08-21T01:48:24.563Z] g5[arm-c-both/named-taker]: GUARANTEED — publishable; built 105 ms, proved 8429 ms, 26722 B; imbalances(0) = {"shielded:1f65cec422562b46e87756a3b75042f623a721931bb012a290566c1d392db41c":"-1"}
+[2026-08-21T01:48:24.623Z] g5[arm-c-both/floating-surplus]: building openSwapShielded(give 1 of 2aac6aa11624…, want 1 of 1f65cec42256…)
+[2026-08-21T01:48:30.213Z] g5[arm-c-both/floating-surplus]: GUARANTEED — publishable; built 101 ms, proved 5486 ms, 21497 B; imbalances(0) = {"shielded:1f65cec422562b46e87756a3b75042f623a721931bb012a290566c1d392db41c":"-1","shielded:2aac6aa11624e6761f7c3fa8b8af8b40613f7a53dd343b9e5ea07a2e7fc64b32":"1"}
+[2026-08-21T01:48:30.213Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:48:57.384Z] ## arm-c-both: custody at 2 cell(s) / 1 pool(s)
+[2026-08-21T01:48:57.452Z] g5[arm-c-both/named-taker]: building openSwapShielded(give 1 of 2aac6aa11624…, want 1 of 1f65cec42256…)
+[2026-08-21T01:49:03.792Z] g5[arm-c-both/named-taker]: FALLIBLE — NOT publishable; built 115 ms, proved 6223 ms, 26771 B; imbalances(0) = {}
+[2026-08-21T01:49:03.868Z] g5[arm-c-both/floating-surplus]: building openSwapShielded(give 1 of 2aac6aa11624…, want 1 of 1f65cec42256…)
+[2026-08-21T01:49:09.053Z] g5[arm-c-both/floating-surplus]: FALLIBLE — NOT publishable; built 110 ms, proved 5072 ms, 21546 B; imbalances(0) = {}
+[2026-08-21T01:49:09.053Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:49:33.486Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:49:57.555Z] ## arm-c-both: custody at 4 cell(s) / 1 pool(s)
+[2026-08-21T01:49:57.619Z] g5[arm-c-both/named-taker]: building openSwapShielded(give 1 of 2aac6aa11624…, want 1 of 1f65cec42256…)
+[2026-08-21T01:50:03.705Z] g5[arm-c-both/named-taker]: FALLIBLE — NOT publishable; built 118 ms, proved 5965 ms, 26773 B; imbalances(0) = {}
+[2026-08-21T01:50:03.777Z] g5[arm-c-both/floating-surplus]: building openSwapShielded(give 1 of 2aac6aa11624…, want 1 of 1f65cec42256…)
+[2026-08-21T01:50:09.503Z] g5[arm-c-both/floating-surplus]: FALLIBLE — NOT publishable; built 105 ms, proved 5619 ms, 21553 B; imbalances(0) = {}
+[2026-08-21T01:50:09.503Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:50:33.656Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:50:57.737Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:51:21.819Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:51:45.884Z] ## arm-c-both: custody at 8 cell(s) / 1 pool(s)
+[2026-08-21T01:51:45.944Z] g5[arm-c-both/named-taker]: building openSwapShielded(give 1 of 2aac6aa11624…, want 1 of 1f65cec42256…)
+[2026-08-21T01:51:52.003Z] g5[arm-c-both/named-taker]: FALLIBLE — NOT publishable; built 112 ms, proved 5944 ms, 26774 B; imbalances(0) = {}
+[2026-08-21T01:51:52.077Z] g5[arm-c-both/floating-surplus]: building openSwapShielded(give 1 of 2aac6aa11624…, want 1 of 1f65cec42256…)
+[2026-08-21T01:51:57.691Z] g5[arm-c-both/floating-surplus]: FALLIBLE — NOT publishable; built 108 ms, proved 5504 ms, 21548 B; imbalances(0) = {}
+[2026-08-21T01:51:57.693Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:52:21.983Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:52:46.066Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:53:10.150Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:53:32.896Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:53:56.991Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:54:20.998Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:54:45.079Z]   waiting for OwnerN to see 8 of shielded 2aac6aa11624… before depositing it …
+[2026-08-21T01:55:15.758Z] ## arm-c-both: custody at 16 cell(s) / 1 pool(s)
+[2026-08-21T01:55:15.832Z] g5[arm-c-both/named-taker]: building openSwapShielded(give 1 of 2aac6aa11624…, want 1 of 1f65cec42256…)
+[2026-08-21T01:55:29.218Z] g5[arm-c-both/named-taker]: FALLIBLE — NOT publishable; built 142 ms, proved 13241 ms, 26775 B; imbalances(0) = {}
+[2026-08-21T01:55:29.289Z] g5[arm-c-both/floating-surplus]: building openSwapShielded(give 1 of 2aac6aa11624…, want 1 of 1f65cec42256…)
+[2026-08-21T01:55:41.132Z] g5[arm-c-both/floating-surplus]: FALLIBLE — NOT publishable; built 151 ms, proved 11691 ms, 21549 B; imbalances(0) = {}
+
+===== arm-d-unified (d) — arm (d) unified per-account coin map =====
+2026-08-20 21:55:41        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:55:41        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:55:41        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:55:41        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:55:44.146Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-21T01:56:01.639Z]   submitted tx 00fe91742e724ebba9d877b0d5b2c1072b1482035c635858381f180f6d65bd1733 (hash 9b06e5761470b4a02272ad40e1acc25dc9f316b9fdb2579f6d3c0c9b34cc007e)
+[2026-08-21T01:56:01.639Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-21T01:56:01.814Z]   waiting for genesis to observe its own spend (NIGHT at or below 238000000000000) …
+[2026-08-21T01:56:09.839Z]   feePayer: NIGHT already registered for DUST
+2026-08-20 21:56:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:56:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:56:11.444Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T01:56:30.976Z]   submitted tx 00ba82bfc872b52c2325f2fb37f732dd509eed043686b26f23b2ca0e470ecd6ef1 (hash c07c4996386bd15bb08c49f12b9c2a982be17c40b89e6d1876c52ddc797f2807)
+[2026-08-21T01:56:30.976Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-21T01:56:31.163Z]   waiting for feePayer to observe its own spend (NIGHT at or below 5600000000000) …
+[2026-08-21T01:56:43.874Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-20 21:56:44        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:56:44        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:56:45.429Z]   funding OwnerA-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T01:57:01.652Z]   submitted tx 0059d7d45930c827cb8d0c5f8b592a16b604928eb9b71f055575af1ea0ab42060a (hash 5afe8e0fee62fe6896b6c2c366be9ccd8320268f7589ef6d6b3dff018c9e27e8)
+[2026-08-21T01:57:01.652Z]   waiting for OwnerA-funding NIGHT to arrive …
+[2026-08-21T01:57:01.845Z]   waiting for feePayer to observe its own spend (NIGHT at or below 5200000000000) …
+[2026-08-21T01:57:10.284Z]   OwnerA-funding: NIGHT already registered for DUST
+2026-08-20 21:57:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:57:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:57:11.811Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T01:57:31.011Z]   submitted tx 00b96c2f34cd7efa5ddf27c03a19fd491e2230204924378a45e2f7fded9357815b (hash d7af0d2e737848eb324ea2ced7d32bc5251fe364006a59a94ab99e67631063fe)
+[2026-08-21T01:57:31.011Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-21T01:57:31.231Z]   waiting for feePayer to observe its own spend (NIGHT at or below 4800000000000) …
+[2026-08-21T01:57:36.102Z]   OwnerT-funding: NIGHT already registered for DUST
+[2026-08-21T01:57:36.130Z] deploying G5 variant 'arm-d-unified' (arm (d) unified per-account coin map) …
+[2026-08-21T01:57:56.186Z]   arm-d-unified at 955108abb45b46bc22b2f3ba0c5408302c423ed7dafa5ba0fb97edc13b7ba4f4
+[2026-08-21T01:57:56.196Z]   chain ledger parameters fetched (7267 chars rendered)
+2026-08-20 21:57:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 21:57:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T01:58:32.041Z]   colour G = c4827fc49c1d… from Minter1 at d28096ee36be246300137a7890bc8416a7d519a879e0bfcf825c500a45139df4
+[2026-08-21T01:59:08.068Z]   colour W = da92acb13536… from Minter2 at ca4c75a72cb073c2d81ac90eab64acc62bcaa8b13b0f694cd10abd416089f551
+[2026-08-21T01:59:50.833Z]   account AA_A = 009a77de97356f5c… registered
+[2026-08-21T02:00:08.211Z]   account AA_1 = 890d6086517f8271… registered
+[2026-08-21T02:00:26.927Z]   account AA_2 = ef648aeca4dba301… registered
+[2026-08-21T02:00:44.254Z]   account AA_3 = 4c8608738d24fefd… registered
+[2026-08-21T02:01:02.942Z]   account AA_4 = 8f0cefa5da77eeee… registered
+[2026-08-21T02:01:20.277Z]   account AA_5 = e80f5e49cd2b7e24… registered
+[2026-08-21T02:01:38.927Z]   account AA_6 = 34cb50d28a0cffd0… registered
+[2026-08-21T02:01:56.288Z]   account AA_7 = 6e6cef369f949130… registered
+[2026-08-21T02:02:14.990Z]   account AA_8 = 9538270df9238f4c… registered
+[2026-08-21T02:02:32.357Z]   account AA_9 = 90f52dee02a347ec… registered
+[2026-08-21T02:02:51.013Z]   account AA_10 = 2bd2e6006a0f9518… registered
+[2026-08-21T02:03:08.379Z]   account AA_11 = 1f012f860206d859… registered
+[2026-08-21T02:03:27.081Z]   account AA_12 = febd1d406f531069… registered
+[2026-08-21T02:03:44.434Z]   account AA_13 = d567b23d5ceaeb9b… registered
+[2026-08-21T02:04:01.784Z]   account AA_14 = 69f8cb6ee6557312… registered
+[2026-08-21T02:04:20.518Z]   account AA_15 = c9137cad34c70473… registered
+2026-08-20 22:04:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:04:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:04:22.027Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:04:50.845Z] ## arm-d-unified: custody at 1 cell(s) / 1 pool(s)
+[2026-08-21T02:04:50.915Z] g5[arm-d-unified/named-taker]: building openSwapShielded(give 1 of c4827fc49c1d…, want 1 of da92acb13536…)
+[2026-08-21T02:05:02.795Z] g5[arm-d-unified/named-taker]: GUARANTEED — publishable; built 125 ms, proved 11754 ms, 26581 B; imbalances(0) = {"shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f":"-1"}
+[2026-08-21T02:05:02.858Z] g5[arm-d-unified/floating-surplus]: building openSwapShielded(give 1 of c4827fc49c1d…, want 1 of da92acb13536…)
+[2026-08-21T02:05:10.593Z] g5[arm-d-unified/floating-surplus]: GUARANTEED — publishable; built 99 ms, proved 7635 ms, 21338 B; imbalances(0) = {"shielded:c4827fc49c1d155672913dfef772ab728b58f2cefdd4067adb91f451440a2103":"1","shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f":"-1"}
+[2026-08-21T02:05:10.594Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:05:33.551Z] ## arm-d-unified: custody at 2 cell(s) / 1 pool(s)
+[2026-08-21T02:05:33.612Z] g5[arm-d-unified/named-taker]: building openSwapShielded(give 1 of c4827fc49c1d…, want 1 of da92acb13536…)
+[2026-08-21T02:05:42.556Z] g5[arm-d-unified/named-taker]: GUARANTEED — publishable; built 127 ms, proved 8816 ms, 26581 B; imbalances(0) = {"shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f":"-1"}
+[2026-08-21T02:05:42.625Z] g5[arm-d-unified/floating-surplus]: building openSwapShielded(give 1 of c4827fc49c1d…, want 1 of da92acb13536…)
+[2026-08-21T02:05:51.076Z] g5[arm-d-unified/floating-surplus]: GUARANTEED — publishable; built 97 ms, proved 8352 ms, 21338 B; imbalances(0) = {"shielded:c4827fc49c1d155672913dfef772ab728b58f2cefdd4067adb91f451440a2103":"1","shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f":"-1"}
+[2026-08-21T02:05:51.076Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:06:14.924Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:06:38.936Z] ## arm-d-unified: custody at 4 cell(s) / 1 pool(s)
+[2026-08-21T02:06:38.997Z] g5[arm-d-unified/named-taker]: building openSwapShielded(give 1 of c4827fc49c1d…, want 1 of da92acb13536…)
+[2026-08-21T02:06:45.302Z] g5[arm-d-unified/named-taker]: FALLIBLE — NOT publishable; built 115 ms, proved 6186 ms, 26631 B; imbalances(0) = {}
+[2026-08-21T02:06:45.377Z] g5[arm-d-unified/floating-surplus]: building openSwapShielded(give 1 of c4827fc49c1d…, want 1 of da92acb13536…)
+[2026-08-21T02:06:51.179Z] g5[arm-d-unified/floating-surplus]: FALLIBLE — NOT publishable; built 104 ms, proved 5694 ms, 21388 B; imbalances(0) = {}
+[2026-08-21T02:06:51.180Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:07:15.039Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:07:39.090Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:08:03.206Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:08:27.301Z] ## arm-d-unified: custody at 8 cell(s) / 1 pool(s)
+[2026-08-21T02:08:27.359Z] g5[arm-d-unified/named-taker]: building openSwapShielded(give 1 of c4827fc49c1d…, want 1 of da92acb13536…)
+[2026-08-21T02:08:33.581Z] g5[arm-d-unified/named-taker]: FALLIBLE — NOT publishable; built 116 ms, proved 6101 ms, 26631 B; imbalances(0) = {}
+[2026-08-21T02:08:33.652Z] g5[arm-d-unified/floating-surplus]: building openSwapShielded(give 1 of c4827fc49c1d…, want 1 of da92acb13536…)
+[2026-08-21T02:08:39.275Z] g5[arm-d-unified/floating-surplus]: FALLIBLE — NOT publishable; built 105 ms, proved 5515 ms, 21388 B; imbalances(0) = {}
+[2026-08-21T02:08:39.275Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:09:03.394Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:09:27.487Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:09:51.582Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:10:15.660Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:10:39.714Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:11:03.776Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:11:27.852Z]   waiting for OwnerN to see 8 of shielded c4827fc49c1d… before depositing it …
+[2026-08-21T02:11:51.933Z] ## arm-d-unified: custody at 16 cell(s) / 1 pool(s)
+[2026-08-21T02:11:51.996Z] g5[arm-d-unified/named-taker]: building openSwapShielded(give 1 of c4827fc49c1d…, want 1 of da92acb13536…)
+[2026-08-21T02:11:58.444Z] g5[arm-d-unified/named-taker]: FALLIBLE — NOT publishable; built 121 ms, proved 6324 ms, 26630 B; imbalances(0) = {}
+[2026-08-21T02:11:58.523Z] g5[arm-d-unified/floating-surplus]: building openSwapShielded(give 1 of c4827fc49c1d…, want 1 of da92acb13536…)
+[2026-08-21T02:12:03.792Z] g5[arm-d-unified/floating-surplus]: FALLIBLE — NOT publishable; built 109 ms, proved 5159 ms, 21388 B; imbalances(0) = {}
+
+===== arm-e-escrow (e) — arm (e) two-phase escrow Cell =====
+2026-08-20 22:12:04        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:12:04        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:12:04        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:12:04        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:12:06.846Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-21T02:12:25.841Z]   submitted tx 005ca40a8301495e46e3fd9c6ebda317f12463586a669b061eb7826b0ea97c2028 (hash a7ceaa8439d539efdc3fc5791036ed9dd0b25a9a74d103f0727041d547ebe3dd)
+[2026-08-21T02:12:25.842Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-21T02:12:26.022Z]   waiting for genesis to observe its own spend (NIGHT at or below 236000000000000) …
+[2026-08-21T02:12:35.892Z]   feePayer: NIGHT already registered for DUST
+2026-08-20 22:12:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:12:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:12:37.473Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T02:12:55.297Z]   submitted tx 0005abbb12ba2dfa6e8e9670bc96cfcfcb58d4201720ee6431f7473b8e9f0de39f (hash 5be64e715fcdd4098eca9c0434a03d665daf75957152219f15ec9a0ee4623d39)
+[2026-08-21T02:12:55.298Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-21T02:12:55.503Z]   waiting for feePayer to observe its own spend (NIGHT at or below 6400000000000) …
+[2026-08-21T02:13:11.427Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-20 22:13:11        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:13:11        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:13:12.922Z]   funding OwnerA-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T02:13:31.441Z]   submitted tx 00ebe9ff1bf030915a1edab4da4f4e0b08977a95a7a56d2f40008ae8d51613e29c (hash 33cfaaadeb27d8f833407e18a7db3a6fdc7b455f6831234e6559964aea54fb01)
+[2026-08-21T02:13:31.441Z]   waiting for OwnerA-funding NIGHT to arrive …
+[2026-08-21T02:13:31.629Z]   waiting for feePayer to observe its own spend (NIGHT at or below 6000000000000) …
+[2026-08-21T02:13:45.478Z]   OwnerA-funding: NIGHT already registered for DUST
+2026-08-20 22:13:45        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:13:45        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:13:47.019Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T02:14:07.579Z]   submitted tx 00a203547f24a06d9551e7e91ae51eec6a6d663e0fc4913a0f4c846e04457ca1b5 (hash 235780af8273546d508f374972dd0e3a4c194b54fb6dd2378bae21ffb9089bc0)
+[2026-08-21T02:14:07.579Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-21T02:14:07.702Z]   waiting for feePayer to observe its own spend (NIGHT at or below 5600000000000) …
+[2026-08-21T02:14:20.925Z]   OwnerT-funding: NIGHT already registered for DUST
+[2026-08-21T02:14:20.943Z] deploying G5 variant 'arm-e-escrow' (arm (e) two-phase escrow Cell) …
+[2026-08-21T02:14:38.113Z]   arm-e-escrow at 8f6805bd440145e5cf9bf69a317a78094e5b931e40e5279f888f99bcc03a5edb
+[2026-08-21T02:14:38.119Z]   chain ledger parameters fetched (7286 chars rendered)
+2026-08-20 22:14:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:14:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:15:14.063Z]   colour G = 9254b0c4327b… from Minter1 at f2efd7b29d1002aa232d79cfab1df2d5859f94eebdf4c8b792620d8f0ef7aa07
+[2026-08-21T02:15:50.124Z]   colour W = 026a5f395e4a… from Minter2 at 9187c75c77855162d559a302020317076ebbc8644324a51eac0b5e48b2317986
+[2026-08-21T02:16:32.859Z]   account AA_A = 009a77de97356f5c… registered
+[2026-08-21T02:16:50.186Z]   account AA_1 = 890d6086517f8271… registered
+[2026-08-21T02:17:08.850Z]   account AA_2 = ef648aeca4dba301… registered
+[2026-08-21T02:17:26.202Z]   account AA_3 = 4c8608738d24fefd… registered
+[2026-08-21T02:17:44.882Z]   account AA_4 = 8f0cefa5da77eeee… registered
+[2026-08-21T02:18:02.201Z]   account AA_5 = e80f5e49cd2b7e24… registered
+[2026-08-21T02:18:20.877Z]   account AA_6 = 34cb50d28a0cffd0… registered
+[2026-08-21T02:18:38.222Z]   account AA_7 = 6e6cef369f949130… registered
+[2026-08-21T02:18:56.889Z]   account AA_8 = 9538270df9238f4c… registered
+[2026-08-21T02:19:14.228Z]   account AA_9 = 90f52dee02a347ec… registered
+[2026-08-21T02:19:32.912Z]   account AA_10 = 2bd2e6006a0f9518… registered
+[2026-08-21T02:19:50.258Z]   account AA_11 = 1f012f860206d859… registered
+[2026-08-21T02:20:08.924Z]   account AA_12 = febd1d406f531069… registered
+[2026-08-21T02:20:26.270Z]   account AA_13 = d567b23d5ceaeb9b… registered
+[2026-08-21T02:20:44.959Z]   account AA_14 = 69f8cb6ee6557312… registered
+[2026-08-21T02:21:02.317Z]   account AA_15 = c9137cad34c70473… registered
+2026-08-20 22:21:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:21:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:21:04.066Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:21:34.012Z] ## arm-e-escrow: custody at 1 cell(s) / 1 pool(s)
+2026-08-20 22:21:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:21:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:22:07.964Z]   stageOffer submitted by OwnerA-stage-1 in 00d857f4d71b7bd5fca04187300b49ccefcab8ef7a0db26f61d6df11498a640611
+[2026-08-21T02:22:10.028Z]    arm (e): staged 1 of G in 00d857f4d71b7bd5fca04187300b49ccefcab8ef7a0db26f61d6df11498a640611 (self-balanced — F-310 does not constrain it)
+[2026-08-21T02:22:10.112Z] g5[arm-e-escrow/named-taker]: building openSwap(give 1 of 9254b0c4327b…, want 1 of 026a5f395e4a…)
+[2026-08-21T02:22:22.965Z] g5[arm-e-escrow/named-taker]: GUARANTEED — publishable; built 135 ms, proved 12715 ms, 21302 B; imbalances(0) = {"shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316":"-1"}
+[2026-08-21T02:22:23.042Z] g5[arm-e-escrow/floating-surplus]: building openSwap(give 1 of 9254b0c4327b…, want 1 of 026a5f395e4a…)
+[2026-08-21T02:22:32.048Z] g5[arm-e-escrow/floating-surplus]: GUARANTEED — publishable; built 127 ms, proved 8878 ms, 16056 B; imbalances(0) = {"shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316":"-1","shielded:9254b0c4327b436edeb99ca60474cd14a41d966808865fa28ea6c34734a8a72a":"1"}
+[2026-08-21T02:22:32.049Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:23:10.041Z] ## arm-e-escrow: custody at 2 cell(s) / 1 pool(s)
+[2026-08-21T02:23:10.055Z]    arm (e): escrow already staged (R5'': no cancelStage, and nothing settles here) — reusing it
+[2026-08-21T02:23:10.119Z] g5[arm-e-escrow/named-taker]: building openSwap(give 1 of 9254b0c4327b…, want 1 of 026a5f395e4a…)
+[2026-08-21T02:23:14.749Z] g5[arm-e-escrow/named-taker]: GUARANTEED — publishable; built 115 ms, proved 4514 ms, 21302 B; imbalances(0) = {"shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316":"-1"}
+[2026-08-21T02:23:14.809Z] g5[arm-e-escrow/floating-surplus]: building openSwap(give 1 of 9254b0c4327b…, want 1 of 026a5f395e4a…)
+[2026-08-21T02:23:18.682Z] g5[arm-e-escrow/floating-surplus]: GUARANTEED — publishable; built 93 ms, proved 3780 ms, 16056 B; imbalances(0) = {"shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316":"-1","shielded:9254b0c4327b436edeb99ca60474cd14a41d966808865fa28ea6c34734a8a72a":"1"}
+[2026-08-21T02:23:18.682Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:23:46.108Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:24:15.469Z] ## arm-e-escrow: custody at 4 cell(s) / 1 pool(s)
+[2026-08-21T02:24:15.498Z]    arm (e): escrow already staged (R5'': no cancelStage, and nothing settles here) — reusing it
+[2026-08-21T02:24:15.581Z] g5[arm-e-escrow/named-taker]: building openSwap(give 1 of 9254b0c4327b…, want 1 of 026a5f395e4a…)
+[2026-08-21T02:24:20.271Z] g5[arm-e-escrow/named-taker]: GUARANTEED — publishable; built 117 ms, proved 4572 ms, 21302 B; imbalances(0) = {"shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316":"-1"}
+[2026-08-21T02:24:20.334Z] g5[arm-e-escrow/floating-surplus]: building openSwap(give 1 of 9254b0c4327b…, want 1 of 026a5f395e4a…)
+[2026-08-21T02:24:24.345Z] g5[arm-e-escrow/floating-surplus]: GUARANTEED — publishable; built 94 ms, proved 3916 ms, 16056 B; imbalances(0) = {"shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316":"-1","shielded:9254b0c4327b436edeb99ca60474cd14a41d966808865fa28ea6c34734a8a72a":"1"}
+[2026-08-21T02:24:24.345Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:24:51.484Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:25:15.554Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:25:39.565Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:26:08.908Z] ## arm-e-escrow: custody at 8 cell(s) / 1 pool(s)
+[2026-08-21T02:26:08.927Z]    arm (e): escrow already staged (R5'': no cancelStage, and nothing settles here) — reusing it
+[2026-08-21T02:26:08.998Z] g5[arm-e-escrow/named-taker]: building openSwap(give 1 of 9254b0c4327b…, want 1 of 026a5f395e4a…)
+[2026-08-21T02:26:18.321Z] g5[arm-e-escrow/named-taker]: GUARANTEED — publishable; built 115 ms, proved 9206 ms, 21303 B; imbalances(0) = {"shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316":"-1"}
+[2026-08-21T02:26:18.385Z] g5[arm-e-escrow/floating-surplus]: building openSwap(give 1 of 9254b0c4327b…, want 1 of 026a5f395e4a…)
+[2026-08-21T02:26:25.260Z] g5[arm-e-escrow/floating-surplus]: GUARANTEED — publishable; built 121 ms, proved 6753 ms, 16054 B; imbalances(0) = {"shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316":"-1","shielded:9254b0c4327b436edeb99ca60474cd14a41d966808865fa28ea6c34734a8a72a":"1"}
+[2026-08-21T02:26:25.261Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:26:56.937Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:27:34.311Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:28:08.973Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:28:44.990Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:29:21.013Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:29:56.983Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:30:27.803Z]   waiting for OwnerN to see 8 of shielded 9254b0c4327b… before depositing it …
+[2026-08-21T02:31:03.730Z] ## arm-e-escrow: custody at 16 cell(s) / 1 pool(s)
+[2026-08-21T02:31:03.764Z]    arm (e): escrow already staged (R5'': no cancelStage, and nothing settles here) — reusing it
+[2026-08-21T02:31:03.830Z] g5[arm-e-escrow/named-taker]: building openSwap(give 1 of 9254b0c4327b…, want 1 of 026a5f395e4a…)
+[2026-08-21T02:31:12.331Z] g5[arm-e-escrow/named-taker]: GUARANTEED — publishable; built 114 ms, proved 8385 ms, 21302 B; imbalances(0) = {"shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316":"-1"}
+[2026-08-21T02:31:12.394Z] g5[arm-e-escrow/floating-surplus]: building openSwap(give 1 of 9254b0c4327b…, want 1 of 026a5f395e4a…)
+[2026-08-21T02:31:16.911Z] g5[arm-e-escrow/floating-surplus]: GUARANTEED — publishable; built 101 ms, proved 4415 ms, 16056 B; imbalances(0) = {"shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316":"-1","shielded:9254b0c4327b436edeb99ca60474cd14a41d966808865fa28ea6c34734a8a72a":"1"}
+
+wrote /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g5-mitigation/live-matrix.json and LIVE-MATRIX.md
+baseline reproduces F-310: true

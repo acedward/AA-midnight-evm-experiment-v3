@@ -1,0 +1,2450 @@
+{
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-21T03:41:22.500Z",
+  "question": "per contract variant, at what custody size does an offer stop being placed in the GUARANTEED section, and how many transcript operations does its offer circuit take?",
+  "paramsSource": "CHAIN parameters captured at evidence/g5-mitigation/chain-params.json",
+  "paramsFile": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g5-mitigation/chain-params.json",
+  "cells": [
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "shapes": [
+    "named-taker",
+    "floating-surplus"
+  ],
+  "referenceCells": 2,
+  "summary": [
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "title": "Manager v4 (SHIPPED, unchanged)",
+      "offerProtocol": "single",
+      "layout": "flat",
+      "named": {
+        "variant": "manager",
+        "arm": "baseline",
+        "shape": "named-taker",
+        "lastGuaranteedCells": 1,
+        "firstFallibleCells": 2,
+        "monotone": true
+      },
+      "surplus": {
+        "variant": "manager",
+        "arm": "baseline",
+        "shape": "floating-surplus",
+        "lastGuaranteedCells": 1,
+        "firstFallibleCells": 2,
+        "monotone": true
+      },
+      "offerOpsAtRef": 117,
+      "offerOpsDeltaVsBaseline": 0,
+      "relaxations": [],
+      "measured": true
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "title": "v4-slim — v4 minus the unshielded family",
+      "offerProtocol": "single",
+      "layout": "flat",
+      "named": {
+        "variant": "v4-slim",
+        "arm": "control",
+        "shape": "named-taker",
+        "lastGuaranteedCells": 1,
+        "firstFallibleCells": 2,
+        "monotone": true
+      },
+      "surplus": {
+        "variant": "v4-slim",
+        "arm": "control",
+        "shape": "floating-surplus",
+        "lastGuaranteedCells": 1,
+        "firstFallibleCells": 2,
+        "monotone": true
+      },
+      "offerOpsAtRef": 117,
+      "offerOpsDeltaVsBaseline": 0,
+      "relaxations": [
+        "R1: the unshielded family is deleted (ledger field `unshieldedBalances`, key domain `unshieldedKey`, circuits `depositUnshielded` / `withdrawUnshielded` / `transferInternalUnshielded` / `unshieldedAccountBalance`). Breaks v3 raw-state layout compatibility and makes FR-203 family separation and the P-COLL probe inapplicable."
+      ],
+      "measured": true
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "title": "arm (a) dedupe-flat",
+      "offerProtocol": "single",
+      "layout": "flat",
+      "named": {
+        "variant": "arm-a-dedupe",
+        "arm": "a",
+        "shape": "named-taker",
+        "lastGuaranteedCells": 2,
+        "firstFallibleCells": 4,
+        "monotone": true
+      },
+      "surplus": {
+        "variant": "arm-a-dedupe",
+        "arm": "a",
+        "shape": "floating-surplus",
+        "lastGuaranteedCells": 2,
+        "firstFallibleCells": 4,
+        "monotone": true
+      },
+      "offerOpsAtRef": 98,
+      "offerOpsDeltaVsBaseline": -19,
+      "relaxations": [
+        "R1 is inherited by this measurement fixture solely for the common v4-slim control. Arm (a) adds no relaxation and its deduplication can be applied to the shipped v4 without deleting the unshielded family."
+      ],
+      "measured": true
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "title": "arm (b) nested-balances",
+      "offerProtocol": "single",
+      "layout": "nested-balances",
+      "named": {
+        "variant": "arm-b-nested",
+        "arm": "b",
+        "shape": "named-taker",
+        "lastGuaranteedCells": 1,
+        "firstFallibleCells": 2,
+        "monotone": true
+      },
+      "surplus": {
+        "variant": "arm-b-nested",
+        "arm": "b",
+        "shape": "floating-surplus",
+        "lastGuaranteedCells": 1,
+        "firstFallibleCells": 2,
+        "monotone": true
+      },
+      "offerOpsAtRef": 139,
+      "offerOpsDeltaVsBaseline": 22,
+      "relaxations": [
+        "R1 (inherited).",
+        "R2: the `shieldedBalances` map layout changes. Breaks (i) v3/v4 raw-state decoders, (ii) the `shieldedKey` pure-circuit key-reproduction tooling that makes 00005 \"zero unaccounted keys\" assertion an enumeration of real state, and (iii) the domain-separator half of FR-203 family separation."
+      ],
+      "measured": true
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "title": "arm (c) nested + deduped",
+      "offerProtocol": "single",
+      "layout": "nested-balances",
+      "named": {
+        "variant": "arm-c-both",
+        "arm": "c",
+        "shape": "named-taker",
+        "lastGuaranteedCells": 1,
+        "firstFallibleCells": 2,
+        "monotone": true
+      },
+      "surplus": {
+        "variant": "arm-c-both",
+        "arm": "c",
+        "shape": "floating-surplus",
+        "lastGuaranteedCells": 1,
+        "firstFallibleCells": 2,
+        "monotone": true
+      },
+      "offerOpsAtRef": 108,
+      "offerOpsDeltaVsBaseline": -9,
+      "relaxations": [
+        "R1 (inherited).",
+        "R2 (from arm b)."
+      ],
+      "measured": true
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "title": "arm (d) unified per-account coin map",
+      "offerProtocol": "single",
+      "layout": "unified-coins",
+      "named": {
+        "variant": "arm-d-unified",
+        "arm": "d",
+        "shape": "named-taker",
+        "lastGuaranteedCells": 2,
+        "firstFallibleCells": 4,
+        "monotone": true
+      },
+      "surplus": {
+        "variant": "arm-d-unified",
+        "arm": "d",
+        "shape": "floating-surplus",
+        "lastGuaranteedCells": 2,
+        "firstFallibleCells": 4,
+        "monotone": true
+      },
+      "offerOpsAtRef": 89,
+      "offerOpsDeltaVsBaseline": -28,
+      "relaxations": [
+        "R1 (inherited).",
+        "R2': BOTH custody fields change — `shieldedBalances` deleted, `pools` re-keyed to account -> colour -> coin. Every v3/v4 decoder breaks and FR-205 conservation becomes vacuous as written (the two sides are the same number), so it is restated as credited-minus-debited.",
+        "R3': `poolValue` / `poolHasColour` removed (no per-colour pool exists), replaced by `accountHasColour`. The v3/v4 reader API is not preserved.",
+        "R4': `transferInternalShielded` stops being free — it becomes a real zswap split and merge. Measured as this arm price rather than excluded."
+      ],
+      "measured": true
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "title": "arm (e) two-phase escrow Cell",
+      "offerProtocol": "staged",
+      "layout": "flat",
+      "named": {
+        "variant": "arm-e-escrow",
+        "arm": "e",
+        "shape": "named-taker",
+        "lastGuaranteedCells": 16,
+        "firstFallibleCells": null,
+        "monotone": true
+      },
+      "surplus": {
+        "variant": "arm-e-escrow",
+        "arm": "e",
+        "shape": "floating-surplus",
+        "lastGuaranteedCells": 16,
+        "firstFallibleCells": null,
+        "monotone": true
+      },
+      "offerOpsAtRef": 55,
+      "offerOpsDeltaVsBaseline": -62,
+      "relaxations": [
+        "R1 (inherited).",
+        "R3'': the escrow is a SINGLE GLOBAL SLOT — one staged offer per Manager at a time. Keying it by account restores a map traversal, so this measures the BEST CASE and is quoted as an upper bound on what the approach can buy.",
+        "R4'': the give amount is fixed at staging time (`openSwap` gives the whole staged coin).",
+        "R5'': no `cancelStage` circuit — a staged coin can only leave through `openSwap`. A real gap for any product, not a design position.",
+        "R6'': the received colour attribution is DELAYED to `consolidate`, so FR-205 conservation holds only BETWEEN phases and must be restated as `pool + escrowed + received == cells + staged`."
+      ],
+      "measured": true
+    }
+  ],
+  "points": [
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "shape": "named-taker",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 126,
+          "gas": {
+            "readTime": "3468000000",
+            "computeTime": "6592236496",
+            "bytesWritten": "2028",
+            "bytesDeleted": "1100"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 126
+      }
+    },
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "shape": "floating-surplus",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 117,
+          "gas": {
+            "readTime": "3468000000",
+            "computeTime": "6484030308",
+            "bytesWritten": "2028",
+            "bytesDeleted": "1100"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "shape": "named-taker",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 126,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "7712483010",
+            "bytesWritten": "216",
+            "bytesDeleted": "1832"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 126
+      }
+    },
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "shape": "floating-surplus",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 117,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "7604276821",
+            "bytesWritten": "216",
+            "bytesDeleted": "1832"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "shape": "named-taker",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 126,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "7997502019",
+            "bytesWritten": "1743",
+            "bytesDeleted": "216"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 126
+      }
+    },
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "shape": "floating-surplus",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 117,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "7889295830",
+            "bytesWritten": "1743",
+            "bytesDeleted": "216"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "shape": "named-taker",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 126,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "8008436664",
+            "bytesWritten": "1745",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 126
+      }
+    },
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "shape": "floating-surplus",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 117,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "8091552651",
+            "bytesWritten": "881",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "shape": "named-taker",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 126,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "8019362868",
+            "bytesWritten": "2036",
+            "bytesDeleted": "1476"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 126
+      }
+    },
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "shape": "floating-surplus",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 117,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "7911156679",
+            "bytesWritten": "2036",
+            "bytesDeleted": "1476"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "shape": "named-taker",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 126,
+          "gas": {
+            "readTime": "3468000000",
+            "computeTime": "6592236496",
+            "bytesWritten": "2007",
+            "bytesDeleted": "1078"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 126
+      }
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "shape": "floating-surplus",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 117,
+          "gas": {
+            "readTime": "3468000000",
+            "computeTime": "6484030308",
+            "bytesWritten": "2007",
+            "bytesDeleted": "1078"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "shape": "named-taker",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 126,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "7712483010",
+            "bytesWritten": "216",
+            "bytesDeleted": "1810"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 126
+      }
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "shape": "floating-surplus",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 117,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "7604276821",
+            "bytesWritten": "216",
+            "bytesDeleted": "1810"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "shape": "named-taker",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 126,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "7997502019",
+            "bytesWritten": "1743",
+            "bytesDeleted": "216"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 126
+      }
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "shape": "floating-surplus",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 117,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "7889295830",
+            "bytesWritten": "1743",
+            "bytesDeleted": "216"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "shape": "named-taker",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 126,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "8008436664",
+            "bytesWritten": "1745",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 126
+      }
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "shape": "floating-surplus",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 117,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "8091552651",
+            "bytesWritten": "881",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "shape": "named-taker",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 126,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "8019362868",
+            "bytesWritten": "2014",
+            "bytesDeleted": "1455"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 126
+      }
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "shape": "floating-surplus",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 117,
+          "gas": {
+            "readTime": "4386000000",
+            "computeTime": "7911156679",
+            "bytesWritten": "2014",
+            "bytesDeleted": "1455"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "shape": "named-taker",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 107,
+          "gas": {
+            "readTime": "2652000000",
+            "computeTime": "5645336908",
+            "bytesWritten": "2007",
+            "bytesDeleted": "1078"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 107
+      }
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "shape": "floating-surplus",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 98,
+          "gas": {
+            "readTime": "2652000000",
+            "computeTime": "5537130720",
+            "bytesWritten": "2007",
+            "bytesDeleted": "1078"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 98
+      }
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "shape": "named-taker",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 107,
+          "gas": {
+            "readTime": "3366000000",
+            "computeTime": "6561552150",
+            "bytesWritten": "216",
+            "bytesDeleted": "1810"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 107
+      }
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "shape": "floating-surplus",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 98,
+          "gas": {
+            "readTime": "3366000000",
+            "computeTime": "6453345961",
+            "bytesWritten": "216",
+            "bytesDeleted": "1810"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 98
+      }
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "shape": "named-taker",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 107,
+          "gas": {
+            "readTime": "3366000000",
+            "computeTime": "6846538486",
+            "bytesWritten": "1743",
+            "bytesDeleted": "216"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 107
+      }
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "shape": "floating-surplus",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 98,
+          "gas": {
+            "readTime": "3366000000",
+            "computeTime": "6738332298",
+            "bytesWritten": "1743",
+            "bytesDeleted": "216"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 98
+      }
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "shape": "named-taker",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 107,
+          "gas": {
+            "readTime": "3366000000",
+            "computeTime": "6857440926",
+            "bytesWritten": "1745",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 107
+      }
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "shape": "floating-surplus",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 98,
+          "gas": {
+            "readTime": "3366000000",
+            "computeTime": "6940556913",
+            "bytesWritten": "881",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 98
+      }
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "shape": "named-taker",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 107,
+          "gas": {
+            "readTime": "3366000000",
+            "computeTime": "6868334924",
+            "bytesWritten": "2014",
+            "bytesDeleted": "1455"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 107
+      }
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "shape": "floating-surplus",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 98,
+          "gas": {
+            "readTime": "3366000000",
+            "computeTime": "6760128735",
+            "bytesWritten": "2014",
+            "bytesDeleted": "1455"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 98
+      }
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "shape": "named-taker",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 148,
+          "gas": {
+            "readTime": "5202000000",
+            "computeTime": "8607264790",
+            "bytesWritten": "2223",
+            "bytesDeleted": "1294"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 148
+      }
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "shape": "floating-surplus",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 139,
+          "gas": {
+            "readTime": "5202000000",
+            "computeTime": "8499058602",
+            "bytesWritten": "2223",
+            "bytesDeleted": "1294"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 139
+      }
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "shape": "named-taker",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 148,
+          "gas": {
+            "readTime": "6630000000",
+            "computeTime": "10239453489",
+            "bytesWritten": "216",
+            "bytesDeleted": "2242"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 148
+      }
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "shape": "floating-surplus",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 139,
+          "gas": {
+            "readTime": "6630000000",
+            "computeTime": "10131247300",
+            "bytesWritten": "216",
+            "bytesDeleted": "2242"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 139
+      }
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "shape": "named-taker",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 148,
+          "gas": {
+            "readTime": "6630000000",
+            "computeTime": "10526414684",
+            "bytesWritten": "1743",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 148
+      }
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "shape": "floating-surplus",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 139,
+          "gas": {
+            "readTime": "6630000000",
+            "computeTime": "10418208495",
+            "bytesWritten": "1743",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 139
+      }
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "shape": "named-taker",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 148,
+          "gas": {
+            "readTime": "6630000000",
+            "computeTime": "11004705562",
+            "bytesWritten": "881",
+            "bytesDeleted": "881"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 148
+      }
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "shape": "floating-surplus",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 139,
+          "gas": {
+            "readTime": "6630000000",
+            "computeTime": "10896499374",
+            "bytesWritten": "881",
+            "bytesDeleted": "881"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 139
+      }
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "shape": "named-taker",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 148,
+          "gas": {
+            "readTime": "6630000000",
+            "computeTime": "11017573952",
+            "bytesWritten": "2679",
+            "bytesDeleted": "2120"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 148
+      }
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "shape": "floating-surplus",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 139,
+          "gas": {
+            "readTime": "6630000000",
+            "computeTime": "10909367763",
+            "bytesWritten": "2679",
+            "bytesDeleted": "2120"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 139
+      }
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "shape": "named-taker",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 117,
+          "gas": {
+            "readTime": "3570000000",
+            "computeTime": "6760318218",
+            "bytesWritten": "2223",
+            "bytesDeleted": "1294"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "shape": "floating-surplus",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 108,
+          "gas": {
+            "readTime": "3570000000",
+            "computeTime": "6652112029",
+            "bytesWritten": "2223",
+            "bytesDeleted": "1294"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 108
+      }
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "shape": "named-taker",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 117,
+          "gas": {
+            "readTime": "4488000000",
+            "computeTime": "7882443439",
+            "bytesWritten": "216",
+            "bytesDeleted": "2242"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "shape": "floating-surplus",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 108,
+          "gas": {
+            "readTime": "4488000000",
+            "computeTime": "7774237250",
+            "bytesWritten": "216",
+            "bytesDeleted": "2242"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 108
+      }
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "shape": "named-taker",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 117,
+          "gas": {
+            "readTime": "4488000000",
+            "computeTime": "8169339756",
+            "bytesWritten": "1743",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "shape": "floating-surplus",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 108,
+          "gas": {
+            "readTime": "4488000000",
+            "computeTime": "8061133567",
+            "bytesWritten": "1743",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 108
+      }
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "shape": "named-taker",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 117,
+          "gas": {
+            "readTime": "4488000000",
+            "computeTime": "8647566223",
+            "bytesWritten": "881",
+            "bytesDeleted": "881"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "shape": "floating-surplus",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 108,
+          "gas": {
+            "readTime": "4488000000",
+            "computeTime": "8539360034",
+            "bytesWritten": "881",
+            "bytesDeleted": "881"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 108
+      }
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "shape": "named-taker",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 117,
+          "gas": {
+            "readTime": "4488000000",
+            "computeTime": "8660370201",
+            "bytesWritten": "2679",
+            "bytesDeleted": "2120"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 117
+      }
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "shape": "floating-surplus",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 108,
+          "gas": {
+            "readTime": "4488000000",
+            "computeTime": "8552164012",
+            "bytesWritten": "2679",
+            "bytesDeleted": "2120"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 108
+      }
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "shape": "named-taker",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 98,
+          "gas": {
+            "readTime": "2652000000",
+            "computeTime": "5589847491",
+            "bytesWritten": "1472",
+            "bytesDeleted": "917"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 98
+      }
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "shape": "floating-surplus",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 89,
+          "gas": {
+            "readTime": "2652000000",
+            "computeTime": "5481641302",
+            "bytesWritten": "1472",
+            "bytesDeleted": "917"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 89
+      }
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "shape": "named-taker",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 98,
+          "gas": {
+            "readTime": "3672000000",
+            "computeTime": "6813973646",
+            "bytesWritten": "216",
+            "bytesDeleted": "2055"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 98
+      }
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "shape": "floating-surplus",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 89,
+          "gas": {
+            "readTime": "3672000000",
+            "computeTime": "6705767457",
+            "bytesWritten": "216",
+            "bytesDeleted": "2055"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 89
+      }
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "shape": "named-taker",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 98,
+          "gas": {
+            "readTime": "3672000000",
+            "computeTime": "7100869496",
+            "bytesWritten": "1959",
+            "bytesDeleted": "1959"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 98
+      }
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "shape": "floating-surplus",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 89,
+          "gas": {
+            "readTime": "3672000000",
+            "computeTime": "6992663307",
+            "bytesWritten": "1959",
+            "bytesDeleted": "1959"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 89
+      }
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "shape": "named-taker",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 98,
+          "gas": {
+            "readTime": "3672000000",
+            "computeTime": "7304995651",
+            "bytesWritten": "3598",
+            "bytesDeleted": "2933"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 98
+      }
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "shape": "floating-surplus",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 89,
+          "gas": {
+            "readTime": "3672000000",
+            "computeTime": "7196789462",
+            "bytesWritten": "3598",
+            "bytesDeleted": "2933"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 89
+      }
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "shape": "named-taker",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 98,
+          "gas": {
+            "readTime": "3672000000",
+            "computeTime": "7591891501",
+            "bytesWritten": "1560",
+            "bytesDeleted": "1560"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 98
+      }
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "shape": "floating-surplus",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": false
+      },
+      "offer": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 89,
+          "gas": {
+            "readTime": "3672000000",
+            "computeTime": "7483685312",
+            "bytesWritten": "1560",
+            "bytesDeleted": "1560"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 89
+      }
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "shape": "named-taker",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 64,
+          "gas": {
+            "readTime": "1530000000",
+            "computeTime": "3927101061",
+            "bytesWritten": "1589",
+            "bytesDeleted": "1505"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 1,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 64
+      },
+      "stagePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 100,
+          "gas": {
+            "readTime": "2652000000",
+            "computeTime": "5508248335",
+            "bytesWritten": "1505",
+            "bytesDeleted": "1275"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 100
+      },
+      "consolidatePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 48,
+          "gas": {
+            "readTime": "2040000000",
+            "computeTime": "4260084466",
+            "bytesWritten": "2362",
+            "bytesDeleted": "1589"
+          },
+          "claimedNullifiers": 0,
+          "claimedShieldedReceives": 0,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 48
+      }
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "shape": "floating-surplus",
+      "targetCells": 1,
+      "observed": {
+        "pools": 1,
+        "cells": 1,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 55,
+          "gas": {
+            "readTime": "1530000000",
+            "computeTime": "3818900570",
+            "bytesWritten": "1589",
+            "bytesDeleted": "1505"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 1,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 55
+      },
+      "stagePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 100,
+          "gas": {
+            "readTime": "2652000000",
+            "computeTime": "5508248335",
+            "bytesWritten": "1505",
+            "bytesDeleted": "1275"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 100
+      },
+      "consolidatePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 48,
+          "gas": {
+            "readTime": "2040000000",
+            "computeTime": "4260084466",
+            "bytesWritten": "2362",
+            "bytesDeleted": "1589"
+          },
+          "claimedNullifiers": 0,
+          "claimedShieldedReceives": 0,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 48
+      }
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "shape": "named-taker",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 64,
+          "gas": {
+            "readTime": "1632000000",
+            "computeTime": "4028999006",
+            "bytesWritten": "2326",
+            "bytesDeleted": "2242"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 1,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 64
+      },
+      "stagePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 100,
+          "gas": {
+            "readTime": "3264000000",
+            "computeTime": "6125742709",
+            "bytesWritten": "2242",
+            "bytesDeleted": "2007"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 100
+      },
+      "consolidatePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 48,
+          "gas": {
+            "readTime": "2448000000",
+            "computeTime": "4864837539",
+            "bytesWritten": "216",
+            "bytesDeleted": "2326"
+          },
+          "claimedNullifiers": 0,
+          "claimedShieldedReceives": 0,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 48
+      }
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "shape": "floating-surplus",
+      "targetCells": 2,
+      "observed": {
+        "pools": 1,
+        "cells": 2,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 55,
+          "gas": {
+            "readTime": "1632000000",
+            "computeTime": "3920900570",
+            "bytesWritten": "2326",
+            "bytesDeleted": "2242"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 1,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 55
+      },
+      "stagePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 100,
+          "gas": {
+            "readTime": "3264000000",
+            "computeTime": "6125742709",
+            "bytesWritten": "2242",
+            "bytesDeleted": "2007"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 100
+      },
+      "consolidatePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 48,
+          "gas": {
+            "readTime": "2448000000",
+            "computeTime": "4864837539",
+            "bytesWritten": "216",
+            "bytesDeleted": "2326"
+          },
+          "claimedNullifiers": 0,
+          "claimedShieldedReceives": 0,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 48
+      }
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "shape": "named-taker",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 64,
+          "gas": {
+            "readTime": "1632000000",
+            "computeTime": "4494515109",
+            "bytesWritten": "1184",
+            "bytesDeleted": "1184"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 1,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 64
+      },
+      "stagePhase": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 100,
+          "gas": {
+            "readTime": "3264000000",
+            "computeTime": "6596652531",
+            "bytesWritten": "1184",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 100
+      },
+      "consolidatePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 48,
+          "gas": {
+            "readTime": "2448000000",
+            "computeTime": "5144360307",
+            "bytesWritten": "1743",
+            "bytesDeleted": "1184"
+          },
+          "claimedNullifiers": 0,
+          "claimedShieldedReceives": 0,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 48
+      }
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "shape": "floating-surplus",
+      "targetCells": 4,
+      "observed": {
+        "pools": 1,
+        "cells": 4,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 55,
+          "gas": {
+            "readTime": "1632000000",
+            "computeTime": "4386314618",
+            "bytesWritten": "1184",
+            "bytesDeleted": "1184"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 1,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 55
+      },
+      "stagePhase": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 100,
+          "gas": {
+            "readTime": "3264000000",
+            "computeTime": "6596652531",
+            "bytesWritten": "1184",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 100
+      },
+      "consolidatePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 48,
+          "gas": {
+            "readTime": "2448000000",
+            "computeTime": "5144360307",
+            "bytesWritten": "1743",
+            "bytesDeleted": "1184"
+          },
+          "claimedNullifiers": 0,
+          "claimedShieldedReceives": 0,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 48
+      }
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "shape": "named-taker",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 64,
+          "gas": {
+            "readTime": "1632000000",
+            "computeTime": "4494515109",
+            "bytesWritten": "1186",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 1,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 64
+      },
+      "stagePhase": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 100,
+          "gas": {
+            "readTime": "3264000000",
+            "computeTime": "6602156280",
+            "bytesWritten": "1186",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 100
+      },
+      "consolidatePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 48,
+          "gas": {
+            "readTime": "2448000000",
+            "computeTime": "5149791204",
+            "bytesWritten": "1745",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 0,
+          "claimedShieldedReceives": 0,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 48
+      }
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "shape": "floating-surplus",
+      "targetCells": 8,
+      "observed": {
+        "pools": 1,
+        "cells": 8,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 55,
+          "gas": {
+            "readTime": "1632000000",
+            "computeTime": "4386314618",
+            "bytesWritten": "1186",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 1,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 55
+      },
+      "stagePhase": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 100,
+          "gas": {
+            "readTime": "3264000000",
+            "computeTime": "6602156280",
+            "bytesWritten": "1186",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 100
+      },
+      "consolidatePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 48,
+          "gas": {
+            "readTime": "2448000000",
+            "computeTime": "5341113380",
+            "bytesWritten": "2410",
+            "bytesDeleted": "1186"
+          },
+          "claimedNullifiers": 0,
+          "claimedShieldedReceives": 0,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 48
+      }
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "shape": "named-taker",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 64,
+          "gas": {
+            "readTime": "1632000000",
+            "computeTime": "4029101061",
+            "bytesWritten": "1306",
+            "bytesDeleted": "1222"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 1,
+          "claimedShieldedSpends": 1
+        },
+        "totalOps": 64
+      },
+      "stagePhase": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 100,
+          "gas": {
+            "readTime": "3264000000",
+            "computeTime": "6607651587",
+            "bytesWritten": "1887",
+            "bytesDeleted": "1652"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 100
+      },
+      "consolidatePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 48,
+          "gas": {
+            "readTime": "2448000000",
+            "computeTime": "5155222100",
+            "bytesWritten": "2369",
+            "bytesDeleted": "1971"
+          },
+          "claimedNullifiers": 0,
+          "claimedShieldedReceives": 0,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 48
+      }
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "shape": "floating-surplus",
+      "targetCells": 16,
+      "observed": {
+        "pools": 1,
+        "cells": 16,
+        "cellsExact": true
+      },
+      "offer": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 55,
+          "gas": {
+            "readTime": "1632000000",
+            "computeTime": "3920900570",
+            "bytesWritten": "1306",
+            "bytesDeleted": "1222"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 1,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 55
+      },
+      "stagePhase": {
+        "placement": "FALLIBLE",
+        "fallible": {
+          "ops": 100,
+          "gas": {
+            "readTime": "3264000000",
+            "computeTime": "6607651587",
+            "bytesWritten": "1887",
+            "bytesDeleted": "1652"
+          },
+          "claimedNullifiers": 1,
+          "claimedShieldedReceives": 2,
+          "claimedShieldedSpends": 2
+        },
+        "totalOps": 100
+      },
+      "consolidatePhase": {
+        "placement": "GUARANTEED",
+        "guaranteed": {
+          "ops": 48,
+          "gas": {
+            "readTime": "2448000000",
+            "computeTime": "5155222100",
+            "bytesWritten": "2369",
+            "bytesDeleted": "1971"
+          },
+          "claimedNullifiers": 0,
+          "claimedShieldedReceives": 0,
+          "claimedShieldedSpends": 0
+        },
+        "totalOps": 48
+      }
+    }
+  ],
+  "failures": [],
+  "instrument": {
+    "finding": "F-313",
+    "fn": "partitionTranscripts (ledger-v9, bound to JS)",
+    "fedAs": "@midnight-ntwrk/compact-js ContractExecutable.js::partitionAllTranscripts",
+    "proxyCaveat": "Transcript.gas = gas_heuristic(params, false, 0) = raw transcript gas x 1.2; the partitioner compares gas_heuristic(params, true, field_size+2), which is not bound to JS."
+  }
+}

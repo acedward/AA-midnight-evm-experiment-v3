@@ -1,0 +1,311 @@
+{
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "step": 4,
+  "action": "mint S2 10 -> OwnerM",
+  "utc": "2026-08-19T05:03:56.854Z",
+  "colourSet": [
+    "S1",
+    "S2",
+    "S3",
+    "U1",
+    "U2",
+    "U3"
+  ],
+  "expected": {
+    "table": {
+      "OwnerN": {
+        "S1": "10",
+        "S2": "0",
+        "S3": "0",
+        "U1": "10",
+        "U2": "0",
+        "U3": "0"
+      },
+      "OwnerM": {
+        "S1": "0",
+        "S2": "10",
+        "S3": "0",
+        "U1": "0",
+        "U2": "0",
+        "U3": "0"
+      },
+      "AA_A": {
+        "S1": "0",
+        "S2": "0",
+        "S3": "0",
+        "U1": "0",
+        "U2": "0",
+        "U3": "0"
+      },
+      "AA_B": {
+        "S1": "0",
+        "S2": "0",
+        "S3": "0",
+        "U1": "0",
+        "U2": "0",
+        "U3": "0"
+      }
+    },
+    "custody": {
+      "S1": "0",
+      "S2": "0",
+      "S3": "0",
+      "U1": "0",
+      "U2": "0",
+      "U3": "0"
+    },
+    "mapSizes": {
+      "pools": 0,
+      "shieldedCells": 0,
+      "unshieldedCells": 0
+    }
+  },
+  "observed": {
+    "colours": [
+      {
+        "name": "S1",
+        "family": "shielded",
+        "hex": "af0cf3315634a046dab2734b721b8d3f923e346d878a3d414edcd2164cec8a31",
+        "issuer": "Minter1"
+      },
+      {
+        "name": "U1",
+        "family": "unshielded",
+        "hex": "df6c4aa1b76bd3b559685a2dbabd38ab5ca5250b40a9e591783ff52ef34a71b6",
+        "issuer": "Minter1"
+      },
+      {
+        "name": "S2",
+        "family": "shielded",
+        "hex": "22d2a436b6554a4eb773a6b9222f09b2901af4e34473bb40e7f0499ca75c690d",
+        "issuer": "Minter2"
+      },
+      {
+        "name": "U2",
+        "family": "unshielded",
+        "hex": "945184e96f853231a70e09a5210a252cdff6ede55f5a871c87ac0417efa24e37",
+        "issuer": "Minter2"
+      },
+      {
+        "name": "S3",
+        "family": "shielded",
+        "hex": "560e94176de2b692c51c516a7daff0ae8c13c9e244834e4296093aaa91361a90",
+        "issuer": "Minter3"
+      },
+      {
+        "name": "U3",
+        "family": "unshielded",
+        "hex": "027dcccf6a6def7577ebe335efe2a1aa1eaa0ab7a5d5d869ed3ef1cfab279ff8",
+        "issuer": "Minter3"
+      }
+    ],
+    "table": {
+      "OwnerN": {
+        "S1": "10",
+        "U1": "10",
+        "S2": "0",
+        "U2": "0",
+        "S3": "0",
+        "U3": "0"
+      },
+      "OwnerM": {
+        "S1": "0",
+        "U1": "0",
+        "S2": "10",
+        "U2": "0",
+        "S3": "0",
+        "U3": "0"
+      },
+      "AA_A": {
+        "S1": "0",
+        "U1": "0",
+        "S2": "0",
+        "U2": "0",
+        "S3": "0",
+        "U3": "0"
+      },
+      "AA_B": {
+        "S1": "0",
+        "U1": "0",
+        "S2": "0",
+        "U2": "0",
+        "S3": "0",
+        "U3": "0"
+      }
+    },
+    "custody": {
+      "S1": "0",
+      "U1": "0",
+      "S2": "0",
+      "U2": "0",
+      "S3": "0",
+      "U3": "0"
+    },
+    "pools": {
+      "S1": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "U1": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "S2": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "U2": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "S3": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      },
+      "U3": {
+        "present": false,
+        "value": "0",
+        "nonce": ""
+      }
+    },
+    "sizes": {
+      "pools": 0,
+      "shieldedCells": 0,
+      "unshieldedCells": 0
+    },
+    "accounts": [
+      "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904"
+    ],
+    "shieldedBalances": {},
+    "unshieldedBalances": {},
+    "poolsRaw": {},
+    "kernelUnshielded": {},
+    "coins": {
+      "OwnerN": {
+        "S1": [
+          {
+            "nonce": "4e8f3d0d6f9e10913e02438d8b77d6b89facd990b3149e95fb9ce13b0fa63351",
+            "value": "10",
+            "commitment": "00e0f0db6104cba4a782f5594d7a435e193649d923e196a1eaa5500542206692",
+            "nullifier": "ab92eea7b0d238e448d9773f1890026e29806343a9165640c53544bcca2ea57c"
+          }
+        ],
+        "U1": [],
+        "S2": [],
+        "U2": [],
+        "S3": [],
+        "U3": []
+      },
+      "OwnerM": {
+        "S1": [],
+        "U1": [],
+        "S2": [
+          {
+            "nonce": "461ebf7904e237ab7470a0b49b0142d33c03ea276a3d8b9daff128717a3f863e",
+            "value": "10",
+            "commitment": "ca17818b6b0caeabb86893e23c04ffc80900f41c35c95c995fedd69241e7cf4f",
+            "nullifier": "05f0b3ba80353e5dc405457103daf210af767adc91bf753631f2c4d306a4d306"
+          }
+        ],
+        "U2": [],
+        "S3": [],
+        "U3": []
+      }
+    },
+    "utxos": {
+      "OwnerN": {
+        "S1": [],
+        "U1": [
+          {
+            "value": "10",
+            "intentHash": "ce71c41279667e15859b45b6bd773452d45c17625dba63df332ae11b58e32df8",
+            "outputNo": "0"
+          }
+        ],
+        "S2": [],
+        "U2": [],
+        "S3": [],
+        "U3": []
+      },
+      "OwnerM": {
+        "S1": [],
+        "U1": [],
+        "S2": [],
+        "U2": [],
+        "S3": [],
+        "U3": []
+      }
+    }
+  },
+  "observedMapSizes": {
+    "pools": 0,
+    "shieldedCells": 0,
+    "unshieldedCells": 0
+  },
+  "unaccountedKeys": {
+    "pools": [],
+    "shieldedCells": [],
+    "unshieldedCells": [],
+    "kernel": []
+  },
+  "observationPoints": {
+    "AA_cells": "the Manager's shieldedBalances / unshieldedBalances maps decoded from contract state, every key derived by RUNNING the contract's own pure shieldedKey/unshieldedKey circuits",
+    "AA_cells_second": "the per-colour custody side — pooled zswap coin (shielded) / ledger-kernel unshielded balance — via the invariant custody[c] == AA_A[c] + AA_B[c]",
+    "AA_cells_third": "on-chain shieldedAccountBalance(AA_A, S3) = 0",
+    "user_cells": "read-only OBSERVER wallet facades (never submitters — finding F-104)",
+    "user_cells_second_unshielded": "UTXO set reconstructed from the indexer transaction history, per colour",
+    "user_cells_second_shielded": "ledger conservation identity minted[c] == custody[c] + OwnerN[c] + OwnerM[c]"
+  },
+  "indexerUnshielded": {
+    "OwnerN": {
+      "U1": "10",
+      "U2": "0",
+      "U3": "0"
+    },
+    "OwnerM": {
+      "U1": "0",
+      "U2": "0",
+      "U3": "0"
+    }
+  },
+  "spotCheck": {
+    "account": "AA_A",
+    "colour": "S3",
+    "circuit": "shieldedAccountBalance",
+    "onChain": "0",
+    "ledgerState": "0",
+    "txish": "005ff623ada75300dbec5c65c0bad01aea5fa8c8229f2cfcb1db6d2add6a4eb472"
+  },
+  "mintedTotals": {
+    "S1": "10",
+    "U1": "10",
+    "S2": "10"
+  },
+  "perColourInvariant": {
+    "S1": "0 == 0 + 0",
+    "S2": "0 == 0 + 0",
+    "S3": "0 == 0 + 0",
+    "U1": "0 == 0 + 0",
+    "U2": "0 == 0 + 0",
+    "U3": "0 == 0 + 0"
+  },
+  "operations": [
+    {
+      "label": "Minter2 mints S2 10 -> OwnerM",
+      "txs": [
+        "004f1b2a8e3875c680d4de24326c36e5969eb670bfe3178925c62d148a40971cc0"
+      ],
+      "level": "SDK",
+      "detail": {
+        "colour": "22d2a436b6554a4eb773a6b9222f09b2901af4e34473bb40e7f0499ca75c690d",
+        "family": "shielded"
+      }
+    }
+  ]
+}

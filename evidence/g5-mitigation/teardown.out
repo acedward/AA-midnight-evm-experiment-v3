@@ -1,0 +1,40 @@
+host clean: no containers, volumes or networks named aa00006-g5-20260820184809-37819*
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-zABCJF)
+ Container aa00006-g5-20260820192543-83540-proof-server-1  Stopping
+ Container aa00006-g5-20260820192543-83540-indexer-1  Stopping
+ Container aa00006-g5-20260820192543-83540-indexer-1  Stopped
+ Container aa00006-g5-20260820192543-83540-indexer-1  Removing
+ Container aa00006-g5-20260820192543-83540-indexer-1  Removed
+ Container aa00006-g5-20260820192543-83540-node-1  Stopping
+ Container aa00006-g5-20260820192543-83540-proof-server-1  Stopped
+ Container aa00006-g5-20260820192543-83540-proof-server-1  Removing
+ Container aa00006-g5-20260820192543-83540-proof-server-1  Removed
+ Container aa00006-g5-20260820192543-83540-node-1  Stopped
+ Container aa00006-g5-20260820192543-83540-node-1  Removing
+ Container aa00006-g5-20260820192543-83540-node-1  Removed
+ Volume aa00006-g5-20260820192543-83540_node-data  Removing
+ Network aa00006-g5-20260820192543-83540_default  Removing
+ Volume aa00006-g5-20260820192543-83540_node-data  Removed
+ Network aa00006-g5-20260820192543-83540_default  Removed
+host clean: no containers, volumes or networks named aa00006-g5-20260820192543-83540*
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-TFcMQc)
+host clean: no containers, volumes or networks named aa00006-g5-20260821001730-85652*
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-hkwbAH)
+ Container aa00006-g5-20260821002041-90378-indexer-1  Stopping
+ Container aa00006-g5-20260821002041-90378-proof-server-1  Stopping
+ Container aa00006-g5-20260821002041-90378-indexer-1  Stopped
+ Container aa00006-g5-20260821002041-90378-indexer-1  Removing
+ Container aa00006-g5-20260821002041-90378-indexer-1  Removed
+ Container aa00006-g5-20260821002041-90378-node-1  Stopping
+ Container aa00006-g5-20260821002041-90378-proof-server-1  Stopped
+ Container aa00006-g5-20260821002041-90378-proof-server-1  Removing
+ Container aa00006-g5-20260821002041-90378-proof-server-1  Removed
+ Container aa00006-g5-20260821002041-90378-node-1  Stopped
+ Container aa00006-g5-20260821002041-90378-node-1  Removing
+ Container aa00006-g5-20260821002041-90378-node-1  Removed
+ Volume aa00006-g5-20260821002041-90378_node-data  Removing
+ Network aa00006-g5-20260821002041-90378_default  Removing
+ Volume aa00006-g5-20260821002041-90378_node-data  Removed
+ Network aa00006-g5-20260821002041-90378_default  Removed
+host clean: no containers, volumes or networks named aa00006-g5-20260821002041-90378*
+W-1: scratch DOCKER_CONFIG removed (/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00006-dockercfg-fiugyY)

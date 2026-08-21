@@ -1,27 +1,34 @@
-// G2 simulator/unit suite for the multi-colour Manager (EXPERIMENTAL_LANE, LANE-DEV-1).
+// G2 simulator/unit suite for Manager v3, the OPEN custodian (EXPERIMENTAL_LANE, LANE-DEV-1).
 //
-// Covers, at unit level, every guard the spec's live negative controls depend on:
+// Covers, at unit level, every guard and every lazy-creation claim the live gates depend on:
 //
-//   FR-102  one-time configure, reconfiguration and duplicate colours rejected
-//   FR-103  colour-keyed custody: one pooled coin PER shielded colour, per-(account, colour)
-//           balances, exact `balances.size() == accounts * 4`
-//   FR-104  owner-only spend: witness choke point (NC-1), per-account guard with a RICH pool
-//           (NC-2), cross-colour poverty (NC-3), colour-scoped internal transfer (NC-5)
-//   FR-105  cross-colour isolation: every operation leaves every other colour byte-identical
-//   FR-106  wrong colour rejected wherever it is named or carried (NC-4)
+//   FR-201  no colour knowledge, no authority — there is no `configure` circuit to call at all
+//   FR-202  lazy creation on FIRST CREDIT only; a refused operation creates NO state
+//   FR-203  family-scoped storage — BYTE-IDENTICAL colours in the two families do not alias
+//   FR-204  owner-only spend: the witness choke point (NC-1), the per-(account, colour) guard with a
+//           MISSING CELL READ AS 0 (NC-2, NC-3), colour-scoped internal transfer (NC-5)
+//   FR-205  colours unknown at deploy — a colour invented after the Manager exists is custodied
+//   FR-206  a dormant colour reads 0 everywhere and is absent from every map
 //
 // Every rejection is asserted with `expectReject`, which additionally requires the WHOLE ledger
-// snapshot — configured colours, every pooled coin's identity and value, every balance entry — to
-// be byte-identical before and after.
+// snapshot — the account set, every pooled coin's identity and value, every cell in BOTH family maps
+// and all three map SIZES — to be byte-identical before and after. Size is what makes it a
+// no-state-created proof and not merely a no-value-changed one.
 import { describe, expect, it } from 'vitest';
-import { hex, ManagerSim, secretOf, snapshotLedger } from './sim.js';
+import { hex, ManagerSim, mapSizes, secretOf, snapshotLedger } from './sim.js';
 
-// Four configured colours plus one that is never configured (the Minter3 control shape).
+// Colours are just 32-byte values to the Manager; it has never been told anything about them.
 const S1 = new Uint8Array(32).fill(0x11);
 const S2 = new Uint8Array(32).fill(0x12);
+const S3 = new Uint8Array(32).fill(0x13);
 const U1 = new Uint8Array(32).fill(0x21);
 const U2 = new Uint8Array(32).fill(0x22);
-const UNCONFIGURED = new Uint8Array(32).fill(0x99);
+/** The dormant colour: minted by no one, deposited by no one (spec's U3 / NC-3). */
+const U3 = new Uint8Array(32).fill(0x23);
+/** A colour that will only be invented AFTER the Manager has processed other steps (FR-205). */
+const LATE = new Uint8Array(32).fill(0x44);
+/** The P-COLL shape: ONE value used as both a shielded and an unshielded colour (FR-203). */
+const COLLIDING = new Uint8Array(32).fill(0x55);
 
 const OWNER_A = secretOf('OwnerA');
 const OWNER_B = secretOf('OwnerB');
@@ -41,10 +48,9 @@ const unshieldedUserRecipient = (b: number) => ({
   right: { bytes: new Uint8Array(32).fill(b) },
 });
 
-/** A configured Manager with AA_A and AA_B registered. */
+/** A Manager with AA_A and AA_B registered — and, deliberately, nothing else. */
 const setup = async () => {
   const sim = await ManagerSim.create(OWNER_A);
-  await sim.call('configure', S1, S2, U1, U2);
   const idA = await sim.ownerCommitmentFor(OWNER_A);
   const idB = await sim.ownerCommitmentFor(OWNER_B);
   await sim.call('registerAccount', idA);
@@ -52,371 +58,413 @@ const setup = async () => {
   return { sim, idA, idB };
 };
 
-/** The full 2-account x 4-colour table as the Manager sees it. */
-const table = async (sim: ManagerSim, idA: Uint8Array, idB: Uint8Array) => {
-  const out: Record<string, Record<string, bigint>> = { AA_A: {}, AA_B: {} };
-  for (const [name, colour] of [
-    ['S1', S1],
-    ['S2', S2],
-    ['U1', U1],
-    ['U2', U2],
-  ] as const) {
-    out.AA_A[name] = await sim.call<bigint>('accountBalance', idA, colour);
-    out.AA_B[name] = await sim.call<bigint>('accountBalance', idB, colour);
+/** Both families' cells for the given colours, as the Manager answers them. */
+const table = async (
+  sim: ManagerSim,
+  ids: Record<string, Uint8Array>,
+  shielded: Record<string, Uint8Array>,
+  unshielded: Record<string, Uint8Array>,
+) => {
+  const out: Record<string, Record<string, bigint>> = {};
+  for (const [acct, id] of Object.entries(ids)) {
+    out[acct] = {};
+    for (const [name, colour] of Object.entries(shielded)) {
+      out[acct]![name] = await sim.call<bigint>('shieldedAccountBalance', id, colour);
+    }
+    for (const [name, colour] of Object.entries(unshielded)) {
+      out[acct]![name] = await sim.call<bigint>('unshieldedAccountBalance', id, colour);
+    }
   }
   return out;
 };
 
-describe('Manager — configuration (FR-102)', () => {
-  it('configures once and rejects reconfiguration', async () => {
+describe('Manager v3 — no colour knowledge, no authority (FR-201)', () => {
+  it('exposes NO configure circuit and no colour or admin state', async () => {
     const sim = await ManagerSim.create(OWNER_A);
-    await sim.call('configure', S1, S2, U1, U2);
-    expect(sim.ledger.configured).toBe(true);
-    expect(hex(sim.ledger.colourS1)).toBe(hex(S1));
-    expect(hex(sim.ledger.colourU2)).toBe(hex(U2));
-
-    const msg = await sim.expectReject('configure', S1, S2, U1, U2);
-    expect(msg).toMatch(/already configured/);
+    const circuits = Object.keys((sim as any).contract?.impureCircuits ?? {});
+    // The removal is asserted against the COMPILED ARTIFACT, not against the source text: if a
+    // colour-binding circuit were reintroduced under any name, these would have to be updated.
+    expect(circuits).not.toContain('configure');
+    expect(circuits.filter((c) => /configure|admin|allow|colour[SU]|colorS/i.test(c))).toEqual([]);
+    const l: any = sim.ledger;
+    expect(l.configured).toBeUndefined();
+    expect(l.colourS1).toBeUndefined();
+    expect(l.colourU1).toBeUndefined();
   });
 
-  it('rejects a duplicate colour in any of the six pairwise positions', async () => {
-    // Same colour offered twice must never be admitted, in any pair of slots.
-    for (const args of [
-      [S1, S1, U1, U2],
-      [S1, S2, S1, U2],
-      [S1, S2, U1, S1],
-      [S1, S2, S2, U2],
-      [S1, S2, U1, S2],
-      [S1, S2, U1, U1],
-    ] as const) {
-      const sim = await ManagerSim.create(OWNER_A);
-      const msg = await sim.expectReject('configure', ...args);
-      expect(msg).toMatch(/duplicate colour in configure/);
-      expect(sim.ledger.configured).toBe(false);
-    }
-  });
-
-  it('refuses registration before configuration', async () => {
-    const sim = await ManagerSim.create(OWNER_A);
-    const idA = await sim.ownerCommitmentFor(OWNER_A);
-    const msg = await sim.expectReject('registerAccount', idA);
-    expect(msg).toMatch(/manager not configured/);
-  });
-});
-
-describe('Manager — registration seeds the whole table (FR-103)', () => {
-  it('seeds four zero balances per account and rejects duplicates', async () => {
-    const { sim, idA } = await setup();
+  it('registers accounts with no configuration step, and seeds NOTHING', async () => {
+    const { sim, idA, idB } = await setup();
     expect(sim.ledger.accounts.size()).toBe(2n);
-    // The exactness that makes the table enumerable: 2 accounts x 4 colours, nothing else.
-    expect(sim.ledger.balances.size()).toBe(8n);
     expect(await sim.call<boolean>('isRegistered', idA)).toBe(true);
-
-    const msg = await sim.expectReject('registerAccount', idA);
-    expect(msg).toMatch(/already registered/);
-    expect(sim.ledger.accounts.size()).toBe(2n);
-    expect(sim.ledger.balances.size()).toBe(8n);
+    expect(await sim.call<boolean>('isRegistered', idB)).toBe(true);
+    // THE visible difference from 00004, which seeded `accounts x 4` cells here.
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 0, shieldedCells: 0, unshieldedCells: 0 });
   });
 
-  it('starts every cell of the table at zero with no pools', async () => {
-    const { sim, idA, idB } = await setup();
-    expect(await table(sim, idA, idB)).toEqual({
-      AA_A: { S1: 0n, S2: 0n, U1: 0n, U2: 0n },
-      AA_B: { S1: 0n, S2: 0n, U1: 0n, U2: 0n },
-    });
-    expect(sim.ledger.pools.size()).toBe(0n);
-    expect(await sim.call<boolean>('poolHasColour', S1)).toBe(false);
-    expect(await sim.call<bigint>('poolValue', S2)).toBe(0n);
+  it('still refuses a duplicate registration, leaving state byte-identical', async () => {
+    const { sim, idA } = await setup();
+    expect(await sim.expectReject('registerAccount', idA)).toMatch(/account already registered/);
+    expect(sim.ledger.accounts.size()).toBe(2n);
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 0, shieldedCells: 0, unshieldedCells: 0 });
   });
 });
 
-describe('Manager — per-colour shielded custody (FR-103, FR-105)', () => {
-  it('pools each shielded colour separately and credits only the coin’s own colour', async () => {
-    const { sim, idA, idB } = await setup();
-    await sim.call('depositShielded', coin(S1, 6n, 1), idA);
-    await sim.call('depositShielded', coin(S2, 4n, 2), idB);
+describe('Manager v3 — lazy custody creation (FR-202)', () => {
+  it('creates the first pool and the first cell on the FIRST CREDIT, and only then', async () => {
+    const { sim, idA } = await setup();
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 0, shieldedCells: 0, unshieldedCells: 0 });
 
-    expect(sim.ledger.pools.size()).toBe(2n);
+    await sim.call('depositShielded', coin(S1, 6n, 1), idA);
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 1, shieldedCells: 1, unshieldedCells: 0 });
     expect(await sim.call<bigint>('poolValue', S1)).toBe(6n);
-    expect(await sim.call<bigint>('poolValue', S2)).toBe(4n);
-    expect(await table(sim, idA, idB)).toEqual({
-      AA_A: { S1: 6n, S2: 0n, U1: 0n, U2: 0n },
-      AA_B: { S1: 0n, S2: 4n, U1: 0n, U2: 0n },
-    });
+
+    // A SECOND deposit of the same colour to the same account creates nothing new: it merges.
+    await sim.call('depositShielded', coin(S1, 4n, 2), idA);
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 1, shieldedCells: 1, unshieldedCells: 0 });
+    expect(await sim.call<bigint>('poolValue', S1)).toBe(10n);
   });
 
-  it('merges a second deposit of the SAME colour and leaves the other colour byte-identical', async () => {
-    const { sim, idA, idB } = await setup();
-    await sim.call('depositShielded', coin(S1, 6n, 1), idA);
-    await sim.call('depositShielded', coin(S2, 4n, 2), idB);
-
-    const before = snapshotLedger(sim.ledger);
-    const s1NonceBefore = before.pools[hex(S1)] as any;
-
-    await sim.call('depositShielded', coin(S2, 4n, 3), idB);
-
-    const after = snapshotLedger(sim.ledger);
-    // S2 merged into ONE coin of the combined value, with a new identity …
-    expect(await sim.call<bigint>('poolValue', S2)).toBe(8n);
-    expect(sim.ledger.pools.size()).toBe(2n);
-    expect((after.pools[hex(S2)] as any).nonce).not.toBe((before.pools[hex(S2)] as any).nonce);
-    // … while S1's pooled coin did not move at all — that is the cross-colour isolation claim.
-    expect(after.pools[hex(S1)]).toEqual(s1NonceBefore);
-    expect(await table(sim, idA, idB)).toEqual({
-      AA_A: { S1: 6n, S2: 0n, U1: 0n, U2: 0n },
-      AA_B: { S1: 0n, S2: 8n, U1: 0n, U2: 0n },
-    });
+  it('creates an unshielded cell — and no pool — on the first unshielded credit', async () => {
+    const { sim, idA } = await setup();
+    await sim.call('depositUnshielded', U1, 5n, idA);
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 0, shieldedCells: 0, unshieldedCells: 1 });
+    expect(await sim.call<bigint>('unshieldedAccountBalance', idA, U1)).toBe(5n);
   });
 
-  it('pays out of one colour, retains change, and leaves the sibling colour untouched', async () => {
+  it('creates the destination cell from the CREDIT SIDE of an internal transfer (spec step 12)', async () => {
     const { sim, idA, idB } = await setup();
     await sim.call('depositShielded', coin(S1, 6n, 1), idA);
-    await sim.call('depositShielded', coin(S2, 4n, 2), idB);
-    const s2Before = snapshotLedger(sim.ledger).pools[hex(S2)];
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 1, shieldedCells: 1, unshieldedCells: 0 });
 
     sim.actAs(OWNER_A);
-    await sim.call('withdrawShielded', S1, 2n, userRecipient(0xaa));
+    await sim.call('transferInternalShielded', idB, S1, 3n);
 
-    expect(await sim.call<bigint>('poolValue', S1)).toBe(4n);
-    expect(await sim.call<bigint>('poolValue', S2)).toBe(4n);
-    expect(snapshotLedger(sim.ledger).pools[hex(S2)]).toEqual(s2Before);
-    expect(await table(sim, idA, idB)).toEqual({
-      AA_A: { S1: 4n, S2: 0n, U1: 0n, U2: 0n },
-      AA_B: { S1: 0n, S2: 4n, U1: 0n, U2: 0n },
-    });
+    // The (AA_B, S1) cell exists now, and it was NOT created by a deposit.
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 1, shieldedCells: 2, unshieldedCells: 0 });
+    expect(await sim.call<bigint>('shieldedAccountBalance', idB, S1)).toBe(3n);
+    // …while the pool did not move at all: no token operation occurs in an internal transfer.
+    expect(await sim.call<bigint>('poolValue', S1)).toBe(6n);
   });
 
-  it('removes a fully-spent colour from the pool map (empty-change arm) without touching the other', async () => {
-    const { sim, idA, idB } = await setup();
+  it('custodies a colour invented AFTER it has already processed other operations (FR-205)', async () => {
+    const { sim, idA } = await setup();
     await sim.call('depositShielded', coin(S1, 6n, 1), idA);
-    await sim.call('depositShielded', coin(S2, 4n, 2), idB);
+    await sim.call('depositUnshielded', U1, 5n, idA);
+    const before = mapSizes(sim.ledger);
+    expect(before).toEqual({ pools: 1, shieldedCells: 1, unshieldedCells: 1 });
+
+    // LATE is a colour the Manager has never seen and could not have been told about.
+    await sim.call('depositShielded', coin(LATE, 7n, 9), idA);
+
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 2, shieldedCells: 2, unshieldedCells: 1 });
+    expect(await sim.call<bigint>('poolValue', LATE)).toBe(7n);
+    expect(await sim.call<bigint>('shieldedAccountBalance', idA, LATE)).toBe(7n);
+    // Nothing already custodied moved.
+    expect(await sim.call<bigint>('poolValue', S1)).toBe(6n);
+    expect(await sim.call<bigint>('unshieldedAccountBalance', idA, U1)).toBe(5n);
+  });
+
+  it('removes a fully-spent colour from the pool map without touching the other', async () => {
+    const { sim, idA } = await setup();
+    await sim.call('depositShielded', coin(S1, 6n, 1), idA);
+    await sim.call('depositShielded', coin(S2, 4n, 2), idA);
 
     sim.actAs(OWNER_A);
     await sim.call('withdrawShielded', S1, 6n, userRecipient(0xaa));
 
-    // The colour LEAVES the map — no companion presence flag to fall out of step.
+    // The colour LEAVES the pool map …
     expect(await sim.call<boolean>('poolHasColour', S1)).toBe(false);
-    expect(sim.ledger.pools.size()).toBe(1n);
     expect(await sim.call<boolean>('poolHasColour', S2)).toBe(true);
-    expect(await sim.call<bigint>('poolValue', S2)).toBe(4n);
-    // The emptied account stays registered and reusable, with its four cells intact.
-    expect(await sim.call<boolean>('isRegistered', idA)).toBe(true);
-    expect(sim.ledger.balances.size()).toBe(8n);
-    expect(await table(sim, idA, idB)).toEqual({
-      AA_A: { S1: 0n, S2: 0n, U1: 0n, U2: 0n },
-      AA_B: { S1: 0n, S2: 4n, U1: 0n, U2: 0n },
-    });
+    // … but its now-zero attribution cell remains, because zero is a value the Manager wrote.
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 1, shieldedCells: 2, unshieldedCells: 0 });
+    expect(await sim.call<bigint>('shieldedAccountBalance', idA, S1)).toBe(0n);
   });
 });
 
-describe('Manager — wrong colour is rejected (FR-106, NC-4)', () => {
-  it('rejects a shielded deposit carrying an unconfigured colour', async () => {
-    const { sim, idA } = await setup();
-    const msg = await sim.expectReject('depositShielded', coin(UNCONFIGURED, 10n, 1), idA);
-    expect(msg).toMatch(/colour is not a configured shielded colour/);
-  });
-
-  it('rejects a shielded deposit carrying a configured UNSHIELDED colour', async () => {
-    // U1 is configured, but not as a shielded colour: the families are not interchangeable.
-    const { sim, idA } = await setup();
-    const msg = await sim.expectReject('depositShielded', coin(U1, 10n, 1), idA);
-    expect(msg).toMatch(/colour is not a configured shielded colour/);
-  });
-
-  it('rejects an unshielded deposit naming an unconfigured colour', async () => {
-    const { sim, idA } = await setup();
-    const msg = await sim.expectReject('depositUnshielded', UNCONFIGURED, 10n, idA);
-    expect(msg).toMatch(/colour is not a configured unshielded colour/);
-  });
-
-  it('rejects a withdrawal naming an unconfigured colour', async () => {
-    const { sim, idA } = await setup();
-    await sim.call('depositShielded', coin(S1, 6n, 1), idA);
-    sim.actAs(OWNER_A);
-    expect(await sim.expectReject('withdrawShielded', UNCONFIGURED, 1n, userRecipient(0xaa))).toMatch(
-      /colour is not a configured shielded colour/,
-    );
-    expect(await sim.expectReject('withdrawUnshielded', UNCONFIGURED, 1n, unshieldedUserRecipient(0xbb))).toMatch(
-      /colour is not a configured unshielded colour/,
-    );
-  });
-
-  it('rejects an internal transfer naming an unconfigured colour', async () => {
+describe('Manager v3 — a refused operation creates NO state (FR-202, NC-2/NC-3)', () => {
+  it('NC-2 shape: a missing cell reads 0 and is NOT created by the refusal', async () => {
     const { sim, idA, idB } = await setup();
-    await sim.call('depositShielded', coin(S1, 6n, 1), idA);
-    sim.actAs(OWNER_A);
-    const msg = await sim.expectReject('transferInternal', idB, UNCONFIGURED, 1n);
-    expect(msg).toMatch(/colour is not configured/);
+    // Pool S3 = 4 and every unit of it belongs to AA_A. AA_B has no (AA_B, S3) cell at all.
+    await sim.call('depositShielded', coin(S3, 4n, 1), idA);
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 1, shieldedCells: 1, unshieldedCells: 0 });
+    expect(await sim.call<bigint>('shieldedAccountBalance', idB, S3)).toBe(0n);
+    // …and merely READING the missing cell did not create it.
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 1, shieldedCells: 1, unshieldedCells: 0 });
+
+    sim.actAs(OWNER_B);
+    expect(await sim.expectReject('withdrawShielded', S3, 1n, userRecipient(0xaa))).toMatch(
+      /account colour balance too low/,
+    );
+
+    // NO CELL CREATED — this is the assertion 00004 could not make, because it seeded every cell.
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 1, shieldedCells: 1, unshieldedCells: 0 });
+    expect(await sim.call<bigint>('poolValue', S3)).toBe(4n);
   });
 
-  it('rejects a deposit crediting an unregistered account', async () => {
+  it('NC-3 shape: a DORMANT colour stays absent from every map after a refused spend', async () => {
+    const { sim, idA } = await setup();
+    await sim.call('depositShielded', coin(S1, 6n, 1), idA);
+    await sim.call('depositUnshielded', U1, 5n, idA);
+    const before = JSON.stringify(snapshotLedger(sim.ledger));
+
+    // U3 was minted by no one and deposited by no one.
+    expect(await sim.call<bigint>('unshieldedAccountBalance', idA, U3)).toBe(0n);
+    expect(await sim.call<bigint>('shieldedAccountBalance', idA, U3)).toBe(0n);
+    expect(await sim.call<boolean>('poolHasColour', U3)).toBe(false);
+
+    sim.actAs(OWNER_A);
+    expect(await sim.expectReject('withdrawUnshielded', U3, 1n, unshieldedUserRecipient(0xbb))).toMatch(
+      /account colour balance too low/,
+    );
+
+    expect(JSON.stringify(snapshotLedger(sim.ledger))).toBe(before);
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 1, shieldedCells: 1, unshieldedCells: 1 });
+  });
+
+  it('NC-5 shape: a refused internal transfer does not create the DESTINATION cell', async () => {
+    const { sim, idA, idB } = await setup();
+    // AA_A is rich in S1 and U1 but holds no S2; AA_B holds all of S2.
+    await sim.call('depositShielded', coin(S1, 6n, 1), idA);
+    await sim.call('depositUnshielded', U1, 5n, idA);
+    await sim.call('depositShielded', coin(S2, 4n, 2), idB);
+    const before = JSON.stringify(snapshotLedger(sim.ledger));
+
+    sim.actAs(OWNER_A);
+    expect(await sim.expectReject('transferInternalShielded', idB, S2, 1n)).toMatch(
+      /account colour balance too low/,
+    );
+
+    expect(JSON.stringify(snapshotLedger(sim.ledger))).toBe(before);
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 2, shieldedCells: 2, unshieldedCells: 1 });
+  });
+
+  it('NC-4 shape: a deposit crediting an unregistered account creates nothing at all', async () => {
     const { sim } = await setup();
     const unknown = new Uint8Array(32).fill(0x77);
-    const msg = await sim.expectReject('depositShielded', coin(S1, 10n, 1), unknown);
-    expect(msg).toMatch(/not registered/);
+    expect(await sim.expectReject('depositShielded', coin(S1, 10n, 1), unknown)).toMatch(/not registered/);
+    expect(await sim.expectReject('depositUnshielded', U1, 10n, unknown)).toMatch(/not registered/);
+    // No pool for S1 was created on the way to discovering the account was bogus.
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 0, shieldedCells: 0, unshieldedCells: 0 });
+  });
+
+  it('refuses a zero-value credit in both families without creating state', async () => {
+    const { sim, idA } = await setup();
+    expect(await sim.expectReject('depositShielded', coin(S1, 0n, 1), idA)).toMatch(/deposit must be positive/);
+    expect(await sim.expectReject('depositUnshielded', U1, 0n, idA)).toMatch(/deposit must be positive/);
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 0, shieldedCells: 0, unshieldedCells: 0 });
   });
 });
 
-describe('Manager — owner-only spend (FR-104, the critical requirement)', () => {
-  it('NC-1 shape: a witness that opens no registered account is refused at the choke point', async () => {
+describe('Manager v3 — family-scoped storage (FR-203, the P-COLL claim)', () => {
+  it('derives DIFFERENT keys for the two families from the SAME (account, colour)', async () => {
+    const { idA } = await setup();
+    // Run the contract's own pure circuits — the harness never reimplements the scheme.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { pureCircuits } = await import('../../generated/manager/contract/index.js' as any);
+    const sk = hex((pureCircuits as any).shieldedKey(idA, COLLIDING));
+    const uk = hex((pureCircuits as any).unshieldedKey(idA, COLLIDING));
+    expect(sk).not.toBe(uk);
+    expect(sk).toHaveLength(64);
+  });
+
+  it('tracks BYTE-IDENTICAL colours independently across the two families', async () => {
+    const { sim, idA, idB } = await setup();
+    // The exact P-COLL fixture: the same 32 bytes credited 3 shielded and 2 unshielded.
+    await sim.call('depositShielded', coin(COLLIDING, 3n, 1), idB);
+    await sim.call('depositUnshielded', COLLIDING, 2n, idB);
+
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 1, shieldedCells: 1, unshieldedCells: 1 });
+    expect(await sim.call<bigint>('shieldedAccountBalance', idB, COLLIDING)).toBe(3n);
+    expect(await sim.call<bigint>('unshieldedAccountBalance', idB, COLLIDING)).toBe(2n);
+    // The pool is a SHIELDED structure: it holds 3, never 5.
+    expect(await sim.call<bigint>('poolValue', COLLIDING)).toBe(3n);
+
+    // Spending one family leaves the other exactly where it was.
+    sim.actAs(OWNER_B);
+    await sim.call('withdrawShielded', COLLIDING, 1n, userRecipient(0xaa));
+    expect(await sim.call<bigint>('shieldedAccountBalance', idB, COLLIDING)).toBe(2n);
+    expect(await sim.call<bigint>('unshieldedAccountBalance', idB, COLLIDING)).toBe(2n);
+    expect(await sim.call<bigint>('poolValue', COLLIDING)).toBe(2n);
+    // AA_A never touched this colour in either family.
+    expect(await sim.call<bigint>('shieldedAccountBalance', idA, COLLIDING)).toBe(0n);
+    expect(await sim.call<bigint>('unshieldedAccountBalance', idA, COLLIDING)).toBe(0n);
+  });
+
+  it('keeps an unshielded internal transfer out of the shielded map for the same colour', async () => {
+    const { sim, idA, idB } = await setup();
+    await sim.call('depositShielded', coin(COLLIDING, 3n, 1), idA);
+    await sim.call('depositUnshielded', COLLIDING, 2n, idA);
+    const poolsBefore = JSON.stringify(snapshotLedger(sim.ledger).pools);
+    const shieldedBefore = JSON.stringify(snapshotLedger(sim.ledger).shieldedBalances);
+
+    sim.actAs(OWNER_A);
+    await sim.call('transferInternalUnshielded', idB, COLLIDING, 2n);
+
+    expect(await sim.call<bigint>('unshieldedAccountBalance', idA, COLLIDING)).toBe(0n);
+    expect(await sim.call<bigint>('unshieldedAccountBalance', idB, COLLIDING)).toBe(2n);
+    // The SHIELDED side of the same colour is byte-identical, cells and pool alike.
+    expect(JSON.stringify(snapshotLedger(sim.ledger).shieldedBalances)).toBe(shieldedBefore);
+    expect(JSON.stringify(snapshotLedger(sim.ledger).pools)).toBe(poolsBefore);
+    expect(await sim.call<bigint>('shieldedAccountBalance', idA, COLLIDING)).toBe(3n);
+  });
+
+  it('refuses a shielded spend backed only by the OTHER family’s holding of the same colour', async () => {
+    const { sim, idA } = await setup();
+    // AA_A holds 5 UNSHIELDED of the colliding colour and 0 shielded.
+    await sim.call('depositUnshielded', COLLIDING, 5n, idA);
+    sim.actAs(OWNER_A);
+    expect(await sim.expectReject('withdrawShielded', COLLIDING, 1n, userRecipient(0xaa))).toMatch(
+      /account colour balance too low/,
+    );
+    expect(await sim.call<bigint>('unshieldedAccountBalance', idA, COLLIDING)).toBe(5n);
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 0, shieldedCells: 0, unshieldedCells: 1 });
+  });
+});
+
+describe('Manager v3 — owner-only spend (FR-204, the critical requirement)', () => {
+  it('NC-1: a witness that opens no registered account is refused at the choke point', async () => {
     const { sim, idA } = await setup();
     await sim.call('depositShielded', coin(S1, 6n, 1), idA);
 
     sim.actAs(OWNER_X); // never registered
-    const msg = await sim.expectReject('withdrawShielded', S1, 1n, userRecipient(0xaa));
-    expect(msg).toMatch(/matches no registered account/);
+    expect(await sim.expectReject('withdrawShielded', S1, 1n, userRecipient(0xaa))).toMatch(
+      /matches no registered account/,
+    );
     expect(await sim.call<bigint>('poolValue', S1)).toBe(6n);
   });
 
-  it('NC-2 shape: the PER-ACCOUNT guard bites even though the POOL covers the request', async () => {
+  it('the per-account guard bites even though the POOL covers the request', async () => {
     const { sim, idA, idB } = await setup();
-    // Pool S1 = 9, but AA_B owns 3 of it. AA_B must not be able to take 6.
+    // Pool S1 = 9, but AA_B owns only 3 of it. AA_B must not be able to take 6.
     await sim.call('depositShielded', coin(S1, 6n, 1), idA);
     await sim.call('depositShielded', coin(S1, 3n, 2), idB);
     expect(await sim.call<bigint>('poolValue', S1)).toBe(9n);
 
     sim.actAs(OWNER_B);
-    const msg = await sim.expectReject('withdrawShielded', S1, 6n, userRecipient(0xaa));
-    expect(msg).toMatch(/account colour balance too low/);
+    expect(await sim.expectReject('withdrawShielded', S1, 6n, userRecipient(0xaa))).toMatch(
+      /account colour balance too low/,
+    );
 
-    // Funds AND attribution unchanged.
     expect(await sim.call<bigint>('poolValue', S1)).toBe(9n);
-    expect(await table(sim, idA, idB)).toEqual({
-      AA_A: { S1: 6n, S2: 0n, U1: 0n, U2: 0n },
-      AA_B: { S1: 3n, S2: 0n, U1: 0n, U2: 0n },
-    });
+    expect(
+      await table(sim, { AA_A: idA, AA_B: idB }, { S1 }, {}),
+    ).toEqual({ AA_A: { S1: 6n }, AA_B: { S1: 3n } });
   });
 
-  it('NC-3 shape: rich in one colour, broke in another — the wealth is unspendable', async () => {
+  it('rich in one colour, broke in another — the wealth is unspendable', async () => {
     const { sim, idA, idB } = await setup();
-    // AA_A is rich in S1 and in U1; AA_B holds all of S2. AA_A must not reach S2 at all.
     await sim.call('depositShielded', coin(S1, 6n, 1), idA);
     await sim.call('depositUnshielded', U1, 5n, idA);
     await sim.call('depositShielded', coin(S2, 4n, 2), idB);
 
     sim.actAs(OWNER_A);
-    const msg = await sim.expectReject('withdrawShielded', S2, 1n, userRecipient(0xaa));
-    expect(msg).toMatch(/account colour balance too low/);
-
+    expect(await sim.expectReject('withdrawShielded', S2, 1n, userRecipient(0xaa))).toMatch(
+      /account colour balance too low/,
+    );
     // …and the S2 pool, which demonstrably HAS the value, is untouched.
     expect(await sim.call<bigint>('poolValue', S2)).toBe(4n);
-    expect(await table(sim, idA, idB)).toEqual({
-      AA_A: { S1: 6n, S2: 0n, U1: 5n, U2: 0n },
-      AA_B: { S1: 0n, S2: 4n, U1: 0n, U2: 0n },
-    });
   });
 
-  it('debits the WITNESS owner, never a caller-supplied account (wrong-owner witness)', async () => {
+  it('debits the WITNESS owner, never a caller-supplied account', async () => {
     const { sim, idA, idB } = await setup();
     await sim.call('depositShielded', coin(S1, 6n, 1), idA);
 
     // OwnerB is registered but owns nothing of S1; B's witness must not reach A's balance.
     sim.actAs(OWNER_B);
-    const msg = await sim.expectReject('withdrawShielded', S1, 1n, userRecipient(0xaa));
-    expect(msg).toMatch(/account colour balance too low/);
-    expect(await sim.call<bigint>('accountBalance', idA, S1)).toBe(6n);
-    expect(await sim.call<bigint>('accountBalance', idB, S1)).toBe(0n);
+    expect(await sim.expectReject('withdrawShielded', S1, 1n, userRecipient(0xaa))).toMatch(
+      /account colour balance too low/,
+    );
+    expect(await sim.call<bigint>('shieldedAccountBalance', idA, S1)).toBe(6n);
+    expect(await sim.call<bigint>('shieldedAccountBalance', idB, S1)).toBe(0n);
   });
 
   it('guards the unshielded family per account too', async () => {
     const { sim, idA, idB } = await setup();
     await sim.call('depositUnshielded', U1, 10n, idA);
     await sim.call('depositUnshielded', U1, 5n, idB);
-    expect(await sim.call<bigint>('accountBalance', idA, U1)).toBe(10n);
 
-    // AA_B owns 5 while the contract holds 15: the per-account guard must still bite.
+    // AA_B owns 5 while the contract holds 15: the per-account guard must still bite, BEFORE the
+    // contract-balance guard the simulator cannot satisfy.
     sim.actAs(OWNER_B);
-    const msg = await sim.expectReject('withdrawUnshielded', U1, 6n, unshieldedUserRecipient(0xbb));
-    expect(msg).toMatch(/account colour balance too low/);
-    expect(await sim.call<bigint>('accountBalance', idB, U1)).toBe(5n);
+    expect(await sim.expectReject('withdrawUnshielded', U1, 6n, unshieldedUserRecipient(0xbb))).toMatch(
+      /account colour balance too low/,
+    );
+    expect(await sim.call<bigint>('unshieldedAccountBalance', idB, U1)).toBe(5n);
   });
-});
 
-describe('Manager — internal transfer is colour-scoped and ledger-neutral (FR-105, NC-5)', () => {
-  it('moves attribution in ONE colour while every pooled coin stays byte-identical', async () => {
-    const { sim, idA, idB } = await setup();
-    await sim.call('depositShielded', coin(S1, 6n, 1), idA);
-    await sim.call('depositShielded', coin(S2, 4n, 2), idB);
+  it('reaches the LAST guard for a legitimate unshielded withdrawal (guard-order proof)', async () => {
+    // The in-process runtime does not maintain the ledger KERNEL's unshielded balances, so
+    // `unshieldedBalanceGte` is false for any amount and a legitimate withdrawal cannot complete
+    // here. That it reaches exactly that guard is the offline proof that the witness choke point and
+    // the per-account guard both PASSED — the ordering FR-204 requires.
+    const { sim, idA } = await setup();
     await sim.call('depositUnshielded', U1, 5n, idA);
-
-    const before = snapshotLedger(sim.ledger);
     sim.actAs(OWNER_A);
-    await sim.call('transferInternal', idB, S1, 3n);
-    const after = snapshotLedger(sim.ledger);
-
-    // Attribution moved …
-    expect(await table(sim, idA, idB)).toEqual({
-      AA_A: { S1: 3n, S2: 0n, U1: 5n, U2: 0n },
-      AA_B: { S1: 3n, S2: 4n, U1: 0n, U2: 0n },
-    });
-    // … while NO pooled coin moved: no token operation happens in an internal transfer.
-    expect(after.pools).toEqual(before.pools);
-    expect(after.balanceCount).toBe(before.balanceCount);
-  });
-
-  it('NC-5 shape: refuses a colour the sender does not hold, while it holds others', async () => {
-    const { sim, idA, idB } = await setup();
-    await sim.call('depositShielded', coin(S1, 6n, 1), idA);
-    await sim.call('depositUnshielded', U1, 5n, idA);
-    await sim.call('depositShielded', coin(S2, 4n, 2), idB);
-
-    sim.actAs(OWNER_A); // AA_A holds S1=6 and U1=5, but S2=0
-    const msg = await sim.expectReject('transferInternal', idB, S2, 1n);
-    expect(msg).toMatch(/account colour balance too low/);
-    expect(await sim.call<bigint>('accountBalance', idA, S1)).toBe(6n);
-    expect(await sim.call<bigint>('accountBalance', idA, U1)).toBe(5n);
+    const msg = await sim.expectReject('withdrawUnshielded', U1, 5n, unshieldedUserRecipient(0xbb));
+    expect(msg).toMatch(/contract unshielded balance too low/);
+    expect(msg).not.toMatch(/account colour balance too low/);
+    expect(msg).not.toMatch(/matches no registered account/);
   });
 
   it('rejects an internal transfer to an unregistered account and to self', async () => {
     const { sim, idA } = await setup();
     await sim.call('depositShielded', coin(S1, 3n, 1), idA);
     sim.actAs(OWNER_A);
-    expect(await sim.expectReject('transferInternal', new Uint8Array(32).fill(0x66), S1, 1n)).toMatch(
+    expect(await sim.expectReject('transferInternalShielded', new Uint8Array(32).fill(0x66), S1, 1n)).toMatch(
       /destination account is not registered/,
     );
-    expect(await sim.expectReject('transferInternal', idA, S1, 1n)).toMatch(/internal transfer to the same account/);
-  });
-
-  it('moves unshielded attribution internally without touching the contract’s holdings', async () => {
-    const { sim, idA, idB } = await setup();
-    await sim.call('depositUnshielded', U2, 5n, idA);
-    const before = snapshotLedger(sim.ledger);
-
-    sim.actAs(OWNER_A);
-    await sim.call('transferInternal', idB, U2, 2n);
-
-    expect(await sim.call<bigint>('accountBalance', idA, U2)).toBe(3n);
-    expect(await sim.call<bigint>('accountBalance', idB, U2)).toBe(2n);
-    expect(snapshotLedger(sim.ledger).pools).toEqual(before.pools);
+    expect(await sim.expectReject('transferInternalShielded', idA, S1, 1n)).toMatch(
+      /internal transfer to the same account/,
+    );
   });
 });
 
-describe('Manager — the per-colour invariant holds cell by cell (FR-105)', () => {
-  it('pool[c] equals the sum of the account column for c, after every operation', async () => {
+describe('Manager v3 — the per-colour invariant over a DYNAMIC colour set (FR-205)', () => {
+  it('pool[c] equals the account column for c after every operation, colours discovered as they arrive', async () => {
     const { sim, idA, idB } = await setup();
 
-    const invariant = async (label: string) => {
-      for (const colour of [S1, S2]) {
+    /** The colour set is not known up front: it is whatever the pools map has accumulated. */
+    const discoveredShieldedColours = (): string[] => {
+      const out: string[] = [];
+      for (const [k] of sim.ledger.pools) out.push(hex(k));
+      return out.sort();
+    };
+
+    const invariant = async (label: string, colours: Uint8Array[]) => {
+      for (const colour of colours) {
         const pool = await sim.call<bigint>('poolValue', colour);
         const sum =
-          (await sim.call<bigint>('accountBalance', idA, colour)) +
-          (await sim.call<bigint>('accountBalance', idB, colour));
+          (await sim.call<bigint>('shieldedAccountBalance', idA, colour)) +
+          (await sim.call<bigint>('shieldedAccountBalance', idB, colour));
         expect(`${label}/${hex(colour).slice(0, 4)}: ${pool}`).toBe(`${label}/${hex(colour).slice(0, 4)}: ${sum}`);
       }
     };
 
-    await invariant('empty');
+    expect(discoveredShieldedColours()).toEqual([]);
+    await invariant('empty', [S1, S2, LATE]);
+
     await sim.call('depositShielded', coin(S1, 6n, 1), idA);
-    await invariant('after S1 deposit');
+    expect(discoveredShieldedColours()).toEqual([hex(S1)]);
+    await invariant('after S1 deposit', [S1, S2, LATE]);
+
     await sim.call('depositShielded', coin(S2, 4n, 2), idB);
-    await invariant('after S2 deposit');
+    expect(discoveredShieldedColours().length).toBe(2);
+    await invariant('after S2 deposit', [S1, S2, LATE]);
+
     sim.actAs(OWNER_A);
-    await sim.call('transferInternal', idB, S1, 3n);
-    await invariant('after internal S1 transfer');
+    await sim.call('transferInternalShielded', idB, S1, 3n);
+    await invariant('after internal S1 transfer', [S1, S2, LATE]);
+
     sim.actAs(OWNER_B);
     await sim.call('withdrawShielded', S1, 3n, userRecipient(0xaa));
-    await invariant('after S1 withdrawal');
-    await sim.call('depositShielded', coin(S2, 2n, 3), idB);
-    await invariant('after S2 merge deposit');
+    await invariant('after S1 withdrawal', [S1, S2, LATE]);
+
+    // A colour that did not exist for any earlier assertion joins the set mid-walk.
+    await sim.call('depositShielded', coin(LATE, 7n, 3), idA);
+    expect(discoveredShieldedColours().length).toBe(3);
+    await invariant('after the LATE colour arrives', [S1, S2, LATE]);
+
+    // Exact map sizes at the end: 3 pools; cells (A,S1) (B,S1) (B,S2) (A,LATE); no unshielded.
+    expect(mapSizes(sim.ledger)).toEqual({ pools: 3, shieldedCells: 4, unshieldedCells: 0 });
   });
 });

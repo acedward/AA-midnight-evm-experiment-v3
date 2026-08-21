@@ -1,0 +1,108 @@
+{
+  "kind": "maker",
+  "label": "OFFER-6",
+  "lane": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T12:55:02.538Z",
+  "process": {
+    "pid": 48864,
+    "ppid": 48858
+  },
+  "spec": {
+    "label": "OFFER-6",
+    "managerAddress": "f6eb885f4760142781e668f7862ab2b83d2e3c057a970ca9dc30e4fa9906eb0c",
+    "witness": "ownerA",
+    "shape": "named-taker",
+    "gives": {
+      "colour": "3ee0a9b91f70b37ef2bfe392b9007eb45e645f96aafe5af90b6ba7390a78e46b",
+      "value": "1"
+    },
+    "wants": {
+      "colour": "4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25",
+      "value": "1"
+    },
+    "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "recipientSeedName": "ownerT",
+    "envelopeOut": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/row12b-maker.offer",
+    "out": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/io/row12b-maker.report.json"
+  },
+  "ok": true,
+  "terms": {
+    "version": 1,
+    "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+    "shape": "named-taker",
+    "circuitId": "openSwapShielded",
+    "form": "pre-binding",
+    "managerAddress": "f6eb885f4760142781e668f7862ab2b83d2e3c057a970ca9dc30e4fa9906eb0c",
+    "gives": {
+      "colour": "3ee0a9b91f70b37ef2bfe392b9007eb45e645f96aafe5af90b6ba7390a78e46b",
+      "value": "1",
+      "recipient": "226fe909b3edee5d22d8ec41f643d1138f8f93bd10b023391ece325ded8821df",
+      "recipientKind": "user-coin-public-key"
+    },
+    "wants": {
+      "colour": "4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25",
+      "value": "1",
+      "nonce": "0b831ba31a451ba43ceb7eb100f8d2ddcfee236eae641fc24653c2d037a1e772"
+    },
+    "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "createdAt": "2026-08-20T12:55:09.147Z",
+    "expiresAt": "2026-08-20T13:55:09.147Z",
+    "ttlSeconds": 3600,
+    "placement": {
+      "segments": [
+        0,
+        169
+      ],
+      "intentSegments": [
+        169
+      ],
+      "fallibleOfferSegments": [],
+      "imbalances": {
+        "0": {
+          "shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25": "-1"
+        },
+        "169": {}
+      },
+      "expectedAtSegment0": {
+        "shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25": "-1"
+      },
+      "segment0Exact": true,
+      "otherSegmentsEmpty": true,
+      "offendingSegments": [],
+      "ok": true
+    },
+    "makerAttachedDust": false,
+    "contentAddress": "f478f1ed538a692876293f2c9f0b135d7a3d73ac51d8210a57443553b34a461a",
+    "transactionBytes": 26818
+  },
+  "placement": {
+    "segments": [
+      0,
+      169
+    ],
+    "intentSegments": [
+      169
+    ],
+    "fallibleOfferSegments": [],
+    "imbalances": {
+      "0": {
+        "shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25": "-1"
+      },
+      "169": {}
+    },
+    "expectedAtSegment0": {
+      "shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25": "-1"
+    },
+    "segment0Exact": true,
+    "otherSegmentsEmpty": true,
+    "offendingSegments": [],
+    "ok": true
+  },
+  "proveMs": 5924,
+  "transactionBytes": 26818,
+  "contentAddress": "f478f1ed538a692876293f2c9f0b135d7a3d73ac51d8210a57443553b34a461a",
+  "published": true,
+  "envelopeFile": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/row12b-maker.offer"
+}

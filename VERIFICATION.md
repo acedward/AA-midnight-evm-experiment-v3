@@ -1,455 +1,292 @@
-# VERIFICATION — 00004-multi-token-custody
-
-**Label:** `EXPERIMENTAL_LANE` / `LANE-DEV-1` — the pinned v2.0.0-rc.4 prerelease slot, reused from
-project 00003 and verified as unchanged rather than re-pinned. No supported-lane or production
-validity.
-
-This ledger is appended as work lands, never reconstructed afterwards. Timestamps are UTC and come
-from the retained `run.log` of each gate. Where a run went RED it is recorded RED, with the cause,
-including the times the cause was my own bug rather than a finding about the lane.
-
-Governance pinned at execution start:
-
-| Item | Value |
-|---|---|
-| Approved spec SHA-256 | `e83897d46d3b2b5af3c42863d4ad49c922c374038a45dc04401ba5cc66e111f6` |
-| Spec approval | owner kickoff Q&A 2026-08-18 (Q1–Q4, verbatim in the spec's Approval record) |
-| Spec mutability | IMMUTABLE during execution; checkboxes stay UNTICKED (00003 Q1-A convention) |
-| Plan-set review | owner directed immediate execution ("Let's run the new ones to get this tested") |
-| Product clone branch | `00004-multi-token-custody`, cut from `00003-contract-token-custody` @ `a8ebff9` (PR #1 MERGED — owner decision Q4) |
-| Organizer branch (spec + plans) | `claude/contract-token-custody-6d6cd3` (the owner manages organizer commits) |
-
-| What | Absolute path |
-|---|---|
-| Product clone (this repo) | `/Users/edwardalvarado/todo/AA/experiments/00004-multi-token-custody` |
-| Organizer docs (worktree) | `/Users/edwardalvarado/todo/AA/.claude/worktrees/contract-token-custody-6d6cd3/AA` |
-| References (read-only) | `/Users/edwardalvarado/midnight-ref-ai/v2.0.0-rc.4` |
-| 00003 clone (read-only reference) | `/Users/edwardalvarado/todo/AA/experiments/00003-contract-token-custody` |
-
-Host toolchain observed (nothing installed globally by this project):
-
-| Tool | Version |
-|---|---|
-| Docker CLI | 29.1.3 (build f52814d) |
-| Docker Compose | 2.40.3-desktop.1 |
-| Platform | Darwin arm64 (**aarch64** — image-architecture relevant) |
-
----
-
-## G1 — Lane reuse, workspace, compile probes
-
-**Wrapper:** `scripts/g1/verify-g1-lane.sh` · **Evidence:** `evidence/g1-lane/` ·
-**Result: GREEN** on the fourth attempt, `final_exit: 0` including teardown.
-
-### Phase 1 — clone and branch
-
-| UTC | Command | Exit | Result |
-|---|---|---|---|
-| 2026-08-18 | `git clone https://github.com/acedward/AA-midnight-evm-experiment-v3` → `experiments/00004-multi-token-custody` | 0 | Clone created |
-| 2026-08-18 | `git checkout -b 00004-multi-token-custody a8ebff9` | 0 | Branch cut from the MERGED 00003 head (owner decision Q4) |
-| 2026-08-18 | `git push -u origin 00004-multi-token-custody` | 0 | Pushed; `project-summary.md` updated. **Never `gh repo create`** |
-
-**Scaffolding note.** Because the branch is cut from `a8ebff9` in the SAME repository, 00003's
-harness/scripts/docker tree is inherited through git history — nothing was copied out of the 00003
-clone, which was never opened for writing. 00003's `evidence/`, `README.md`, `REPORT.md`,
-`VERIFICATION.md`, `scripts/g5/` and `harness/src/g5/` were relocated UNMODIFIED to
-`archive/00003/` so this project could write its own evidence at the canonical `evidence/gN` paths
-(`archive/00003/ARCHIVE.md`). Links inside the archived documents point at 00003's layout and are
-stale on this branch by design; the link-correct copy is the `00003-contract-token-custody` branch.
-
-### Phase 2 — the lane is REUSED, and that is proven five ways
-
-`scripts/lib/lane-pins.sh` (`lane_assert_pins_unchanged`), run as gate step `02-lane-reuse` — and
-re-run by **every** later gate, so each gate is self-contained evidence rather than a claim resting
-on G1's run. Rather than re-deriving digests from a registry, it proves the pins were not touched:
-
-| # | Comparison against base commit `a8ebff9` | Result |
-|---|---|---|
-| 1 | `sha256:` image digests in `docker/compose.yml` | identical (node / indexer / proof-server) |
-| 2 | compiler archive pin `ARG COMPACTC_URL` + `ARG COMPACTC_SHA256` (bare hex `3aa23812…dc46`) | identical |
-| 3 | `harness/pnpm-lock.yaml` byte-identity (blob `a0a191d1…`) | identical — the whole transitive npm set is pinned |
-| 4 | `harness/package.json` dependency + devDependency blocks | unchanged (name/description allowed to change, and did) |
-| 5 | `docker compose config --images` | resolves to exactly the three pinned digests, never a tag |
-
-Evidence: `evidence/g1-lane/02-lane-reuse.out`, `evidence/g1-lane/LANE.md` (manifest generated while
-the stack was up, including the image IDs that ACTUALLY ran).
-
-**One check-authoring bug, found by the gate itself.** The first G1 run went RED here: the `sha256:`
-digest comparison was also applied to `docker/compactc.Dockerfile`, which pins its archive by BARE
-hex and contains no `sha256:`-prefixed token, so the check reported "no digests found". The pin
-itself was correct and its dedicated ARG-level comparison passed. Fixed by scoping the `sha256:`
-comparison to `compose.yml`. **No pin was edited** — a failing reuse proof is a blocker, never
-something to fix by moving a pin.
-
-**Two inherited `LANE-DEV-1` checkboxes closed.** 00003's manifest left "installed `compactc`
-reports compiler version 0.33.0" and "…language version 0.25.0" UNTICKED. Gate step `03-lane-dev-1`
-(`compactc_verify_lane_dev_1`) now asserts both against the running pinned image and cross-checks
-them against the pinned rc.2 reference source — `evidence/g1-lane/03-lane-dev-1.out`.
-
-### Phase 3 — compile probes, before any Manager code existed
-
-Driver `scripts/g1/probe-compile.sh` (step `04-probes-compile`); sources retained under
-`contracts/probes/`; every probe's verbatim stdout/stderr and exit code captured pass or fail.
-
-| Probe | Shape | Mode | Exit | Verdict | Evidence |
-|---|---|---|---|---|---|
-| P1(a) | `Map<Bytes<32>, Uint<128>>` + `persistentHash` composite keys | `--skip-zk` | 0 | PASS | `evidence/g1-lane/probes/p1a.out` |
-| P1(b) | `Map<Bytes<32>, QualifiedShieldedCoinInfo>` — insertCoin / lookup / sendShielded / both change arms | `--skip-zk` | 0 | PASS | `evidence/g1-lane/probes/p1b.out` |
-| P1(b) | the SAME source with FULL ZK key generation | `--zk` | 0 | PASS | `evidence/g1-lane/probes/p1b-zk.out` |
-| P1(c) | nested `Map<Bytes<32>, Map<Bytes<32>, Uint<128>>>` | `--skip-zk` | 0 | PASS | `evidence/g1-lane/probes/p1c.out` |
-| P2 | `constructor(Bytes<32>)` writing derived separators into ledger cells | `--zk` | 0 | PASS | `evidence/g1-lane/probes/p2.out` |
-
-Two deliberate strengthenings beyond the letter of the plan, recorded rather than silent: P1(c) was
-specified as conditional ("only if (b) fails") and was compiled anyway, clearly labelled
-INFORMATIONAL; and P1(b) — the probe that DECIDES D-101 — was additionally compiled with full ZK key
-generation, so the deciding shape is proven *provable*, not merely type-correct.
-
-**P2's deploy half** (step `11-probe-p2`, driver `harness/src/g1/probe-p2.ts`): ONE compiled artifact
-deployed TWICE with different constructor arguments and read back through two independent
-observation points (indexer contract state, and real on-chain `shieldedColour()` /
-`unshieldedColour()` circuit calls). Verdict PASS, 0 failures; 6/6 colour comparisons distinct —
-`evidence/g1-lane/probes/p2-deploy.json`.
-
-**Decision D-101 recorded: COLOUR-KEYED LEDGER MAPS.** FR-103's preferred representation is
-available on the pinned compiler; the pre-approved fixed-per-colour-slot fallback is NOT taken.
-Finding **F-101**: the specification's "no prior art exists for `Map<Bytes<32>,
-QualifiedShieldedCoinInfo>` or nested maps" is too narrow — prior art exists in the pinned reference
-tree and in the compiler's own PASSING test suite (`compact/compiler/test.ss:80209-80227`,
-`compact/doc/compact-reference.mdx:1488-1494`, `compact/examples/adt/tests/…`). Recorded in the plan
-set; **the spec file is not edited** (00003 Q1-A convention).
-
-### Phase 4 — stack smoke, and the project's most consequential finding
-
-| UTC | Step | Result |
-|---|---|---|
-| 2026-08-18T20:17:30Z | `01-probe-ports` | compose project `aa00004-g1-20260818201730-16867`; ports random, verified free, >10000, bound to `127.0.0.1` |
-| … | `09-wallets` | six wallets opened (OwnerA, OwnerB, OwnerN, OwnerM, fee payer) |
-| … | `10-funding` (148 s) | fee wallet funded + DUST-registered; fee-paying smoke transfer `b0e5c29f…c990b` confirmed |
-| 2026-08-18T20:24:52Z | teardown | `exit: 0`; `docker ps -a` / `volume ls` / `network ls` show no `aa00004` residue |
-
-**Finding F-103 / F-104 — the two RED runs before this one.** `fundWithNight`'s sender-settled wait
-was added by 00003 *after* its own G1 evidence was captured and never re-exercised there, so the
-inherited G1 path shipped with an unexercised wait. It took 00004's first full attempt RED at
-`10-funding`. My first response was to widen the timeout to 900 s on a "the shared host is slow"
-hypothesis. **That hypothesis was wrong** — the next attempt burned the full 900 s
-(`duration_s: 933`) — which forced the real diagnosis:
-
-- the wallet that SUBMITTED the transfer settles on `199000000000000` over 4 UTXOs and stays there
-  for 15+ minutes, with `progress.isStrictlyComplete() === true`;
-- a wallet freshly opened on the SAME seed and the SAME chain, moments later, reads the correct
-  `249000000000000` over 5 UTXOs — 4 untouched inputs plus the `49000000000000` change.
-
-The chain, node and indexer are all correct; only the submitting wallet's in-memory view is wrong,
-and it does not self-correct. So the exact-equality predicate was UNSATISFIABLE and **no timeout
-could ever have fixed it**. Changed to an inequality (`<= before - amount`), which keeps the guard's
-purpose and is in the safe direction; budget reduced from my speculative 900 s back to 300 s.
-Diagnostics retained at `harness/src/g1/diag-funding.ts` / `diag-utxos.ts`; evidence at
-`evidence/g1-lane/FINDING-F104-sender-wallet-underreports.md`. **Standing consequence: no submitting
-wallet is an observation point anywhere in this project.**
-
-### G1 run history
-
-| Run | Outcome | Cause |
-|---|---|---|
-| 1 | RED at `02-lane-reuse` | my check bug (bare-hex pin file); no pin was wrong |
-| 2 | RED at `10-funding` (180 s) | F-103/F-104 |
-| 3 | RED at `10-funding` (933 s) | same; disproved my "slow host" hypothesis |
-| 4 | **GREEN**, `final_exit: 0` incl. teardown, 2026-08-18T20:17:30Z→20:24:52Z | after the F-104 predicate fix |
-
----
-
-## G2 — Parameterized Minter + multi-colour Manager
-
-**Wrapper:** `scripts/g2/verify-g2-contracts.sh` · **Evidence:** `evidence/g2-contracts/` ·
-**Result: GREEN on the FIRST attempt**, 2026-08-18T20:44:20Z→21:04:35Z, `final_exit: 0` including
-teardown. Compose project `aa00004-g2-20260818204420-30120`.
-
-| Step | Duration | Result |
-|---|---|---|
-| `01-probe-ports` … `03-lane-dev-1` | 2 s | ports free; lane pins unchanged; compiler 0.33.0 / language 0.25.0 |
-| `04-compile-fast` | 1 s | both contracts compile `--skip-zk` |
-| `06-unit-suites` | 2 s | **36/36** simulator tests green |
-| `07-compile-zk` | 52 s | full ZK key generation, 15 verifier keys |
-| `08-pull` | 673 s | cold pull of the pinned digests (~11 min; no warm copy on this host) |
-| `11-deploy-configure` | 472 s | 3 Minters + 1 Manager deployed, configured, asserted |
-| `12-record-artifacts` | 2 s | `ARTIFACTS.md` written (source + `contract/index.js` + every verifier key hashed) |
-
-**Deployments — ONE artifact, three constructor tags** (`evidence/g2-contracts/CONTRACTS.md`):
-
-| Deployment | tag | address | shielded colour | unshielded colour |
-|---|---|---|---|---|
-| Minter1 | `TOKA` | `3b7bfa336e4220a3…94a9` | S1 `bca98014773c3071…bffe` | U1 `9a1288102ff36111…6da7` |
-| Minter2 | `TOKB` | `77c2f28c3838ed25…c4a5` | S2 `f818da4c1fbc34f6…3bff` | U2 `13ceddbbd387e2c3…2553` |
-| Minter3 | `TOKC` | `0dafc7c529325d5b…ee46` | control `6c2c11e2cf876870…c5e9` | control `64175427e4079751…e5c8` |
-| Manager | — | `50801c1c9a72480f…108b` | — | — |
-
-Every stored tag equals the argument passed, and each deployment's two on-chain separators were
-independently re-derived in process by the SEPARATELY COMPILED `--skip-zk` artifact and matched
-exactly — which incidentally proves the `--zk` and `--skip-zk` builds agree (**finding F-105**).
-**Distinctness: 15/15** pairwise comparisons over the six colours, from on-chain circuit calls,
-never derived off-chain. Minter3's two colours are recorded and confirmed ABSENT from the configured
-set — they are the NC-4 controls.
-
-**Configure state:** `configured = true`; bound colours exactly S1/S2/U1/U2; accounts AA_A
-`67105e92…14e7` and AA_B `e01c3be2…3e92`; `balances` holds exactly **8** cells (2 accounts × 4
-colours) all zero with **zero unaccounted keys** — every key in raw ledger state reproduced by the
-contract's own pure `balanceKey` circuit (**finding F-106**); `pools` empty.
-
-**Unit-level negatives — 3/3 GREEN, verbatim:**
-
-| Id | Refused at | Verbatim error | State byte-identical |
-|---|---|---|---|
-| `reconfigure` | circuit execution (no transaction built) | `failed assert: already configured` | yes |
-| `duplicate-registration` | circuit execution | `failed assert: account already registered` | yes |
-| `unregistered-witness` (NC-1 shape) | circuit execution | `failed assert: caller's owner witness matches no registered account` | yes |
-
-Each negative required THREE things: the call throws, the message matches the contract's own assert
-string, and a full snapshot of the Manager is byte-identical across the attempt (re-read after a 12 s
-settle, so "unchanged" is an observation rather than a race).
-
-**Recorded design decisions** (all in Plan 02, none silent): the per-(account, colour) table took the
-FLAT composite-key map rather than the nested one; `balanceKey` is exported as a pure circuit;
-`selfSendShielded` / `selfSendUnshielded` are NOT carried over from 00003 (self-send is proven there
-and owner decision Q3 is "run the new ones"); configured colours are four named cells rather than a
-`Set`, so the bound set is exact and legible from ledger state.
-
-**Artifact hashes** (`evidence/g2-contracts/ARTIFACTS.md`):
-
-| Item | SHA-256 |
-|---|---|
-| `contracts/minter.compact` (4676 B) | `5eefba98962ddbef4af6b1ea4d17c21f37baf1d712c5822be0a7b4c245d6c1ef` |
-| `contracts/manager.compact` (15958 B) | `3a6c71013e81490f2bb8869f08ea3e1e8abe39f63966dd35f49dd76f15609ff3` |
-| minter `contract/index.js` | `3756db90ac25bc74496bbc38f2509f124b01bb7feb0877806dd878ba854241ad` |
-| manager `contract/index.js` | `f223eedab7d360d0c5548cc0ae7d917813e91d7e18e3e4a9d4a06ed4339f1b87` |
-
----
-
-## G3 — the four-colour step ledger
-
-**Wrapper:** `scripts/g3/verify-g3-ledger.sh` · **Evidence:** `evidence/g3-ledger/` ·
-**Result: GREEN on the third attempt**, 2026-08-18T23:01:56Z→23:24:23Z, `final_exit: 0` including
-teardown, `stack_assert_clean` confirmed. Compose project `aa00004-g3-20260818230156-84425`.
-
-| Step | Duration | Result |
-|---|---|---|
-| `06-unit-suites` | 2 s | **45/45** offline checks — the G2 suites plus a dry run of the whole 14-row table, deliberately BEFORE anything boots |
-| `08-pull` | 149 s | pinned digests (warm) |
-| `11-step-ledger` | **1128 s** | steps 0–13 + NC-1..5 + M1 + M2, in one process |
-| `12-render-cells` | 1 s | **25/25 checklist items GREEN, all controls GREEN, no gaps** |
-
-### The offline dry run (added, not in the plan — recorded rather than silent)
-
-The spec's step table is the one thing in the harness copied from a document rather than derived, so
-it now lives alone in `harness/src/g3/expected.ts` (no imports at all) and
-`harness/src/test/step-ledger.test.ts` checks it before anything boots: every colour conserves at
-every row, every custody figure equals its account column, each row differs from the previous one
-ONLY where the spec's "(all other cells UNCHANGED)" column allows, and row 13 equals the spec's
-separately written final table. It then replays the Manager's half of all fourteen rows and all six
-controls through the compiled artifact in process. One simulator limitation is recorded rather than
-papered over: the in-process runtime maintains no kernel unshielded balances, so step 12's
-`withdrawUnshielded` cannot complete offline — the dry run asserts it reaches exactly that LAST
-guard, which is itself the offline proof that the witness choke point, the colour check and the
-per-account guard all passed. Step 12 then **succeeded live**, confirming the limitation is a
-simulator artefact.
-
-### Steps 0–13 — observed
-
-Full table in `README.md` and `REPORT.md`; per-row evidence in `evidence/g3-ledger/step-N/step.json`
-(+ `summary.md`). Every row asserted the full 16-cell table, both pools (value AND nonce), both
-unshielded contract-ledger balances, the per-colour invariant `custody[c] == AA_A[c] + AA_B[c]`, the
-conservation identity `minted[c] == custody[c] + OwnerN[c] + OwnerM[c]`, an indexer reconstruction
-independent of every wallet, and a rotating on-chain `accountBalance` spot check.
-
-Final observed table — **exactly** the specification's:
-
-|  | S1 | S2 | U1 | U2 |
-|---|---|---|---|---|
-| OwnerN | 4 | 0 | 5 | 2 |
-| OwnerM | 3 | 2 | 0 | 3 |
-| AA_A | 3 | 0 | 5 | 0 |
-| AA_B | 0 | 8 | 0 | 5 |
-| pool / ledger | poolS1=3 | poolS2=8 | ledgerU1=5 | ledgerU2=5 |
-
-Step 7 is where the project's central claim first appears on chain: **`poolS1=6` and `poolS2=6`
-coexisting in ONE Manager**, keyed by colour, owned by different accounts.
-
-### M1 — two colours, one transaction
-
-`00b61d330b2a782e234dac5fdabaf8134b7be065a64cdfeb5855d513f055c7f7e6` carries BOTH effects:
-`depositShielded(S2,2)` merging poolS2 6→8 with AA_B S2 6→8, AND `depositUnshielded(U2,2)` taking
-the kernel's U2 balance 3→5 with AA_B U2 3→5. Shape: the SDK scoped batch (same contract, one
-transaction, one segment per call, contract state threaded between them).
-
-### Controls — 7/7 GREEN, with the contract's OWN verbatim assert
-
-| Id | Refused at | Verbatim |
-|---|---|---|
-| NC-1 | circuit execution (no transaction built) | `failed assert: caller's owner witness matches no registered account \| cause: Error executing circuit 'withdrawShielded'` |
-| NC-2 | circuit execution | `failed assert: account colour balance too low \| cause: Error executing circuit 'withdrawShielded'` |
-| NC-3 | circuit execution | `failed assert: account colour balance too low \| cause: Error executing circuit 'withdrawShielded'` |
-| NC-4a | circuit execution | `failed assert: colour is not a configured unshielded colour \| cause: Error executing circuit 'depositUnshielded'` |
-| NC-4b | circuit execution | `failed assert: colour is not a configured shielded colour \| cause: Error executing circuit 'depositShielded'` |
-| NC-5 | circuit execution | `failed assert: account colour balance too low \| cause: Error executing circuit 'transferInternal'` |
-| M2 | circuit execution of the SECOND leg (composed transaction discarded, never submitted) | `Unexpected error executing scoped transaction 'aa00004-mixed-colour': Error: failed assert: colour is not a configured unshielded colour` |
-
-Each records the fixture it relies on **read from chain** rather than assumed, and proves the full
-16-cell table + both pools + both ledger balances + both users' coins/UTXOs byte-identical across
-the attempt. NC-4b mints a REAL Minter3 shielded coin to OwnerM first, so the coin offered to
-`depositShielded` is a genuine on-chain coin of an unconfigured colour, not a fabricated argument.
-
-### G3 run history — recorded honestly
-
-| Run | UTC | Outcome | Cause |
-|---|---|---|---|
-| 1 | 2026-08-18 | **RED** at step 13 | Steps 0–12 GREEN. (A) the one-Intent shape was refused by the NODE with a bare `1010: Invalid Transaction: Custom error: 223`, and the harness recorded nothing better — a defect in the harness, fixed by capturing the whole `cause` chain and dumping the assembled transaction's structure. (B) the fallback was broken and it was **my bug**: `createUnprovenCallTx` builds a call but never registers it with the scope; the SDK's own entry point is `submitCallTx`. Teardown 0, host clean. |
-| 2 | 2026-08-18 | **RED** at step 13 | Steps 0–12 GREEN again, reproducibly, on an independent stack. Both fixes worked — the structural dump proved the assembly is exactly what FR-107 asks for (`intentCount: 1, actions: 2, addresses ["446485ab396a","446485ab396a"]`) and DISPROVED the unshielded-offer hypothesis — and then BOTH shapes were refused by the node with the identical code. Teardown 0, host clean. |
-| probe 1 | 22:25:31Z→22:39:37Z | `final_exit: 0` | `scripts/g3/probe-mixed.sh`, six shapes on one stack. **Killed two hypotheses with evidence rather than argument**: two same-contract calls in ONE intent are ACCEPTED, and a shielded + an unshielded receive in one intent are ACCEPTED. `evidence/g3-ledger/probe-mixed.json`. Case 6's `Insufficient funds` was my probe's own fixture bug and is recorded as such, not as a finding about FR-107's fallback. |
-| probe 2 | 22:42:15Z→22:58:41Z | `final_exit: 1` | `harness/src/g3/probe-merge.ts`. Its decisive third case ACCEPTED the exact spec step-13 shape — a MERGING `depositShielded(S2,2)` + `depositUnshielded(U2,2)`, two same-contract calls, ONE ledger Intent — live tx `006acec476e3342ba919d6f89a6367b25aeea6b0548aef5f57f2e4e4767e115e2e`, poolS2 8→10. The probe then crashed on case 4: **my fixture bug** (the fixture minted 10 of S2 and cases 1–3 spent all of it), so `probe-merge.json` was never written. **Recorded evidence gap**: the machine-readable half of that one probe is absent; its verbatim console log `evidence/g3-ledger/probe-merge/04-probe.out` retains the full result including the accepted transaction id. Teardown 0, host clean. |
-| 3 | 23:01:56Z→23:24:23Z | **GREEN** | `final_exit: 0` incl. teardown; 25/25 items GREEN, no gaps |
-
-**What was actually wrong with the gate.** With the shape proven good by probe 2, one difference
-remained between the working probe and the failing gate: **the fresh spender's readiness wait
-covered only the SHIELDED leg.** A wallet that has synced its shielded state but not yet its U2 UTXO
-does not fail loudly — `balanceTx` produces a transaction and the NODE refuses it with the bare
-`Custom error: 223` seen in both runs (**finding F-107**). Fixed two ways: `openSpender` now takes a
-LIST of readiness conditions and step 13 requires BOTH legs, and M1 retries once on a completely
-fresh spender, so a sync race costs a retry rather than a gate run.
-
-**Decision D-102 resolved: SAME-CONTRACT composition**; FR-107's cross-contract fallback was never
-needed. Both same-contract mechanisms work on this lane (one ledger Intent — probe tx
-`006acec476e3…`; SDK scoped batch — gate tx `00b61d330b2a…`). The gate used the scoped batch, and
-the one-Intent shape's refusal *in the gate's own state* is recorded as an open lane observation
-rather than papered over.
-
-**Error 223, decoded after the gate was green** (against the read-only reference tree
-`$HOME/midnight-ref-ai/v2.0.0-rc.4`):
+# VERIFICATION — 00006-unbalanced-zswap
+
+`EXPERIMENTAL_LANE` / `LANE-DEV-1`
+
+The append-only ledger of what was run, when, with what result — **including every run that was
+VOIDed, went RED or was superseded**, because a project that only records its green runs is not
+reproducible and its green runs cannot be trusted. Every canonical run's authoritative record is the
+gate's own `run.log`; this file indexes them and says what each one settled.
+
+A gate is GREEN **only if its wrapper exits 0 including teardown**, and every teardown asserts that
+no container, volume or network of this project survived it. `final_exit: 0` in a `run.log` means
+exactly that.
+
+## Contents
+
+- [Lane and its inheritance](#lane-and-its-inheritance)
+- [Gate G1 — workspace, lane, spikes S1–S3](#gate-g1--workspace-lane-spikes-s1s3)
+- [Gate G2 — Manager v4, the offer kit, spikes S4–S6](#gate-g2--manager-v4-the-offer-kit-spikes-s4s6)
+- [Gate G3 — the swap step ledger](#gate-g3--the-swap-step-ledger)
+- [Gate G4 — clean-clone reproduction and closeout](#gate-g4--clean-clone-reproduction-and-closeout)
+- [Deviations, findings and workarounds, with where each was established](#deviations-findings-and-workarounds-with-where-each-was-established)
+- [What is NOT verified](#what-is-not-verified)
+
+## Lane and its inheritance
+
+The lane is **not re-pinned by this project**. `scripts/lib/lane-pins.sh` walks the whole inheritance
+chain and compares, at EVERY hop, the three container image digests, the compactc archive pin and
+`harness/pnpm-lock.yaml`:
+
+```
+00003 a8ebff9  (the original pinning act)
+  → 00004 f066a09
+    → 00005 e9701e9   (this project's base commit)
+      → 00006 (here)
+```
+
+Generalising from "unchanged since my base" to a hop-by-hop walk was deliberate: 00006 is three
+projects removed from the pinning act, so a check against the base alone would pass even if 00004 or
+00005 had silently re-pinned something.
 
 | What | Where |
 |---|---|
-| `223 = SequencingCheckError::CausalityConstraintViolation` | `midnight-node/ledger/src/versions/common/types.rs:508-515`; raised from `stx.sequencing_check()` at `midnight-ledger/ledger/src/verify.rs:655` |
-| Any two calls sharing a contract **address** get an unconditional precedence edge (entry point irrelevant) | `relate_nodes`, `verify.rs:1162-1175` |
-| An edge running fallible → guaranteed is rejected | `causality_check`, `verify.rs:936-964` |
-| This is codified intended behaviour, not a bug | ledger test `causality_check_sanity_check`, `ledger/tests/intent.rs:1021`; spec rule `midnight-ledger/spec/intents-transactions.md:90-110` |
-| The LEGAL same-address shape | `relate_nodes_same_address_ordering`, `verify.rs:2451` — guaranteed-only calls first, fallible-only after |
-| No shielded/unshielded mixing rule exists | the family distinction was a red herring; only transcript section shapes matter |
+| pin manifest, with both labels | `evidence/g1-lane/LANE.md` |
+| the hop-by-hop proof, verbatim | `evidence/g1-lane/03-lane-reuse.out` |
+| `LANE-DEV-1` (compactc `0.33.0` substituted for `-rc.2`, owner-approved) | `evidence/g1-lane/04-lane-dev-1.out` |
+| the same proof re-run at G2 and G3 | `evidence/g2-contracts/03-lane-reuse.out`, `evidence/g3-swap-ledger/03-lane-reuse.out` |
 
-This explains the observed divergence exactly: the gate's carrier put its zswap offer in the
-FALLIBLE section (`guaranteedZswapOffer: null, fallibleZswapOffer: present`) while the probe's sat in
-the GUARANTEED one. **One narrow question remains open and is recorded, not closed by assertion**:
-why the same circuit on the same merge branch places its zswap offer in different sections in the
-two states.
+The approved specification's SHA-256 is
+`6441f8ed216a4f6b48306d171a5230e33f4ec3ed2739ff04f6c055f77b672bea`, verified byte-identical by G4
+step `03-spec-hash` on the authoring host. The specification lives in the organizer repository, not
+here, so a clone on another machine reports it as NOT PRESENT rather than silently skipping it.
 
----
+## Gate G1 — workspace, lane, spikes S1–S3
 
-## G4 — reproduction, publication, closeout
+Wrapper: `scripts/g1/verify-g1-spikes.sh` (`--smoke` runs the Phase-1 half only).
+**Canonical: run 5, GREEN, `final_exit: 0`, product commit `aa0f8e5`.**
 
-**Wrapper:** `scripts/g4/verify-g4-closeout.sh` · **Evidence:** `evidence/g4-closeout/`
+### Every G1 run, in order
 
-The wrapper clones this repository into a fresh temporary directory (asserting the clone carries no
-generated artifacts, no `docker/.env`, no `node_modules` and no private-state store, and that it DOES
-carry the contracts, wrappers and pinned lockfile), re-verifies the approved specification is
-byte-identical, runs **G1, G2 and G3 inside that clone** against fresh stacks of their own, compares
-the reproduction against the retained originals, renders `REPORT.md`, and checks the closeout
-documents exist and carry the lane labels. Its teardown removes only that exact temporary path and
-then proves no container, volume or network of this project survives.
+| Run | Outcome | What it settled, or why it did not count |
+|---|---|---|
+| `--smoke` | **GREEN** | lane proven inherited across all three hops; W-1 adopted; one disposable stack booted, funded and torn down clean. Evidence: `evidence/g1-smoke/` |
+| run 1 (full) | **VOID — not RED** | steps 01–15 passed (S1 GREEN). `16-spike-s2` was starved: the shared host's 1-minute load reached **21.7 on 16 cores**, one attempt took 12.5 min where the first six took ~24 s, and the next died with `'prove' returned an error: AbortError`. A proof-server abort under host starvation is evidence about the HOST, not the ledger — and in an evidence table it looks exactly like a refusal. Terminated deliberately; teardown held. **No conclusion about the 104 hypothesis was drawn from it.** Led to S2's load gate, per-attempt timeouts and incremental evidence writes |
+| run 2 (full) | **VOID — not RED** | the host **idle-slept mid-gate** (the same failure mode 00005's G4 run 1 recorded). Led to **W-2** (`scripts/lib/nosleep.sh`) |
+| run 3 (full) | **RED — a bug of mine, correctly caught** | S2's shape **C** tested `o.shape === 'dependent'`, which is false for `'dependent-fixed'`, so C silently ran the INDEPENDENT specs — measuring the wrong thing under the right name — and exhausted the unshielded mint budget. Teardown held; host verified clean. Console log retained: `evidence/g1-spikes/superseded/run3-console-RED-shapeC-bug.log` |
+| run 4 (full) | **GREEN, but its S2 REPORT was withdrawn** | every measurement was valid (0 VOIDs; shape B 3/3 ascending accepted vs 9/9 descending refused), but the report inferred "segment order is a cause, not the only one" from shape C's failures, when the truth is that the *rewrite* is invalid (F-306), and it pooled the intervention arm into the necessity figure. Both defects fixed; raw data retained as a genuine independent replication: `evidence/g1-spikes/superseded/run4-{S2.md,s2-segment-order.json}` |
+| **run 5 (full)** | **GREEN — canonical** | `final_exit: 0` including teardown, `stack_assert_clean` and `w1_cleanup`; **0 VOIDs and 0 infrastructure retries in all four S2 shapes** |
 
-The comparison is deliberately hostile to itself. Retained evidence is COMMITTED, so `git clone`
-carries the original run's `evidence/` into the clone and the clone's own run overwrites it — a
-comparison that only checked verdicts could pass against the very files it was meant to reproduce.
-So it first proves the reproduction is genuinely its own (different Manager and Minter addresses,
-different colours, different pooled-coin nonces, **zero transaction ids in common**) and only then
-compares what the specification asserts: every checklist verdict, the final 16-cell table and custody
-figures value for value, 15/15 distinctness, two circuits in the M1 transaction, and every negative
-control's verdict, message match, funds-unchanged proof **and verbatim message text**.
+### Run 5, step by step (`evidence/g1-lane/run.log`)
 
-### Pre-validated without chain time
+started `2026-08-20T03:04:35Z`, finished `2026-08-20T03:44:56Z`, `final_exit: 0`, teardown exit 0.
 
-A ~50-minute reproduction must not be lost to a defect in its own verdict step, so both non-chain
-steps were exercised standalone first:
-
-| Check | Result |
-|---|---|
-| `08-docs` run against the working tree | PASS — three documents, both lane labels in each, 3 Mermaid blocks, nothing generated tracked by git |
-| **freshness guard self-test**: the ORIGINAL fed to the comparison as its own "reproduction" | **CORRECTLY REJECTED** — same Manager address, 18 transaction ids in common, all four colours identical. A comparison that cannot fail is worthless; this one demonstrably fails when it should. |
-
-### G4 run history
-
-| Run | UTC | Outcome | Cause |
+| Step | Duration | Step | Duration |
 |---|---|---|---|
-| 1 | 2026-08-18T23:41Z → 2026-08-19T00:46Z | **RED** at `03-reproduce-g1` (G1 step `05-pull`, exit 137) | **A host Docker fault, not a project defect.** `docker compose pull` printed `Pulling` for all three services and then made no progress for 63 minutes, although all three pinned digests were ALREADY present locally. Diagnosed rather than assumed: `docker info` answers normally (server 29.1.3, 12 containers, 80 images) and the registry is reachable from the host (`auth.docker.io` 200, `registry-1.docker.io/v2/` 401 — the normal unauthenticated response), but **`docker pull hello-world` hangs identically** and `docker-credential-desktop get` hangs too, so the daemon's pull path is wedged for every image, not for these pins. I killed the stuck pull rather than let it hold a shared host: G1 went RED (exit 137), G1's teardown exited 0, and G4's teardown removed the validated temporary clone and asserted **0 containers, 0 volumes, 0 networks** remaining. |
+| `01-w1-docker-config` | 0 s | `10-boot` | 8 s |
+| `02-probe-ports` | 0 s | `11-health` | 2 s |
+| `03-lane-reuse` | 1 s | `12-wallets` | 5 s |
+| `04-lane-dev-1` | 1 s | `13-funding` | 148 s |
+| `05-compile-fast` | 1 s | `14-record-lane` | 0 s |
+| `06-install` | 0 s | **`15-spike-s1`** | **349 s** |
+| `07-compile-zk` | 61 s | **`16-spike-s2`** | **1617 s** |
+| `08-typecheck` | 1 s | **`17-spike-s3`** | **223 s** |
+| `09-pull` | 2 s | `18-record-spikes` | 1 s |
 
-| 2 | 2026-08-19T00:57Z | **RED** at `03-reproduce-g1` (G1 step `02-lane-reuse`) | My first form of the workaround was wrong, **and the lane-reuse check caught it**. Pointing `DOCKER_CONFIG` at a scratch directory hid the `docker compose` CLI *plugin* (Docker resolves plugins through the config directory), so `docker compose --env-file …` failed with `unknown flag: --env-file`. The check then refused to pass vacuously — it reported `DIGEST MISMATCH: no image references sha256:caf93d6f…` for all three services and `LANE REUSE PROOF FAILED — this is a BLOCKER. Do not edit a pin to make it pass.` A check that read "no images found" as "nothing mismatched" would be worthless. Teardown failed too (exit 125, same missing plugin), and the wrapper correctly reported RED rather than green-with-a-warning. |
+### What G1 established
 
-**Root cause, diagnosed rather than guessed: Docker Desktop's credential helper is wedged.**
-`~/.docker/config.json` sets `"credsStore": "desktop"`, and `docker-credential-desktop get` hangs
-indefinitely, so every `docker pull` blocks on that lookup before it reaches the network — which is
-why `docker info` and `docker system df` answer normally while even `hello-world` never completes.
-Disk was ruled out (143 GiB free on the host).
+| Spike | Verdict | The load-bearing detail |
+|---|---|---|
+| **S1** — can a FOREIGN wallet balance and submit a contract-call transaction? | **GREEN** | both entry points work: `balanceUnboundTransaction` (S1a) and, after `bind()`, `balanceFinalizedTransaction` (S1b). The builder held **none** of the deposited colour, so it could not have funded the coin. Merged intent segments `[1, <maker's random>]` — the taker's intent lands first, benignly. **No refusals to record: zero.** The prior art's proof-server death (`Failed to check: bad input`) **did not reproduce** |
+| **S2** — is node code `104` caused by descending merged segment order? | **CONFIRMED, with the post-hoc fix REFUTED as implemented** | shape B (a genuine read-after-write) across all four runs: **23/23 ascending accepted, 25/25 descending refused** — 48 attempts, no counterexample either way. Pooled over the observation shapes an ascending pair was never once refused. The fix (re-keying the merged transaction's intents) was refused 12/12 with `235`, including on originally-ascending draws (F-306), so the mitigation belongs upstream at construction time |
+| **S3** — bound or unbound? | **GREEN → decision D-306 = UNBOUND (`pre-binding`)** | both forms round-trip a real process boundary byte-identically (unbound 10 657 B, bound 10 726 B, SHA-256 stable in both directions, read by a separate `tsx` process with **no network**), both keep FR-302 placement exact, and both settled in S1. Unbound is chosen because it is the entry point the pinned SDK's own shielded-swap e2e test uses and because `bind()` freezes segment id and contents — precisely what an OPEN offer must not do. The unbound form has **no canonical transaction hash**, which is why FR-306's SHA-256-of-bytes content address is the only stable name available |
 
-**The workaround and its exact scope.** The gate is run with `DOCKER_CONFIG` pointing at a scratch
-directory containing `{}` (no `credsStore`) plus a symlink to the user's existing `cli-plugins`;
-under it a pull completes instantly.
+## Gate G2 — Manager v4, the offer kit, spikes S4–S6
 
-- It is an ENVIRONMENT VARIABLE for the gate's own child processes. `~/.docker/config.json`, Docker
-  Desktop's settings and every other project on this shared host are untouched.
-- **No pin, gate wrapper, contract or piece of evidence was changed to get past it** — in
-  particular the failing `05-pull` step was not removed.
-- Pulls therefore run anonymously. The images are public and **pinned by digest**, and the digest is
-  the identity, so the pin proof is unaffected: `lane_assert_pins_unchanged` and
-  `docker compose config --images` still assert the three digests, and `stack_health` still records
-  the image IDs that actually run. Verified before relaunching that `docker compose config --images`
-  resolves exactly `caf93d6f…`, `6c01bb43…` and `c68c25e8…` under the scratch config.
+Wrapper: `scripts/g2/verify-g2-contracts.sh` (`--offline` runs the compile/unit/typecheck half).
+**Canonical: run 3, GREEN, `final_exit: 0`, product commit `3b9070c`.**
 
-Restarting Docker Desktop would also have cleared the wedge, but it would have killed an unrelated
-container that had been up for 24 hours on this shared host, so it was not done. Host state was
-restored after the diagnosis: the `hello-world` image pulled to isolate the fault was removed, and
-an empty `aa00004-p2-*` temporary directory left by an earlier probe run was cleaned up.
+### Every G2 run and pilot, in order
 
-### Run 3 — GREEN
+| Run | Outcome | What it settled, or why it did not count |
+|---|---|---|
+| `--offline` | **GREEN** in 1 m 47 s | Manager v4 compiled, 115 offline assertions green, typecheck clean, F-201 verifier-key discipline clean |
+| smoke (one spike) | **the two-circuit Manager was REFUSED ON DEPLOY** | `1010: Invalid Transaction: Transaction would exhaust the block limits`, **4/4 across spaced attempts** — caught deliberately before committing to the ~100-minute full gate. Diagnosed rather than guessed: finding **F-307**. Evidence: `evidence/g2-deploy-budget/01-deploy-live-4-attempts.out`, and the four-probe bracket in `02-deploy-probe-bracket.out` |
+| smoke (again) | **a bad assertion of mine, not a lane problem** | S4's precondition was "the maker holds DUST" and it threw, because `dustBalance` reads 0 on this lane even for wallets demonstrably paying fees. Replaced with something observable: the maker must hold NIGHT REGISTERED for dust generation (so it COULD pay), and the decisive evidence is the settled transaction's per-intent dust actions |
+| S4 pilot | **GREEN, 16/16** | the floating-surplus OPEN offer proved (9.4 s, 21 581 B), read `imbalances(0) = {+2 S_A, −3 S_B}`, was proven unsubmittable alone offline, and was SETTLED by a wallet whose seed appears nowhere in the maker's providers |
+| gate run 1 | **RED on S5** | `17-spike-s5` failed identically on the initial attempt and both bounded retries. The wrapper classified them as infrastructure and VOIDed them; **that classification was wrong** — the failures were deterministic and the rxjs `Timeout has occurred` string that matched the signature was incidental. The matcher was narrowed. The run is nevertheless the source of findings **F-308** and **F-309**. Evidence: `evidence/g2-contracts/run1-superseded/` |
+| gate run 2 | **VOID — agent infrastructure** | steps 01–17 GREEN, **S4 GREEN again on a second independent stack**, and **S5b replicated the F-310 boundary exactly**. Then `18-spike-s5` was killed 29 minutes into its 1800-second arm because the executing agent's background shell was stopped and the signal reached the wrapper's process group. The fail-safe contract held: `final_exit: 130`, teardown exit 0, host verified clean. **No conclusion is drawn from the interrupted arm.** Run 3 was launched in its own session so an agent-side signal could not reach a half-hour measurement again |
+| — | session interruption (VOID-class) | the executing session was killed mid-wait by a transient server-side API error (529 Overloaded) while the gate ran. The gate is a detached host process and ran to completion unaffected. Recorded so a reader knows why the transcript has a seam, and so it can never be mistaken for a lane observation |
+| **gate run 3** | **GREEN — canonical** | `final_exit: 0`, 21 steps, teardown exit 0 with `stack_assert_clean` and `w1_cleanup`; host verified free of every `aa00006-*` container, volume and network. **0 VOIDs, 0 infrastructure retries** |
 
-`evidence/g4-closeout/run.log`: **`final_exit: 0`**, teardown `exit: 0`, residue proof
-**0 containers, 0 volumes, 0 networks**.
+### Run 3, step by step (`evidence/g2-contracts/run.log`)
+
+started `2026-08-20T09:16:50Z`, finished `2026-08-20T10:38:49Z`, `final_exit: 0`, teardown exit 0.
 
 | Step | Duration | Result |
 |---|---|---|
-| `01-clean-clone` | 0 s | fresh `mktemp -d` clone; no generated artifacts, no `docker/.env`, no `node_modules`, no private-state store; contracts, all three wrappers and the pinned lockfile present |
-| `02-spec-hash` | 0 s | approved spec byte-identical to `e83897d46d3b2b5af3c42863d4ad49c922c374038a45dc04401ba5cc66e111f6` |
-| `03-reproduce-g1` | 253 s | G1 GREEN inside the clone; probe P2 verdict PASS, 0 failures |
-| `04-reproduce-g2` | 530 s | G2 GREEN inside the clone; deploy-configure PASS, 0 failures, **15/15** colours distinct |
-| `05-reproduce-g3` | 1151 s | G3 GREEN inside the clone; 25/25 items |
-| `06-compare` | 1 s | **the reproduction matches the original item for item** (below) |
-| `07-report` | 0 s | `REPORT.md` re-rendered with its reproduction section filled from the clone's own evidence |
-| `08-docs` | 0 s | all three documents present with both labels; Mermaid present; `archive/00003/` intact; nothing generated tracked by git |
+| `01`–`14` (W-1, ports, lane, compile, install, units, typecheck, ZK+F-201, pull, boot, health, reset, load gate) | 96 s total | all exit 0 |
+| **`15-spike-s4`** | **749 s** | **GREEN, 16/16** — the floating-surplus OPEN offer settles |
+| `16` (S4b) | — | **NOT RUN**, with the reason recorded in `evidence/g2-spikes/S4b.md` |
+| **`17-spike-s5b`** | **972 s** | **MEASURED, 4/4** — the publishability boundary, replicated a third time |
+| **`18-spike-s5`** | **2538 s** | **MEASURED, 7/7** — `239` for the intervening deposit, `228` for expiry, and an untouched offer still settling after **1800 s** |
+| **`19-spike-s6`** | **559 s** | **GREEN, 9/9** — maker intent 0 dust spends, taker's 1; settlement **3.03×** a plain transfer |
+| `20-record-artifacts`, `21-record-spikes` | 1 s | the artifact record and the spike index, incl. `OPENNESS.md` |
 
-**Freshness — the reproduction is demonstrably its own run, not the committed evidence re-read:**
+### Offline verification carried by every gate from G2 onward
 
-| | Original | Clean-clone reproduction |
+| What | Result |
+|---|---|
+| unit assertions (`npx vitest run`) | **121 passing** — 00005's **56 unchanged** (so "v4 extends v3, never weakens it" is a fact about a green file) plus 39 for the swap circuit and 26 for the envelope kit |
+| guard ORDER | 4 dedicated tests plus a per-shape table, pinning the order so no future edit can move a state-reading guard ahead of the witness choke point |
+| no-state-on-refusal | every negative runs through `expectReject`, which requires the WHOLE ledger snapshot — the account set, each pooled coin's identity AND value, every cell in both family maps, and all three map SIZES — to be byte-identical afterwards. The sizes are what make it a no-state-**created** proof |
+| the reimplemented `coinNullifier` / `coinCommitment` | compared not against hand-copied vectors but against the values the **standard library itself** claims for the same pooled coin inside `withdrawShielded`; exact match, and on both recipient discriminants of the commitment |
+| the two FR-308 branches | proven to differ in **exactly one zswap output**, with its own test — the whole difference between "a swap with somebody" and "a swap with anybody" |
+| typecheck (`scripts/typecheck.sh`) | **PASS**, 1 of 1 inherited baseline errors matched, **zero new type errors** (F-302) |
+| F-201 verifier-key discipline | clean: the only shared verifier keys are the expected MinterCollide mirror, which shares its prover key too |
+
+## Gate G3 — the swap step ledger
+
+Wrapper: `scripts/g3/verify-g3-swap-ledger.sh` (`--offline`, and `--only <A|B|C>` for a pilot).
+**Canonical: run 2, GREEN, `final_exit: 0`, product commit `51266a3` plus `1a007ae` for one
+index-completeness fix. 23 rows, 217 checks, zero failures.**
+
+> Run under deviation **D-307**: the ledger is PARTITIONED across three fresh Managers on one chain,
+> because **F-310** makes the spec's single-Manager sequence unreachable past row 6. Every row keeps
+> the spec's exact amounts and assertions; the final table is asserted per stage; the deviation is
+> evidenced by **P-F310**, which attempts the spec's literal row 7 at two cells and records the
+> fail-closed refusal. Full statement: `evidence/g3-swap-ledger/DEVIATION.md`.
+
+| Run | Outcome | What it settled, or why it did not count |
 |---|---|---|
-| Manager | `10ea8ca47a36e89a6534148161355156ce2b1cd372ac748502cb273b29cba901` | `e00ad0b5f46779ade510da9010c8cd2d7df59a57131ab59d30663eb97ceaff77` |
-| Minter1 (`TOKA`) | `8ff81b38627d0a611c3c558eed28b859b0b5e1b9ea88159caee4ae6bc257e692` | `22f35b2b430088d94e0fadfcc1b0a9cb0d25db1acdf4a15765d154bfa947e189` |
-| Minter2 (`TOKB`) | `4cf57bdd66fa67d51305194bf68b6611b14261f31e21cfcfee8593cee742a0a0` | `ada870b7052b6f776ceee23cad13ac4eb64a323653a91802a2b27836510f388c` |
-| Minter3 (`TOKC`) | `c4b9aec02d9d45d75ffcb7a5bc1d5223658d6130232fcdd09752ab9fa3b4b14f` | `eae07f88714e0f76bd827c90b6b30ffe001e59c860af03ead79f6d9f1566b3c5` |
-| S1 colour | `9c77d2fb6250482c9c7bff6f8ceedc71f687b8d502383b33012f9602d711d888` | `7c2035d461200993506f9bb00fd77d1c292373ae1400c5ddf59bcda368539b05` |
-| M1 transaction | `00b61d330b2a782e234dac5fdabaf8134b7be065a64cdfeb5855d513f055c7f7e6` | `006f2eacaf443f7f6158bf6dcb6ebbd73f8a0051397a3d14fc8c8e72a2d48e5470` |
-| **Transaction ids in common** | — | **0** (18 original, 18 reproduced) |
-| Pooled coin nonces | — | differ for both S1 and S2 |
+| `--offline` | **GREEN** | 121/121 unit assertions, typecheck PASS with zero new errors, F-201 clean |
+| pilot `--only B` | **GREEN on the first attempt, 664 s** | the cheapest full exercise of every new piece — maker process → published envelope → reader process → taker process → settlement → two-point observation → evidence — and it banked the owner-REQUIRED result early. All 44 checks passed. **A pilot is never a gate result and the wrapper says so** |
+| gate run 1 | **RED on ONE comparison bug of mine** | stages B (529 s) and C (817 s) GREEN; stage A RED on exactly two checks, both in the P-F310 row. The row deploys a THIRD issuer mid-row, so its `before` snapshot watched two colours and its `after` watched three, and the no-state comparison read the added `absent` entries as differences. **The map sizes were byte-identical on both sides (2/2/0)** — the check that would catch a real creation — so the fingerprint was merely scoped wrongly. Fixed by comparing over the keys both observations reported, with `mapSizes` and the account set still compared in full. Evidence retained: `evidence/g3-swap-ledger/run1-superseded/` |
+| **gate run 2** | **GREEN — canonical** | `final_exit: 0` at `2026-08-20T12:57:26Z`, 18 steps, teardown exit 0 with `stack_assert_clean` and `w1_cleanup`; host verified free of every `aa00006-*` container, volume and network. **0 VOIDs, 0 infrastructure retries** |
 
-**What matched, exactly:** 25/25 checklist items GREEN with identical verdict, step and level; the
-final 16-cell table and all four custody figures value for value; 15/15 distinctness; the M1
-transaction carrying two circuits under the same composition shape; and all seven controls GREEN
-with `messageMatched` and `fundsUnchanged` true **and the same verbatim refusal text**.
+### Run 2, step by step (`evidence/g3-swap-ledger/run.log`)
 
-Verbatim verdict (`evidence/g4-closeout/06-compare.out`):
+started `2026-08-20T12:17:25Z`, finished `2026-08-20T12:57:26Z`.
 
-```
-reproduction matches the original item for item, verdict for verdict, and control message for
-control message — on a demonstrably different chain, with zero transaction ids in common
-```
+| Step | Duration | Result |
+|---|---|---|
+| `01`–`14` (W-1, W-2, ports, lane, compile, install, units, typecheck, ZK, pull, boot, health, evidence reset, load gate) | 98 s total | all exit 0 |
+| **`15-stage-a`** | **935 s** | **GREEN** — 12 rows, 116 checks |
+| **`16-stage-b`** | **534 s** | **GREEN** — 3 rows, 44 checks |
+| **`17-stage-c`** | **829 s** | **GREEN** — 8 rows, 57 checks |
+| `18-record` | 2 s | index written with no gaps: `LEDGER.md`, `CELLS.md`, `NEGATIVES.md`, `DEVIATION.md` |
 
-**One hygiene observation, recorded and deliberately NOT acted on:**
-`harness/src/g1/probe-p2.ts:71` creates a private-state directory with
-`mkdtempSync(join(tmpdir(), 'aa00004-p2-'))` and never removes it, so each G1 run leaves one empty
-temp directory behind. Both leftovers (the original run's and the reproduction's) were removed by
-hand. It is not fixed in place because `probe-p2.ts` backs G1's retained evidence, which this
-reproduction has just re-run green — editing it after the fact would mean the evidence no longer
-corresponds to the code. It is a zero-byte directory, not a resource leak of consequence.
+### The numbers a reader should be able to find without opening anything
+
+- **row 5 — the v1 HEADLINE:** tx `00a3036cec400892e7094212b30796f7fec39982859dfcead5604cb4cee6e73bcb`;
+  pool S_A 6→2, pool S_B created =7, AA_A S_A 6→2 / S_B 0→7, map sizes **2/2/0**; OwnerT +4 S_A /
+  −7 S_B; dust actions `{"1":{"spends":1},"6653":{"spends":0}}` — the maker's intent carries **zero**;
+  settlement fee 776 272 289 111 633 SPECKs.
+- **row 8 — the OPEN offer:** tx `00f642666cfa697ea6e802c243423b440d7ee572a7e900fcb0f2614826de411164`;
+  `imbalances(0)` exactly `{+2 S_A, −3 S_B}`; pool S_A **REMOVED** while the cell stays at 0, pool
+  S_B =3, map sizes **1/2/0** — exactly the spec's row 8 sizes; OwnerT 0→2 S_A (swept by its own
+  balancer), 10→7 S_B; `unswept {}`; maker intent 0 dust spends.
+- **four refusal codes, each verbatim in the evidence:** `1` (deserialization — the offer submitted as
+  published), `228` (TTL expiry), `239` (a merged or spent pooled coin — both the staleness probe and
+  the withdraw cancellation), `104` (transcript — the internal-transfer cancellation). Plus `244`
+  (`ReplayProtectionViolation(IntentAlreadyExists)`) for the double take.
+- **P-F310:** the spec's literal row 7 at 2 pools/2 cells — `segments present: [0, N]`,
+  `fallible-offer segments: [N]`, `observed at segment 0: {}` — replicated at 1 pool/2 cells,
+  F-310's own deciding configuration.
+
+## Gate G4 — clean-clone reproduction and closeout
+
+Wrapper: `scripts/g4/verify-g4-closeout.sh` (`--offline` for everything but the three reproduced
+gates). Comparator: `scripts/g4/compare-swap-runs.py`. Authoritative record:
+`evidence/g4-closeout/run.log`; the reproduction's own evidence is copied to
+`evidence/g4-closeout/repro/` **before the clone is deleted**, because whatever is not copied is gone.
+
+### What the gate does, and why each step is there
+
+| Step | What it proves |
+|---|---|
+| `01-w1-docker-config` | W-1 (and W-2's status recorded) before anything touches docker |
+| `02-clean-clone` | a `git clone` into `mktemp -d` at exactly this working tree's commit, asserted to carry **no** `docker/.env`, `node_modules`, `toolchain/` or generated artifacts, to carry the contracts, offer kit, three stages and gate wrappers, and to carry the committed original evidence the next step needs |
+| `03-spec-hash` | the approved specification is byte-identical to `6441f8ed…672bea` |
+| `04-freshness-selftest` | **the freshness guard is NON-VACUOUS.** The original is fed in as its own "reproduction" and the comparison MUST reject it with exit code 2 — every substantive check passing and freshness the sole objection. A guard that cannot produce that outcome is not a guard |
+| `05`/`06`/`07-reproduce-g1/g2/g3` | the three gate wrappers run **inside the clone**, in series, each against a fresh disposable stack of its own |
+| `08-copy-repro-evidence` | the clone's JSON records and index pages are copied out before teardown destroys them |
+| `09-compare` | verdict-and-shape comparison against the retained original: **zero** shared transaction ids, Manager addresses, colours or pooled-coin nonces, and exact equality of every pool, cell, wallet holding, map size, invariant row and conservation row |
+| `10-report` | `REPORT.md` is re-rendered from retained evidence plus the clone's own |
+| `11-docs` | `REPORT.md`, `README.md` and `VERIFICATION.md` exist, carry both lane labels, disclose **D-307** and **F-310**, surface owner questions **Q02-2** and **Q03-1** (both decided 2026-08-20, and the documents say so), state the FR-308 openness verdict in so many words, carry the findings this project owes a reader, keep the three archives intact, prove `contracts/minter.compact` is still byte-identical to `f066a09`, and prove no generated artifact, key or `docker/.env` is tracked by git |
+| teardown | the temporary clone is removed (after validating the path really is a temporary one), then no `aa00006*` container, volume or network is left, then W-1's scratch config is removed |
+
+### What the comparator deliberately does NOT demand
+
+The specification states some outcomes as **disjunctions** and some as **measurements**, and a
+comparator stricter than the specification is a comparator bug:
+
+- **FR-308 openness** must be GREEN in both runs; WHICH shape delivered it (floating surplus or
+  bearer key) may differ, and a difference is reported as a FINDING.
+- **The MEASURED rows** — FR-311's staleness, both cancellation forms, P-F310 — must have measured:
+  refused, no state created, funds unchanged. A different refusal CODE is a FINDING, not a failure.
+- **Spike S2** measures accept/refuse ratios over random draws and feeds sibling issue 0001; its
+  verdict is reported, never required to match.
+- Numbers embedded in check NAMES are compared structurally (digits normalised) — while the numbers
+  that carry the specification's claims are compared for exact equality out of each row's own custody
+  observation. Nothing about the ledger's arithmetic is relaxed.
+
+### G4 runs
+
+| Run | Outcome | Notes |
+|---|---|---|
+| `--offline` preflight | **GREEN** | clone, spec hash, the non-vacuous freshness self-test (exit **2**, every substantive check passing), report render, document checks; `final_exit: 0` including teardown, clone removal and the residue proof. Retained separately at `evidence/g4-closeout/offline-preflight/`, because the full run overwrites that directory and a preflight that established the guard is not vacuous is evidence in its own right |
+| **full run 1** | **GREEN — `final_exit: 0`**, 2 h 47 m (started `2026-08-20T13:27:53Z`, finished `2026-08-20T16:15:23Z`), including teardown, clone removal and the residue proof; host verified free of every `aa00006-*` container, volume and network | G1 46 m → G2 82 m → G3 39 m inside the clone, in series. **0 shared transaction ids** (97 original / 106 reproduced), and 0 shared Manager addresses, colours or pooled-coin nonces. All three stages GREEN: 23 rows, 217 checks, every status, check tally and refusal code identical (`1`, `244`, `228`, `239`, `239`, `104`). Both settlements landed under ONE transaction id on NEW ids — v1 `00b917f91daaad575d0827…`, v2 `003929da6f91ef0112ee71…`. FR-308 openness GREEN again via the floating surplus; the F-310 boundary identical. **One reported finding:** spike S2 diverged (see F-306, amended). Records: `run.log`, `09-compare.out`, and the reproduction's own evidence in `repro/` (99 files) |
+
+## Deviations, findings and workarounds, with where each was established
+
+| Id | What | Established by |
+|---|---|---|
+| **LANE-DEV-1** | compactc `0.33.0` substituted for `-rc.2`; inherited, owner-approved, never re-pinned | `evidence/*/04-lane-dev-1.out` |
+| **D-306** | offers publish as the **UNBOUND** (`pre-binding`) form; the bound form is a proven fallback | G1 spike S3, cross-checked against S1 |
+| **D-307** | the step ledger is PARTITIONED across three fresh Managers on one chain | G3, forced by F-310. **Owner decision 2026-08-20 (Q03-1): D-307 STANDS AS THE RECORD** — "record what really was tested"; a full re-run is left for later and the spec file stays byte-identical |
+| **F-301** | node `104` = `InvalidError::Transcript`; descending merged segment order is NECESSARY (and sufficient for a genuine read-after-write); for disjoint pairs refusals concentrate on new-key insertion | G1 spike S2, replicated across four runs (shape B: 23/23 ascending accepted, 25/25 descending refused) |
+| **F-306** (amended by G4) | post-hoc re-keying of a merged transaction's segments is **state-dependent**: refused **12/12** with `235` in the canonical G1 run, **accepted 12/12** in the G4 clean-clone reproduction of the same code. Mechanism (hypothesis, with support): a re-key moves `fallibleOffer` entries only if they exist, so it is harmless when the zswap items are GUARANTEED and fatal when they are FALLIBLE — i.e. it is governed by the same cost budget as F-308/F-310. Conclusion unchanged and stronger: segment assignment is a build-time decision and the mitigation belongs upstream | G1 spike S2 + the G4 reproduction |
+| **F-302** | the inherited tree does not typecheck at the base commit — a defect in the pinned TYPES, reproduced identically in the 00005 clone. Handled by subtracting exactly that one baseline error and failing if it stops reproducing | G1 Phase 1 |
+| **F-303** | `validateTransaction` cannot validate a contract-call transaction on this lane; its refusal is a FALSE NEGATIVE, so the step is recorded and **never gates** | G1 spike S1 |
+| **F-304** | `Transaction.segments()` is not bound to JS, so the FR-302 "no other segment" assert had to reimplement it — the first version silently degraded to "segment 0 looks right" | G1 spike S1 |
+| **F-305** | two shielded deposits of the SAME colour cannot be built in one contract-scoped batch | G1 spike S2 |
+| **F-307** | a contract DEPLOY budget on this lane is ~**13 provable circuits** (60.1% of the per-block `bytesWritten` ceiling; 14 circuits at 64.7% is refused). v3 had 12, so v4's budget was ONE new circuit and the two FR-308 shapes were merged into it | G2, four probe contracts deployed live |
+| **F-308** | lane issue 0003 observed LIVE: an offer's value leg goes fallible once the wanted colour already has a pool, and FR-302 failed closed | G2 gate run 1 |
+| **F-309** | refusal codes decoded from the pinned node source: `239`, `228`, `104`, plus `118`/`129`/`167` | G2 gate run 1 |
+| **F-310** | **an offer is publishable only while custody holds ONE shielded cell** — dose-response, monotone, both shapes flipping together, the deciding step adding a CELL with the pool count held at 1 | G2 spike S5b, replicated in three independent runs and a **fourth** time by the G4 clean-clone reproduction. **Owner decision 2026-08-20 (Q02-2): measure the alternatives** in a follow-up rig; the Manager v4 shipped here does not change |
+| **F-311** | NC-301 is sharper than the spec expected: the published (unbound) offer is refused by the node at DESERIALIZATION (`1`), and the row records refusals at three non-overlapping layers | G3 stage A row 4 |
+| **F-312** | the double take (NC-302) is refused with `244` = `ReplayProtectionViolation(IntentAlreadyExists)` — replay protection fires before the spent coin's nullifier is consulted, so the spec's parenthetical "backing coin spent" names a mechanism that is real but second in line | G3 stage A row 6, decoded from `types.rs:411-414` |
+| **W-1** | scratch `DOCKER_CONFIG` for every gate (a credential helper can hang). HOST workaround | inherited, step 01 everywhere |
+| **W-2** | every gate re-execs under `caffeinate -is`, because this Mac idle-slept mid-gate and the resulting `AbortError` is indistinguishable from a real refusal in an evidence table. A process wrapper around the gate's own tree: no system setting written, nothing asserted changed. **HOST workaround, not a lane property** | 00006 G1 run 2 |
+
+## What is NOT verified
+
+Stated plainly, because a verification document that only lists successes is a marketing document:
+
+1. **The specification's literal 13-row single-Manager step ledger did not run, and cannot at these
+   pins.** F-310 caps publishability at one shielded custody cell and row 5's settlement creates the
+   second. What ran is D-307's three-stage partition, with every row's exact amounts and assertions.
+   The limit itself is evidenced by P-F310 rather than asserted. **The owner's decision (2026-08-20)
+   is that this record stands as what was tested**, with a full re-run left for later.
+2. **The bearer-key shape (FR-308 v2b) was implemented but NOT RUN.** FR-308 makes openness GREEN if
+   EITHER shape settles, and the floating surplus settled. Nothing here says the bearer shape would
+   fail; it answers no open question and would have spent a shared host's proof server for nothing.
+   Recorded in `evidence/g2-spikes/S4b.md`.
+3. **The unshielded swap family is out of scope** (FR-310, owner Q3 → A): it is an EXTENDED GOAL for a
+   follow-up numbered project. No unshielded swap circuit exists in this contract.
+4. **Whether pool COUNT alone crosses the publishability boundary was not isolated.** S5b's steps 3–4
+   grow pools and cells together; only the cell-count sufficiency is claimed (step 2 holds the pool
+   count at 1).
+5. **The transcript-cost reduction that might buy more cells was not attempted here** — it changes the
+   contract the owner-REQUIRED openness result rests on, and its payoff is unmeasured. That was
+   question **Q02-2**; the owner has since directed that the alternatives be MEASURED in a follow-up
+   rig, explicitly without changing the Manager v4 shipped here. Nothing this project proved depends
+   on that measurement.
+6. **`104` for the staleness case, as FR-311 predicted, was not observed** — the lane answers `239`,
+   3/3 in G2 and again in G3. The measured rule is what is asserted.
+7. **The S5 timing arm at T600 was not measured** and is not claimed. T60 (accepted) and T1800
+   (accepted) were; a timing arm must SETTLE to answer its question, and a settlement exhausts the
+   one-cell budget, so only one long arm is possible per Manager — which is itself F-310.
+8. **`171`** (sibling issue 0002) remains undecoded: it is not in the `InvalidError` arm of the
+   pinned node's error enum.
+9. **The mechanism behind F-306's amendment is a HYPOTHESIS, not a measurement.** Spike S2's
+   post-hoc segment rewrite was refused 12/12 in the canonical run and accepted 12/12 in the
+   clean-clone reproduction of the same code. The explanation offered — that a re-key is harmless when
+   the pair's zswap items are in the guaranteed section and fatal when they are fallible, i.e. the same
+   cost budget as F-310 — is supported by the code path and by the two runs' state-growth figures, but
+   the discriminating measurement (placement recorded per rewrite attempt) was **not taken**. Nothing
+   the specification asks for depends on it: 00006's maker transaction is a single call.
+9. **Nothing here is a statement about a supported lane.** `EXPERIMENTAL_LANE` / `LANE-DEV-1`
+   throughout, on a local fresh dev chain, with two HOST workarounds active.
+
+`EXPERIMENTAL_LANE` / `LANE-DEV-1`

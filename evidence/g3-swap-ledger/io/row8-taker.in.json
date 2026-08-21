@@ -1,0 +1,12 @@
+{
+  "label": "row-8",
+  "envelope": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/offer-2-open.offer",
+  "takerSeedName": "ownerT",
+  "require": [
+    {
+      "colour": "bf3656a8eb2d34b5250209000249d89c5fe634ed9ec4dee47b7b830c650fcfa2",
+      "amount": "3"
+    }
+  ],
+  "out": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/io/row8-taker.report.json"
+}

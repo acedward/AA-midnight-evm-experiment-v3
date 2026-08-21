@@ -1,19 +1,27 @@
-// G2 simulator/unit suite for the parameterized Minter (EXPERIMENTAL_LANE, LANE-DEV-1).
+// G2 simulator/unit suite for the parameterized Minter and for MinterCollide
+// (EXPERIMENTAL_LANE, LANE-DEV-1).
 //
-// FR-101. The Minter's job is to turn a per-deployment CONSTRUCTOR TAG into two contract-scoped
-// colours. The properties 00004 leans on:
+// The Minter is 00004's, REUSED UNCHANGED. Its job is to turn a per-deployment CONSTRUCTOR TAG into
+// two contract-scoped colours. The properties 00005 leans on:
 //
 //   - the tag reaches ledger state unchanged, and the two derived separators are distinct;
 //   - the two colours of one deployment are independent identifiers (never matched by bytes alone);
-//   - two deployments with DIFFERENT tags yield different colours — that is what makes S1/S2 and
-//     U1/U2 four distinct colours from one source;
+//   - two deployments with DIFFERENT tags yield different colours — that is what makes the ten
+//     colours of TOKA..TOKE pairwise distinct from one source;
 //   - two deployments with the SAME tag still differ, because colours stay contract-scoped.
+//
+// MinterCollide is the INVERSE fixture, and the last `describe` block asserts the inverse property:
+// its two family colours must be BYTE-EQUAL. Everywhere else in this project a colour collision is a
+// failure; there it is the point (FR-203, probe P-COLL).
 import { describe, expect, it } from 'vitest';
-import { hex, MinterSim, pad32 } from './sim.js';
+import { hex, MinterCollideSim, MinterSim, pad32 } from './sim.js';
 
 const TOKA = pad32('TOKA');
 const TOKB = pad32('TOKB');
 const TOKC = pad32('TOKC');
+const TOKD = pad32('TOKD');
+const TOKE = pad32('TOKE');
+const TOKX = pad32('TOKX');
 
 const userShieldedRecipient = {
   is_left: true,
@@ -69,16 +77,25 @@ describe('Minter — colours', () => {
     expect(hex(await m.call<Uint8Array>('shieldedColor'))).toBe(hex(await m.call<Uint8Array>('shieldedColor')));
   });
 
-  it('yields SIX pairwise-distinct colours from three tags (the 00004 colour set)', async () => {
-    // The shape of the live distinctness control: Minter1(TOKA) -> S1/U1, Minter2(TOKB) -> S2/U2,
-    // Minter3(TOKC) -> the two control colours that are never configured.
-    const sims = await Promise.all([TOKA, TOKB, TOKC].map((t) => MinterSim.create(t)));
+  it('yields TEN pairwise-distinct colours from five tags (the 00005 colour set)', async () => {
+    // The shape of the live distinctness control: TOKA/TOKB/TOKC deployed at step 1, TOKD deployed
+    // MID-LEDGER at step 15, TOKE the M3 issuer. 45 pairwise comparisons over 10 colours.
+    const sims = await Promise.all([TOKA, TOKB, TOKC, TOKD, TOKE].map((t) => MinterSim.create(t)));
     const colours: string[] = [];
     for (const m of sims) {
       colours.push(hex(await m.call<Uint8Array>('shieldedColor')));
       colours.push(hex(await m.call<Uint8Array>('unshieldedColor')));
     }
-    expect(new Set(colours).size).toBe(6);
+    expect(colours).toHaveLength(10);
+    expect(new Set(colours).size).toBe(10);
+    let comparisons = 0;
+    for (let i = 0; i < colours.length; i++) {
+      for (let k = i + 1; k < colours.length; k++) {
+        comparisons++;
+        expect(colours[i]).not.toBe(colours[k]);
+      }
+    }
+    expect(comparisons).toBe(45);
   });
 
   it('scopes colours to the contract address — the same tag deployed twice still differs', async () => {
@@ -107,6 +124,68 @@ describe('Minter — minting', () => {
 
   it('rejects a zero mint in both families', async () => {
     const m = await MinterSim.create(TOKA);
+    expect(await m.expectReject('mintShieldedTo', 0n, new Uint8Array(32).fill(7), userShieldedRecipient)).toMatch(
+      /mint value must be positive/,
+    );
+    expect(await m.expectReject('mintUnshieldedTo', 0n, userUnshieldedRecipient)).toMatch(
+      /mint amount must be positive/,
+    );
+  });
+});
+
+describe('MinterCollide — the INVERTED assertion (FR-203, probe P-COLL)', () => {
+  it('derives ONE separator and mints BOTH families under it', async () => {
+    const m = await MinterCollideSim.create(TOKX);
+    expect(hex(m.ledger.deploymentTag)).toBe(hex(TOKX));
+    expect(hex(m.ledger.collidingSep)).not.toMatch(/^0+$/);
+    // There is no second separator to read: the ledger declares exactly one.
+    expect((m.ledger as any).shieldedSep).toBeUndefined();
+    expect((m.ledger as any).unshieldedSep).toBeUndefined();
+  });
+
+  it('reports BYTE-IDENTICAL shielded and unshielded colours', async () => {
+    const m = await MinterCollideSim.create(TOKX);
+    const s = await m.call<Uint8Array>('shieldedColor');
+    const u = await m.call<Uint8Array>('unshieldedColor');
+    const c = await m.call<Uint8Array>('collidingColor');
+    // The inverted assertion. Every other colour comparison in this project asserts inequality.
+    expect(hex(s)).toBe(hex(u));
+    expect(hex(c)).toBe(hex(s));
+    expect(hex(s)).toHaveLength(64);
+    expect(hex(s)).not.toMatch(/^0+$/); // not the native token
+  });
+
+  it('mints the SAME colour in both families — the fixture P-COLL deposits', async () => {
+    const m = await MinterCollideSim.create(TOKX);
+    const colour = await m.call<Uint8Array>('collidingColor');
+    const coin = await m.call<any>('mintShieldedTo', 3n, new Uint8Array(32).fill(7), userShieldedRecipient);
+    const returned = await m.call<Uint8Array>('mintUnshieldedTo', 2n, userUnshieldedRecipient);
+    expect(coin.value).toBe(3n);
+    expect(hex(coin.color)).toBe(hex(colour));
+    expect(hex(returned)).toBe(hex(colour));
+    // Same 32 bytes, two families, two different amounts — exactly what the Manager must not alias.
+    expect(hex(coin.color)).toBe(hex(returned));
+  });
+
+  it('is still contract-scoped: two MinterCollide deployments do not collide with EACH OTHER', async () => {
+    // The collision is deliberate WITHIN a deployment, never across deployments — otherwise the
+    // probe would prove nothing about families and everything about a broken derivation.
+    const a = await MinterCollideSim.create(TOKX);
+    const b = await MinterCollideSim.create(TOKX);
+    expect(hex(a.ledger.collidingSep)).toBe(hex(b.ledger.collidingSep));
+    expect(hex(await a.call<Uint8Array>('collidingColor'))).not.toBe(hex(await b.call<Uint8Array>('collidingColor')));
+  });
+
+  it('does not collide with an ordinary Minter carrying the same tag', async () => {
+    const collide = await MinterCollideSim.create(TOKX);
+    const plain = await MinterSim.create(TOKX);
+    const cc = hex(await collide.call<Uint8Array>('collidingColor'));
+    expect(cc).not.toBe(hex(await plain.call<Uint8Array>('shieldedColor')));
+    expect(cc).not.toBe(hex(await plain.call<Uint8Array>('unshieldedColor')));
+  });
+
+  it('rejects a zero mint in both families', async () => {
+    const m = await MinterCollideSim.create(TOKX);
     expect(await m.expectReject('mintShieldedTo', 0n, new Uint8Array(32).fill(7), userShieldedRecipient)).toMatch(
       /mint value must be positive/,
     );

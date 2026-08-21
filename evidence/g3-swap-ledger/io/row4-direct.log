@@ -1,0 +1,10 @@
+[2026-08-20T12:28:56.355Z] direct-submit[row-4]: as-published (unbound, D-306) REFUSED — layer node (submitted and refused, Custom error: 1)
+[2026-08-20T12:28:56.372Z] direct-submit[row-4]: bound REFUSED — layer unclassified — the facade replaced the cause with its own wrapper; see errorDump
+
+--- stderr ---
+2026-08-20 08:28:55        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
+2026-08-20 08:28:55        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
+2026-08-20 08:28:56        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 1
+2026-08-20 08:28:56        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 1
+2026-08-20 08:28:56        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
+2026-08-20 08:28:56        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
