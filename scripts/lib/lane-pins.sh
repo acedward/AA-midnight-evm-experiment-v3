@@ -45,8 +45,36 @@ LANE_PIN_NODE_ARM64="sha256:d1e5fc231147e9af739a1128ae0941119fd59dca7356a2333567
 LANE_PIN_INDEXER_ARM64="sha256:628002a181edfc7d67d43944e84a35d920a0077c89cab6301169079b30c79316"
 LANE_PIN_PROVER_ARM64="sha256:8a4b29d737c1da754df0443e4a552a7934b47e17e99cd893a70120e4ce21fcaf"
 
-# Compiler archive (LANE-DEV-1: released compactc-v0.33.0 stands in for the unpublished -rc.2).
+# Compiler archive. THE PIN IS THE DIGEST; the URL is only where the bytes are fetched from.
+#
+# That distinction was implicit until 00006 forced it. 00006 finding F-316: the original
+# `midnightntwrk/compact` release was REMOVED (HTTP 404 from github.com itself), and the owner located
+# the archive at `LFDT-Minokawa/compact` under release `compactc-v0.33.0-rc.2` — whose asset hashes to
+# EXACTLY the digest below, the one 00003 recorded. So the bytes never changed; only their address did.
+#
+# The checks therefore treat the two differently, and the strictness is not reduced:
+#   IDENTITY  `COMPACTC_SHA256` must be byte-identical at every hop and against the base commit.
+#             Non-negotiable. A change here is a re-pin and fails.
+#   TRANSPORT `COMPACTC_URL` may differ from history ONLY by matching one of the DECLARED urls below,
+#             and only while the digest is unchanged. An UNDECLARED url still fails, so accidental
+#             drift is caught exactly as before — what is now possible is a RECORDED relocation.
+#
+# Owner decision, 2026-08-20 (Plan 05 question Q05-1, option D): relocate the URL, keep the digest,
+# do not re-pin the compiler (owner Q2 -> A: inherited lane, never re-pinned).
 LANE_PIN_COMPACTC_SHA256="3aa23812b0b086dbce07da3931a40dcb01bec9676b1ceed7f2d0be370ab2dc46"
+# Where 00003..00006-G4 fetched it from (now 404 — F-316).
+LANE_PIN_COMPACTC_URL_HISTORICAL="https://github.com/midnightntwrk/compact/releases/download/compactc-v0.33.0/compactc_v0.33.0_aarch64-unknown-linux-musl.zip"
+# Where it is fetched from now. Note the tag is `-rc.2` — the tag the spec pins all along.
+LANE_PIN_COMPACTC_URL_CURRENT="https://github.com/LFDT-Minokawa/compact/releases/download/compactc-v0.33.0-rc.2/compactc_v0.33.0-rc.2_aarch64-unknown-linux-musl.zip"
+
+# _lane_compactc_url <blob>  -> the ARG COMPACTC_URL value in a Dockerfile blob on stdin
+_lane_compactc_url() { grep -E '^ARG COMPACTC_URL=' | head -1 | sed 's/^ARG COMPACTC_URL=//'; }
+# _lane_compactc_sha <blob>  -> the ARG COMPACTC_SHA256 value
+_lane_compactc_sha() { grep -E '^ARG COMPACTC_SHA256=' | head -1 | sed 's/^ARG COMPACTC_SHA256=//'; }
+# A url is acceptable iff it is one of the two DECLARED addresses for these bytes.
+_lane_url_declared() {
+  [ "$1" = "$LANE_PIN_COMPACTC_URL_HISTORICAL" ] || [ "$1" = "$LANE_PIN_COMPACTC_URL_CURRENT" ]
+}
 LANE_EXPECT_COMPILER_VERSION="0.33.0"
 LANE_EXPECT_LANGUAGE_VERSION="0.25.0"
 
@@ -104,12 +132,21 @@ lane_assert_pins_unchanged() {
         echo "      after:";  echo "$b" | sed 's/^/        /'
         rc=1
       fi
-      a="$(git -C "$root" show "${prev_sha}:docker/compactc.Dockerfile" | grep -E '^ARG COMPACTC_(URL|SHA256)=' | sort)"
-      b="$(git -C "$root" show "${sha}:docker/compactc.Dockerfile" | grep -E '^ARG COMPACTC_(URL|SHA256)=' | sort)"
-      if [ "$a" = "$b" ]; then
+      # IDENTITY: the digest must not move across a hop.
+      a="$(git -C "$root" show "${prev_sha}:docker/compactc.Dockerfile" | _lane_compactc_sha)"
+      b="$(git -C "$root" show "${sha}:docker/compactc.Dockerfile" | _lane_compactc_sha)"
+      local ua ub
+      ua="$(git -C "$root" show "${prev_sha}:docker/compactc.Dockerfile" | _lane_compactc_url)"
+      ub="$(git -C "$root" show "${sha}:docker/compactc.Dockerfile" | _lane_compactc_url)"
+      if [ -z "$a" ] || [ "$a" != "$b" ]; then
+        echo "    COMPACTC DIGEST DRIFT on hop ${prev_sha:0:7} -> ${sha:0:7}: '${a}' -> '${b}'"; rc=1
+      elif ! _lane_url_declared "$ua" || ! _lane_url_declared "$ub"; then
+        echo "    COMPACTC URL UNDECLARED on hop ${prev_sha:0:7} -> ${sha:0:7}:"; rc=1
+        echo "      before: ${ua}"; echo "      after:  ${ub}"
+      elif [ "$ua" = "$ub" ]; then
         echo "    hop ${prev_sha:0:7} -> ${sha:0:7}: compactc archive pin IDENTICAL"
       else
-        echo "    COMPACTC PIN DRIFT on hop ${prev_sha:0:7} -> ${sha:0:7}"; rc=1
+        echo "    hop ${prev_sha:0:7} -> ${sha:0:7}: compactc digest IDENTICAL; url RELOCATED (declared, F-316)"
       fi
       if git -C "$root" diff --quiet "$prev_sha" "$sha" -- harness/pnpm-lock.yaml; then
         echo "    hop ${prev_sha:0:7} -> ${sha:0:7}: harness/pnpm-lock.yaml IDENTICAL"
@@ -143,17 +180,31 @@ lane_assert_pins_unchanged() {
   done
 
   # The compiler archive is pinned by URL + bare-hex SHA-256 rather than by an image digest.
-  base_d="$(git -C "$root" show "${LANE_BASE_COMMIT}:docker/compactc.Dockerfile" \
-            | grep -E '^ARG COMPACTC_(URL|SHA256)=' | sort)"
-  now_d="$(grep -E '^ARG COMPACTC_(URL|SHA256)=' "$root/docker/compactc.Dockerfile" | sort)"
-  if [ "$base_d" = "$now_d" ]; then
-    echo "pins unchanged: compactc archive"
-    echo "$now_d" | sed 's/^/    /'
-  else
-    echo "PIN DRIFT in the compactc archive pin:"
-    echo "  base:"; echo "$base_d" | sed 's/^/    /'
-    echo "  now:";  echo "$now_d"  | sed 's/^/    /'
+  base_sha="$(git -C "$root" show "${LANE_BASE_COMMIT}:docker/compactc.Dockerfile" | _lane_compactc_sha)"
+  now_sha="$(_lane_compactc_sha < "$root/docker/compactc.Dockerfile")"
+  base_url="$(git -C "$root" show "${LANE_BASE_COMMIT}:docker/compactc.Dockerfile" | _lane_compactc_url)"
+  now_url="$(_lane_compactc_url < "$root/docker/compactc.Dockerfile")"
+  if [ -z "$now_sha" ] || [ "$base_sha" != "$now_sha" ]; then
+    echo "PIN DRIFT — the compactc archive DIGEST changed since the base commit. This IS a re-pin:"
+    echo "  base: ${base_sha}"; echo "  now:  ${now_sha}"
     rc=1
+  elif ! _lane_url_declared "$now_url"; then
+    echo "PIN DRIFT — the compactc archive URL is not one of the DECLARED addresses for these bytes:"
+    echo "  now:        ${now_url}"
+    echo "  declared:   ${LANE_PIN_COMPACTC_URL_HISTORICAL}"
+    echo "              ${LANE_PIN_COMPACTC_URL_CURRENT}"
+    rc=1
+  elif [ "$base_url" = "$now_url" ]; then
+    echo "pins unchanged: compactc archive (digest AND url)"
+    echo "    ARG COMPACTC_SHA256=${now_sha}"
+    echo "    ARG COMPACTC_URL=${now_url}"
+  else
+    echo "pins unchanged: compactc archive DIGEST (the pin); url RELOCATED, declared — 00006 F-316"
+    echo "    ARG COMPACTC_SHA256=${now_sha}   <- identical to the base commit"
+    echo "    was: ${base_url}"
+    echo "    now: ${now_url}"
+    echo "    the relocated release is tagged compactc-v0.33.0-rc.2 — the tag the spec pins — and its"
+    echo "    asset hashes to the digest above, so LANE-DEV-1's substitution is PROVEN, not assumed."
   fi
   if ! grep -qF "$LANE_PIN_COMPACTC_SHA256" "$root/docker/compactc.Dockerfile"; then
     echo "FATAL: docker/compactc.Dockerfile does not carry the 00003 archive SHA-256"; rc=1
