@@ -51,13 +51,18 @@ import {
   type OfferTerms,
 } from './envelope.js';
 
-const NETWORK_ID = 'undeployed';
-
 const tokenLabel = (t: any): string =>
   t?.tag === 'dust' ? 'dust' : `${t?.tag ?? 'unknown'}:${String(t?.raw ?? '').toLowerCase()}`;
 
 /** Where a take stopped. Every value except `settled` means nothing was submitted. */
-export type TakeStage = 'envelope' | 'expired' | 'deserialize' | 'fundability' | 'settlement' | 'settled';
+export type TakeStage =
+  | 'envelope'
+  | 'expired'
+  | 'deserialize'
+  | 'fundability'
+  | 'presubmit'
+  | 'settlement'
+  | 'settled';
 
 export type ImbalanceReading = Record<string, Record<string, string>>;
 
@@ -270,6 +275,10 @@ export type TakeOptions = {
 
 const routeFor = (terms: OfferTerms): TakerRoute => (terms.form === 'binding' ? 'bound' : 'unbound');
 
+/** Keep a local gate-4 refusal distinct from balancing/node submission failures. */
+export const takeStageForSettlement = (settlement: SettlementResult): TakeStage =>
+  settlement.ok ? 'settled' : settlement.failureStage === 'presubmit' ? 'presubmit' : 'settlement';
+
 /** Read and verify an envelope without settling — the offline half, usable with no wallet at all. */
 export const inspectOffer = (source: string | Uint8Array): DecodedEnvelope =>
   typeof source === 'string' ? readEnvelope(source) : decodeEnvelope(source);
@@ -360,7 +369,7 @@ export const takeOffer = async (
   });
 
   return {
-    stage: settlement.ok ? 'settled' : 'settlement',
+    stage: takeStageForSettlement(settlement),
     ok: settlement.ok,
     terms,
     contentAddress: terms.contentAddress,

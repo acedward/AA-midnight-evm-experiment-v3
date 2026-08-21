@@ -123,7 +123,9 @@ harness/                       TypeScript driver (midnight-js v5.0.0-beta.6, wal
                                  RAW transaction bytes; content address = SHA-256 of those bytes
   src/offer/build.ts             build -> prove -> FR-302 fail-closed placement assert -> publish
   src/offer/take.ts              the taker: FOUR fail-closed gates (envelope, expiry, fundability,
-                                 pre-submit) then STOCK facade calls only — no transaction surgery
+                                 pre-submit) then STOCK facade calls only — no transaction surgery;
+                                 result stages distinguish local `presubmit` refusal from
+                                 balancing/node `settlement` failure and successful `settled`
   src/offer/reader.ts            an offline reader: no network, no wallet, no proof server
   src/swap/expected.ts           the spec's rows and amounts, import-free — one source of numbers
   src/swap/{maker,taker,direct-submit}-process.ts
@@ -138,8 +140,9 @@ harness/                       TypeScript driver (midnight-js v5.0.0-beta.6, wal
                                  and fail-closed evidence validators
   src/node-error.ts              recovers the node's `Custom error: NNN` from inside the facade's
                                  wrapper and decodes it from the pinned node source
-  src/test/                      213 offline assertions at audit HEAD; 121 is the exact G2/G3-era
-                                 subset (00005's 56 unchanged + 39 swap + 26 envelope)
+  src/test/                      218 offline assertions after audit remediation; 213 passed at audit
+                                 HEAD, and 121 is the exact G2/G3-era subset
+                                 (00005's 56 unchanged + 39 swap + 26 envelope)
 
 scripts/                       fail-safe gate wrappers — exit 0 (INCLUDING teardown) = gate GREEN
   g1/verify-g1-spikes.sh         lane inheritance (every hop), W-1, W-2, spikes S1-S3    (~40 min)
@@ -148,6 +151,7 @@ scripts/                       fail-safe gate wrappers — exit 0 (INCLUDING tea
   g4/verify-g4-closeout.sh       clean-clone reproduction of G1+G2+G3, then compare      (~3 hours)
   g4/compare-swap-runs.py        the reproduction comparison, incl. the non-vacuous freshness guard
   g5/verify-g5-mitigation.sh     G5 baseline/control/arms, calibration, U1/U2 and ranking (~2.5 h)
+  g5/test-early-teardown.sh      Docker/Compose regression: pre-env, post-start and normal teardown
   lib/lane-pins.sh               the lane-inheritance proof, hop by hop from 00003 onward
   lib/docker-w1.sh               W-1 — scratch DOCKER_CONFIG, step 01 of every gate
   lib/nosleep.sh                 W-2 — `caffeinate -is` re-exec, so the host cannot idle-sleep
@@ -189,6 +193,7 @@ verifies free above 10000, and is GREEN only if the wrapper exits 0 **including 
 ./scripts/g3/verify-g3-swap-ledger.sh     # the swap step ledger: stages A, B, C
 ./scripts/g4/verify-g4-closeout.sh        # clean-clone reproduction of all three, then compare
 ./scripts/g5/verify-g5-mitigation.sh      # retained G5 command; full live run is ~2.5 hours
+./scripts/g5/test-early-teardown.sh       # fast teardown regression; starts one pinned service
 
 ./scripts/g2/verify-g2-contracts.sh --offline   # compile + 121 unit assertions + typecheck, no chain
 ./scripts/g3/verify-g3-swap-ledger.sh --offline  # same, for the ledger machinery

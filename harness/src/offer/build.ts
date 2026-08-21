@@ -42,23 +42,79 @@ const hex = (u: Uint8Array): string => Buffer.from(u).toString('hex');
 /** The imbalance-map key the ledger's own token labels produce for a shielded colour. */
 export const shieldedLabel = (colourHex: string): string => `shielded:${colourHex.toLowerCase()}`;
 
+/** Raised when the SDK shape cannot prove whether the maker attached DUST. */
+export class MakerDustInspectionError extends Error {
+  constructor(detail: string) {
+    super(`FR-301 INSPECTION FAILED [maker-dust-shape-unreadable]: ${detail}`);
+    this.name = 'MakerDustInspectionError';
+  }
+}
+
+const actionCount = (value: unknown, what: string): number => {
+  if (!Array.isArray(value)) {
+    throw new MakerDustInspectionError(`${what} is not a readable array`);
+  }
+  return value.length;
+};
+
 /**
  * Does this transaction carry ANY dust action? FR-301 requires `false` on every maker artifact.
  *
- * Deliberately conservative in the other direction: a missing accessor returns `false`, because the
- * absence of an accessor is not evidence of a dust action — and the claim this feeds is separately
- * corroborated on the settled transaction by spike S6, which reads the maker wallet's own dust ledger.
+ * This inspection fails closed. `Intent.dustActions === undefined` is the SDK's explicit encoding
+ * for an intent with no DUST interactions, but a missing/throwing accessor, an absent/non-iterable
+ * intents collection, or a malformed DustActions object is not evidence of absence and is refused.
  */
 export const makerAttachedDust = (tx: any): boolean => {
+  let intents: unknown;
   try {
-    for (const [, intent] of (tx.intents ?? new Map()) as Map<number, any>) {
-      const da = intent?.dustActions;
-      if (!da) continue;
-      if ((da.spends?.length ?? 0) > 0 || (da.registrations?.length ?? 0) > 0) return true;
-    }
-  } catch {
-    /* see above */
+    intents = tx?.intents;
+  } catch (e) {
+    throw new MakerDustInspectionError(`transaction.intents threw while being read: ${String(e)}`);
   }
+  if (intents === undefined || intents === null) {
+    throw new MakerDustInspectionError('transaction.intents is absent');
+  }
+  if (typeof (intents as any)[Symbol.iterator] !== 'function') {
+    throw new MakerDustInspectionError('transaction.intents is not iterable');
+  }
+
+  let seen = 0;
+  try {
+    for (const entry of intents as Iterable<unknown>) {
+      if (!Array.isArray(entry) || entry.length < 2) {
+        throw new MakerDustInspectionError('transaction.intents yielded a malformed entry');
+      }
+      const [segment, intent] = entry;
+      seen += 1;
+      if ((typeof intent !== 'object' && typeof intent !== 'function') || intent === null) {
+        throw new MakerDustInspectionError(`intent ${String(segment)} is not an object`);
+      }
+      if (!('dustActions' in intent)) {
+        throw new MakerDustInspectionError(`intent ${String(segment)} has no dustActions accessor`);
+      }
+
+      const da = (intent as any).dustActions;
+      if (da === undefined) continue;
+      if ((typeof da !== 'object' && typeof da !== 'function') || da === null) {
+        throw new MakerDustInspectionError(`intent ${String(segment)} returned malformed dustActions`);
+      }
+      if (!('spends' in da) || !('registrations' in da)) {
+        throw new MakerDustInspectionError(
+          `intent ${String(segment)} dustActions lacks spends or registrations`,
+        );
+      }
+      if (
+        actionCount((da as any).spends, `intent ${String(segment)} dustActions.spends`) > 0 ||
+        actionCount((da as any).registrations, `intent ${String(segment)} dustActions.registrations`) > 0
+      ) {
+        return true;
+      }
+    }
+  } catch (e) {
+    if (e instanceof MakerDustInspectionError) throw e;
+    throw new MakerDustInspectionError(`intent/DUST accessor threw while being read: ${String(e)}`);
+  }
+  if (seen === 0) throw new MakerDustInspectionError('transaction.intents is empty');
   return false;
 };
 

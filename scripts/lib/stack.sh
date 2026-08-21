@@ -67,3 +67,27 @@ stack_assert_clean() {
   if [ -n "$left" ]; then echo "RESIDUE: networks still present: ${left}"; return 1; fi
   echo "host clean: no containers, volumes or networks named ${project}*"
 }
+
+# stack_teardown <repo-root> <compose-project> [env-file]
+#
+# Safe both before and after probe-ports creates docker/.env. Compose still needs interpolation
+# values to parse compose.yml during an early `down`, so the no-env path supplies inert values and
+# pins the project explicitly. No service is started and the residue assertion remains mandatory.
+stack_teardown() {
+  local root="$1" project="$2" env_file="${3:-$1/docker/.env}"
+  local rc=0
+  if [ -f "$env_file" ]; then
+    docker compose --env-file "$env_file" -p "$project" -f "$root/docker/compose.yml" \
+      down -v --remove-orphans || rc=$?
+  else
+    echo "teardown: ${env_file} does not exist; using inert interpolation values for compose down"
+    COMPOSE_PROJECT_NAME="$project" \
+      PORT_NODE_RPC=10001 PORT_INDEXER=10002 PORT_PROOF_SERVER=10003 \
+      APP_INFRA_SECRET=0000000000000000000000000000000000000000000000000000000000000000 \
+      docker compose -p "$project" -f "$root/docker/compose.yml" \
+        down -v --remove-orphans || rc=$?
+  fi
+  stack_assert_clean "$project" || rc=$?
+  w1_cleanup || rc=$?
+  return "$rc"
+}

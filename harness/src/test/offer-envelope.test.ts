@@ -12,7 +12,7 @@
 // measures them from the compiled circuit's own zswap inputs and outputs, and the live spikes read
 // them off a proven artifact. So the stubs test the guard, not the ledger, and cannot paper over a
 // wrong circuit.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   decodeEnvelope,
   encodeEnvelope,
@@ -27,6 +27,10 @@ import {
   type OfferTermsDraft,
 } from '../offer/envelope.js';
 import {
+  MakerDustInspectionError,
+  makerAttachedDust,
+} from '../offer/build.js';
+import {
   assertFundable,
   assertMergedBalanced,
   ImbalanceUnreadableError,
@@ -35,7 +39,9 @@ import {
   nonDustSurpluses,
   OfferTermsMismatchError,
   readAllImbalances,
+  takeStageForSettlement,
 } from '../offer/take.js';
+import { settleAsTaker } from '../g1/taker.js';
 
 const A = 'aa'.repeat(32);
 const B = 'bb'.repeat(32);
@@ -288,5 +294,79 @@ describe('Taker gate 4 — the merged transaction must not still be in deficit',
 
   it('refuses an unreadable merged transaction', () => {
     expect(() => assertMergedBalanced(stubTx({ 0: {}, 1: {} }, { unreadable: [0] }))).toThrow(ImbalanceUnreadableError);
+  });
+});
+
+// =================================================================================================
+describe('FR-301 — maker DUST inspection fails closed on SDK shape drift', () => {
+  const intent = (dustActions: unknown) => ({ dustActions });
+
+  it('accepts the SDK no-DUST representation and detects actual maker DUST', () => {
+    expect(makerAttachedDust({ intents: new Map([[0, intent(undefined)]]) })).toBe(false);
+    expect(
+      makerAttachedDust({
+        intents: new Map([[0, intent({ spends: [{}], registrations: [] })]]),
+      }),
+    ).toBe(true);
+  });
+
+  it('refuses missing, empty and non-iterable intent shapes', () => {
+    expect(() => makerAttachedDust({})).toThrow(MakerDustInspectionError);
+    expect(() => makerAttachedDust({ intents: new Map() })).toThrow(/transaction\.intents is empty/);
+    expect(() => makerAttachedDust({ intents: {} })).toThrow(/transaction\.intents is not iterable/);
+  });
+
+  it('refuses missing, malformed and exception-throwing DUST accessors', () => {
+    expect(() => makerAttachedDust({ intents: new Map([[0, {}]]) })).toThrow(/no dustActions accessor/);
+    expect(() => makerAttachedDust({ intents: new Map([[0, intent({ spends: [], registrations: null })]]) })).toThrow(
+      /registrations is not a readable array/,
+    );
+    const throwing = Object.defineProperty({}, 'dustActions', {
+      get: () => {
+        throw new Error('SDK getter exploded');
+      },
+    });
+    expect(() => makerAttachedDust({ intents: new Map([[0, throwing]]) })).toThrow(
+      /intent\/DUST accessor threw.*SDK getter exploded/,
+    );
+  });
+});
+
+// =================================================================================================
+describe('TakeResult stage taxonomy', () => {
+  it('records a throwing pre-submit guard and never contacts submitTransaction', async () => {
+    const finalized = {
+      transactionHash: () => 'test-hash',
+      fees: () => 0n,
+    };
+    const wallet = {
+      validateTransaction: vi.fn().mockResolvedValue(undefined),
+      balanceUnboundTransaction: vi.fn().mockResolvedValue({ blockData: { ledgerParameters: {} } }),
+      signRecipe: vi.fn().mockResolvedValue({}),
+      finalizeRecipe: vi.fn().mockResolvedValue(finalized),
+      submitTransaction: vi.fn().mockResolvedValue('must-not-submit'),
+    };
+    const taker = {
+      wallet,
+      shieldedSecretKeys: {},
+      dustSecretKey: {},
+      unshieldedKeystore: { signDataAsync: vi.fn() },
+    };
+    const settlement = await settleAsTaker(taker as any, {}, 'unbound', {
+      preSubmit: () => {
+        throw new MergedTransactionUnbalancedError('test gate-4 refusal');
+      },
+    });
+    expect(settlement.ok).toBe(false);
+    expect(settlement.failureStage).toBe('presubmit');
+    expect(wallet.submitTransaction).not.toHaveBeenCalled();
+    expect(takeStageForSettlement(settlement)).toBe('presubmit');
+  });
+
+  it('keeps node/balancing failures at settlement and success at settled', () => {
+    expect(takeStageForSettlement({ route: 'unbound', ok: false, failureStage: 'settlement', validations: [] })).toBe(
+      'settlement',
+    );
+    expect(takeStageForSettlement({ route: 'unbound', ok: true, validations: [] })).toBe('settled');
   });
 });
