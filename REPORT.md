@@ -9,8 +9,10 @@ under **ONE transaction id**. Two halves are reported, never conflated: **v1**, 
 and **v2**, the OPEN offer — usable by a holder whose keys the maker never knew, which is the
 owner's REQUIRED outcome (spec FR-308, owner Q1 2026-08-19).
 
-Generated 2026-08-20T16:38:38.239Z from retained evidence in `evidence/`. Nothing in this
-report is restated by hand; every figure is read from the file named beside it.
+The G4 core was machine-rendered on 2026-08-20 from retained evidence in `evidence/`. The owner
+decision paragraphs were added after that gate, and this 2026-08-21 G5 addendum was written from the
+named retained G5 reports and JSON records. It is therefore not true that every final line is untouched
+machine output; every measured figure below is still traceable to the evidence file named beside it.
 
 ## The two headline results
 
@@ -61,12 +63,15 @@ no recipient field of any kind.
 
 **Why three.** rows 5 and 8 each require a settlement and a settlement exhausts the budget, so TWO Managers are unavoidable. The third keeps the refusal-only negatives from interleaving with — and destroying — the live offers rows 5 and 8 must settle. A two-stage packing is arithmetically possible and was rejected: it would make the owner-REQUIRED rows 7–8 depend on five prior interventions each landing exactly right.
 
-**Status as recorded by the run.** owner ratification wanted as a spec amendment — Plan 03 question Q03-1. The spec file is byte-identical.
+**Status as recorded by the run.** owner ratification wanted as a spec amendment — Plan 03 question
+Q03-1. At that time the original spec file was byte-identical.
 
 **Status now (owner decision, 2026-08-20): D-307 STANDS AS THE RECORD** — "record what really was
 tested", with a full re-run left for later. The line above is what the run itself wrote, kept
 verbatim because it is generated from the same committed expectation table the run asserted
-against; the decision supersedes only its last clause. The spec file remains byte-identical.
+against; the decision supersedes only its last clause. The original spec was later lost with its
+disposable worktree. The canonical reconstructed latest spec preserves the row ledger and D-307;
+G4's original hash remains historical provenance, not a current equality claim.
 
 | Stage | Manager | Carries | Verdict | Rows | Checks |
 |---|---|---|---|---|---|
@@ -78,12 +83,13 @@ against; the decision supersedes only its last clause. The spec file remains byt
 
 | Question | What it asked | Owner decision |
 |---|---|---|
-| **Q02-2** | F-310: an offer is publishable only while custody holds ONE shielded cell. Accept the limit, or reduce the circuit's transcript cost and re-measure? | **Measure the alternatives.** A follow-up measurement plan (Plan 05, "F-310 mitigation rig") runs five contract variants against two use cases — self-merge and published-file — at custody sizes past the current boundary. **The Manager v4 shipped here does not change**, and productizing any winner is a separate numbered project with its own spec |
-| **Q03-1** | ratify D-307 — the ledger ran per-stage, not as one 13-row single-Manager sequence | **D-307 stands as the record**: "record what really was tested", with a full re-run left for later. The spec file stays byte-identical and this report is that record |
+| **Q02-2** | F-310: accept the publication limit or reduce transcript cost and re-measure? | **Measure the alternatives.** Plan 05/G5 ran baseline, control and arms (a)–(e) against self-merge and published-file use cases. **The Manager v4 shipped here did not change**, and no measured fixture was productized |
+| **Q03-1** | ratify D-307 — the ledger ran per-stage, not as one 13-row single-Manager sequence | **D-307 stands as the record**: "record what really was tested". The reconstructed latest spec and this report preserve that record |
 
-So nothing in this report is waiting on a decision. What is *not* settled is the engineering
-question behind Q02-2 — whether transcript cost can be cut far enough to lift the one-cell
-boundary — and that is a measurement, now scheduled, not an unknown in what was proven here.
+So nothing in this report is waiting on a decision. G5 answered the engineering question behind
+Q02-2: U1 already settles past the publication boundary on stock v4, arm (a) is the strongest
+map-based fixture at four cells, and arm (e) has no observed live placement boundary through sixteen.
+Productizing any design, including the unmeasured proposed (a)+(e) combination, remains separate.
 
 ### The lane
 
@@ -260,12 +266,11 @@ is the product requirement: if the fallible half failed, the zswap legs would ha
 custody cells went unwritten, i.e. custody would lose colour A without debiting the account. **A
 partially-applied swap is worse than an unpublishable one.** Rejected with reason, not deferred.
 
-**The safe lever is transcript COST, and it is real but unquantified** — `openSwapShielded`
-re-reads the same map entries several times. Deduplicating is semantics-preserving and might buy
-one cell or ten; only measuring tells. That was owner question **Q02-2**, deliberately not taken
-unilaterally here, because it changes the contract the owner-REQUIRED openness result rests on —
-and the owner has since decided to **measure the alternatives** in a follow-up rig (Plan 05) whose
-binding constraint is that the Manager v4 shipped in this PR does not change.
+**The safe lever is transcript COST, and G5 quantified it without changing Manager v4.** Deduplicating
+the flat reads (arm a) reduced the offer transcript from 117 to 98 operations and moved the live
+floating-surplus boundary from one to four cells. The two-phase escrow fixture (arm e) reduced it to
+55 operations and stayed guaranteed through all live points up to sixteen cells. These are fixture
+measurements with explicit relaxations, not changes to the shipped contract; see the G5 section.
 
 ### F-308 — lane issue 0003, observed live: placement is state-dependent, and FR-302 caught it
 
@@ -379,6 +384,66 @@ layer is not claimed** for that one.
   `colourA != coinB.color` is now an explicit guard, so a same-colour swap fails closed with a
   readable reason instead of dying inside the proving path.
 
+## Gate G5 — measured F-310 alternatives, U1 and U2
+
+G5 left `contracts/manager.compact` and every G1–G4 artifact unchanged. It compiled a slim control
+and arms (a)–(e) under `contracts/variants/`, costed them before deployment, measured both offer
+shapes at 1/2/4/8/16 live custody cells, calibrated the offline instrument, then ran U1 and U2.
+The canonical G5 run carried 177/177 assertions; the final audit re-ran the expanded HEAD suite at
+213/213. The exact G2/G3-era subset remains 121.
+Authoritative inputs: `evidence/g5-mitigation/RANKING.md`, `LIVE-MATRIX.md`, `CALIBRATION.md`,
+`U1-PROBE-V4.md` and `WINNER-ARM-E-ESCROW-4C.md`.
+
+| Fixture | Offer transcript ops | Live named-taker last guaranteed | Live floating-surplus last guaranteed | Interpretation |
+|---|---:|---:|---:|---|
+| shipped Manager v4 | 117 | 2 | 1 | unchanged baseline; floating U2 publication fails closed from 2 |
+| v4-slim control | 117 | 2 | 1 | dropping the unshielded family alone buys nothing |
+| arm (a), flat dedupe | 98 | 4 | 4 | strongest map-based arm; semantics-preserving arm atop a slim fixture |
+| arm (b), nested | 139 | 1 | none in range | worse than baseline for the open shape |
+| arm (c), nested + dedupe | 108 | 1 | 1 | dedupe only refunds part of nesting's cost |
+| arm (d), unified map | 89 | 2 | 2 | fewer ops than arm (a), but a lower live boundary |
+| arm (e), escrow Cell | 55 | at least 16 | at least 16 | no boundary observed in range; five explicit fixture relaxations |
+
+The program-length column ranks contract transcript cost. It does not predict live boundaries
+monotonically: arm (d) has fewer ops than arm (a) but reaches only two live cells where arm (a)
+reaches four. The offline/live calibration is **DIVERGENT: 65/70 overlapping points agree**. Therefore
+no absolute boundary from the offline model is a lane fact; only the live column may be quoted as one.
+
+### U1 and U2 verdicts
+
+- **U1 on shipped v4: PASS.** A one-cell guaranteed control and a two-cell **fallible** offer both
+  self-merged and settled, 9/9 checks each, with exact custody accounting and two observation points.
+  The FR-302 publication gate was deliberately bypassed because U1 is not publication. F-310 limits
+  publication, not a maker settling its own offer.
+- **U2 on stock v4: still publication-bound.** The stock floating-surplus offer is fallible at two
+  cells and the production builder correctly refuses to publish it.
+- **U2 on arm-e at four cells: PASS.** A foreign wallet whose keys the maker never knew read the
+  published file in another process and settled it, 12/12 checks. Arm-e also remained guaranteed at
+  1/2/4/8/16 live cells for both shapes; "at least 16" means no boundary was observed, not none exists.
+
+Arm (a) at four cells is the strongest map-based result. Arm (e) is the only size-independent
+direction measured. Combining (a)+(e) is a recommendation input only: no combined fixture was
+compiled, deploy-costed or measured, and nothing here is a product claim for it.
+
+### G5 findings F-313–F-316
+
+- **F-313:** the pinned ledger's `partitionTranscripts()` is bound to JavaScript, making placement
+  computable offline from a simulated transcript. The resulting instrument is useful for relative
+  design comparisons but its 65/70 calibration is DIVERGENT, so its absolute boundaries are barred.
+- **F-314:** an ADT-typed intermediate cannot be bound to a local at these pins. Arm (a)'s full
+  deduplication is therefore unavailable inside the nested-map form, explaining part of arm (b)/(c).
+- **F-315:** a nested ledger Map exposes no outer iterator. For arms (b)/(c)/(d), the live rig marks
+  cell counts as over registered accounts; it cannot claim 00005's exact enumeration of all keys.
+- **F-316:** the compiler archive's download location moved, but its SHA-256 identity did not. The
+  lane proof now separates an immutable digest from a small declared set of transport URLs; the LFDT
+  archive is byte-identical to the long-pinned compiler and therefore is not a re-pin.
+
+The G5 wrapper intentionally records a non-deploying arm as that arm's verdict; placement itself is
+also measured rather than scored. It fails on offline compile/cost/test defects, baseline
+contradictions, build/prove apparatus failures, missing or failed required U1/U2 cases, missing,
+stale, corrupt or contradictory ranking inputs, and teardown residue. This lenient arm policy is a
+gate-policy caveat, not evidence that a failed arm is usable.
+
 ## Decisions taken from evidence
 
 | Decision | Taken | Why |
@@ -407,9 +472,10 @@ layer is not claimed** for that one.
 | **G2** | `scripts/g2/verify-g2-contracts.sh` | 2026-08-20T09:16:50Z | 2026-08-20T10:38:49Z | 20 | 82 min | exit 0 | **0** |
 | **G3** | `scripts/g3/verify-g3-swap-ledger.sh` | 2026-08-20T12:17:25Z | 2026-08-20T12:57:26Z | 18 | 40 min | exit 0 | **0** |
 | **G4** | `scripts/g4/verify-g4-closeout.sh` | 2026-08-20T13:27:53Z | 2026-08-20T16:15:23Z | 11 | 167 min | exit 0 | **0** |
+| **G5** | `scripts/g5/verify-g5-mitigation.sh` | 2026-08-21T00:20:41Z | 2026-08-21T02:53:21Z | 23 | 153 min | exit 0 | **0** |
 
-The G4 row is written by the run that renders this report, so its `finished`/`final_exit` are
-necessarily "in progress" here; the authoritative record is `evidence/g4-closeout/run.log`.
+The authoritative G4 and G5 records are `evidence/g4-closeout/run.log` and
+`evidence/g5-mitigation/run.log`; both end `final_exit: 0` after successful teardown.
 
 ## Clean-clone reproduction (SC-306)
 
@@ -469,12 +535,22 @@ Full output: `evidence/g4-closeout/09-compare.out`, and the reproduction's own e
 | FR-309 evidence labels | **PASS** — `EXPERIMENTAL_LANE / LANE-DEV-1` on every artifact | every JSON's `lane` field, every envelope's `label` |
 | FR-310 shielded-only v1 | **held** — the unshielded family was not attempted (owner Q3: extended goal) | contract source; no unshielded swap circuit exists |
 | FR-311 offer/pool exclusivity is MEASURED | **MEASURED** — 239, not the predicted 104 | `row-11`, `g2-spikes/s5.json` |
+| FR-312 baseline immutability | **PASS** — Manager v4 and G1–G4 evidence unchanged by G5 | G5 closeout diff; commit `2ada580` |
+| FR-313 comparable measurements | **PASS**, with DIVERGENT calibration 65/70 | `g5-mitigation/{RANKING,LIVE-MATRIX,CALIBRATION}.md` |
+| FR-314 U1 and U2 | **PASS / PASS** — v4 U1 at 2 cells; arm-e U2 at 4 | `U1-PROBE-V4.md`, `WINNER-ARM-E-ESCROW-4C.md` |
+| FR-315 honest ranking | **PASS** — every relaxation listed; (a)+(e) explicitly unmeasured | `g5-mitigation/RANKING.md` |
+| FR-316 fail-closed gate | **PASS**, with recorded lenient arm-failure policy | `scripts/g5/verify-g5-mitigation.sh`, G5 `run.log` |
 | SC-301 the headline settlement | **PASS** | `row-5` |
 | SC-302 direct-submission refusal, verbatim + no state | **PASS** | `row-4` (three layers, F-311) |
 | SC-303 byte-identical round-trip, stable content address | **PASS** | `row-3`, `s3-offer-roundtrip.json` |
 | SC-304 NC-301..306 + P-CXL green, P-104 measured | **PASS / MEASURED** | the negative-controls table above |
 | SC-305 the OPEN offer reported SEPARATELY from v1 | **GREEN**, reported separately throughout | `row-7`/`row-8`, `OPENNESS.md` |
 | SC-306 clean-clone reproduction, 0 shared tx ids | **see the reproduction section** | `evidence/g4-closeout/` |
+| SC-307 stock-v4 U1 past F-310 | **PASS** — fallible placement settled at two cells | `g5-mitigation/U1-PROBE-V4.md` |
+| SC-308 full G5 live matrix | **PASS** — seven fixtures × two shapes × 1/2/4/8/16; monotone and all built | `g5-mitigation/LIVE-MATRIX.md` |
+| SC-309 U2 past stock boundary | **PASS** — arm-e published-file settlement at four cells | `g5-mitigation/WINNER-ARM-E-ESCROW-4C.md` |
+| SC-310 calibrated model claims | **PASS** — divergence surfaced; no modelled absolute boundary claimed | `g5-mitigation/CALIBRATION.md` |
+| SC-311 G5 entry-point docs and ledger | **PASS after the 2026-08-21 closure** | README, REPORT, VERIFICATION |
 | **the spec's literal 13-row single-Manager ledger** | **NOT REACHABLE at these pins** — measured, not assumed (F-310, D-307, P-F310) | `g3-swap-ledger/DEVIATION.md` |
 
 ## How to reproduce
@@ -485,6 +561,7 @@ Full output: `evidence/g4-closeout/09-compare.out`, and the reproduction's own e
 ./scripts/g2/verify-g2-contracts.sh       # Manager v4 + offer kit + spikes S4/S4b/S5b/S5/S6
 ./scripts/g3/verify-g3-swap-ledger.sh     # the swap step ledger, three stages
 ./scripts/g4/verify-g4-closeout.sh        # clean-clone reproduction of all three, then compare
+./scripts/g5/verify-g5-mitigation.sh      # G5 live matrix, calibration, U1/U2 and ranking
 ```
 
 ## Evidence index
@@ -498,7 +575,7 @@ Full output: `evidence/g4-closeout/09-compare.out`, and the reproduction's own e
 | `evidence/g2-spikes/` | S4, S4b (NOT RUN, with the reason), S5b, S5, S6, `OPENNESS.md`, `NODE-CODES.md` |
 | `evidence/g3-swap-ledger/` | the three stage JSONs + `LEDGER.md`, `CELLS.md`, `NEGATIVES.md`, `DEVIATION.md`; `run1-superseded/` keeps the RED run |
 | `evidence/g4-closeout/` | this gate: the clone record, the freshness self-test, the comparison, and `repro/` — the clone's own evidence, copied before the clone was deleted |
+| `evidence/g5-mitigation/` | baseline/control/arms live matrix, DIVERGENT calibration, U1/U2 settlement records, ranking, run log and teardown |
 | `archive/00003..00005/` | the three earlier projects' deliverables, relocated UNMODIFIED so this project could reuse the canonical evidence paths |
 
 `EXPERIMENTAL_LANE / LANE-DEV-1` — every artifact of this project carries both labels (FR-309).
-
