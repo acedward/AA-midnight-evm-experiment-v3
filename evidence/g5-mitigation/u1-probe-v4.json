@@ -1,6 +1,6 @@
 {
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
-  "utc": "2026-08-20T21:39:23.806Z",
+  "utc": "2026-08-21T02:39:48.600Z",
   "variant": "manager",
   "arm": "baseline",
   "cells": 2,
@@ -41,7 +41,7 @@
         {
           "name": "the offer was BUILT and PROVEN",
           "ok": true,
-          "detail": "21583 B in 6875 ms"
+          "detail": "21583 B in 9184 ms"
         },
         {
           "name": "FR-301: the maker attached no DUST to its own artifact",
@@ -51,7 +51,7 @@
         {
           "name": "the settlement landed under ONE transaction id",
           "ok": true,
-          "detail": "0092342af5b84b7ab0cf10000e48865eacda8f561ac83b715fadf4c9071649ca9e"
+          "detail": "00cec2b4d60ea00f06c3ebb09e436a40d6aa26190002728b1c5b6cc9009367e66f"
         },
         {
           "name": "custody gave 2 of G",
@@ -81,30 +81,30 @@
         {
           "name": "the MAKER attached no dust action to the SETTLED transaction",
           "ok": true,
-          "detail": "maker intent segment(s) [14090]; settled dust actions {\"1\":{\"spends\":1,\"registrations\":0},\"14090\":{\"spends\":0,\"registrations\":0}}"
+          "detail": "maker intent segment(s) [34001]; settled dust actions {\"1\":{\"spends\":1,\"registrations\":0},\"34001\":{\"spends\":0,\"registrations\":0}}"
         }
       ],
       "offer": {
         "circuitId": "openSwapShielded",
         "shape": "floating-surplus",
         "bytes": 21583,
-        "contentAddress": "3b235defc44f14743004478dcbbba961e5baab6e4ab1465ed007de34b8b64c54",
+        "contentAddress": "f89980d24826bf986413c68a35db0c8cc6d4799814d4fe057e578b529a34fca7",
         "imbalancesAtSegment0": {
-          "shielded:1a4e7f7934912b7f75d168505ef7c40d7b11b4b1cc4b4c0240637295c33fdf9b": "2",
-          "shielded:d75feb7d4fece756b7b3e079ac2d11db3b211f665f22513aca5b10e5793a97ba": "-3"
+          "shielded:035b6dd088dc1ed295e2ccd9d5184a2b251ced5d5665bb185d23b5b42fa696e0": "-3",
+          "shielded:44d3040a5a5407e264cb770e5f340f9f389b62ecdba4e585bde6e0c7a9f70485": "2"
         },
         "fallibleOfferSegments": [],
-        "proveMs": 6875,
+        "proveMs": 9184,
         "makerAttachedDust": false
       },
       "fr302GateBypassed": true,
-      "txId": "0092342af5b84b7ab0cf10000e48865eacda8f561ac83b715fadf4c9071649ca9e",
+      "txId": "00cec2b4d60ea00f06c3ebb09e436a40d6aa26190002728b1c5b6cc9009367e66f",
       "makerDustActions": {
         "1": {
           "spends": 1,
           "registrations": 0
         },
-        "14090": {
+        "34001": {
           "spends": 0,
           "registrations": 0
         }
@@ -168,7 +168,7 @@
         {
           "name": "the offer was BUILT and PROVEN",
           "ok": true,
-          "detail": "37103 B in 7580 ms"
+          "detail": "37155 B in 7954 ms"
         },
         {
           "name": "FR-301: the maker attached no DUST to its own artifact",
@@ -178,7 +178,7 @@
         {
           "name": "the settlement landed under ONE transaction id",
           "ok": true,
-          "detail": "00904e54833c0a609016c54f62dec4fa5e3b319ac5e6e867efa4050d26cb1786bd"
+          "detail": "00a9f25afaf630d7f0089dac554fee7f8b350774cda4289d0907d50883cf303fb4"
         },
         {
           "name": "custody gave 2 of G",
@@ -208,29 +208,29 @@
         {
           "name": "the MAKER attached no dust action to the SETTLED transaction",
           "ok": true,
-          "detail": "maker intent segment(s) [52261]; settled dust actions {\"1\":{\"spends\":1,\"registrations\":0},\"52261\":{\"spends\":0,\"registrations\":0}}"
+          "detail": "maker intent segment(s) [10743]; settled dust actions {\"1\":{\"spends\":1,\"registrations\":0},\"10743\":{\"spends\":0,\"registrations\":0}}"
         }
       ],
       "offer": {
         "circuitId": "openSwapShielded",
         "shape": "floating-surplus",
-        "bytes": 37103,
-        "contentAddress": "f27102821a3103c19fbc3c61122da5253a12bd9093ec943b1ae25ddc0fc4012f",
+        "bytes": 37155,
+        "contentAddress": "117624545b68010f6e8f26802b9569789dae5d1cfe80986a0f73cadac28127ad",
         "imbalancesAtSegment0": {},
         "fallibleOfferSegments": [
-          52261
+          10743
         ],
-        "proveMs": 7580,
+        "proveMs": 7954,
         "makerAttachedDust": false
       },
       "fr302GateBypassed": true,
-      "txId": "00904e54833c0a609016c54f62dec4fa5e3b319ac5e6e867efa4050d26cb1786bd",
+      "txId": "00a9f25afaf630d7f0089dac554fee7f8b350774cda4289d0907d50883cf303fb4",
       "makerDustActions": {
         "1": {
           "spends": 1,
           "registrations": 0
         },
-        "52261": {
+        "10743": {
           "spends": 0,
           "registrations": 0
         }

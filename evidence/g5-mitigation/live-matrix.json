@@ -1,6 +1,6 @@
 {
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
-  "utc": "2026-08-20T21:31:22.788Z",
+  "utc": "2026-08-21T02:31:16.935Z",
   "question": "per contract variant, at what custody size does a real proven offer stop being placed in the GUARANTEED section?",
   "cells": [
     1,
@@ -17,7 +17,7 @@
       "arm": "baseline",
       "title": "Manager v4 (SHIPPED, unchanged)",
       "offerCircuit": "openSwapShielded",
-      "contractAddress": "5960d84257f1652ce916887af744442e5941aefe1df456b141c10aec211ebaef",
+      "contractAddress": "a46dc27cb6393a18131651cd8ff038aa02cae387226e3ea3f488c441ca3100f1",
       "named": {
         "lastGuaranteed": 2,
         "firstFallible": 4,
@@ -38,7 +38,7 @@
       "arm": "control",
       "title": "v4-slim — v4 minus the unshielded family",
       "offerCircuit": "openSwapShielded",
-      "contractAddress": "0c613386df373b8f2b3ebd417add66ff59f130d669f926bc85e9d2123708dff4",
+      "contractAddress": "c0869cb13f4ae9fa25949b68794869a8642f17ca3fe7cc5839cab820ef638bec",
       "named": {
         "lastGuaranteed": 2,
         "firstFallible": 4,
@@ -61,7 +61,7 @@
       "arm": "a",
       "title": "arm (a) dedupe-flat",
       "offerCircuit": "openSwapShielded",
-      "contractAddress": "1a810ee1f842571c9db3c0346d6f758f2f4dab69af7ab8c0b146fdd382c9ce8d",
+      "contractAddress": "53ea3fd1bf4588ba593cd41ddb631aef309a592f693371c9f769a6cd9e733ffb",
       "named": {
         "lastGuaranteed": 4,
         "firstFallible": 8,
@@ -84,7 +84,7 @@
       "arm": "b",
       "title": "arm (b) nested-balances",
       "offerCircuit": "openSwapShielded",
-      "contractAddress": "96efc8684b800f77e3ae708b64e8f7ced0a6748bc573ee0d7429a3771ad2a946",
+      "contractAddress": "fb9f393122c1ef911fc815f9770b606f1454777e267e908ee433893871ba11f7",
       "named": {
         "lastGuaranteed": 1,
         "firstFallible": 2,
@@ -108,7 +108,7 @@
       "arm": "c",
       "title": "arm (c) nested + deduped",
       "offerCircuit": "openSwapShielded",
-      "contractAddress": "59ce68bbbddfde1c85db40e74ea930057b1f56e5a37c8d65820f7e0532b4b579",
+      "contractAddress": "7a1c8ace8a11915a558ff5c74d77d90a4f902d5461d59aa90dda866957a10122",
       "named": {
         "lastGuaranteed": 1,
         "firstFallible": 2,
@@ -132,7 +132,7 @@
       "arm": "d",
       "title": "arm (d) unified per-account coin map",
       "offerCircuit": "openSwapShielded",
-      "contractAddress": "63c789bd62619afb1cccbb3b9f4a926393bb3e9a368a35e51cbd9e1b94505747",
+      "contractAddress": "955108abb45b46bc22b2f3ba0c5408302c423ed7dafa5ba0fb97edc13b7ba4f4",
       "named": {
         "lastGuaranteed": 2,
         "firstFallible": 4,
@@ -158,7 +158,7 @@
       "arm": "e",
       "title": "arm (e) two-phase escrow Cell",
       "offerCircuit": "openSwap",
-      "contractAddress": "6a9a6af396218dc5323fcf52dd897085b40d232a14279363da190f5e6b7ab95c",
+      "contractAddress": "8f6805bd440145e5cf9bf69a317a78094e5b931e40e5279f888f99bcc03a5edb",
       "named": {
         "lastGuaranteed": 16,
         "firstFallible": null,
@@ -197,19 +197,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            60962
+            7391
           ],
           "intentSegments": [
-            60962
+            7391
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1"
+            "shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 127,
-          "proveMs": 22608,
-          "offerBytes": 26818
+          "buildMs": 125,
+          "proveMs": 10643,
+          "offerBytes": 26819
         },
         {
           "variant": "manager",
@@ -222,19 +222,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            17348
+            13831
           ],
           "intentSegments": [
-            17348
+            13831
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1",
-            "shielded:de87877daf0d7bc0f8afdde1c84c7bbdb543510a67e4fccc7901d40eeb538587": "1"
+            "shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3": "-1",
+            "shielded:cd6644b48f4b19c67d2f7cf09739bf8f358474bd752c6b1044ca4de1b5995bf9": "1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 106,
-          "proveMs": 5500,
+          "buildMs": 110,
+          "proveMs": 5723,
           "offerBytes": 21581
         },
         {
@@ -248,18 +248,18 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            36103
+            60982
           ],
           "intentSegments": [
-            36103
+            60982
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1"
+            "shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 118,
-          "proveMs": 6284,
+          "buildMs": 120,
+          "proveMs": 6968,
           "offerBytes": 26818
         },
         {
@@ -273,23 +273,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            39797
+            29327
           ],
           "intentSegments": [
-            39797
+            29327
           ],
           "fallibleOfferSegments": [
-            39797
+            29327
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "39797": {
-              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1",
-              "shielded:de87877daf0d7bc0f8afdde1c84c7bbdb543510a67e4fccc7901d40eeb538587": "1"
+            "29327": {
+              "shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3": "-1",
+              "shielded:cd6644b48f4b19c67d2f7cf09739bf8f358474bd752c6b1044ca4de1b5995bf9": "1"
             }
           },
           "buildMs": 117,
-          "proveMs": 5281,
+          "proveMs": 6238,
           "offerBytes": 21630
         },
         {
@@ -303,23 +303,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            7981
+            34342
           ],
           "intentSegments": [
-            7981
+            34342
           ],
           "fallibleOfferSegments": [
-            7981
+            34342
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "7981": {
-              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1"
+            "34342": {
+              "shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3": "-1"
             }
           },
-          "buildMs": 115,
-          "proveMs": 6035,
-          "offerBytes": 26869
+          "buildMs": 122,
+          "proveMs": 6904,
+          "offerBytes": 26870
         },
         {
           "variant": "manager",
@@ -332,23 +332,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            6784
+            7972
           ],
           "intentSegments": [
-            6784
+            7972
           ],
           "fallibleOfferSegments": [
-            6784
+            7972
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "6784": {
-              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1",
-              "shielded:de87877daf0d7bc0f8afdde1c84c7bbdb543510a67e4fccc7901d40eeb538587": "1"
+            "7972": {
+              "shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3": "-1",
+              "shielded:cd6644b48f4b19c67d2f7cf09739bf8f358474bd752c6b1044ca4de1b5995bf9": "1"
             }
           },
-          "buildMs": 111,
-          "proveMs": 5292,
+          "buildMs": 116,
+          "proveMs": 6157,
           "offerBytes": 21632
         },
         {
@@ -362,22 +362,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            18703
+            19707
           ],
           "intentSegments": [
-            18703
+            19707
           ],
           "fallibleOfferSegments": [
-            18703
+            19707
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "18703": {
-              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1"
+            "19707": {
+              "shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3": "-1"
             }
           },
-          "buildMs": 120,
-          "proveMs": 6064,
+          "buildMs": 116,
+          "proveMs": 6195,
           "offerBytes": 26871
         },
         {
@@ -391,24 +391,24 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            46106
+            10612
           ],
           "intentSegments": [
-            46106
+            10612
           ],
           "fallibleOfferSegments": [
-            46106
+            10612
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "46106": {
-              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1",
-              "shielded:de87877daf0d7bc0f8afdde1c84c7bbdb543510a67e4fccc7901d40eeb538587": "1"
+            "10612": {
+              "shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3": "-1",
+              "shielded:cd6644b48f4b19c67d2f7cf09739bf8f358474bd752c6b1044ca4de1b5995bf9": "1"
             }
           },
           "buildMs": 112,
-          "proveMs": 5500,
-          "offerBytes": 21632
+          "proveMs": 5639,
+          "offerBytes": 21633
         },
         {
           "variant": "manager",
@@ -421,23 +421,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            10375
+            3107
           ],
           "intentSegments": [
-            10375
+            3107
           ],
           "fallibleOfferSegments": [
-            10375
+            3107
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "10375": {
-              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1"
+            "3107": {
+              "shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3": "-1"
             }
           },
-          "buildMs": 127,
-          "proveMs": 6091,
-          "offerBytes": 26929
+          "buildMs": 129,
+          "proveMs": 6111,
+          "offerBytes": 26928
         },
         {
           "variant": "manager",
@@ -450,27 +450,27 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            30247
+            47192
           ],
           "intentSegments": [
-            30247
+            47192
           ],
           "fallibleOfferSegments": [
-            30247
+            47192
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "30247": {
-              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1",
-              "shielded:de87877daf0d7bc0f8afdde1c84c7bbdb543510a67e4fccc7901d40eeb538587": "1"
+            "47192": {
+              "shielded:b99065318356c43ee9d8aca006f7c779e16f0b0454af2dd91e057cba101397f3": "-1",
+              "shielded:cd6644b48f4b19c67d2f7cf09739bf8f358474bd752c6b1044ca4de1b5995bf9": "1"
             }
           },
           "buildMs": 115,
-          "proveMs": 5304,
+          "proveMs": 9267,
           "offerBytes": 21633
         }
       ],
-      "contractAddress": "5960d84257f1652ce916887af744442e5941aefe1df456b141c10aec211ebaef"
+      "contractAddress": "a46dc27cb6393a18131651cd8ff038aa02cae387226e3ea3f488c441ca3100f1"
     },
     {
       "variant": "v4-slim",
@@ -487,19 +487,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            19976
+            14351
           ],
           "intentSegments": [
-            19976
+            14351
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            "shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 111,
-          "proveMs": 7600,
-          "offerBytes": 26819
+          "buildMs": 133,
+          "proveMs": 8630,
+          "offerBytes": 26820
         },
         {
           "variant": "v4-slim",
@@ -512,20 +512,20 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            2595
+            12637
           ],
           "intentSegments": [
-            2595
+            12637
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:237b5fb4605cc5d6511b4061fc6f49c23aeef5381a22c75e1236af112a54a00d": "1",
-            "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            "shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a": "-1",
+            "shielded:8a3481a1890e0bce7766595890ece7687cdcb68f8ae454b4ef297e482cf362b8": "1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 104,
-          "proveMs": 5450,
-          "offerBytes": 21591
+          "buildMs": 106,
+          "proveMs": 6177,
+          "offerBytes": 21582
         },
         {
           "variant": "v4-slim",
@@ -538,19 +538,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            6144
+            40277
           ],
           "intentSegments": [
-            6144
+            40277
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            "shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 119,
-          "proveMs": 6960,
-          "offerBytes": 26818
+          "buildMs": 115,
+          "proveMs": 6549,
+          "offerBytes": 26819
         },
         {
           "variant": "v4-slim",
@@ -563,24 +563,24 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            26469
+            49253
           ],
           "intentSegments": [
-            26469
+            49253
           ],
           "fallibleOfferSegments": [
-            26469
+            49253
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "26469": {
-              "shielded:237b5fb4605cc5d6511b4061fc6f49c23aeef5381a22c75e1236af112a54a00d": "1",
-              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            "49253": {
+              "shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a": "-1",
+              "shielded:8a3481a1890e0bce7766595890ece7687cdcb68f8ae454b4ef297e482cf362b8": "1"
             }
           },
-          "buildMs": 110,
-          "proveMs": 6494,
-          "offerBytes": 21631
+          "buildMs": 111,
+          "proveMs": 6104,
+          "offerBytes": 21630
         },
         {
           "variant": "v4-slim",
@@ -593,22 +593,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            11122
+            27348
           ],
           "intentSegments": [
-            11122
+            27348
           ],
           "fallibleOfferSegments": [
-            11122
+            27348
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "11122": {
-              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            "27348": {
+              "shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a": "-1"
             }
           },
-          "buildMs": 127,
-          "proveMs": 6289,
+          "buildMs": 145,
+          "proveMs": 7453,
           "offerBytes": 26870
         },
         {
@@ -622,24 +622,24 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            62654
+            41876
           ],
           "intentSegments": [
-            62654
+            41876
           ],
           "fallibleOfferSegments": [
-            62654
+            41876
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "62654": {
-              "shielded:237b5fb4605cc5d6511b4061fc6f49c23aeef5381a22c75e1236af112a54a00d": "1",
-              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            "41876": {
+              "shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a": "-1",
+              "shielded:8a3481a1890e0bce7766595890ece7687cdcb68f8ae454b4ef297e482cf362b8": "1"
             }
           },
-          "buildMs": 116,
-          "proveMs": 5703,
-          "offerBytes": 21632
+          "buildMs": 111,
+          "proveMs": 7806,
+          "offerBytes": 21641
         },
         {
           "variant": "v4-slim",
@@ -652,22 +652,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            11843
+            43908
           ],
           "intentSegments": [
-            11843
+            43908
           ],
           "fallibleOfferSegments": [
-            11843
+            43908
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "11843": {
-              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            "43908": {
+              "shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a": "-1"
             }
           },
-          "buildMs": 123,
-          "proveMs": 6383,
+          "buildMs": 116,
+          "proveMs": 6126,
           "offerBytes": 26871
         },
         {
@@ -681,23 +681,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            33422
+            26671
           ],
           "intentSegments": [
-            33422
+            26671
           ],
           "fallibleOfferSegments": [
-            33422
+            26671
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "33422": {
-              "shielded:237b5fb4605cc5d6511b4061fc6f49c23aeef5381a22c75e1236af112a54a00d": "1",
-              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            "26671": {
+              "shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a": "-1",
+              "shielded:8a3481a1890e0bce7766595890ece7687cdcb68f8ae454b4ef297e482cf362b8": "1"
             }
           },
-          "buildMs": 114,
-          "proveMs": 5864,
+          "buildMs": 110,
+          "proveMs": 5568,
           "offerBytes": 21633
         },
         {
@@ -711,23 +711,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            25486
+            19480
           ],
           "intentSegments": [
-            25486
+            19480
           ],
           "fallibleOfferSegments": [
-            25486
+            19480
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "25486": {
-              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            "19480": {
+              "shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a": "-1"
             }
           },
-          "buildMs": 123,
-          "proveMs": 7221,
-          "offerBytes": 26870
+          "buildMs": 125,
+          "proveMs": 6076,
+          "offerBytes": 26871
         },
         {
           "variant": "v4-slim",
@@ -740,27 +740,27 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            36809
+            60283
           ],
           "intentSegments": [
-            36809
+            60283
           ],
           "fallibleOfferSegments": [
-            36809
+            60283
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "36809": {
-              "shielded:237b5fb4605cc5d6511b4061fc6f49c23aeef5381a22c75e1236af112a54a00d": "1",
-              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            "60283": {
+              "shielded:160abe09a7394713ade3aeafbe8db0cdeb3c8c496e7b35a8a5627fa51324e18a": "-1",
+              "shielded:8a3481a1890e0bce7766595890ece7687cdcb68f8ae454b4ef297e482cf362b8": "1"
             }
           },
-          "buildMs": 116,
-          "proveMs": 5635,
+          "buildMs": 112,
+          "proveMs": 5247,
           "offerBytes": 21633
         }
       ],
-      "contractAddress": "0c613386df373b8f2b3ebd417add66ff59f130d669f926bc85e9d2123708dff4"
+      "contractAddress": "c0869cb13f4ae9fa25949b68794869a8642f17ca3fe7cc5839cab820ef638bec"
     },
     {
       "variant": "arm-a-dedupe",
@@ -777,19 +777,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            16788
+            21210
           ],
           "intentSegments": [
-            16788
+            21210
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1"
+            "shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9": "-1"
           },
           "imbalancesElsewhere": {},
           "buildMs": 109,
-          "proveMs": 7444,
-          "offerBytes": 26771
+          "proveMs": 7611,
+          "offerBytes": 26770
         },
         {
           "variant": "arm-a-dedupe",
@@ -802,19 +802,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            39195
+            23660
           ],
           "intentSegments": [
-            39195
+            23660
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1",
-            "shielded:a60e586e73358509a59c04fea9cd7fbffddad3e86e960f3b19d028cda54d2002": "1"
+            "shielded:2b207682c3d47611c9be0f784352f61ca0626039b9961dfae833890ed7bf4642": "1",
+            "shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 97,
-          "proveMs": 5510,
+          "buildMs": 100,
+          "proveMs": 5557,
           "offerBytes": 21565
         },
         {
@@ -828,19 +828,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            10694
+            41316
           ],
           "intentSegments": [
-            10694
+            41316
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1"
+            "shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 116,
-          "proveMs": 6035,
-          "offerBytes": 26769
+          "buildMs": 110,
+          "proveMs": 6061,
+          "offerBytes": 26768
         },
         {
           "variant": "arm-a-dedupe",
@@ -853,19 +853,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            10153
+            6224
           ],
           "intentSegments": [
-            10153
+            6224
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1",
-            "shielded:a60e586e73358509a59c04fea9cd7fbffddad3e86e960f3b19d028cda54d2002": "1"
+            "shielded:2b207682c3d47611c9be0f784352f61ca0626039b9961dfae833890ed7bf4642": "1",
+            "shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 100,
-          "proveMs": 5240,
+          "buildMs": 99,
+          "proveMs": 5470,
           "offerBytes": 21556
         },
         {
@@ -879,19 +879,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            44800
+            23318
           ],
           "intentSegments": [
-            44800
+            23318
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1"
+            "shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 112,
-          "proveMs": 6014,
-          "offerBytes": 26770
+          "buildMs": 116,
+          "proveMs": 5754,
+          "offerBytes": 26769
         },
         {
           "variant": "arm-a-dedupe",
@@ -904,19 +904,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            27440
+            31774
           ],
           "intentSegments": [
-            27440
+            31774
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1",
-            "shielded:a60e586e73358509a59c04fea9cd7fbffddad3e86e960f3b19d028cda54d2002": "1"
+            "shielded:2b207682c3d47611c9be0f784352f61ca0626039b9961dfae833890ed7bf4642": "1",
+            "shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 102,
-          "proveMs": 5683,
+          "buildMs": 101,
+          "proveMs": 5147,
           "offerBytes": 21557
         },
         {
@@ -930,22 +930,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            30241
+            26986
           ],
           "intentSegments": [
-            30241
+            26986
           ],
           "fallibleOfferSegments": [
-            30241
+            26986
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "30241": {
-              "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1"
+            "26986": {
+              "shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9": "-1"
             }
           },
-          "buildMs": 115,
-          "proveMs": 6130,
+          "buildMs": 120,
+          "proveMs": 5945,
           "offerBytes": 26821
         },
         {
@@ -959,23 +959,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            49892
+            20526
           ],
           "intentSegments": [
-            49892
+            20526
           ],
           "fallibleOfferSegments": [
-            49892
+            20526
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "49892": {
-              "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1",
-              "shielded:a60e586e73358509a59c04fea9cd7fbffddad3e86e960f3b19d028cda54d2002": "1"
+            "20526": {
+              "shielded:2b207682c3d47611c9be0f784352f61ca0626039b9961dfae833890ed7bf4642": "1",
+              "shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9": "-1"
             }
           },
-          "buildMs": 108,
-          "proveMs": 5426,
+          "buildMs": 106,
+          "proveMs": 5539,
           "offerBytes": 21608
         },
         {
@@ -989,22 +989,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            37315
+            24316
           ],
           "intentSegments": [
-            37315
+            24316
           ],
           "fallibleOfferSegments": [
-            37315
+            24316
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "37315": {
-              "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1"
+            "24316": {
+              "shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9": "-1"
             }
           },
-          "buildMs": 115,
-          "proveMs": 6108,
+          "buildMs": 120,
+          "proveMs": 6067,
           "offerBytes": 26821
         },
         {
@@ -1018,27 +1018,27 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            44057
+            57717
           ],
           "intentSegments": [
-            44057
+            57717
           ],
           "fallibleOfferSegments": [
-            44057
+            57717
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "44057": {
-              "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1",
-              "shielded:a60e586e73358509a59c04fea9cd7fbffddad3e86e960f3b19d028cda54d2002": "1"
+            "57717": {
+              "shielded:2b207682c3d47611c9be0f784352f61ca0626039b9961dfae833890ed7bf4642": "1",
+              "shielded:f9dd35b734f78c640a81c16e89580565175cc1c4533083578e8c7be1c7fc33a9": "-1"
             }
           },
-          "buildMs": 109,
-          "proveMs": 5669,
+          "buildMs": 111,
+          "proveMs": 5081,
           "offerBytes": 21608
         }
       ],
-      "contractAddress": "1a810ee1f842571c9db3c0346d6f758f2f4dab69af7ab8c0b146fdd382c9ce8d"
+      "contractAddress": "53ea3fd1bf4588ba593cd41ddb631aef309a592f693371c9f769a6cd9e733ffb"
     },
     {
       "variant": "arm-b-nested",
@@ -1055,18 +1055,18 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            28226
+            37783
           ],
           "intentSegments": [
-            28226
+            37783
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            "shielded:f0e6c573345e10b1a129b1af62f295dd5d59caad86079c4f1f62e2152c33c0df": "-1"
           },
           "imbalancesElsewhere": {},
           "buildMs": 121,
-          "proveMs": 7510,
+          "proveMs": 9070,
           "offerBytes": 26783
         },
         {
@@ -1080,24 +1080,24 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            26484
+            18402
           ],
           "intentSegments": [
-            26484
+            18402
           ],
           "fallibleOfferSegments": [
-            26484
+            18402
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "26484": {
-              "shielded:166d8c2444ffdb1f74222748602dd31f13ec4950a72b32b97c7ad6bc93b475cc": "1",
-              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            "18402": {
+              "shielded:6b9766eb2344bd46d3711531ca1673fd23fa3ac695e5a22202f7116c026b02be": "1",
+              "shielded:f0e6c573345e10b1a129b1af62f295dd5d59caad86079c4f1f62e2152c33c0df": "-1"
             }
           },
-          "buildMs": 110,
-          "proveMs": 5505,
-          "offerBytes": 21607
+          "buildMs": 134,
+          "proveMs": 7503,
+          "offerBytes": 21608
         },
         {
           "variant": "arm-b-nested",
@@ -1110,23 +1110,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            45745
+            39165
           ],
           "intentSegments": [
-            45745
+            39165
           ],
           "fallibleOfferSegments": [
-            45745
+            39165
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "45745": {
-              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            "39165": {
+              "shielded:f0e6c573345e10b1a129b1af62f295dd5d59caad86079c4f1f62e2152c33c0df": "-1"
             }
           },
-          "buildMs": 123,
-          "proveMs": 6079,
-          "offerBytes": 26882
+          "buildMs": 124,
+          "proveMs": 13895,
+          "offerBytes": 26832
         },
         {
           "variant": "arm-b-nested",
@@ -1139,23 +1139,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            22501
+            47475
           ],
           "intentSegments": [
-            22501
+            47475
           ],
           "fallibleOfferSegments": [
-            22501
+            47475
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "22501": {
-              "shielded:166d8c2444ffdb1f74222748602dd31f13ec4950a72b32b97c7ad6bc93b475cc": "1",
-              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            "47475": {
+              "shielded:6b9766eb2344bd46d3711531ca1673fd23fa3ac695e5a22202f7116c026b02be": "1",
+              "shielded:f0e6c573345e10b1a129b1af62f295dd5d59caad86079c4f1f62e2152c33c0df": "-1"
             }
           },
-          "buildMs": 131,
-          "proveMs": 5169,
+          "buildMs": 172,
+          "proveMs": 19693,
           "offerBytes": 21606
         },
         {
@@ -1169,22 +1169,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            44875
+            37995
           ],
           "intentSegments": [
-            44875
+            37995
           ],
           "fallibleOfferSegments": [
-            44875
+            37995
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "44875": {
-              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            "37995": {
+              "shielded:f0e6c573345e10b1a129b1af62f295dd5d59caad86079c4f1f62e2152c33c0df": "-1"
             }
           },
-          "buildMs": 125,
-          "proveMs": 6883,
+          "buildMs": 142,
+          "proveMs": 12797,
           "offerBytes": 26833
         },
         {
@@ -1198,23 +1198,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            11594
+            28933
           ],
           "intentSegments": [
-            11594
+            28933
           ],
           "fallibleOfferSegments": [
-            11594
+            28933
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "11594": {
-              "shielded:166d8c2444ffdb1f74222748602dd31f13ec4950a72b32b97c7ad6bc93b475cc": "1",
-              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            "28933": {
+              "shielded:6b9766eb2344bd46d3711531ca1673fd23fa3ac695e5a22202f7116c026b02be": "1",
+              "shielded:f0e6c573345e10b1a129b1af62f295dd5d59caad86079c4f1f62e2152c33c0df": "-1"
             }
           },
-          "buildMs": 113,
-          "proveMs": 5662,
+          "buildMs": 134,
+          "proveMs": 11087,
           "offerBytes": 21607
         },
         {
@@ -1228,22 +1228,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            7648
+            33098
           ],
           "intentSegments": [
-            7648
+            33098
           ],
           "fallibleOfferSegments": [
-            7648
+            33098
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "7648": {
-              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            "33098": {
+              "shielded:f0e6c573345e10b1a129b1af62f295dd5d59caad86079c4f1f62e2152c33c0df": "-1"
             }
           },
-          "buildMs": 127,
-          "proveMs": 6507,
+          "buildMs": 138,
+          "proveMs": 9542,
           "offerBytes": 26834
         },
         {
@@ -1257,23 +1257,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            15053
+            29404
           ],
           "intentSegments": [
-            15053
+            29404
           ],
           "fallibleOfferSegments": [
-            15053
+            29404
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "15053": {
-              "shielded:166d8c2444ffdb1f74222748602dd31f13ec4950a72b32b97c7ad6bc93b475cc": "1",
-              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            "29404": {
+              "shielded:6b9766eb2344bd46d3711531ca1673fd23fa3ac695e5a22202f7116c026b02be": "1",
+              "shielded:f0e6c573345e10b1a129b1af62f295dd5d59caad86079c4f1f62e2152c33c0df": "-1"
             }
           },
-          "buildMs": 120,
-          "proveMs": 5620,
+          "buildMs": 132,
+          "proveMs": 9323,
           "offerBytes": 21608
         },
         {
@@ -1287,23 +1287,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            48379
+            53997
           ],
           "intentSegments": [
-            48379
+            53997
           ],
           "fallibleOfferSegments": [
-            48379
+            53997
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "48379": {
-              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            "53997": {
+              "shielded:f0e6c573345e10b1a129b1af62f295dd5d59caad86079c4f1f62e2152c33c0df": "-1"
             }
           },
-          "buildMs": 130,
-          "proveMs": 5972,
-          "offerBytes": 26834
+          "buildMs": 155,
+          "proveMs": 18826,
+          "offerBytes": 26833
         },
         {
           "variant": "arm-b-nested",
@@ -1316,27 +1316,27 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            42494
+            64000
           ],
           "intentSegments": [
-            42494
+            64000
           ],
           "fallibleOfferSegments": [
-            42494
+            64000
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "42494": {
-              "shielded:166d8c2444ffdb1f74222748602dd31f13ec4950a72b32b97c7ad6bc93b475cc": "1",
-              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            "64000": {
+              "shielded:6b9766eb2344bd46d3711531ca1673fd23fa3ac695e5a22202f7116c026b02be": "1",
+              "shielded:f0e6c573345e10b1a129b1af62f295dd5d59caad86079c4f1f62e2152c33c0df": "-1"
             }
           },
-          "buildMs": 121,
-          "proveMs": 5629,
+          "buildMs": 152,
+          "proveMs": 12169,
           "offerBytes": 21608
         }
       ],
-      "contractAddress": "96efc8684b800f77e3ae708b64e8f7ced0a6748bc573ee0d7429a3771ad2a946"
+      "contractAddress": "fb9f393122c1ef911fc815f9770b606f1454777e267e908ee433893871ba11f7"
     },
     {
       "variant": "arm-c-both",
@@ -1353,19 +1353,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            35915
+            57483
           ],
           "intentSegments": [
-            35915
+            57483
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            "shielded:1f65cec422562b46e87756a3b75042f623a721931bb012a290566c1d392db41c": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 112,
-          "proveMs": 7614,
-          "offerBytes": 26723
+          "buildMs": 105,
+          "proveMs": 8429,
+          "offerBytes": 26722
         },
         {
           "variant": "arm-c-both",
@@ -1378,19 +1378,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            26675
+            64262
           ],
           "intentSegments": [
-            26675
+            64262
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:5eae3960c292e3242bf496b7c49f985a077a6a10cc6a2ae0812504b699ad50dc": "1",
-            "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            "shielded:1f65cec422562b46e87756a3b75042f623a721931bb012a290566c1d392db41c": "-1",
+            "shielded:2aac6aa11624e6761f7c3fa8b8af8b40613f7a53dd343b9e5ea07a2e7fc64b32": "1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 102,
-          "proveMs": 5729,
+          "buildMs": 101,
+          "proveMs": 5486,
           "offerBytes": 21497
         },
         {
@@ -1404,23 +1404,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            35228
+            37148
           ],
           "intentSegments": [
-            35228
+            37148
           ],
           "fallibleOfferSegments": [
-            35228
+            37148
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "35228": {
-              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            "37148": {
+              "shielded:1f65cec422562b46e87756a3b75042f623a721931bb012a290566c1d392db41c": "-1"
             }
           },
-          "buildMs": 121,
-          "proveMs": 6157,
-          "offerBytes": 26821
+          "buildMs": 115,
+          "proveMs": 6223,
+          "offerBytes": 26771
         },
         {
           "variant": "arm-c-both",
@@ -1433,23 +1433,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            38311
+            26160
           ],
           "intentSegments": [
-            38311
+            26160
           ],
           "fallibleOfferSegments": [
-            38311
+            26160
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "38311": {
-              "shielded:5eae3960c292e3242bf496b7c49f985a077a6a10cc6a2ae0812504b699ad50dc": "1",
-              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            "26160": {
+              "shielded:1f65cec422562b46e87756a3b75042f623a721931bb012a290566c1d392db41c": "-1",
+              "shielded:2aac6aa11624e6761f7c3fa8b8af8b40613f7a53dd343b9e5ea07a2e7fc64b32": "1"
             }
           },
-          "buildMs": 113,
-          "proveMs": 5473,
+          "buildMs": 110,
+          "proveMs": 5072,
           "offerBytes": 21546
         },
         {
@@ -1463,22 +1463,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            57250
+            55451
           ],
           "intentSegments": [
-            57250
+            55451
           ],
           "fallibleOfferSegments": [
-            57250
+            55451
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "57250": {
-              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            "55451": {
+              "shielded:1f65cec422562b46e87756a3b75042f623a721931bb012a290566c1d392db41c": "-1"
             }
           },
-          "buildMs": 122,
-          "proveMs": 6137,
+          "buildMs": 118,
+          "proveMs": 5965,
           "offerBytes": 26773
         },
         {
@@ -1492,24 +1492,24 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            11147
+            29091
           ],
           "intentSegments": [
-            11147
+            29091
           ],
           "fallibleOfferSegments": [
-            11147
+            29091
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "11147": {
-              "shielded:5eae3960c292e3242bf496b7c49f985a077a6a10cc6a2ae0812504b699ad50dc": "1",
-              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            "29091": {
+              "shielded:1f65cec422562b46e87756a3b75042f623a721931bb012a290566c1d392db41c": "-1",
+              "shielded:2aac6aa11624e6761f7c3fa8b8af8b40613f7a53dd343b9e5ea07a2e7fc64b32": "1"
             }
           },
-          "buildMs": 107,
-          "proveMs": 5484,
-          "offerBytes": 21546
+          "buildMs": 105,
+          "proveMs": 5619,
+          "offerBytes": 21553
         },
         {
           "variant": "arm-c-both",
@@ -1522,22 +1522,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            20474
+            6385
           ],
           "intentSegments": [
-            20474
+            6385
           ],
           "fallibleOfferSegments": [
-            20474
+            6385
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "20474": {
-              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            "6385": {
+              "shielded:1f65cec422562b46e87756a3b75042f623a721931bb012a290566c1d392db41c": "-1"
             }
           },
-          "buildMs": 121,
-          "proveMs": 6007,
+          "buildMs": 112,
+          "proveMs": 5944,
           "offerBytes": 26774
         },
         {
@@ -1551,24 +1551,24 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            56838
+            25736
           ],
           "intentSegments": [
-            56838
+            25736
           ],
           "fallibleOfferSegments": [
-            56838
+            25736
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "56838": {
-              "shielded:5eae3960c292e3242bf496b7c49f985a077a6a10cc6a2ae0812504b699ad50dc": "1",
-              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            "25736": {
+              "shielded:1f65cec422562b46e87756a3b75042f623a721931bb012a290566c1d392db41c": "-1",
+              "shielded:2aac6aa11624e6761f7c3fa8b8af8b40613f7a53dd343b9e5ea07a2e7fc64b32": "1"
             }
           },
           "buildMs": 108,
-          "proveMs": 5460,
-          "offerBytes": 21547
+          "proveMs": 5504,
+          "offerBytes": 21548
         },
         {
           "variant": "arm-c-both",
@@ -1581,22 +1581,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            15210
+            58595
           ],
           "intentSegments": [
-            15210
+            58595
           ],
           "fallibleOfferSegments": [
-            15210
+            58595
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "15210": {
-              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            "58595": {
+              "shielded:1f65cec422562b46e87756a3b75042f623a721931bb012a290566c1d392db41c": "-1"
             }
           },
-          "buildMs": 127,
-          "proveMs": 6072,
+          "buildMs": 142,
+          "proveMs": 13241,
           "offerBytes": 26775
         },
         {
@@ -1610,27 +1610,27 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            5928
+            35370
           ],
           "intentSegments": [
-            5928
+            35370
           ],
           "fallibleOfferSegments": [
-            5928
+            35370
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "5928": {
-              "shielded:5eae3960c292e3242bf496b7c49f985a077a6a10cc6a2ae0812504b699ad50dc": "1",
-              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            "35370": {
+              "shielded:1f65cec422562b46e87756a3b75042f623a721931bb012a290566c1d392db41c": "-1",
+              "shielded:2aac6aa11624e6761f7c3fa8b8af8b40613f7a53dd343b9e5ea07a2e7fc64b32": "1"
             }
           },
-          "buildMs": 114,
-          "proveMs": 5213,
+          "buildMs": 151,
+          "proveMs": 11691,
           "offerBytes": 21549
         }
       ],
-      "contractAddress": "59ce68bbbddfde1c85db40e74ea930057b1f56e5a37c8d65820f7e0532b4b579"
+      "contractAddress": "7a1c8ace8a11915a558ff5c74d77d90a4f902d5461d59aa90dda866957a10122"
     },
     {
       "variant": "arm-d-unified",
@@ -1647,19 +1647,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            41256
+            3891
           ],
           "intentSegments": [
-            41256
+            3891
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1"
+            "shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 108,
-          "proveMs": 8144,
-          "offerBytes": 26579
+          "buildMs": 125,
+          "proveMs": 11754,
+          "offerBytes": 26581
         },
         {
           "variant": "arm-d-unified",
@@ -1672,20 +1672,20 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            17313
+            18857
           ],
           "intentSegments": [
-            17313
+            18857
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1",
-            "shielded:b382cb127efca39cf5a461cd2f974169272c09eff85ecce806f9a993947466a2": "1"
+            "shielded:c4827fc49c1d155672913dfef772ab728b58f2cefdd4067adb91f451440a2103": "1",
+            "shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f": "-1"
           },
           "imbalancesElsewhere": {},
           "buildMs": 99,
-          "proveMs": 5747,
-          "offerBytes": 21345
+          "proveMs": 7635,
+          "offerBytes": 21338
         },
         {
           "variant": "arm-d-unified",
@@ -1698,18 +1698,18 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            43639
+            51404
           ],
           "intentSegments": [
-            43639
+            51404
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1"
+            "shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 116,
-          "proveMs": 7208,
+          "buildMs": 127,
+          "proveMs": 8816,
           "offerBytes": 26581
         },
         {
@@ -1723,19 +1723,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            56514
+            52242
           ],
           "intentSegments": [
-            56514
+            52242
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1",
-            "shielded:b382cb127efca39cf5a461cd2f974169272c09eff85ecce806f9a993947466a2": "1"
+            "shielded:c4827fc49c1d155672913dfef772ab728b58f2cefdd4067adb91f451440a2103": "1",
+            "shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 98,
-          "proveMs": 5594,
+          "buildMs": 97,
+          "proveMs": 8352,
           "offerBytes": 21338
         },
         {
@@ -1749,22 +1749,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            51365
+            27907
           ],
           "intentSegments": [
-            51365
+            27907
           ],
           "fallibleOfferSegments": [
-            51365
+            27907
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "51365": {
-              "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1"
+            "27907": {
+              "shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f": "-1"
             }
           },
-          "buildMs": 120,
-          "proveMs": 6097,
+          "buildMs": 115,
+          "proveMs": 6186,
           "offerBytes": 26631
         },
         {
@@ -1778,23 +1778,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            39145
+            55437
           ],
           "intentSegments": [
-            39145
+            55437
           ],
           "fallibleOfferSegments": [
-            39145
+            55437
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "39145": {
-              "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1",
-              "shielded:b382cb127efca39cf5a461cd2f974169272c09eff85ecce806f9a993947466a2": "1"
+            "55437": {
+              "shielded:c4827fc49c1d155672913dfef772ab728b58f2cefdd4067adb91f451440a2103": "1",
+              "shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f": "-1"
             }
           },
-          "buildMs": 103,
-          "proveMs": 5546,
+          "buildMs": 104,
+          "proveMs": 5694,
           "offerBytes": 21388
         },
         {
@@ -1808,22 +1808,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            20704
+            62877
           ],
           "intentSegments": [
-            20704
+            62877
           ],
           "fallibleOfferSegments": [
-            20704
+            62877
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "20704": {
-              "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1"
+            "62877": {
+              "shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f": "-1"
             }
           },
-          "buildMs": 115,
-          "proveMs": 6039,
+          "buildMs": 116,
+          "proveMs": 6101,
           "offerBytes": 26631
         },
         {
@@ -1837,23 +1837,23 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            57775
+            24006
           ],
           "intentSegments": [
-            57775
+            24006
           ],
           "fallibleOfferSegments": [
-            57775
+            24006
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "57775": {
-              "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1",
-              "shielded:b382cb127efca39cf5a461cd2f974169272c09eff85ecce806f9a993947466a2": "1"
+            "24006": {
+              "shielded:c4827fc49c1d155672913dfef772ab728b58f2cefdd4067adb91f451440a2103": "1",
+              "shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f": "-1"
             }
           },
-          "buildMs": 102,
-          "proveMs": 5131,
+          "buildMs": 105,
+          "proveMs": 5515,
           "offerBytes": 21388
         },
         {
@@ -1867,22 +1867,22 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            59005
+            31400
           ],
           "intentSegments": [
-            59005
+            31400
           ],
           "fallibleOfferSegments": [
-            59005
+            31400
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "59005": {
-              "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1"
+            "31400": {
+              "shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f": "-1"
             }
           },
-          "buildMs": 139,
-          "proveMs": 13193,
+          "buildMs": 121,
+          "proveMs": 6324,
           "offerBytes": 26630
         },
         {
@@ -1896,27 +1896,27 @@
           "placement": "FALLIBLE",
           "segments": [
             0,
-            37964
+            25241
           ],
           "intentSegments": [
-            37964
+            25241
           ],
           "fallibleOfferSegments": [
-            37964
+            25241
           ],
           "imbalancesAtSegment0": {},
           "imbalancesElsewhere": {
-            "37964": {
-              "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1",
-              "shielded:b382cb127efca39cf5a461cd2f974169272c09eff85ecce806f9a993947466a2": "1"
+            "25241": {
+              "shielded:c4827fc49c1d155672913dfef772ab728b58f2cefdd4067adb91f451440a2103": "1",
+              "shielded:da92acb13536dd25bb6e6681d661ca3754077462806fa2e4ed8614d357ee004f": "-1"
             }
           },
-          "buildMs": 152,
-          "proveMs": 8095,
+          "buildMs": 109,
+          "proveMs": 5159,
           "offerBytes": 21388
         }
       ],
-      "contractAddress": "63c789bd62619afb1cccbb3b9f4a926393bb3e9a368a35e51cbd9e1b94505747"
+      "contractAddress": "955108abb45b46bc22b2f3ba0c5408302c423ed7dafa5ba0fb97edc13b7ba4f4"
     },
     {
       "variant": "arm-e-escrow",
@@ -1933,18 +1933,18 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            1494
+            41476
           ],
           "intentSegments": [
-            1494
+            41476
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+            "shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 104,
-          "proveMs": 3946,
+          "buildMs": 135,
+          "proveMs": 12715,
           "offerBytes": 21302
         },
         {
@@ -1958,19 +1958,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            49856
+            45985
           ],
           "intentSegments": [
-            49856
+            45985
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:b24a242b40ab67afe33032117c0e112bc8b0509c75b7c797a982869a94be36e5": "1",
-            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+            "shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316": "-1",
+            "shielded:9254b0c4327b436edeb99ca60474cd14a41d966808865fa28ea6c34734a8a72a": "1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 86,
-          "proveMs": 2984,
+          "buildMs": 127,
+          "proveMs": 8878,
           "offerBytes": 16056
         },
         {
@@ -1984,18 +1984,18 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            50774
+            34808
           ],
           "intentSegments": [
-            50774
+            34808
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+            "shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 103,
-          "proveMs": 3434,
+          "buildMs": 115,
+          "proveMs": 4514,
           "offerBytes": 21302
         },
         {
@@ -2009,20 +2009,20 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            53509
+            33820
           ],
           "intentSegments": [
-            53509
+            33820
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:b24a242b40ab67afe33032117c0e112bc8b0509c75b7c797a982869a94be36e5": "1",
-            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+            "shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316": "-1",
+            "shielded:9254b0c4327b436edeb99ca60474cd14a41d966808865fa28ea6c34734a8a72a": "1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 91,
-          "proveMs": 3124,
-          "offerBytes": 16055
+          "buildMs": 93,
+          "proveMs": 3780,
+          "offerBytes": 16056
         },
         {
           "variant": "arm-e-escrow",
@@ -2035,18 +2035,18 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            62202
+            28934
           ],
           "intentSegments": [
-            62202
+            28934
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+            "shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 105,
-          "proveMs": 3457,
+          "buildMs": 117,
+          "proveMs": 4572,
           "offerBytes": 21302
         },
         {
@@ -2060,19 +2060,19 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            49362
+            40326
           ],
           "intentSegments": [
-            49362
+            40326
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:b24a242b40ab67afe33032117c0e112bc8b0509c75b7c797a982869a94be36e5": "1",
-            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+            "shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316": "-1",
+            "shielded:9254b0c4327b436edeb99ca60474cd14a41d966808865fa28ea6c34734a8a72a": "1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 91,
-          "proveMs": 3000,
+          "buildMs": 94,
+          "proveMs": 3916,
           "offerBytes": 16056
         },
         {
@@ -2086,18 +2086,18 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            36559
+            20215
           ],
           "intentSegments": [
-            36559
+            20215
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+            "shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 112,
-          "proveMs": 4828,
+          "buildMs": 115,
+          "proveMs": 9206,
           "offerBytes": 21303
         },
         {
@@ -2111,20 +2111,20 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            17146
+            31460
           ],
           "intentSegments": [
-            17146
+            31460
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:b24a242b40ab67afe33032117c0e112bc8b0509c75b7c797a982869a94be36e5": "1",
-            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+            "shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316": "-1",
+            "shielded:9254b0c4327b436edeb99ca60474cd14a41d966808865fa28ea6c34734a8a72a": "1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 90,
-          "proveMs": 3342,
-          "offerBytes": 16057
+          "buildMs": 121,
+          "proveMs": 6753,
+          "offerBytes": 16054
         },
         {
           "variant": "arm-e-escrow",
@@ -2137,18 +2137,18 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            60770
+            37274
           ],
           "intentSegments": [
-            60770
+            37274
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+            "shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316": "-1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 105,
-          "proveMs": 3535,
+          "buildMs": 114,
+          "proveMs": 8385,
           "offerBytes": 21302
         },
         {
@@ -2162,25 +2162,25 @@
           "placement": "GUARANTEED",
           "segments": [
             0,
-            18918
+            65066
           ],
           "intentSegments": [
-            18918
+            65066
           ],
           "fallibleOfferSegments": [],
           "imbalancesAtSegment0": {
-            "shielded:b24a242b40ab67afe33032117c0e112bc8b0509c75b7c797a982869a94be36e5": "1",
-            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+            "shielded:026a5f395e4ac2f10fe6e9a01e8443f193b047023f6481075a787435fb8c4316": "-1",
+            "shielded:9254b0c4327b436edeb99ca60474cd14a41d966808865fa28ea6c34734a8a72a": "1"
           },
           "imbalancesElsewhere": {},
-          "buildMs": 94,
-          "proveMs": 3153,
+          "buildMs": 101,
+          "proveMs": 4415,
           "offerBytes": 16056
         }
       ],
-      "contractAddress": "6a9a6af396218dc5323fcf52dd897085b40d232a14279363da190f5e6b7ab95c",
+      "contractAddress": "8f6805bd440145e5cf9bf69a317a78094e5b931e40e5279f888f99bcc03a5edb",
       "stagingTxIds": [
-        "00640bfd3df1e5472dd3498ce0b2875358180d49859483b57c72e2a3da6034258d"
+        "00d857f4d71b7bd5fca04187300b49ccefcab8ef7a0db26f61d6df11498a640611"
       ]
     }
   ]

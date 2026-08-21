@@ -1,6 +1,6 @@
 # G5 offline sweep — the F-310 placement decision computed with no chain (F-313)
 
-`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-20T21:31:29.802Z
+`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-21T03:41:22.499Z
 
 ## What this is, and what it is not
 
@@ -27,7 +27,7 @@ the LIVE matrix agrees; that comparison is `CALIBRATION.md`.
 | `arm-b-nested` | b | nested-balances | single | 139 | +22 | 1 | 1 | yes |
 | `arm-c-both` | c | nested-balances | single | 108 | -9 | 1 | 1 | yes |
 | `arm-d-unified` | d | unified-coins | single | 89 | -28 | 2 | 2 | yes |
-| `arm-e-escrow` | e | flat | staged | 55 | -62 | 16 | 16 | yes |
+| `arm-e-escrow` | e | flat | staged | 55 | -62 | >=16 (no boundary in range) | >=16 (no boundary in range) | yes |
 
 `offer ops` is the OFFER transcript program length — the number of VM operations the offer
 circuit records. It is parameter-independent, so it is the one number in this table that is a
@@ -142,7 +142,7 @@ the arm rests on exactly that claim, so the numbers are recorded rather than ass
 - **`v4-slim`** (control) — v4-slim — v4 minus the unshielded family
   - R1: the unshielded family is deleted (ledger field `unshieldedBalances`, key domain `unshieldedKey`, circuits `depositUnshielded` / `withdrawUnshielded` / `transferInternalUnshielded` / `unshieldedAccountBalance`). Breaks v3 raw-state layout compatibility and makes FR-203 family separation and the P-COLL probe inapplicable.
 - **`arm-a-dedupe`** (a) — arm (a) dedupe-flat
-  - R1 (inherited from v4-slim). No further relaxation: behaviour-preserving.
+  - R1 is inherited by this measurement fixture solely for the common v4-slim control. Arm (a) adds no relaxation and its deduplication can be applied to the shipped v4 without deleting the unshielded family.
 - **`arm-b-nested`** (b) — arm (b) nested-balances
   - R1 (inherited).
   - R2: the `shieldedBalances` map layout changes. Breaks (i) v3/v4 raw-state decoders, (ii) the `shieldedKey` pure-circuit key-reproduction tooling that makes 00005 "zero unaccounted keys" assertion an enumeration of real state, and (iii) the domain-separator half of FR-203 family separation.

@@ -26,6 +26,20 @@ const table = (header: string[], rows: string[][]): string[] => [
   `|${header.map(() => '---').join('|')}|`,
   ...rows.map((r) => `| ${r.join(' | ')} |`),
 ];
+/** See `offline-sweep.ts`: a bare "last GUARANTEED" is not a boundary unless something went fallible. */
+const renderBoundary = (lastGuaranteed: number | null, firstFallible: number | null): string => {
+  if (lastGuaranteed === null) return '**none**';
+  if (firstFallible === null) return `>=${lastGuaranteed} (no boundary in range)`;
+  return String(lastGuaranteed);
+};
+const renderBoundaryReading = (lastGuaranteed: number | null, firstFallible: number | null): string => {
+  if (lastGuaranteed === null) {
+    return `no GUARANTEED point in range; first FALLIBLE at ${firstFallible ?? 'not reached'}`;
+  }
+  if (firstFallible === null) return `>=${lastGuaranteed} cells (no boundary in range)`;
+  return `last GUARANTEED at ${lastGuaranteed} cell(s), first FALLIBLE at ${firstFallible}`;
+};
+
 const readJson = (name: string): any => {
   const f = join(EVID, name);
   return existsSync(f) ? JSON.parse(readFileSync(f, 'utf-8')) : null;
@@ -105,7 +119,7 @@ const main = () => {
         '% of ceiling',
         'LIVE last GUARANTEED (cells)',
         'modelled last GUARANTEED',
-        'relaxations',
+        'fixture relaxations',
       ],
       VARIANTS.map((v) => {
         const o = byId(offlineSummary, v.id);
@@ -130,22 +144,23 @@ const main = () => {
             ? 'not run'
             : l.fatal
               ? '**could not deploy/run**'
-              : l.surplus?.lastGuaranteed === null
-                ? '**none**'
-                : String(l.surplus?.lastGuaranteed),
-          o?.surplus?.lastGuaranteedCells === null || o?.surplus?.lastGuaranteedCells === undefined
+              : renderBoundary(l.surplus?.lastGuaranteed ?? null, l.surplus?.firstFallible ?? null),
+          o?.surplus === undefined
             ? '—'
-            : String(o.surplus.lastGuaranteedCells),
+            : renderBoundary(o.surplus.lastGuaranteedCells ?? null, o.surplus.firstFallibleCells ?? null),
           String(v.relaxations.length),
         ];
       }),
     ),
   );
   md.push('');
-  md.push('**`offer transcript ops` is the number that ranks the arms.** It is the OFFER circuit\'s');
+  md.push('**`offer transcript ops` ranks transcript cost; the LIVE column ranks demonstrated');
+  md.push('publishability.** Ops are the OFFER circuit\'s');
   md.push('transcript program length — how many VM operations the offer records — and it is a property of');
   md.push('the contract alone: independent of ledger parameters, of the chain, and of how much custody is');
-  md.push('held. Everything else in the table depends on at least one of those.');
+  md.push('held. It does not predict the live boundary monotonically: arm (d) records fewer ops than');
+  md.push('arm (a), yet reaches only 2 cells live where arm (a) reaches 4. Both columns are required for');
+  md.push('the design decision; everything else in the table depends on at least one of those contexts.');
   md.push('');
   if (cal) {
     md.push(`**Calibration of the modelled column: ${cal.verdict}** (${cal.agreed}/${cal.compared} overlapping`);
@@ -244,6 +259,26 @@ const main = () => {
     md.push('');
   }
 
+  const armALive = byId(liveSummary, 'arm-a-dedupe');
+  const armELive = byId(liveSummary, 'arm-e-escrow');
+  md.push('## Decision input — recommendation versus measurement');
+  md.push('');
+  md.push(
+    `The retained live evidence makes arm (a) the strongest map-based arm at ` +
+      `${renderBoundary(armALive?.surplus?.lastGuaranteed ?? null, armALive?.surplus?.firstFallible ?? null)} ` +
+      `cells, while arm (e) is the only arm with no observed boundary ` +
+      `(${renderBoundary(armELive?.surplus?.lastGuaranteed ?? null, armELive?.surplus?.firstFallible ?? null)}).`,
+  );
+  md.push('Arm (e) also settled the published-file U2 case for a foreign wallet at 4 cells. Those are');
+  md.push('the measured inputs behind Plan 05\'s recommendation to productize arm (a) + arm (e).');
+  md.push('');
+  md.push('**The combination itself was NOT a fixture in this rig.** No `(a)+(e)` contract was compiled,');
+  md.push('deploy-costed or measured. Arm (a) adds no circuit or protocol step, and arm (e) alone costed');
+  md.push('at 11 circuits / 50.1% of the 50,000-byte limit, so the combination is a supported design');
+  md.push('direction, not a measured combined-arm result. Project 00007 must compile, cost and re-measure');
+  md.push('the actual keyed/cancellable escrow design before making a product claim.');
+  md.push('');
+
   // --- per-arm readings -------------------------------------------------------------------------
   md.push('## Per-arm reading');
   md.push('');
@@ -260,11 +295,13 @@ const main = () => {
           ? ` (${o.offerOpsDeltaVsBaseline >= 0 ? '+' : ''}${o.offerOpsDeltaVsBaseline} vs shipped v4)`
           : ''),
     );
-    md.push(
-      `- LIVE boundary (floating surplus): last GUARANTEED at ${
-        l === undefined ? 'not run' : l.fatal ? 'n/a — did not run' : (l.surplus?.lastGuaranteed ?? 'none')
-      } cell(s), first FALLIBLE at ${l?.surplus?.firstFallible ?? 'not reached'}`,
-    );
+    const liveBoundaryReading =
+      l === undefined
+        ? 'not run'
+        : l.fatal
+          ? 'n/a — did not run'
+          : renderBoundaryReading(l.surplus?.lastGuaranteed ?? null, l.surplus?.firstFallible ?? null);
+    md.push(`- LIVE boundary (floating surplus): ${liveBoundaryReading}`);
     md.push(`- deploy: ${cost[v.id]?.keys ?? '—'} provable circuits, ${cost[v.id]?.bytesWritten ?? '—'} \`bytesWritten\` (${cost[v.id]?.pct ?? '—'}% of ceiling)`);
     if (v.relaxations.length === 0) md.push('- relaxations: none (this is the shipped contract)');
     else for (const r of v.relaxations) md.push(`- relaxation: ${r}`);

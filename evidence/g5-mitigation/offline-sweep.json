@@ -1,6 +1,6 @@
 {
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
-  "utc": "2026-08-20T21:31:29.803Z",
+  "utc": "2026-08-21T03:41:22.500Z",
   "question": "per contract variant, at what custody size does an offer stop being placed in the GUARANTEED section, and how many transcript operations does its offer circuit take?",
   "paramsSource": "CHAIN parameters captured at evidence/g5-mitigation/chain-params.json",
   "paramsFile": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g5-mitigation/chain-params.json",
@@ -98,7 +98,7 @@
       "offerOpsAtRef": 98,
       "offerOpsDeltaVsBaseline": -19,
       "relaxations": [
-        "R1 (inherited from v4-slim). No further relaxation: behaviour-preserving."
+        "R1 is inherited by this measurement fixture solely for the common v4-slim control. Arm (a) adds no relaxation and its deduplication can be applied to the shipped v4 without deleting the unshielded family."
       ],
       "measured": true
     },
@@ -1811,7 +1811,7 @@
           "ops": 98,
           "gas": {
             "readTime": "3672000000",
-            "computeTime": "7591888700",
+            "computeTime": "7591891501",
             "bytesWritten": "1560",
             "bytesDeleted": "1560"
           },
@@ -1983,7 +1983,7 @@
           "ops": 64,
           "gas": {
             "readTime": "1632000000",
-            "computeTime": "4029101061",
+            "computeTime": "4028999006",
             "bytesWritten": "2326",
             "bytesDeleted": "2242"
           },
@@ -2176,7 +2176,7 @@
           "ops": 100,
           "gas": {
             "readTime": "3264000000",
-            "computeTime": "6596491047",
+            "computeTime": "6596652531",
             "bytesWritten": "1184",
             "bytesDeleted": "1186"
           },

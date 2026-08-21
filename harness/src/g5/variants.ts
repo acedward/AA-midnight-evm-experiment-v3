@@ -78,8 +78,9 @@ export const VARIANTS: VariantSpec[] = [
     arm: 'control',
     title: 'v4-slim — v4 minus the unshielded family',
     thesis:
-      'the arms TRUE baseline. Every arm needed the four circuits the unshielded family occupies, so ' +
-      'the price of that relaxation is measured on its own before any arm effect is attributed.',
+      'the arms TRUE baseline. Four of the five redesign arms needed room beyond v4\'s circuit budget, ' +
+      'so every measurement fixture used the same slim control and the price of R1 is isolated before ' +
+      'any arm effect is attributed. Arm (a) itself does not require R1.',
     layout: 'flat',
     offer: 'single',
     source: 'contracts/variants/v4-slim.compact',
@@ -95,12 +96,17 @@ export const VARIANTS: VariantSpec[] = [
     arm: 'a',
     title: 'arm (a) dedupe-flat',
     thesis:
-      'issue 0004 mitigation 1: read every ledger entry ONCE into a local. Semantics-preserving, the ' +
-      'only arm adoptable without a Manager redesign.',
+      'issue 0004 mitigation 1: read every ledger entry ONCE into a local. The deduplication itself is ' +
+      'semantics-preserving and is the only arm adoptable without a Manager redesign; this measurement ' +
+      'fixture inherits R1 only to share the other arms\' control.',
     layout: 'flat',
     offer: 'single',
     source: 'contracts/variants/arm-a-dedupe.compact',
-    relaxations: ['R1 (inherited from v4-slim). No further relaxation: behaviour-preserving.'],
+    relaxations: [
+      'R1 is inherited by this measurement fixture solely for the common v4-slim control. Arm (a) ' +
+        'adds no relaxation and its deduplication can be applied to the shipped v4 without deleting ' +
+        'the unshielded family.',
+    ],
   },
   {
     id: 'arm-b-nested',
@@ -161,8 +167,9 @@ export const VARIANTS: VariantSpec[] = [
     title: 'arm (e) two-phase escrow Cell',
     thesis:
       'issue 0004 mitigation 1d in its stronger form: the OFFER circuit reads escrow CELLS and no map, ' +
-      'so its cost cannot depend on custody size. The only arm whose payoff could be ' +
-      'SIZE-INDEPENDENT rather than merely larger.',
+      'so custody growth adds no custody-map reads. One authorization Set read remains; in retained ' +
+      'run-5 evidence the offer stays GUARANTEED through 16 cells with no boundary found. The only arm ' +
+      'whose payoff could be SIZE-INDEPENDENT rather than merely larger.',
     layout: 'flat',
     offer: 'staged',
     source: 'contracts/variants/arm-e-escrow.compact',

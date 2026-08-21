@@ -45,6 +45,18 @@ const table = (header: string[], rows: string[][]): string[] => [
 const ms = (pico: string | undefined): string =>
   pico === undefined ? '—' : `${(Number(pico) / 1e9).toFixed(3)}`;
 
+/**
+ * "Last GUARANTEED" is only a BOUNDARY if a fallible point was actually found. When the sweep ran out
+ * of range while everything was still guaranteed, the honest rendering is `>=N (no boundary in range)`
+ * — printing a bare `N` invites a reader to quote the largest size we happened to test as a measured
+ * limit, which is the single easiest way for this evidence to be misread.
+ */
+const renderBoundary = (lastGuaranteed: number | null, firstFallible: number | null): string => {
+  if (lastGuaranteed === null) return '**none**';
+  if (firstFallible === null) return `>=${lastGuaranteed} (no boundary in range)`;
+  return String(lastGuaranteed);
+};
+
 const arg = (flag: string): string | undefined => {
   const i = process.argv.indexOf(flag);
   return i >= 0 ? process.argv[i + 1] : undefined;
@@ -180,8 +192,8 @@ const main = async () => {
             : s.offerOpsDeltaVsBaseline > 0
               ? `+${s.offerOpsDeltaVsBaseline}`
               : String(s.offerOpsDeltaVsBaseline),
-        s.named.lastGuaranteedCells === null ? '**none**' : String(s.named.lastGuaranteedCells),
-        s.surplus.lastGuaranteedCells === null ? '**none**' : String(s.surplus.lastGuaranteedCells),
+        renderBoundary(s.named.lastGuaranteedCells, s.named.firstFallibleCells),
+        renderBoundary(s.surplus.lastGuaranteedCells, s.surplus.firstFallibleCells),
         s.named.monotone && s.surplus.monotone ? 'yes' : '**NO**',
       ]),
     ),

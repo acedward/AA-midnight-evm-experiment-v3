@@ -1,6 +1,6 @@
 # G5 calibration — may the offline placement model be quoted for ABSOLUTE boundaries?
 
-`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-20T21:31:30.583Z
+`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-21T02:31:25.927Z
 
 Offline sweep parameters: **CHAIN parameters captured at evidence/g5-mitigation/chain-params.json**
 

@@ -1,5 +1,5 @@
 # G5 run log
-started_utc: 2026-08-21T00:17:30Z
+started_utc: 2026-08-21T00:20:41Z
 argv: ./scripts/g5/verify-g5-mitigation.sh full
 cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
 host: Darwin arm64
@@ -7,32 +7,192 @@ docker: Docker version 29.1.3, build f52814d
 compose: 2.40.3-desktop.1
 label: EXPERIMENTAL_LANE
 --- step: 01-w1-docker-config
-    utc_start: 2026-08-21T00:17:30Z
+    utc_start: 2026-08-21T00:20:41Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
     argv: step_w1
-    utc_end: 2026-08-21T00:17:30Z
+    utc_end: 2026-08-21T00:20:41Z
     duration_s: 0
     exit: 0
     output: 01-w1-docker-config.out
 --- step: 02-probe-ports
-    utc_start: 2026-08-21T00:17:30Z
+    utc_start: 2026-08-21T00:20:41Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
     argv: step_probe_ports
-    utc_end: 2026-08-21T00:17:31Z
-    duration_s: 1
+    utc_end: 2026-08-21T00:20:41Z
+    duration_s: 0
     exit: 0
     output: 02-probe-ports.out
 --- step: 03-lane-reuse
-    utc_start: 2026-08-21T00:17:31Z
+    utc_start: 2026-08-21T00:20:41Z
     cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
     argv: step_lane_reuse
-    utc_end: 2026-08-21T00:17:31Z
-    duration_s: 0
-    exit: 1
-    output: 03-lane-reuse.out
---- teardown
-    utc: 2026-08-21T00:17:31Z
-    argv: docker compose --env-file /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/docker/.env -f /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00006-g5-20260821001730-85652 && w1_cleanup
+    utc_end: 2026-08-21T00:20:42Z
+    duration_s: 1
     exit: 0
-finished_utc: 2026-08-21T00:17:31Z
-final_exit: 1
+    output: 03-lane-reuse.out
+--- step: 04-lane-dev-1
+    utc_start: 2026-08-21T00:20:42Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_lane_dev_1
+    utc_end: 2026-08-21T00:20:43Z
+    duration_s: 1
+    exit: 0
+    output: 04-lane-dev-1.out
+--- step: 05-compile-fast
+    utc_start: 2026-08-21T00:20:43Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_compile_fast
+    utc_end: 2026-08-21T00:20:44Z
+    duration_s: 1
+    exit: 0
+    output: 05-compile-fast.out
+--- step: 06-compile-variants
+    utc_start: 2026-08-21T00:20:44Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_compile_variants
+    utc_end: 2026-08-21T00:20:48Z
+    duration_s: 4
+    exit: 0
+    output: 06-compile-variants.out
+--- step: 07-install
+    utc_start: 2026-08-21T00:20:48Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_install
+    utc_end: 2026-08-21T00:20:49Z
+    duration_s: 1
+    exit: 0
+    output: 07-install.out
+--- step: 08-unit-suites
+    utc_start: 2026-08-21T00:20:49Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_unit_suites
+    utc_end: 2026-08-21T00:20:52Z
+    duration_s: 3
+    exit: 0
+    output: 08-unit-suites.out
+--- step: 09-typecheck
+    utc_start: 2026-08-21T00:20:52Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_typecheck
+    utc_end: 2026-08-21T00:20:53Z
+    duration_s: 1
+    exit: 0
+    output: 09-typecheck.out
+--- step: 10-compile-zk
+    utc_start: 2026-08-21T00:20:53Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_compile_zk
+    utc_end: 2026-08-21T00:22:17Z
+    duration_s: 84
+    exit: 0
+    output: 10-compile-zk.out
+--- step: 11-compile-variants-zk
+    utc_start: 2026-08-21T00:22:17Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_compile_variants_zk
+    utc_end: 2026-08-21T00:27:13Z
+    duration_s: 296
+    exit: 0
+    output: 11-compile-variants-zk.out
+--- step: 12-deploy-cost
+    utc_start: 2026-08-21T00:27:13Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_deploy_cost
+    utc_end: 2026-08-21T00:27:15Z
+    duration_s: 2
+    exit: 0
+    output: 12-deploy-cost.out
+--- step: 13-offline-sweep
+    utc_start: 2026-08-21T00:27:15Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_offline_sweep
+    utc_end: 2026-08-21T00:27:22Z
+    duration_s: 7
+    exit: 0
+    output: 13-offline-sweep.out
+--- step: 14-pull
+    utc_start: 2026-08-21T00:27:22Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_pull
+    utc_end: 2026-08-21T00:27:24Z
+    duration_s: 2
+    exit: 0
+    output: 14-pull.out
+--- step: 15-boot
+    utc_start: 2026-08-21T00:27:24Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_boot
+    utc_end: 2026-08-21T00:27:31Z
+    duration_s: 7
+    exit: 0
+    output: 15-boot.out
+--- step: 16-health
+    utc_start: 2026-08-21T00:27:31Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_health
+    utc_end: 2026-08-21T00:27:34Z
+    duration_s: 3
+    exit: 0
+    output: 16-health.out
+--- step: 17-loadgate
+    utc_start: 2026-08-21T00:27:34Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_loadgate
+    utc_end: 2026-08-21T00:27:34Z
+    duration_s: 0
+    exit: 0
+    output: 17-loadgate.out
+--- step: 18-live-matrix
+    utc_start: 2026-08-21T00:27:34Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_live_matrix
+    utc_end: 2026-08-21T02:31:17Z
+    duration_s: 7423
+    exit: 0
+    output: 18-live-matrix.out
+--- step: 19-offline-sweep-chain
+    utc_start: 2026-08-21T02:31:17Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_offline_sweep_chain
+    utc_end: 2026-08-21T02:31:24Z
+    duration_s: 7
+    exit: 0
+    output: 19-offline-sweep-chain.out
+--- step: 20-calibrate
+    utc_start: 2026-08-21T02:31:24Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_calibrate
+    utc_end: 2026-08-21T02:31:25Z
+    duration_s: 1
+    exit: 0
+    output: 20-calibrate.out
+--- step: 21-u1-probe
+    utc_start: 2026-08-21T02:31:25Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_u1_probe
+    utc_end: 2026-08-21T02:39:48Z
+    duration_s: 503
+    exit: 0
+    output: 21-u1-probe.out
+--- step: 22-winner-e2e
+    utc_start: 2026-08-21T02:39:48Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_winner_e2e
+    utc_end: 2026-08-21T02:53:18Z
+    duration_s: 810
+    exit: 0
+    output: 22-winner-e2e.out
+--- step: 23-ranking
+    utc_start: 2026-08-21T02:53:18Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap
+    argv: step_ranking
+    utc_end: 2026-08-21T02:53:19Z
+    duration_s: 1
+    exit: 0
+    output: 23-ranking.out
+--- teardown
+    utc: 2026-08-21T02:53:19Z
+    argv: docker compose --env-file /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/docker/.env -f /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00006-g5-20260821002041-90378 && w1_cleanup
+    exit: 0
+finished_utc: 2026-08-21T02:53:21Z
+final_exit: 0

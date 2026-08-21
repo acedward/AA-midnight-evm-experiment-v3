@@ -16,6 +16,6 @@ Sourcemap for "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/
 
  Test Files  6 passed (6)
       Tests  177 passed (177)
-   Start at  15:25:52
-   Duration  2.46s (transform 1.06s, setup 0ms, import 2.33s, tests 3.81s, environment 0ms)
+   Start at  20:20:49
+   Duration  2.22s (transform 895ms, setup 0ms, import 1.95s, tests 3.66s, environment 0ms)
 

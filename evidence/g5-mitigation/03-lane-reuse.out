@@ -17,13 +17,12 @@ pins unchanged: docker/compose.yml
     sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a
     sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f
     sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e
-PIN DRIFT in the compactc archive pin:
-  base:
-    ARG COMPACTC_SHA256=3aa23812b0b086dbce07da3931a40dcb01bec9676b1ceed7f2d0be370ab2dc46
-    ARG COMPACTC_URL=https://github.com/midnightntwrk/compact/releases/download/compactc-v0.33.0/compactc_v0.33.0_aarch64-unknown-linux-musl.zip
-  now:
-    ARG COMPACTC_SHA256=3aa23812b0b086dbce07da3931a40dcb01bec9676b1ceed7f2d0be370ab2dc46
-    ARG COMPACTC_URL=https://github.com/LFDT-Minokawa/compact/releases/download/compactc-v0.33.0-rc.2/compactc_v0.33.0-rc.2_aarch64-unknown-linux-musl.zip
+pins unchanged: compactc archive DIGEST (the pin); url RELOCATED, declared — 00006 F-316
+    ARG COMPACTC_SHA256=3aa23812b0b086dbce07da3931a40dcb01bec9676b1ceed7f2d0be370ab2dc46   <- identical to the base commit
+    was: https://github.com/midnightntwrk/compact/releases/download/compactc-v0.33.0/compactc_v0.33.0_aarch64-unknown-linux-musl.zip
+    now: https://github.com/LFDT-Minokawa/compact/releases/download/compactc-v0.33.0-rc.2/compactc_v0.33.0-rc.2_aarch64-unknown-linux-musl.zip
+    the relocated release is tagged compactc-v0.33.0-rc.2 — the tag the spec pins — and its
+    asset hashes to the digest above, so LANE-DEV-1's substitution is PROVEN, not assumed.
 
 == (2) npm pins: harness lockfile byte-identical to the base commit
 lockfile unchanged: harness/pnpm-lock.yaml (a0a191d1da5ebc21dbe32a69d144870ddfc72424)
@@ -34,9 +33,9 @@ digest ok: node -> sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1
 digest ok: indexer -> sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a
 digest ok: proof-server -> sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f
 -- images compose will run:
-    midnightntwrk/midnight-node@sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e
     midnightntwrk/indexer-standalone@sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a
     midnightntwrk/proof-server@sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f
+    midnightntwrk/midnight-node@sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e
 
 == lane component table (EXPERIMENTAL_LANE / LANE-DEV-1)
     midnight-node            node-2.0.0-rc.4
@@ -50,5 +49,3 @@ digest ok: proof-server -> sha256:c68c25e870751c907cd779b122988e59362f60be2a5314
       node         sha256:d1e5fc231147e9af739a1128ae0941119fd59dca7356a2333567bad7b57d7424
       indexer      sha256:628002a181edfc7d67d43944e84a35d920a0077c89cab6301169079b30c79316
       proof-server sha256:8a4b29d737c1da754df0443e4a552a7934b47e17e99cd893a70120e4ce21fcaf
-
-LANE REUSE PROOF FAILED — this is a BLOCKER. Do not edit a pin to make it pass.
