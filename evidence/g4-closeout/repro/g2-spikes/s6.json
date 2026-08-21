@@ -1,0 +1,497 @@
+{
+  "spike": "S6",
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T15:35:51.283Z",
+  "question": "does the maker pay zero DUST and the taker cover the merged transaction's whole fee?",
+  "verdict": "GREEN",
+  "managerAddress": "cf75f2f08386362cabc2e5f68635234acb47f8743890be629ee5a622690e4ea5",
+  "colours": {
+    "S_A": "23fc5f63c782325faf533dc5756357e5f7eccbbe67340cf2aace77748736c4f0",
+    "S_B": "ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1"
+  },
+  "baseline": {
+    "txId": "00092331da85dda40a43e417c34f1f0ce5fa4b5bce340ecdc879b5a731337356c4",
+    "feesSpecks": "318461854314555",
+    "dustSpent": "0"
+  },
+  "offer": {
+    "terms": {
+      "version": 1,
+      "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+      "shape": "named-taker",
+      "circuitId": "openSwapShielded",
+      "form": "pre-binding",
+      "managerAddress": "cf75f2f08386362cabc2e5f68635234acb47f8743890be629ee5a622690e4ea5",
+      "gives": {
+        "colour": "23fc5f63c782325faf533dc5756357e5f7eccbbe67340cf2aace77748736c4f0",
+        "value": "2",
+        "recipient": "226fe909b3edee5d22d8ec41f643d1138f8f93bd10b023391ece325ded8821df",
+        "recipientKind": "user-coin-public-key"
+      },
+      "wants": {
+        "colour": "ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1",
+        "value": "3",
+        "nonce": "e7189c1016e67039246d59cc6af0b5d1d24d45a5a7d364fe142acd29824f6a8c"
+      },
+      "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "createdAt": "2026-08-20T15:34:17.387Z",
+      "expiresAt": "2026-08-20T16:34:17.387Z",
+      "ttlSeconds": 3600,
+      "placement": {
+        "segments": [
+          0,
+          17478
+        ],
+        "intentSegments": [
+          17478
+        ],
+        "fallibleOfferSegments": [],
+        "imbalances": {
+          "0": {
+            "shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1": "-3"
+          },
+          "17478": {}
+        },
+        "expectedAtSegment0": {
+          "shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1": "-3"
+        },
+        "segment0Exact": true,
+        "otherSegmentsEmpty": true,
+        "offendingSegments": [],
+        "ok": true
+      },
+      "makerAttachedDust": false,
+      "contentAddress": "4f145ca794f94ff0bed05332b903ad3d762167af4644bc477255c1f6d81efb55",
+      "transactionBytes": 26820
+    },
+    "placement": {
+      "segments": [
+        0,
+        17478
+      ],
+      "intentSegments": [
+        17478
+      ],
+      "fallibleOfferSegments": [],
+      "imbalances": {
+        "0": {
+          "shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1": "-3"
+        },
+        "17478": {}
+      },
+      "expectedAtSegment0": {
+        "shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1": "-3"
+      },
+      "segment0Exact": true,
+      "otherSegmentsEmpty": true,
+      "offendingSegments": [],
+      "ok": true
+    },
+    "ownFeesSpecks": "1933650000000001",
+    "proveMs": 7663
+  },
+  "readerProcess": {
+    "process": {
+      "pid": 48786,
+      "ppid": 48780,
+      "network": "none used"
+    },
+    "file": "/private/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T/aa00006-g4-88MwCz/clone/evidence/g2-spikes/offers/s6-namedtaker-4f145ca794f94ff0.offer",
+    "envelopeBytes": 28218,
+    "envelopeVerified": true,
+    "terms": {
+      "version": 1,
+      "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+      "shape": "named-taker",
+      "circuitId": "openSwapShielded",
+      "form": "pre-binding",
+      "managerAddress": "cf75f2f08386362cabc2e5f68635234acb47f8743890be629ee5a622690e4ea5",
+      "gives": {
+        "colour": "23fc5f63c782325faf533dc5756357e5f7eccbbe67340cf2aace77748736c4f0",
+        "value": "2",
+        "recipient": "226fe909b3edee5d22d8ec41f643d1138f8f93bd10b023391ece325ded8821df",
+        "recipientKind": "user-coin-public-key"
+      },
+      "wants": {
+        "colour": "ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1",
+        "value": "3",
+        "nonce": "e7189c1016e67039246d59cc6af0b5d1d24d45a5a7d364fe142acd29824f6a8c"
+      },
+      "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "createdAt": "2026-08-20T15:34:17.387Z",
+      "expiresAt": "2026-08-20T16:34:17.387Z",
+      "ttlSeconds": 3600,
+      "placement": {
+        "segments": [
+          0,
+          17478
+        ],
+        "intentSegments": [
+          17478
+        ],
+        "fallibleOfferSegments": [],
+        "imbalances": {
+          "0": {
+            "shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1": "-3"
+          },
+          "17478": {}
+        },
+        "expectedAtSegment0": {
+          "shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1": "-3"
+        },
+        "segment0Exact": true,
+        "otherSegmentsEmpty": true,
+        "offendingSegments": [],
+        "ok": true
+      },
+      "makerAttachedDust": false,
+      "contentAddress": "4f145ca794f94ff0bed05332b903ad3d762167af4644bc477255c1f6d81efb55",
+      "transactionBytes": 26820
+    },
+    "payloadBytes": 26820,
+    "payloadSha256": "4f145ca794f94ff0bed05332b903ad3d762167af4644bc477255c1f6d81efb55",
+    "contentAddressMatches": true,
+    "deserialized": true,
+    "roundTripByteIdentical": true,
+    "imbalances": {
+      "0": {
+        "shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1": "-3"
+      },
+      "17478": {}
+    },
+    "deficits": {
+      "0/shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1": "-3"
+    },
+    "surpluses": {},
+    "intentSegments": [
+      17478
+    ],
+    "fallibleOfferSegments": [],
+    "unsubmittableAlone": {
+      "proven": true,
+      "error": "invalid balance -3 for token Shielded(ShieldedTokenType(ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1)) in segment 0; balance must be positive"
+    },
+    "ok": true
+  },
+  "feeCapacity": {
+    "maker": {
+      "before": {
+        "dustBalance": "0",
+        "nightBalance": "1600000000000",
+        "registeredNightUtxos": 4
+      },
+      "after": {
+        "dustBalance": "0",
+        "nightBalance": "1600000000000",
+        "registeredNightUtxos": 4
+      }
+    },
+    "taker": {
+      "before": {
+        "dustBalance": "0",
+        "nightBalance": "1600000000000",
+        "registeredNightUtxos": 4
+      },
+      "after": {
+        "dustBalance": "0",
+        "nightBalance": "1600000000000",
+        "registeredNightUtxos": 4
+      }
+    }
+  },
+  "dustBalanceCaveat": "the pinned facade dust accessors read 0 even for wallets actively paying fees, so any dust balance here is \"not readable\", not \"cannot pay\". The decisive evidence is the settled transaction's per-intent dust actions (line 2).",
+  "settledIntentDustActions": {
+    "1": {
+      "spends": 1,
+      "registrations": 0
+    },
+    "17478": {
+      "spends": 0,
+      "registrations": 0
+    }
+  },
+  "makerIntentSegments": [
+    17478
+  ],
+  "makerDustSpends": 0,
+  "otherDustSpends": 1,
+  "settlementFeeSpecks": "965776551660961",
+  "feeRatioVsPlainTransfer": "3.03",
+  "offerOwnFeeVsSettlementFee": "2.00",
+  "feeCalculationCliffObserved": false,
+  "before": {
+    "mapSizes": {
+      "pools": 1,
+      "shieldedCells": 1,
+      "unshieldedCells": 0
+    },
+    "pools": {
+      "S_A": "6",
+      "S_B": "absent"
+    },
+    "cells": {
+      "AA_A/S_A": "6",
+      "AA_A/S_B": "absent",
+      "AA_B/S_A": "absent",
+      "AA_B/S_B": "absent"
+    },
+    "onChainCells": {
+      "AA_A/S_A": "6",
+      "AA_A/S_B": "0",
+      "AA_B/S_A": "0",
+      "AA_B/S_B": "0"
+    },
+    "op2Retries": {},
+    "op2Consulted": true
+  },
+  "after": {
+    "mapSizes": {
+      "pools": 2,
+      "shieldedCells": 2,
+      "unshieldedCells": 0
+    },
+    "pools": {
+      "S_A": "4",
+      "S_B": "3"
+    },
+    "cells": {
+      "AA_A/S_A": "4",
+      "AA_A/S_B": "3",
+      "AA_B/S_A": "absent",
+      "AA_B/S_B": "absent"
+    },
+    "onChainCells": {
+      "AA_A/S_A": "4",
+      "AA_A/S_B": "3",
+      "AA_B/S_A": "0",
+      "AA_B/S_B": "0"
+    },
+    "op2Retries": {},
+    "op2Consulted": true
+  },
+  "take": {
+    "stage": "settled",
+    "ok": true,
+    "terms": {
+      "version": 1,
+      "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+      "shape": "named-taker",
+      "circuitId": "openSwapShielded",
+      "form": "pre-binding",
+      "managerAddress": "cf75f2f08386362cabc2e5f68635234acb47f8743890be629ee5a622690e4ea5",
+      "gives": {
+        "colour": "23fc5f63c782325faf533dc5756357e5f7eccbbe67340cf2aace77748736c4f0",
+        "value": "2",
+        "recipient": "226fe909b3edee5d22d8ec41f643d1138f8f93bd10b023391ece325ded8821df",
+        "recipientKind": "user-coin-public-key"
+      },
+      "wants": {
+        "colour": "ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1",
+        "value": "3",
+        "nonce": "e7189c1016e67039246d59cc6af0b5d1d24d45a5a7d364fe142acd29824f6a8c"
+      },
+      "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+      "createdAt": "2026-08-20T15:34:17.387Z",
+      "expiresAt": "2026-08-20T16:34:17.387Z",
+      "ttlSeconds": 3600,
+      "placement": {
+        "segments": [
+          0,
+          17478
+        ],
+        "intentSegments": [
+          17478
+        ],
+        "fallibleOfferSegments": [],
+        "imbalances": {
+          "0": {
+            "shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1": "-3"
+          },
+          "17478": {}
+        },
+        "expectedAtSegment0": {
+          "shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1": "-3"
+        },
+        "segment0Exact": true,
+        "otherSegmentsEmpty": true,
+        "offendingSegments": [],
+        "ok": true
+      },
+      "makerAttachedDust": false,
+      "contentAddress": "4f145ca794f94ff0bed05332b903ad3d762167af4644bc477255c1f6d81efb55",
+      "transactionBytes": 26820
+    },
+    "contentAddress": "4f145ca794f94ff0bed05332b903ad3d762167af4644bc477255c1f6d81efb55",
+    "secondsLeft": 3597,
+    "fundability": {
+      "imbalances": {
+        "0": {
+          "shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1": "-3"
+        },
+        "17478": {}
+      },
+      "deficits": {
+        "0/shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1": "-3"
+      },
+      "surpluses": {},
+      "declared": {
+        "wants": "0/shielded:ea9b2be841da6b37cb6415a408b902a3c17f93fe87ddd935d38f8b6f7243fdd1"
+      },
+      "matchesTerms": true
+    },
+    "settlement": {
+      "route": "unbound",
+      "ok": true,
+      "txId": "00a26ed11a60499b0baa0a82a7fc824be86444f9ddc88349cec15b5fb80a2d604b",
+      "txHash": "b6f8a06044180b1efadc3946e8ef6edfed7600e833263a1eabb00bdbde5d84ca",
+      "preSubmitGuard": {
+        "imbalances": {
+          "0": {
+            "dust": "1211108364941331"
+          },
+          "1": {},
+          "17478": {}
+        },
+        "unswept": {},
+        "dustActions": {
+          "1": {
+            "spends": 1,
+            "registrations": 0
+          },
+          "17478": {
+            "spends": 0,
+            "registrations": 0
+          }
+        },
+        "intentSegments": [
+          1,
+          17478
+        ]
+      },
+      "identifiers": [
+        "00dc71fd793af66eb2a6f62a2bcd43ec7843cdb3413b52b416babc623923753e89",
+        "0039e5891483a311d57980a8b936efd30ed41d93fc8dc622344c6b205c3ce16137",
+        "00f07d6ee911783301ec05a4f3dc356e0924ef4b2634558117d16feb7fed6828e0",
+        "00daafdec8f48fa29132e9ff15d4d461db8d54f6c0103f1053aa4b8d89c474a5b5",
+        "0056ac54321c939eb03eab9f7bfae52edee4a2d21a79036486329f7cb2847e0722",
+        "0089c4cbfc64d470dd2fc1ba19c1b91adea4307251bf857d3f40a48fde4dce7a5d",
+        "0000743798850ea49113f43e11e01d1ebba28e82e84b4736dd40acf5584c8a6e29",
+        "00a26ed11a60499b0baa0a82a7fc824be86444f9ddc88349cec15b5fb80a2d604b"
+      ],
+      "validations": [
+        {
+          "flags": {
+            "enforceBalancing": false,
+            "verifySignatures": false,
+            "enforceLimits": false
+          },
+          "passed": false,
+          "error": "call to non-existant contract ContractAddress(cf75f2f08386362cabc2e5f68635234acb47f8743890be629ee5a622690e4ea5)"
+        },
+        {
+          "flags": {
+            "enforceBalancing": true,
+            "verifySignatures": true,
+            "enforceLimits": true
+          },
+          "passed": false,
+          "error": "call to non-existant contract ContractAddress(cf75f2f08386362cabc2e5f68635234acb47f8743890be629ee5a622690e4ea5)"
+        }
+      ],
+      "recipeShape": {
+        "keys": [
+          "balancingTransaction",
+          "baseTransaction",
+          "blockData",
+          "type"
+        ],
+        "baseTransaction": "present",
+        "balancingTransaction": "present",
+        "blockData": {
+          "height": 789,
+          "hash": "5e311f722cdb0604db"
+        }
+      },
+      "finalizedIntentSegments": [
+        1,
+        17478
+      ],
+      "feesSpecks": "965776551660961"
+    },
+    "merged": {
+      "imbalances": {
+        "0": {
+          "dust": "1211108364941331"
+        },
+        "1": {},
+        "17478": {}
+      },
+      "unswept": {},
+      "dustActions": {
+        "1": {
+          "spends": 1,
+          "registrations": 0
+        },
+        "17478": {
+          "spends": 0,
+          "registrations": 0
+        }
+      },
+      "intentSegments": [
+        1,
+        17478
+      ]
+    }
+  },
+  "observationPointProblems": [],
+  "checks": [
+    {
+      "name": "line 1 — the MAKER ARTIFACT carries no dust actions",
+      "ok": true,
+      "detail": "makerAttachedDust=false"
+    },
+    {
+      "name": "the settlement landed under ONE transaction id",
+      "ok": true,
+      "detail": "00a26ed11a60499b0baa0a82a7fc824be86444f9ddc88349cec15b5fb80a2d604b"
+    },
+    {
+      "name": "line 2 (decisive) — the MAKER'S INTENT in the settled transaction has ZERO dust spends",
+      "ok": true,
+      "detail": "maker segments [\"17478\"] -> 0 dust spends"
+    },
+    {
+      "name": "line 2 (decisive) — ANOTHER intent DID attach dust, so the fee was really paid",
+      "ok": true,
+      "detail": "other segments [\"1\"] -> 1 dust spends; full map {\"1\":{\"spends\":1,\"registrations\":0},\"17478\":{\"spends\":0,\"registrations\":0}}"
+    },
+    {
+      "name": "line 3 — the maker COULD have paid: it holds NIGHT registered for dust generation",
+      "ok": true,
+      "detail": "4 registered NIGHT utxo(s), NIGHT 1600000000000"
+    },
+    {
+      "name": "line 3 — the maker's own wallet state is unchanged by the settlement",
+      "ok": true,
+      "detail": "maker NIGHT 1600000000000 -> 1600000000000"
+    },
+    {
+      "name": "the merged transaction balanced with nothing left unswept",
+      "ok": true,
+      "detail": "{}"
+    },
+    {
+      "name": "OP1 and OP2 agree on every cell",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "no upstream fee-calculation cliff (`FeeCalculation(OutsideTimeToDismiss)`)",
+      "ok": true,
+      "detail": "not observed"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "kind": "maker",
+  "label": "P-F310-armed",
+  "lane": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T12:55:48.059Z",
+  "process": {
+    "pid": 49253,
+    "ppid": 49246
+  },
+  "spec": {
+    "label": "P-F310-armed",
+    "managerAddress": "f6eb885f4760142781e668f7862ab2b83d2e3c057a970ca9dc30e4fa9906eb0c",
+    "witness": "ownerA",
+    "shape": "named-taker",
+    "gives": {
+      "colour": "3ee0a9b91f70b37ef2bfe392b9007eb45e645f96aafe5af90b6ba7390a78e46b",
+      "value": "2"
+    },
+    "wants": {
+      "colour": "4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25",
+      "value": "1"
+    },
+    "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "recipientSeedName": "ownerT",
+    "envelopeOut": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/pf310-c-armed.offer",
+    "out": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/io/pf310c-armed.report.json"
+  },
+  "ok": false,
+  "error": "FR-302 VIOLATED for named-taker offer (openSwapShielded, give 2 3ee0a9b91f70… / want 1 4fde155ea51f…): segments present: [0,17855] intent segments: [17855] fallible-offer segments: [17855] expected 0: {\"shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25\":\"-1\"} observed 0: {} segment-0 exact: false other segments carrying deltas: 17855: {\"shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25\":\"-1\"} A leg outside the guaranteed section is UNSETTLEABLE by an independent taker (balancing is per (token, segment) and a taker can only reach segment 0). This is lane issue 0003 in its designed-against form — retain this output as evidence.",
+  "errorKind": "fr302-placement-fail-closed",
+  "published": false
+}

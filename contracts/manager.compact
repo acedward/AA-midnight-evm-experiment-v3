@@ -1,3 +1,64 @@
+// Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
+//
+// ================================================================================================
+// WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+// ================================================================================================
+//
+// v4 = v3 + ONE SWAP-MAKER circuit. Every v3 circuit, guard, key domain and map layout below is
+// BYTE-IDENTICAL to 00005's gate-green Manager v3 (`archive/00005/…`, base commit `e9701e9`), so
+// 00005's whole negative suite still applies unchanged. Nothing was weakened, renamed or reordered.
+//
+// `openSwapShielded(colourA, valA, recipientA, coinB, creditAccount)` fuses a debit leg and a credit
+// leg into ONE circuit, so a swap settles atomically BY CONSTRUCTION rather than by composing two
+// calls, and `recipientA` — a `Maybe` — selects which FR-308 shape the offer takes:
+//
+//   recipientA = some(key)   FR-308 v1 (named taker) and v2(b) (bearer key).
+//       `sendShielded` pays `valA` of `colourA` to that key and re-pools the change, so the A leg is
+//       INTERNALLY BALANCED and the offer's only imbalance is the −B deficit a taker must fund. For
+//       v2(b) the key is a throwaway whose secret ships in the offer envelope, so any holder can
+//       settle and then sweep — that shape needs no contract support beyond this branch.
+//
+//   recipientA = none        FR-308 v2(a), the OPEN offer.
+//       `valA` is released with NO OUTPUT AT ALL: the pooled coin is consumed as a zswap input, only
+//       the change is written back, and the released value stands as a genuine POSITIVE imbalance at
+//       the guaranteed segment, addressed to nobody. Any taker's stock balancer sweeps it, which is
+//       what makes the offer usable by a holder whose keys the maker never knew (owner Q1, 2026-08-19).
+//
+// WHY ONE CIRCUIT AND NOT TWO — this is a MEASURED lane constraint, finding F-307, not a preference.
+// An earlier v4 carried the two shapes as separate circuits, `openSwapShielded` and
+// `openSwapShieldedSurplus`. It compiled, passed every offline test, and was then REFUSED ON DEPLOY
+// 4/4 by the node with `1010: Invalid Transaction: Transaction would exhaust the block limits`. A
+// deploy's dominant cost dimension is `bytesWritten`, which the contract's verifier keys dominate, and
+// a bracket of probe contracts deployed on one stack located the ceiling exactly:
+//
+//     12 keys (v3)      27,791 bytesWritten   55.6% of the 50,000 ceiling   DEPLOYS
+//     13 keys           30,070                60.1%                         DEPLOYS
+//     14 keys           32,356                64.7%                         REFUSED
+//
+// So Manager v4's budget is THIRTEEN provable circuits: v3's twelve plus exactly one. The alternative
+// was to delete v3 circuits to make room, which would have weakened the inherited contract — the one
+// thing Plan 02 Phase 1 forbids. Merging is strictly better than that, and it is arguably better than
+// two circuits anyway: the FR-308 shapes become an ARGUMENT rather than duplicated code, and they stay
+// separately reportable because the argument, the resulting zswap structure and the settlement path
+// are all distinct and separately measured.
+//
+// (The two pure helpers `zswapNullifierOf` / `zswapCommitmentOf` are free: they read no ledger state,
+// so the compiler emits no proving key for them, exactly as for `shieldedKey`.)
+//
+// WHY THE SURPLUS CIRCUIT REIMPLEMENTS `coinNullifier` / `coinCommitment`: the pinned standard
+// library keeps both PRIVATE (`standard-library.compact:252` and `:265` are unexported `circuit`s),
+// and `sendShielded` — the only exported path to a zswap input — ALWAYS creates an output for the
+// value it moves. Releasing value with no output therefore requires assembling the input, the
+// nullifier claim and the self-change output directly. The reimplementations are byte-for-byte
+// preimage-identical to the stdlib's and `manager.test.ts` proves the equality against the value the
+// stdlib itself claims for the same coin, rather than trusting the transcription.
+//
+// FAMILY SCOPE (FR-310, owner Q3 → A): shielded only. The unshielded family gets NO swap circuit —
+// a contract's unshielded payout is a UTXO in the maker's own bound intent, so its recipient cannot
+// be left open, and the pinned wallet SDK's own unshielded swap test is `it.skip` (broken upstream:
+// `FeeCalculation(OutsideTimeToDismiss)`). Unshielded is an EXTENDED GOAL for a follow-up project.
+//
+// ================================================================================================
 // Manager v3 — 00005-open-colour-custody (EXPERIMENTAL_LANE / LANE-DEV-1)
 //
 // A FULLY OPEN custodian. Owner verdict on 00004's Manager v2, 2026-08-19: "I dont like we have to
@@ -81,6 +142,11 @@ export {
   withdrawUnshielded,
   transferInternalShielded,
   transferInternalUnshielded,
+  // --- v4 (00006): the swap maker ---
+  openSwapShielded,
+  zswapNullifierOf,
+  zswapCommitmentOf,
+  // --- readers, unchanged from v3 ---
   myAccount,
   isRegistered,
   shieldedAccountBalance,
@@ -371,4 +437,250 @@ export circuit transferInternalUnshielded(to: Bytes<32>, colour: Bytes<32>, amou
 
   unshieldedBalances.insert(unshieldedKey(fromAcct, col), (unshieldedBalanceOf(fromAcct, col) - amt) as Uint<128>);
   unshieldedBalances.insert(unshieldedKey(dst, col), (unshieldedBalanceOf(dst, col) + amt) as Uint<128>);
+}
+
+// ================================================================================================
+// v4 (00006-unbalanced-zswap) — THE SWAP MAKER
+// ================================================================================================
+//
+// Everything above this line is Manager v3, unchanged. Everything below is additive.
+
+// --- zswap primitives the pinned standard library keeps private ---------------------------------
+//
+// `coinCommitment` and `coinNullifier` are unexported circuits in the pinned standard library
+// (`standard-library.compact:252` / `:265`). `sendShielded` is the only exported route to a zswap
+// INPUT and it always creates an output for the value it moves — so an offer that releases value with
+// NO output cannot be built out of exported pieces alone. These two circuits are transcriptions of the
+// stdlib's, preimage-identical field for field: same struct shape (`Bytes<21>` separator, then the
+// coin, then the recipient discriminant, then 32 bytes of recipient), same domain separators, same
+// `persistentHash`. `persistentHash` digests the ALIGNED ENCODING of the fields, so the struct's NAME
+// is irrelevant and only the field types and order matter.
+//
+// This is transcription, which is exactly the kind of code that is silently wrong, so the equality is
+// PROVEN rather than asserted in a comment: `zswapNullifierOf` / `zswapCommitmentOf` below expose
+// these values, and the unit suite compares them against the nullifier and commitment the STDLIB
+// itself claims for the same coin inside `withdrawShielded`. If a separator or a field order were
+// wrong, that test fails.
+
+struct SwapCoinPreimage {
+  // `midnight:zswap-cc[v1]` / `midnight:zswap-cn[v1]` — 21 bytes each, exactly as the stdlib.
+  domain_sep: Bytes<21>,
+  info: ShieldedCoinInfo,
+  dataType: Boolean,
+  data: Bytes<32>,
+}
+
+circuit zswapCoinCommitment(
+  coin: ShieldedCoinInfo,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): Bytes<32> {
+  return persistentHash<SwapCoinPreimage>(
+    SwapCoinPreimage {
+      domain_sep: "midnight:zswap-cc[v1]",
+      info: coin,
+      dataType: recipient.is_left,
+      data: recipient.is_left ? recipient.left.bytes : recipient.right.bytes,
+    });
+}
+
+circuit zswapCoinNullifier(coin: ShieldedCoinInfo, addr: ContractAddress): Bytes<32> {
+  return persistentHash<SwapCoinPreimage>(
+    SwapCoinPreimage {
+      domain_sep: "midnight:zswap-cn[v1]",
+      info: coin,
+      // The hypothetical `is_left` of `Either<ZswapCoinSecretKey, ContractAddress>` — a contract-owned
+      // coin is always the RIGHT variant, so this is `false`, verbatim as the stdlib comments it.
+      dataType: false,
+      data: addr.bytes,
+    });
+}
+
+/// The pooled coin without its Merkle index — the stdlib's private `downcastQualifiedCoin`.
+circuit dropMerkleIndex(coin: QualifiedShieldedCoinInfo): ShieldedCoinInfo {
+  return ShieldedCoinInfo{ nonce: coin.nonce, color: coin.color, value: coin.value };
+}
+
+/// EXPORTED so the equality above can be TESTED rather than believed. Pure: it reads no ledger state,
+/// so the compiler emits no proving key for it (same as `shieldedKey`), and it discloses nothing — a
+/// coin commitment and a coin nullifier are public objects that live in the transaction anyway.
+export circuit zswapNullifierOf(coin: ShieldedCoinInfo, addr: ContractAddress): Bytes<32> {
+  return zswapCoinNullifier(coin, addr);
+}
+
+export circuit zswapCommitmentOf(
+  coin: ShieldedCoinInfo,
+  recipient: Either<ZswapCoinPublicKey, ContractAddress>
+): Bytes<32> {
+  return zswapCoinCommitment(coin, recipient);
+}
+
+// --- the shared guard block --------------------------------------------------------------------
+//
+// Both swap circuits open with the SAME guards in the SAME order, and the order is the owner-critical
+// property carried verbatim from v3's `withdrawShielded` (FR-204, FR-305):
+//
+//   0. parameter sanity      — pure arithmetic on the caller's own arguments; reads nothing, leaks
+//                              nothing, and cannot be confused with an authorization outcome.
+//   1. THE WITNESS CHOKE POINT — the debited account is DERIVED from the witness, never supplied
+//                              (NC-305: an unregistered witness dies here, before any balance is read).
+//   2. THE PER-(ACCOUNT, COLOUR) GUARD, BEFORE any pool guard, with a MISSING CELL READ AS 0
+//                              (NC-306: a pool rich in A but a maker cell that is empty or short dies
+//                              here — it never reaches the pool guard).
+//   3. the pool guards       — only now does the contract's own holding matter.
+//   4. the credit target     — the account the wanted colour is attributed to must be registered.
+//
+// Every guard precedes every write in both circuits, so a refused offer build is provably
+// state-neutral: no cell, no pool, no map growth (FR-202 discipline, FR-305).
+//
+// Guard 0's colour-distinctness assert is NOT decoration, it is finding F-305 made explicit. Two
+// same-colour shielded credits cannot be assembled in one transaction at these pins: the second needs
+// the first coin's Merkle index, which is only allocated when the first is really inserted on chain.
+// A swap whose two legs were the same colour would hit that as an opaque
+// `invalid index into sparse merkle tree` from inside the proving path; refusing it here fails CLOSED
+// with a readable reason instead.
+
+circuit assertSwapPreconditions(
+  colA: Bytes<32>,
+  val: Uint<128>,
+  coinB: ShieldedCoinInfo,
+  credit: Bytes<32>
+): Bytes<32> {
+  // 0. parameter sanity.
+  assert(val > 0, "swap must give a positive amount");
+  assert(coinB.value > 0, "swap must want a positive amount");
+  assert(colA != coinB.color, "swap legs must be different colours");
+  // 1. the witness choke point.
+  const acct = authenticatedAccount();
+  // 2. THE PER-ACCOUNT, PER-COLOUR GUARD, BEFORE any pool guard.
+  assert(shieldedBalanceOf(acct, colA) >= val, "account colour balance too low");
+  // 3. only now, the pool.
+  assert(pools.member(colA), "no pooled coin for this colour");
+  assert(pools.lookup(colA).value >= val, "pooled colour balance too low");
+  // 4. the credit target.
+  assert(accounts.member(credit), "credit account is not registered");
+  return acct;
+}
+
+/// The WANT leg, shared by both shapes: claim `coinB` into custody and attribute it to `credit`.
+///
+/// `receiveShielded` creates an output the transaction does not fund, so this is what makes the offer
+/// UNBALANCED — a deficit of `coinB.value` of `coinB.color` at the guaranteed segment. It is the same
+/// deficit `depositShielded` creates, which is why spike S1 could prove the taker mechanics against
+/// v3 before v4 existed.
+circuit claimWantedColour(coinB: ShieldedCoinInfo, credit: Bytes<32>): [] {
+  // Must precede insertCoin: this is what allocates the Merkle-tree index.
+  receiveShielded(coinB);
+  if (pools.member(coinB.color)) {
+    pools.insertCoin(
+      coinB.color,
+      mergeCoinImmediate(pools.lookup(coinB.color), coinB),
+      right<ZswapCoinPublicKey, ContractAddress>(kernel.self())
+    );
+  } else {
+    pools.insertCoin(coinB.color, coinB, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+  }
+  shieldedBalances.insert(
+    shieldedKey(credit, coinB.color),
+    (shieldedBalanceOf(credit, coinB.color) + coinB.value) as Uint<128>
+  );
+}
+
+/// Write back what is left of colour `col`'s pool after a debit, or drop the colour entirely.
+circuit repoolOrRemove(col: Bytes<32>, change: Maybe<ShieldedCoinInfo>): [] {
+  if (change.is_some) {
+    pools.insertCoin(col, change.value, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+  } else {
+    // Fully spent: the colour leaves the map entirely.
+    pools.remove(col);
+  }
+}
+
+// --- FR-308 — the swap maker, both shapes in ONE circuit ---------------------------------------
+
+/// Give `valA` of `colourA` and require `coinB` into custody, atomically, in ONE circuit.
+///
+/// `recipientA` selects the FR-308 shape, and the two branches differ in exactly one respect — whether
+/// an OUTPUT is created for the value that leaves custody:
+///
+///   some(key)   `sendShielded` pays `valA` to that key and re-pools the change, so the A leg is
+///               internally balanced and the transaction's ONLY imbalance is the −`coinB.value`
+///               deficit of `coinB.color`. A taker holding B funds that deficit, and cannot obtain A
+///               without doing so, because both legs live in the same call.
+///
+///               The recipient is fixed HERE, at proving time, because a contract-sent shielded coin's
+///               recipient enters the claimed commitment inside the proof. A contract simply cannot
+///               `sendShielded` to "whoever takes this offer" — which is why this branch is the NAMED
+///               taker (FR-308 v1), and why the bearer-key shape (v2b) has to name a THROWAWAY key and
+///               publish its secret rather than leave the recipient open.
+///
+///   none        the pooled coin is consumed as a zswap input and its nullifier is claimed, but the
+///               ONLY output created is the change back to this contract. The released `valA` is left
+///               as a genuine POSITIVE imbalance at the guaranteed segment, addressed to nobody.
+///               Surplus is legal in zswap balancing where a deficit is fatal, so the offer stays
+///               valid and any taker's STOCK balancer sweeps the surplus into an output of its own
+///               while funding the −B deficit. No recipient is fixed at proving time at all, so a
+///               holder whose keys the maker never knew can take it (FR-308 v2a, owner-REQUIRED).
+///
+/// WHY THE `none` BRANCH IS LEGAL AND NOT A TRICK, read from the pinned ledger: contract-associated
+/// nullifiers must EXACTLY equal the claimed nullifiers and contract-associated output commitments
+/// must EXACTLY equal the claimed receives (`ledger/src/verify.rs:1528` and `:1548`) — both hold — while
+/// claimed SPENDS need only be a SUBSET of the transaction's commitments (`:1599`). Claiming no spend
+/// for a value that has no output is therefore within the rules: the value is simply unassigned, and
+/// the zswap balance equation is what accounts for it.
+///
+/// Returns nothing. v3's `withdrawShielded` hands back the coin it sent, but there is no useful
+/// analogue here: the `none` branch pays out no coin at all, and the maker already knows the terms it
+/// asked for — the artifact, not a return value, is what a taker reads.
+export circuit openSwapShielded(
+  colourA: Bytes<32>,
+  valA: Uint<128>,
+  recipientA: Maybe<Either<ZswapCoinPublicKey, ContractAddress>>,
+  coinB: ShieldedCoinInfo,
+  creditAccount: Bytes<32>
+): [] {
+  // The offer's terms are public facts of the transaction — the pooled coin, the payout and the
+  // credited balance all land in ledger state — so they are disclosed once, up front.
+  const colA = disclose(colourA);
+  const val = disclose(valA);
+  const rcpt = disclose(recipientA);
+  const cb = disclose(coinB);
+  const credit = disclose(creditAccount);
+
+  const acct = assertSwapPreconditions(colA, val, cb, credit);
+  const selfAddr = kernel.self();
+  const pooled = pools.lookup(colA);
+
+  if (rcpt.is_some) {
+    // --- GIVE: −A, paid to the named recipient, change re-pooled. Internally balanced. ---
+    const result = sendShielded(pooled, rcpt.value, val);
+    repoolOrRemove(colA, result.change);
+  } else {
+    // --- GIVE: −A released to NOBODY, becoming a segment-0 SURPLUS ---
+    createZswapInput(pooled);
+    kernel.claimZswapNullifier(zswapCoinNullifier(dropMerkleIndex(pooled), selfAddr));
+    const changeValue = (pooled.value - val) as Uint<128>;
+    if (changeValue == 0) {
+      repoolOrRemove(colA, none<ShieldedCoinInfo>());
+    } else {
+      // A fresh nonce for the change coin. `evolveNonce`'s domain differs from the one `sendShielded`
+      // uses for its own change, and the pooled coin can be spent only once anyway (its nullifier is
+      // consumed right above), so no commitment this contract ever creates can collide with it.
+      const changeCoin = ShieldedCoinInfo{
+        nonce: evolveNonce(2, pooled.nonce),
+        color: colA,
+        value: changeValue
+      };
+      const selfRecipient = right<ZswapCoinPublicKey, ContractAddress>(selfAddr);
+      createZswapOutput(changeCoin, selfRecipient);
+      const cm = zswapCoinCommitment(changeCoin, selfRecipient);
+      kernel.claimZswapCoinSpend(cm);
+      kernel.claimZswapCoinReceive(cm);
+      repoolOrRemove(colA, some<ShieldedCoinInfo>(changeCoin));
+    }
+  }
+
+  shieldedBalances.insert(shieldedKey(acct, colA), (shieldedBalanceOf(acct, colA) - val) as Uint<128>);
+
+  // --- WANT: +B, credited to `creditAccount` ---
+  claimWantedColour(cb, credit);
 }

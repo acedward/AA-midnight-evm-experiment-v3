@@ -1,0 +1,330 @@
+# SPIKE S2 — what causes node `Custom error: 104`? — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-20T03:14:16.966Z
+# attempts: 12 for shapes A/B, 8 for shapes D/C
+# host: 16 cores, 1-min load 3.12; load gate at 16, per-attempt timeout 240s, up to 3 infrastructure retries
+[2026-08-20T03:14:17.037Z] wallets open; syncing genesis …
+2026-08-19 23:14:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:14:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:14:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:14:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:14:17.613Z] genesis: NIGHT=247000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+[2026-08-20T03:14:17.631Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-20T03:14:37.193Z]   submitted tx 00448a81a3e6db2f19c0c6d11c6bdb69af72e7eaf9fdb3e5c014a95046cf5cf385 (hash d1ae19f4aaa7d2f35fb192b56d3834075e6361de9205ea868d8118d32583aef4)
+[2026-08-20T03:14:37.193Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-20T03:14:37.350Z]   waiting for genesis to observe its own spend (NIGHT at or below 245000000000000) …
+[2026-08-20T03:14:50.345Z]   feePayer: NIGHT already registered for DUST
+2026-08-19 23:14:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:14:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:14:50.681Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T03:15:07.975Z]   submitted tx 00d8683a04ba229f8f58fba356ab948aec17c3e388306701b4dc845e9c55a7852a (hash b19fe8f5fc200db557ab00b1ca896233ca55bf51948a1170ef38a5327b05706b)
+[2026-08-20T03:15:07.975Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-20T03:15:08.111Z]   waiting for feePayer to observe its own spend (NIGHT at or below 3799999000000) …
+[2026-08-20T03:15:22.304Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-19 23:15:22        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:15:22        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:15:22.646Z] deploying Manager v3 (UNCHANGED from 00005) …
+[2026-08-20T03:15:43.950Z]   Manager at 8578b30cab8f7870fad00e969fd032631ae8962b4f524b9d88473b8ba371dbe6
+[2026-08-20T03:16:20.020Z] AA_A 009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b / AA_B 755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904 registered; custody maps {"pools":0,"shieldedCells":0,"unshieldedCells":0}
+[2026-08-20T03:16:20.115Z] deploying Minter5 (TOKE) …
+[2026-08-20T03:17:14.812Z]   Minter5 at d0005ab284172526d0eac6d9d96eb7db68184642d9772599f97340cf1708bb89: shielded 7252edecd42a847fe2eb8bffb0a680f5f0e2d4c4696da2b02418497e5fdf9710 / unshielded 1a7e6349eff9e7b257b4073e4ca5cd663beb97dfe8e363ff0d65b7ada27f8a8f
+2026-08-19 23:17:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:17:15        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:17:49.931Z] minted 44 TOKE-shielded (001859befa2af1d6a2b7e26ffee28d34d8d76e22ef71109e94f3ba997335d0ab53) and 16 TOKE-unshielded (00db46e2431113783888b0f8dfeed781fc5af01ded857113e667de93da1c5654c9) to OwnerN
+[2026-08-20T03:17:49.956Z] custody maps before S2: {"pools":0,"shieldedCells":0,"unshieldedCells":0}
+
+## SHAPE A — INDEPENDENT pair (00005 M3: depositShielded S5 + depositUnshielded U5 -> AA_B; DISJOINT state)
+2026-08-19 23:17:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:17:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:17:50.333Z]   waiting for OwnerN-spender-2 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:17:50.335Z]   waiting for OwnerN-spender-2 to see 1 of unshielded 1a7e6349eff9… before spending it …
+2026-08-19 23:17:56        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 23:17:56        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T03:17:56.654Z]   attempt 1: lazyInit=true load=2.91 segments call1=42160 call2=270 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-independent-1': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 23:17:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:17:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:17:56.997Z]   waiting for OwnerN-spender-3 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:17:56.999Z]   waiting for OwnerN-spender-3 to see 1 of unshielded 1a7e6349eff9… before spending it …
+2026-08-19 23:18:02        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 23:18:02        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T03:18:02.349Z]   attempt 2: lazyInit=true load=3.16 segments call1=56050 call2=31529 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-independent-2': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 23:18:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:18:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:18:02.695Z]   waiting for OwnerN-spender-4 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:18:02.696Z]   waiting for OwnerN-spender-4 to see 1 of unshielded 1a7e6349eff9… before spending it …
+2026-08-19 23:18:08        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 23:18:08        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T03:18:08.093Z]   attempt 3: lazyInit=true load=4.03 segments call1=58718 call2=29810 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-independent-3': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 23:18:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:18:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:18:08.439Z]   waiting for OwnerN-spender-5 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:18:08.440Z]   waiting for OwnerN-spender-5 to see 1 of unshielded 1a7e6349eff9… before spending it …
+2026-08-19 23:18:14        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 23:18:14        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T03:18:14.453Z]   attempt 4: lazyInit=true load=3.94 segments call1=45953 call2=15698 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-independent-4': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 23:18:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:18:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:18:14.800Z]   waiting for OwnerN-spender-6 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:18:14.801Z]   waiting for OwnerN-spender-6 to see 1 of unshielded 1a7e6349eff9… before spending it …
+2026-08-19 23:18:20        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 23:18:20        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T03:18:20.163Z]   attempt 5: lazyInit=true load=4.09 segments call1=23152 call2=11726 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-independent-5': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 23:18:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:18:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:18:20.512Z]   waiting for OwnerN-spender-7 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:18:20.513Z]   waiting for OwnerN-spender-7 to see 1 of unshielded 1a7e6349eff9… before spending it …
+[2026-08-20T03:18:44.477Z]   attempt 6: lazyInit=true load=4.08 segments call1=41680 call2=50594 (ascending) -> ACCEPTED 0096e7a8d873df482e60a12a7c07e3cd2a270208bf13bc2e8630148899cd39faa1
+2026-08-19 23:18:44        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:18:44        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:18:44.850Z]   waiting for OwnerN-spender-8 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:18:44.851Z]   waiting for OwnerN-spender-8 to see 1 of unshielded 1a7e6349eff9… before spending it …
+[2026-08-20T03:19:08.559Z]   attempt 7: lazyInit=false load=4.10 segments call1=24778 call2=9616 (descending) -> ACCEPTED 00306a360becf61ebe307a7fe5df4862ee59f03a73dbfdc76ac4c934d28992f928
+2026-08-19 23:19:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:19:08        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:19:08.921Z]   waiting for OwnerN-spender-9 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:19:08.922Z]   waiting for OwnerN-spender-9 to see 1 of unshielded 1a7e6349eff9… before spending it …
+[2026-08-20T03:19:32.628Z]   attempt 8: lazyInit=false load=4.40 segments call1=32905 call2=28318 (descending) -> ACCEPTED 000916b9e3dca1d6bad4e2eaa20753a548685e65dfb8345b6dc5259e21718e8632
+2026-08-19 23:19:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:19:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:19:32.999Z]   waiting for OwnerN-spender-10 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:19:33.000Z]   waiting for OwnerN-spender-10 to see 1 of unshielded 1a7e6349eff9… before spending it …
+[2026-08-20T03:19:56.703Z]   attempt 9: lazyInit=false load=4.87 segments call1=7414 call2=49046 (ascending) -> ACCEPTED 00785afda12f505e962837940a099d9600fb5a8d063d6cd0d2eaa5ace79ccb6065
+2026-08-19 23:19:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:19:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:19:57.087Z]   waiting for OwnerN-spender-11 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:19:57.088Z]   waiting for OwnerN-spender-11 to see 1 of unshielded 1a7e6349eff9… before spending it …
+[2026-08-20T03:20:20.785Z]   attempt 10: lazyInit=false load=5.06 segments call1=23025 call2=6413 (descending) -> ACCEPTED 0037e1ca8a1fba9f38690dfbcea3110f8407360958e28e8579f1fe04b28b09be50
+2026-08-19 23:20:21        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:20:21        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:20:21.170Z]   waiting for OwnerN-spender-12 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:20:21.172Z]   waiting for OwnerN-spender-12 to see 1 of unshielded 1a7e6349eff9… before spending it …
+[2026-08-20T03:20:44.858Z]   attempt 11: lazyInit=false load=5.00 segments call1=37585 call2=63207 (ascending) -> ACCEPTED 00c61d65d5af17bdcf0d70829af9a13c941e153793a0cfdf65ed029c37461442ae
+2026-08-19 23:20:45        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:20:45        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:20:45.260Z]   waiting for OwnerN-spender-13 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:20:45.261Z]   waiting for OwnerN-spender-13 to see 1 of unshielded 1a7e6349eff9… before spending it …
+[2026-08-20T03:21:08.937Z]   attempt 12: lazyInit=false load=4.40 segments call1=44720 call2=11042 (descending) -> ACCEPTED 001c25b4100b17f3f19b4b9d08e54c6a0d61fe4125edd640f11ee99acfdb35b40f
+[2026-08-20T03:21:08.937Z]   shape independent summary: {"attemptsRun":12,"voided":0,"infraRetriesAbsorbed":0,"attempts":12,"accepted":7,"refused":5,"refusedWith104":5,"refusedBeforeSubmission":0,"ascending":{"n":3,"accepted":3,"refused":0},"descending":{"n":9,"accepted":4,"refused":5},"lazyInit":{"n":6,"accepted":1,"refused":5},"unknownOrder":0}
+
+## SHAPE B — DEPENDENT pair (depositShielded S5 -> AA_B, then transferInternalShielded AA_B -> AA_A; call 2 reads the cell call 1 wrote)
+2026-08-19 23:21:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:21:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:21:09.345Z]   waiting for OwnerN-spender-14 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:21:17        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 23:21:17        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T03:21:17.143Z]   attempt 1: lazyInit=true load=4.34 segments call1=62447 call2=2108 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-1': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 23:21:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:21:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:21:17.568Z]   waiting for OwnerN-spender-15 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:21:45.051Z]   attempt 2: lazyInit=true load=4.07 segments call1=846 call2=30240 (ascending) -> ACCEPTED 0072a4470a45ab688ff62efab4f82c5553a07317326593b1c4ff7390f91367da19
+2026-08-19 23:21:45        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:21:45        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:21:45.474Z]   waiting for OwnerN-spender-16 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:22:09.107Z]   attempt 3: lazyInit=false load=4.12 segments call1=9684 call2=38487 (ascending) -> ACCEPTED 0027acf83e754b730c59332b9ef13ea196b212acbdc6b1d668860931f4bf750b4a
+2026-08-19 23:22:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:22:09        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:22:09.533Z]   waiting for OwnerN-spender-17 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:22:17        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 23:22:17        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T03:22:17.169Z]   attempt 4: lazyInit=false load=4.28 segments call1=50488 call2=7531 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-4': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 23:22:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:22:17        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:22:17.610Z]   waiting for OwnerN-spender-18 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:22:24        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 23:22:24        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T03:22:24.985Z]   attempt 5: lazyInit=false load=4.74 segments call1=35725 call2=14816 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-5': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 23:22:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:22:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:22:25.422Z]   waiting for OwnerN-spender-19 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:22:50.517Z]   attempt 6: lazyInit=false load=5.05 segments call1=14250 call2=22581 (ascending) -> ACCEPTED 003ee78c9c357f04d5527b564f248c84a095562fc042e72687c2efdf24228e938b
+2026-08-19 23:22:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:22:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:22:50.973Z]   waiting for OwnerN-spender-20 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:23:14.572Z]   attempt 7: lazyInit=false load=3.95 segments call1=26826 call2=61211 (ascending) -> ACCEPTED 008a37d46a56177ee0c27d2a12e96968bc7e46be8e9c0cda4c90b0ea8cb0cd06a6
+2026-08-19 23:23:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:23:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:23:15.037Z]   waiting for OwnerN-spender-21 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:23:22        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 23:23:22        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T03:23:22.746Z]   attempt 8: lazyInit=false load=4.51 segments call1=55569 call2=33764 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-8': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 23:23:22        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:23:22        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:23:23.221Z]   waiting for OwnerN-spender-22 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:23:30        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 23:23:30        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T03:23:30.567Z]   attempt 9: lazyInit=false load=5.19 segments call1=33001 call2=18652 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-9': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 23:23:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:23:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:23:31.046Z]   waiting for OwnerN-spender-23 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:23:55.966Z]   attempt 10: lazyInit=false load=5.67 segments call1=16754 call2=32057 (ascending) -> ACCEPTED 003c352471add956ed9652e8bc7f17a4dcd5563b0e1334363606d3feffb58177a1
+2026-08-19 23:23:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:23:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:23:56.434Z]   waiting for OwnerN-spender-24 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:24:04        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 23:24:04        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T03:24:04.099Z]   attempt 11: lazyInit=false load=7.49 segments call1=29435 call2=20126 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-11': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+2026-08-19 23:24:04        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:24:04        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:24:04.574Z]   waiting for OwnerN-spender-25 to see 1 of shielded 7252edecd42a… before spending it …
+[2026-08-20T03:24:32.065Z]   attempt 12: lazyInit=false load=7.10 segments call1=43247 call2=56118 (ascending) -> ACCEPTED 00f23de2dda77e813ed63dc4a9555d72b99e71046ce4ea8f40afba209e45976b8f
+[2026-08-20T03:24:32.065Z]   shape dependent summary: {"attemptsRun":12,"voided":0,"infraRetriesAbsorbed":0,"attempts":12,"accepted":6,"refused":6,"refusedWith104":6,"refusedBeforeSubmission":0,"ascending":{"n":6,"accepted":6,"refused":0},"descending":{"n":6,"accepted":0,"refused":6},"lazyInit":{"n":2,"accepted":1,"refused":1},"unknownOrder":0}
+
+## SHAPE D — FRESH LAZY-INIT (shape A with a brand-new issuer and colour pair per attempt: every attempt creates a new pool key and two new cells)
+[2026-08-20T03:24:32.065Z] deploying Minter-TD01 (TD01) …
+[2026-08-20T03:25:26.844Z]   Minter-TD01 at dec2a88bad3c167dab57c192b91e35ea5a7d4730b8eabcdc24f09dfd89a5457c: shielded f1692785ec718d2e61658d8edb423880dfda393f165c7f172f142147e8d6eafc / unshielded c9319fba202d13334046835ba4c3d8157e98a8f28290f4633d540d584e7f2849
+2026-08-19 23:25:27        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:25:27        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:26:01.961Z] minted 2 TD01-shielded (008bda7391aa7f8b79d9d39f0b5fc192c8e669c6f72c1cbabda2ad7d34ffdbfd43) and 2 TD01-unshielded (0036f1982c96274c15e50c89d296c112954bc4eb5ae9751f15d5246bbf8c377b22) to OwnerN
+2026-08-19 23:26:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:26:02        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:26:02.498Z]   waiting for OwnerN-spender-27 to see 1 of shielded f1692785ec71… before spending it …
+[2026-08-20T03:26:02.499Z]   waiting for OwnerN-spender-27 to see 1 of unshielded c9319fba202d… before spending it …
+[2026-08-20T03:26:25.827Z]   attempt 1 (TD01): load=4.62 segments call1=19725 call2=31110 (ascending) -> ACCEPTED 0068ac32faeefb13c7998b7d4686712f62d59d073b9f81af4ce90f30b9e7bd2d3f
+[2026-08-20T03:26:25.827Z] deploying Minter-TD02 (TD02) …
+[2026-08-20T03:27:20.613Z]   Minter-TD02 at c15da9aa062c7054e3d73f85bb4142ac5449374bcf5de70752931f5c302c2ff0: shielded a432ab06e6944552bd8c33cc94fb9c8a3f60ec710aa0f856e1469a0773766f5c / unshielded 2a689acb23d5a15bab5b8e38d84b862d51cf67724f850b71c5a9bbdd3c4c17a5
+2026-08-19 23:27:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:27:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:27:55.704Z] minted 2 TD02-shielded (00227ecd3f97544cc43d91f1c2138447529e74d3907fb1d96b20f989cf9bf56b52) and 2 TD02-unshielded (000751a4fde18a26f22dc40a9f161d469abfe5a1c4395144c4c0f449163ac25173) to OwnerN
+2026-08-19 23:27:55        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:27:55        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:27:56.249Z]   waiting for OwnerN-spender-29 to see 1 of shielded a432ab06e694… before spending it …
+[2026-08-20T03:27:56.251Z]   waiting for OwnerN-spender-29 to see 1 of unshielded 2a689acb23d5… before spending it …
+2026-08-19 23:28:02        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+2026-08-19 23:28:02        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 104
+[2026-08-20T03:28:02.587Z]   attempt 2 (TD02): load=2.91 segments call1=33836 call2=15465 (descending) -> REFUSED (104) — Unexpected error submitting scoped transaction 'aa00006-s2-fresh-lazy-init-2': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 104 } } | cause: Transaction submission error
+[2026-08-20T03:28:02.587Z] deploying Minter-TD03 (TD03) …
+[2026-08-20T03:28:56.946Z]   Minter-TD03 at 2ee7083cbe7cb6feca643d5eb6cdffaab0266d3829abbe3dbd14c98925f17fee: shielded f3b3e476665364a128eb038eadc090bb3d5258a56b020e4a2dbb9d4032230133 / unshielded 9999bcb50e34576b9be8c9191b9fc87004a406e29df3e0b19dc2d5fa99de70d5
+2026-08-19 23:28:57        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:28:57        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:29:30.727Z] minted 2 TD03-shielded (00519a71c668acb4a1a6563c6457167d8c69994da0d397fe15d5694a7d7ba4945e) and 2 TD03-unshielded (00ba0a4574080ce1c6dc34cc3b2e7f688d354d4d7ebc770bb0652e08a021b093cc) to OwnerN
+2026-08-19 23:29:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:29:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:29:31.276Z]   waiting for OwnerN-spender-31 to see 1 of shielded f3b3e4766653… before spending it …
+[2026-08-20T03:29:31.277Z]   waiting for OwnerN-spender-31 to see 1 of unshielded 9999bcb50e34… before spending it …
+[2026-08-20T03:29:55.900Z]   attempt 3 (TD03): load=3.32 segments call1=50421 call2=58111 (ascending) -> ACCEPTED 0024f3028e6bf6bcc8d06e3a7462b8dc14a56274a176780134aae7366ae4a36785
+[2026-08-20T03:29:55.900Z] deploying Minter-TD04 (TD04) …
+[2026-08-20T03:30:56.045Z]   Minter-TD04 at daa99c911a73747a95b4cd25d81a33d6a42f1f1958b8158180dcebbc977b7325: shielded 833fdceaae56ea8f96dbe3955024ecd7020f0b18841b97713a2ba82b79dc0bee / unshielded 1409305a7632d8b3ea3570b37d6a2a45afcd94c534ff914a12b7fb707b17040b
+2026-08-19 23:30:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:30:56        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:31:31.173Z] minted 2 TD04-shielded (0006fae1ae8e8b5f5632707eef40c3450cb3b1517ed108d018f0317ed59e7a62c3) and 2 TD04-unshielded (00533881922171fbde97a55fd8addaf71773d56c23bb6f6415b7af50513813a365) to OwnerN
+2026-08-19 23:31:31        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:31:31        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:31:31.744Z]   waiting for OwnerN-spender-33 to see 1 of shielded 833fdceaae56… before spending it …
+[2026-08-20T03:31:31.745Z]   waiting for OwnerN-spender-33 to see 1 of unshielded 1409305a7632… before spending it …
+[2026-08-20T03:31:56.356Z]   attempt 4 (TD04): load=2.83 segments call1=44497 call2=51409 (ascending) -> ACCEPTED 00e79ca86eebb2ece7dd798a2036e652282ae04dd8607521da98f277495a0d2a1d
+[2026-08-20T03:31:56.356Z] deploying Minter-TD05 (TD05) …
+[2026-08-20T03:32:49.775Z]   Minter-TD05 at f68cba2aa42787d3c7ebd4037cac2ce28b3f831234318ec91c76945068a0bce4: shielded a53368607f16677834344ad2ce95afe171669dbb0f6fae1153b1486c9417dfa7 / unshielded 4878b9fc05969758148df8928762cf7c90f2365d331a65565ca7ec1414b71b8b
+2026-08-19 23:32:49        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:32:49        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:33:24.894Z] minted 2 TD05-shielded (0050e848252b8f21e1c5b96f923c7188a77f924316764f4935275c3042a112fb1a) and 2 TD05-unshielded (00e3bdd95ac1914642157b290ff0bb3a661fff2a91eabb4484b77ee9fb9ccffd00) to OwnerN
+2026-08-19 23:33:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:33:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:33:25.504Z]   waiting for OwnerN-spender-35 to see 1 of shielded a53368607f16… before spending it …
+[2026-08-20T03:33:25.505Z]   waiting for OwnerN-spender-35 to see 1 of unshielded 4878b9fc0596… before spending it …
+[2026-08-20T03:33:50.069Z]   attempt 5 (TD05): load=2.97 segments call1=27668 call2=41003 (ascending) -> ACCEPTED 00dafb07aeeabef657d01d9d6d96309b65d0510179fee879f463577f7ede62f04e
+[2026-08-20T03:33:50.070Z] deploying Minter-TD06 (TD06) …
+[2026-08-20T03:34:44.852Z]   Minter-TD06 at 581781bea9611da5d0bc529e2feda742656d13cbfc67d51e08e7d44527687af2: shielded 1214dc91410930ad1f761d13894695c923d51007defedbf34f9e78a25ac4dee7 / unshielded cf8dc84a8ccd94acbc749069c795fca73dcb9ac5f81987998a241d1eccb6c643
+2026-08-19 23:34:45        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:34:45        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:35:19.958Z] minted 2 TD06-shielded (00e41cafc97e60928126d55740132c5da9dc92de88a06ab15e5bebe96df386095d) and 2 TD06-unshielded (00b27c4af5344b9cae50cce9cf448db4289b2f52180f2b508113160d73c2e98528) to OwnerN
+2026-08-19 23:35:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:35:20        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:35:20.558Z]   waiting for OwnerN-spender-37 to see 1 of shielded 1214dc914109… before spending it …
+[2026-08-20T03:35:20.559Z]   waiting for OwnerN-spender-37 to see 1 of unshielded cf8dc84a8ccd… before spending it …
+[2026-08-20T03:35:43.798Z]   attempt 6 (TD06): load=3.84 segments call1=11016 call2=48549 (ascending) -> ACCEPTED 0031d05c90e96c1e0560cc659258afbd1cbdb9c8801a863ca9c06fab7a09c8fc4d
+[2026-08-20T03:35:43.798Z] deploying Minter-TD07 (TD07) …
+[2026-08-20T03:36:38.603Z]   Minter-TD07 at 1c9a4e5c688312c69e11eb0969d7692495a45687b429585601d4c02160b2dc71: shielded 3df0834776a7d448abff31d951423f24b6b6c35b719911c4eda2388157bd3fd9 / unshielded b80269811b01fc014a0f9739dabfae65db821a902162f53555285b027e61f6be
+2026-08-19 23:36:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:36:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:37:13.704Z] minted 2 TD07-shielded (006efc6141cb9edd0544516c2e6ee57dab780331c5f13daccfc08d65e079fc7b2a) and 2 TD07-unshielded (00eff8d5504b340429e97b9910783235dc053a6fca8e730e359ebe2265acb6bfcc) to OwnerN
+2026-08-19 23:37:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:37:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:37:14.330Z]   waiting for OwnerN-spender-39 to see 1 of shielded 3df0834776a7… before spending it …
+[2026-08-20T03:37:14.331Z]   waiting for OwnerN-spender-39 to see 1 of unshielded b80269811b01… before spending it …
+[2026-08-20T03:37:38.899Z]   attempt 7 (TD07): load=3.87 segments call1=24712 call2=64043 (ascending) -> ACCEPTED 00491d5125fb840f6189080bfd099a81adc8a7ad03bed3f656e07e30e896d2304e
+[2026-08-20T03:37:38.900Z] deploying Minter-TD08 (TD08) …
+[2026-08-20T03:38:32.297Z]   Minter-TD08 at 1de650408cbd0f34bb3cc147991c19e0ffd503bf06934e8ce29be4773c4d66a7: shielded 35888795b5b38d6c4a3a1be83b637d40753071dba34d8cabbbedf696b07d9d61 / unshielded 68bdedd43479ae2a004ab6478c277c60eaff4ad0e098ee22c2aa3ac1d5033233
+2026-08-19 23:38:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:38:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:39:07.412Z] minted 2 TD08-shielded (004bc77f0bab85c4ee6d67101e7cba36cb4b9af27fffc27a1986706c4c4e308631) and 2 TD08-unshielded (00eef6f8438f575215cce5935f943cb55144d2ce01e37408a233fee81707eaec52) to OwnerN
+2026-08-19 23:39:07        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:39:07        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:39:08.062Z]   waiting for OwnerN-spender-41 to see 1 of shielded 35888795b5b3… before spending it …
+[2026-08-20T03:39:08.063Z]   waiting for OwnerN-spender-41 to see 1 of unshielded 68bdedd43479… before spending it …
+[2026-08-20T03:39:32.594Z]   attempt 8 (TD08): load=2.79 segments call1=1314 call2=30340 (ascending) -> ACCEPTED 00a33daa7dec521e41eaca9f86b1b7f10d12f6f01f2ce857e7e383c1d6d124c56c
+[2026-08-20T03:39:32.594Z]   shape fresh-lazy-init summary: {"attemptsRun":8,"voided":0,"infraRetriesAbsorbed":0,"attempts":8,"accepted":7,"refused":1,"refusedWith104":1,"refusedBeforeSubmission":0,"ascending":{"n":7,"accepted":7,"refused":0},"descending":{"n":1,"accepted":0,"refused":1},"lazyInit":{"n":8,"accepted":7,"refused":1},"unknownOrder":0}
+
+## SHAPE C — THE FIX (shape B with the merged intents re-keyed to segments 1,2 in CALL order before proving)
+2026-08-19 23:39:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:39:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:39:33.196Z]   waiting for OwnerN-spender-42 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:39:41        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-19 23:39:41        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+[2026-08-20T03:39:41.157Z]   attempt 1: lazyInit=false load=3.50 segments call1=54923 call2=60399 (ascending) -> REFUSED — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-fixed-1': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 235 } } | cause: Transaction submission error
+2026-08-19 23:39:41        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:39:41        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:39:41.772Z]   waiting for OwnerN-spender-43 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:39:49        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-19 23:39:49        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+[2026-08-20T03:39:49.420Z]   attempt 2: lazyInit=false load=4.15 segments call1=30630 call2=1509 (descending) -> REFUSED — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-fixed-2': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 235 } } | cause: Transaction submission error
+2026-08-19 23:39:49        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:39:49        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:39:50.036Z]   waiting for OwnerN-spender-44 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:39:57        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-19 23:39:57        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+[2026-08-20T03:39:57.707Z]   attempt 3: lazyInit=false load=3.98 segments call1=20333 call2=12981 (descending) -> REFUSED — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-fixed-3': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 235 } } | cause: Transaction submission error
+2026-08-19 23:39:57        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:39:57        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:39:58.325Z]   waiting for OwnerN-spender-45 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:40:05        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-19 23:40:05        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+[2026-08-20T03:40:05.987Z]   attempt 4: lazyInit=false load=3.75 segments call1=28874 call2=36276 (ascending) -> REFUSED — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-fixed-4': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 235 } } | cause: Transaction submission error
+2026-08-19 23:40:06        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:40:06        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:40:06.604Z]   waiting for OwnerN-spender-46 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:40:14        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-19 23:40:14        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+[2026-08-20T03:40:14.526Z]   attempt 5: lazyInit=false load=4.40 segments call1=38307 call2=38339 (ascending) -> REFUSED — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-fixed-5': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 235 } } | cause: Transaction submission error
+2026-08-19 23:40:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:40:14        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:40:15.147Z]   waiting for OwnerN-spender-47 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:40:22        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-19 23:40:22        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+[2026-08-20T03:40:22.498Z]   attempt 6: lazyInit=false load=4.84 segments call1=32624 call2=28914 (descending) -> REFUSED — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-fixed-6': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 235 } } | cause: Transaction submission error
+2026-08-19 23:40:22        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:40:22        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:40:23.118Z]   waiting for OwnerN-spender-48 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:40:30        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-19 23:40:30        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+[2026-08-20T03:40:30.798Z]   attempt 7: lazyInit=false load=4.94 segments call1=51543 call2=59820 (ascending) -> REFUSED — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-fixed-7': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 235 } } | cause: Transaction submission error
+2026-08-19 23:40:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:40:30        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:40:31.428Z]   waiting for OwnerN-spender-49 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:40:38        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-19 23:40:38        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+[2026-08-20T03:40:38.772Z]   attempt 8: lazyInit=false load=4.72 segments call1=20437 call2=29687 (ascending) -> REFUSED — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-fixed-8': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 235 } } | cause: Transaction submission error
+2026-08-19 23:40:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:40:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:40:39.397Z]   waiting for OwnerN-spender-50 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:40:46        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-19 23:40:46        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+[2026-08-20T03:40:46.789Z]   attempt 9: lazyInit=false load=5.46 segments call1=9359 call2=45467 (ascending) -> REFUSED — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-fixed-9': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 235 } } | cause: Transaction submission error
+2026-08-19 23:40:47        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:40:47        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:40:47.412Z]   waiting for OwnerN-spender-51 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:40:55        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-19 23:40:55        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+[2026-08-20T03:40:55.120Z]   attempt 10: lazyInit=false load=7.23 segments call1=15146 call2=41707 (ascending) -> REFUSED — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-fixed-10': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 235 } } | cause: Transaction submission error
+2026-08-19 23:40:55        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:40:55        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:40:55.755Z]   waiting for OwnerN-spender-52 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:41:03        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-19 23:41:03        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+[2026-08-20T03:41:03.424Z]   attempt 11: lazyInit=false load=6.56 segments call1=33221 call2=55210 (ascending) -> REFUSED — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-fixed-11': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 235 } } | cause: Transaction submission error
+2026-08-19 23:41:03        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+2026-08-19 23:41:03        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:17770/: 1000:: Normal Closure
+[2026-08-20T03:41:04.071Z]   waiting for OwnerN-spender-53 to see 1 of shielded 7252edecd42a… before spending it …
+2026-08-19 23:41:11        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+2026-08-19 23:41:11        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 235
+[2026-08-20T03:41:11.664Z]   attempt 12: lazyInit=false load=6.20 segments call1=60172 call2=24813 (descending) -> REFUSED — Unexpected error submitting scoped transaction 'aa00006-s2-dependent-fixed-12': (FiberFailure) SubmissionError: Transaction submission error [cause]: SubmissionError: Transaction submission failed [cause]: RpcError: 1010: Invalid Transaction: Custom error: 235 } } | cause: Transaction submission error
+[2026-08-20T03:41:11.664Z]   shape dependent-fixed summary: {"attemptsRun":12,"voided":0,"infraRetriesAbsorbed":0,"attempts":12,"accepted":0,"refused":12,"refusedWith104":0,"refusedBeforeSubmission":0,"ascending":{"n":8,"accepted":0,"refused":8},"descending":{"n":4,"accepted":0,"refused":4},"lazyInit":{"n":0,"accepted":0,"refused":0},"unknownOrder":0}
+
+## S2 VERDICT: CONFIRMED — but the POST-HOC fix is REFUTED AS IMPLEMENTED — shape B's correlation held perfectly. The proposed mitigation, however, does NOT work when applied by re-keying the merged transaction's intents after the calls were built: 12/12 attempts were refused, NONE of them with 104, with node error code(s) 235 instead (235 = MalformedZswapErrorCode::InvalidProof). Crucially it failed for originally-ASCENDING draws too (8/8), which would have been accepted untouched — so the TRANSFORMATION is invalid, not the ordering hypothesis. Rewriting the segment assignment after the fact invalidates the zswap proofs that are bound to it. The mitigation must therefore be applied AT BUILD TIME, inside the SDK, where each call's transaction is constructed (i.e. a deterministic in-call-order segment instead of `fromPartsRandomized`) — not as a post-processing step. ACROSS EVERY SHAPE: ascending pairs refused 0/16, descending pairs refused 12/16 — so descending order is a NECESSARY condition for 104 in this family. Whether it is also SUFFICIENT depends on the pair: for a genuine read-after-write (shape B) it is; for disjoint pairs (shapes A+D) descending refused 6/10 and ascending 0/10, so something further is needed there. Either way the MITIGATION is the same and is deterministic: assign segments in call order, never randomly, and a descending pair can never arise.

@@ -1,0 +1,6 @@
+[2026-08-20T12:28:36.206Z] maker[named-taker]: building openSwapShielded(give 4 of 586d312ace6d…, want 7 of 94144f1ff0b0…)
+[2026-08-20T12:28:36.322Z] maker[NC-305]: REFUSED (circuit-guard-refusal) — failed assert: caller's owner witness matches no registered account | cause: Error executing circuit 'openSwapShielded'
+
+--- stderr ---
+2026-08-20 08:28:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
+2026-08-20 08:28:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure

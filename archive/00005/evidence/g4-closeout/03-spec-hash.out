@@ -1,0 +1,4 @@
+expected SHA-256 (recorded in the organizer project-summary): bb32e42b2ab78d0ae90d165b26b29a1fb6b568feb399622703aa634b1255a6f0
+spec path: /Users/edwardalvarado/todo/AA/.claude/worktrees/contract-token-custody-6d6cd3/AA/spec/00005-open-colour-custody.md
+actual   SHA-256: bb32e42b2ab78d0ae90d165b26b29a1fb6b568feb399622703aa634b1255a6f0
+RESULT: byte-identical to the approved, owner-signed specification.

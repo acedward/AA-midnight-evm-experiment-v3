@@ -1,0 +1,18 @@
+{
+  "label": "OFFER-2",
+  "managerAddress": "95fb94dc5df1d640705fee419401b5175c58efbe5b71bbe35dfc7f0ef585ec21",
+  "witness": "ownerA",
+  "shape": "floating-surplus",
+  "gives": {
+    "colour": "b4044b0c0bcf51955c683a8854c07243d1fbd6f6a900293f8ec8c8ef38f96532",
+    "value": "2"
+  },
+  "wants": {
+    "colour": "bf3656a8eb2d34b5250209000249d89c5fe634ed9ec4dee47b7b830c650fcfa2",
+    "value": "3"
+  },
+  "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+  "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+  "envelopeOut": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/offer-2-open.offer",
+  "out": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/io/row7-maker.report.json"
+}

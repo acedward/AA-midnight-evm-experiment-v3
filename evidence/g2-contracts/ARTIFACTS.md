@@ -1,24 +1,25 @@
 # G2 build artifacts — `EXPERIMENTAL_LANE` / `LANE-DEV-1`
 
-00005-open-colour-custody, Plan 02. Compiled by the pinned image `aa00005-compactc:0.33.0` (archive
-pinned by SHA-256 in `docker/compactc.Dockerfile`).
+00006-unbalanced-zswap, Plan 02. Compiled by the pinned image `aa00006-compactc:0.33.0` (archive pinned by
+SHA-256 in `docker/compactc.Dockerfile`).
 
-Recorded (UTC): 2026-08-19T03:32:57Z
+Recorded (UTC): 2026-08-20T10:38:46Z
 Compiler: compactc 0.33.0
 Language: 0.25.0
 
 ## Source hashes
 
-| Source | SHA-256 | bytes | status in 00005 |
+| Source | SHA-256 | bytes | status in 00006 |
 |---|---|---|---|
-| `contracts/minter.compact` | `5eefba98962ddbef4af6b1ea4d17c21f37baf1d712c5822be0a7b4c245d6c1ef` | 4676 | REUSED UNCHANGED from 00004 |
-| `contracts/manager.compact` | `49ae97218b753e0f101aaaa1e90c711f8965d21d456ae4cef5b80d3679a2ad3a` | 18320 | **v3 — rewritten: fully open** |
-| `contracts/minter-collide.compact` | `a649df17d243fd6537a5d72e53140242320173a7770641708cf74382c5e4b25e` | 4191 | **new — the P-COLL fixture** |
+| `contracts/minter.compact` | `5eefba98962ddbef4af6b1ea4d17c21f37baf1d712c5822be0a7b4c245d6c1ef` | 4676 | REUSED UNCHANGED (00004) |
+| `contracts/manager.compact` | `f50577cf9ca3a16cab0fe209394d09c1963af5be9789c64a1af35a868142cdb2` | 35936 | **v4 — v3 plus two swap circuits** |
+| `contracts/minter-collide.compact` | `a649df17d243fd6537a5d72e53140242320173a7770641708cf74382c5e4b25e` | 4191 | REUSED UNCHANGED (00005 P-COLL fixture) |
 
-The Minter's hash is expected to differ from 00004's only if 00004's file changed; the
-contract source is byte-identical to the 00004 base commit:
+Only the Manager changed. Proven mechanically against the base commit:
 
-    contracts/minter.compact — BYTE-IDENTICAL to f066a09
+    contracts/minter.compact — BYTE-IDENTICAL to e9701e9
+    contracts/minter-collide.compact — BYTE-IDENTICAL to e9701e9
+    contracts/manager.compact — DIFFERS from e9701e9, as v4 must
 
 ## minter
 
@@ -42,14 +43,15 @@ contract source is byte-identical to the 00004 base commit:
 - language-version: `0.25.0`
 - runtime-version: `0.18.0-rc.1`
 - witnesses: `localOwnerSecret`
-- circuits (15): `shieldedKey`, `unshieldedKey`, `registerAccount`, `myAccount`, `isRegistered`, `shieldedAccountBalance`, `unshieldedAccountBalance`, `poolValue`, `poolHasColour`, `depositShielded`, `withdrawShielded`, `depositUnshielded`, `withdrawUnshielded`, `transferInternalShielded`, `transferInternalUnshielded`
+- circuits (18): `shieldedKey`, `unshieldedKey`, `registerAccount`, `myAccount`, `isRegistered`, `shieldedAccountBalance`, `unshieldedAccountBalance`, `poolValue`, `poolHasColour`, `depositShielded`, `withdrawShielded`, `depositUnshielded`, `withdrawUnshielded`, `transferInternalShielded`, `transferInternalUnshielded`, `zswapNullifierOf`, `zswapCommitmentOf`, `openSwapShielded`
 
 | Artifact | SHA-256 | bytes |
 |---|---|---|
-| `contract/index.js` | `0aef2c62bcaf22fa8f2b7a029f796a91175e7af60711dcabc572fee9938fc325` | 219850 |
+| `contract/index.js` | `d1bda8f9793cc61230fc1c6821325135b9d3bfab0c38dcc080355e45c2b7fd49` | 283379 |
 | `keys/depositShielded.verifier` | `c3a9258024975f6407168392ff02845a39ef7b2d03c5ded08369d82d8c016c69` | 2119 |
 | `keys/depositUnshielded.verifier` | `570e519f854e0af23141c98d6554951df9abb0513f5c3a31eeccdda70dd57186` | 2119 |
 | `keys/isRegistered.verifier` | `904044b557bd5b9449849d2dd2914ac2ce50af731e9a3cf5a8ea6d508545475a` | 1351 |
+| `keys/openSwapShielded.verifier` | `3744736848254ec8dee495f08a797745bb3edc515d735b4b37f64e96849e5b90` | 2119 |
 | `keys/poolHasColour.verifier` | `e6d6bb091a9201fed305b69898df896fac8c80b1ee6cb558c2670d33d9ef9e84` | 1351 |
 | `keys/poolValue.verifier` | `81918c5f462ce83eae5c9eec1f5c8c227c5ad3ef5d07a72377811928e49a0945` | 1351 |
 | `keys/registerAccount.verifier` | `8fed408221b2f0d0ceb37851604719cc31e558029f030649a014419e3caed99a` | 1351 |
@@ -77,16 +79,23 @@ contract source is byte-identical to the 00004 base commit:
 | `keys/shieldedColor.verifier` | `f32145c458988ca85cde3d4110d0abdbcc6dd5494d6484d137c7b82a8a9ba904` | 2119 |
 | `keys/unshieldedColor.verifier` | `f32145c458988ca85cde3d4110d0abdbcc6dd5494d6484d137c7b82a8a9ba904` | 2119 |
 
-### A note on shared circuit names
+### The ONE circuit 00006 adds, and the two that cost nothing
 
-`minter-collide` deliberately mirrors `minter`'s circuit names so the same harness code
-paths drive both. That is safe because proof-key resolution joins on the hash of the
-DEPLOYED VERIFIER KEY, never on the circuit name — the hashes above are what distinguishes
-them, and `ZKConfigRegistry` is given one artifact source per compiled contract.
+`openSwapShielded` has a verifier key above and carries BOTH FR-308 shapes, selected by its
+`recipientA: Maybe<...>` argument. That is finding **F-307**, a measured constraint rather than
+a preference: a bracket of probe contracts deployed live on this lane puts the deploy ceiling
+between 13 provable circuits (30,070 `bytesWritten`, 60.1% of the 50,000 per-block ceiling —
+DEPLOYS) and 14 (32,356, 64.7% — REFUSED with "Transaction would exhaust the block limits").
+Manager v3 already had 12, so v4's budget is exactly one new circuit.
 
-## Deployment and deploy-order evidence
+`zswapNullifierOf` and `zswapCommitmentOf` have NO verifier key, and that is expected: they read no
+ledger state, so the compiler emits no proving key for them — the same reason `shieldedKey`
+and `unshieldedKey` have none. They exist so the swap circuits' transcription of the standard
+library's PRIVATE `coinNullifier` / `coinCommitment` can be TESTED for equality against the
+values the stdlib itself claims, instead of being trusted.
 
-- `deploy-order.json` — machine-readable result of Plan 02 Phase 3
-- `CONTRACTS.md` — the deploy-order proof, deployments, colours, 15/15 distinctness, the
-  inverted P-COLL equality, the unseeded maps and the unit negatives
-- `12-deploy-order.out` — the verbatim console log of that step
+### F-201 verifier-key discipline
+
+Checked by `scripts/g2/compile.sh --zk`; see `0*-compile-zk.out`. A verifier key shared
+between contracts whose PROVER keys differ is FATAL. Shared-with-identical-prover-key is an
+expected observation (the MinterCollide mirror).

@@ -1,0 +1,102 @@
+# G1 run log
+started_utc: 2026-08-19T03:33:27Z
+argv: ./scripts/g1/verify-g1-lane.sh 
+cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+host: Darwin arm64
+docker: Docker version 29.1.3, build f52814d
+compose: 2.40.3-desktop.1
+label: EXPERIMENTAL_LANE
+--- step: 01-w1-docker-config
+    utc_start: 2026-08-19T03:33:27Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_w1
+    utc_end: 2026-08-19T03:33:27Z
+    duration_s: 0
+    exit: 0
+    output: 01-w1-docker-config.out
+--- step: 02-probe-ports
+    utc_start: 2026-08-19T03:33:27Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_probe_ports
+    utc_end: 2026-08-19T03:33:28Z
+    duration_s: 1
+    exit: 0
+    output: 02-probe-ports.out
+--- step: 03-lane-reuse
+    utc_start: 2026-08-19T03:33:28Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_lane_reuse
+    utc_end: 2026-08-19T03:33:28Z
+    duration_s: 0
+    exit: 0
+    output: 03-lane-reuse.out
+--- step: 04-lane-dev-1
+    utc_start: 2026-08-19T03:33:28Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_lane_dev_1
+    utc_end: 2026-08-19T03:33:29Z
+    duration_s: 1
+    exit: 0
+    output: 04-lane-dev-1.out
+--- step: 05-pull
+    utc_start: 2026-08-19T03:33:29Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_pull
+    utc_end: 2026-08-19T03:33:31Z
+    duration_s: 2
+    exit: 0
+    output: 05-pull.out
+--- step: 06-boot
+    utc_start: 2026-08-19T03:33:31Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_boot
+    utc_end: 2026-08-19T03:33:37Z
+    duration_s: 6
+    exit: 0
+    output: 06-boot.out
+--- step: 07-health
+    utc_start: 2026-08-19T03:33:37Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_health
+    utc_end: 2026-08-19T03:33:40Z
+    duration_s: 3
+    exit: 0
+    output: 07-health.out
+--- step: 08-install
+    utc_start: 2026-08-19T03:33:40Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_install
+    utc_end: 2026-08-19T03:33:40Z
+    duration_s: 0
+    exit: 0
+    output: 08-install.out
+--- step: 09-wallets
+    utc_start: 2026-08-19T03:33:40Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_wallets
+    utc_end: 2026-08-19T03:33:46Z
+    duration_s: 6
+    exit: 0
+    output: 09-wallets.out
+--- step: 10-funding
+    utc_start: 2026-08-19T03:33:46Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_funding
+    utc_end: 2026-08-19T03:36:01Z
+    duration_s: 135
+    exit: 0
+    output: 10-funding.out
+--- step: 11-record-lane
+    utc_start: 2026-08-19T03:36:01Z
+    cwd: /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody
+    argv: step_record_lane
+    utc_end: 2026-08-19T03:36:01Z
+    duration_s: 0
+    exit: 0
+    output: 11-record-lane.out
+--- teardown
+    utc: 2026-08-19T03:36:01Z
+    argv: docker compose --env-file /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody/docker/.env -f /Users/edwardalvarado/todo/AA/experiments/00005-open-colour-custody/docker/compose.yml down -v --remove-orphans && stack_assert_clean aa00005-g1-20260819033327-74669 && w1_cleanup
+    exit: 0
+finished_utc: 2026-08-19T03:36:02Z
+final_exit: 0

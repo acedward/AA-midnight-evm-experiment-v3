@@ -1,0 +1,9 @@
+[2026-08-20T12:54:19.808Z] maker[named-taker]: building openSwapShielded(give 1 of 3ee0a9b91f70…, want 1 of 4fde155ea51f…)
+[2026-08-20T12:54:20.098Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T12:54:26.260Z] maker[named-taker]: offer proven in 6158 ms; 26818 bytes, sha256 cef95e44eea4a328…; imbalances(0) = {"shielded:4fde155ea51fe4c7a5b91f512627a55edb6865cfeac20c02e80b0966525b3f25":"-1"}
+[2026-08-20T12:54:26.260Z] maker[OFFER-5]: published /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/row12a-maker.offer
+[2026-08-20T12:54:26.260Z] maker[OFFER-5]: DONE — placement ok=true
+
+--- stderr ---
+2026-08-20 08:54:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
+2026-08-20 08:54:19        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure

@@ -1,0 +1,120 @@
+# SPIKE S5 — staleness window (FR-311) — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-20T09:47:11.845Z
+# waits: 1800 s; short-TTL arm: 90 s
+[2026-08-20T09:47:11.917Z] wallets open; syncing genesis …
+2026-08-20 05:47:12        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:47:12        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:47:12        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:47:12        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:47:12.766Z] genesis: NIGHT=246000000000000 DUST=0 utxos=5 unregisteredNightUtxos=0
+[2026-08-20T09:47:12.789Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-20T09:47:31.973Z]   submitted tx 004b85da0d9a76005b4a5e8d6488712f3bcbbb191b13fd07ff58852443937f683f (hash 558122bb3ecd729f07b8d160e14bf0116aa18ad05d80bd6f51ce222b6830c40b)
+[2026-08-20T09:47:31.973Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-20T09:47:32.145Z]   waiting for genesis to observe its own spend (NIGHT at or below 244000000000000) …
+[2026-08-20T09:47:36.998Z]   feePayer: NIGHT already registered for DUST
+2026-08-20 05:47:37        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:47:37        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:47:37.465Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T09:47:54.721Z]   submitted tx 007759134892d624d4e8abb49a14943e8779e2c5addb925b08d2f2fc40660e66d5 (hash 7b703b274db3366b9d89e85d1b2eb587eecd12ec49a476226284e5a85eb83fa7)
+[2026-08-20T09:47:54.722Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-20T09:47:54.889Z]   waiting for feePayer to observe its own spend (NIGHT at or below 3200000000000) …
+[2026-08-20T09:48:12.977Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-20 05:48:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:48:13        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:48:13.435Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T09:48:30.878Z]   submitted tx 004dafdd3ff897709dc79178f8d453709c9739280d7f1bcbfa55e0149867fc4897 (hash 5c5d8fc4619b02696ac4c5337d322fdceeb9d339f8c228ce527c0aa1c12a41c8)
+[2026-08-20T09:48:30.878Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-20T09:48:31.057Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2800000000000) …
+[2026-08-20T09:48:42.605Z]   OwnerT-funding: NIGHT already registered for DUST
+2026-08-20 05:48:42        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:48:42        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:48:43.095Z] deploying Manager v3 (UNCHANGED from 00005) …
+[2026-08-20T09:49:02.822Z]   Manager at d2ac5d38caa4fc9d3f6c577f999cc7f8a23c2a03d2f38c57f73ee1dff4d39deb
+[2026-08-20T09:49:38.928Z] AA_A 009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b / AA_B 755f593682390c58ac90759406d756ebbd86b44825f753a59389d44266da2904 registered; custody maps {"pools":0,"shieldedCells":0,"unshieldedCells":0}
+2026-08-20 05:49:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:49:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:49:39.487Z]   funding OwnerA-funding with 400000000000 NIGHT from feePayer
+[2026-08-20T09:49:55.210Z]   submitted tx 003e970ac2521bf918964083ab25b9509f68c4154b27a5bfe34ceb68940bec3781 (hash d5553c3991f53aa7726e22132cf195a556accd8c0603a97a173b0b92b16ba622)
+[2026-08-20T09:49:55.210Z]   waiting for OwnerA-funding NIGHT to arrive …
+[2026-08-20T09:49:55.387Z]   waiting for feePayer to observe its own spend (NIGHT at or below 2400000000000) …
+[2026-08-20T09:50:11.891Z]   OwnerA-funding: NIGHT already registered for DUST
+2026-08-20 05:50:12        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:50:12        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:50:12.425Z] maker OwnerA open (funded + DUST-registered on purpose, so "paid no fees" means something)
+[2026-08-20T09:50:12.425Z] deploying Minter1 (TOKA) …
+[2026-08-20T09:51:08.522Z]   Minter1 at de3a6a84a99f8860761d7b4a26b22426efd7dc87e414f97d192017a99f2dc5b5: shielded a76c6edaea3cbbe380de2fc9ff1539dc1a9b731a75f86881f2530cfce8d3b726 / unshielded 70c65c184208afa60cd1bb5e0097abadbb11faccd1a131c343247c29208ed61c
+[2026-08-20T09:51:24.887Z] minted 16 S_A (a76c6edaea3c…) in 00ffb1072678b7e4399a112e8ccf55e8160fdbbcd6514275deb23b0baccac686a2
+2026-08-20 05:51:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:51:25        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:51:25.457Z]   waiting for OwnerN-spender-1 to see 12 of shielded a76c6edaea3c… before spending it …
+[2026-08-20T09:51:48.969Z] OwnerN deposited 12 S_A into custody in 0075ec6aef8c17e26668cb4044195ba7792b36b3ab696c777b754f2fb57f7ab36d
+
+## arm INTERVENE
+[2026-08-20T09:51:51.032Z] deploying Minter2 (TOKB1) …
+[2026-08-20T09:52:44.873Z]   Minter2 at 97f09e45de2f01a7ff027c0b5488bbb462dc6d0b2124c825fef890266a655d2a: shielded ba4d4ef96e19cc326ad420350a58ab6046e18f26382ee13740daba8c5cf397b5 / unshielded 74d8d1350200d2e3676387e48f2d9efebade4d01760c990637614bcaedbdf04c
+[2026-08-20T09:53:01.239Z] minted 16 S_B1 (ba4d4ef96e19…) in 00d693f45bbbab1b97d7df3485e1208c5c65990590890670298f6da547e833452f
+[2026-08-20T09:53:01.265Z] maker[named-taker]: building openSwapShielded(give 1 of a76c6edaea3c…, want 1 of ba4d4ef96e19…)
+[2026-08-20T09:53:01.398Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T09:53:08.729Z] maker[named-taker]: offer proven in 7327 ms; 26820 bytes, sha256 3a0773f369f20347…; imbalances(0) = {"shielded:ba4d4ef96e19cc326ad420350a58ab6046e18f26382ee13740daba8c5cf397b5":"-1"}
+2026-08-20 05:53:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:53:10        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:53:11.121Z]   waiting for OwnerN-intervene-spender-2 to see 1 of shielded a76c6edaea3c… before spending it …
+[2026-08-20T09:53:37.343Z] OwnerN-intervene deposited 1 S_A into custody in 001022ec616b5aae924a3b7c3fd9a642c472b9997fc85449d8f6438c6d8f51ca2f
+2026-08-20 05:53:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:53:39        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:53:39.900Z]   waiting for OwnerT-spender-3 to see 1 of shielded ba4d4ef96e19… before spending it …
+[2026-08-20T09:53:39.952Z] taker[INTERVENE]: envelope ok — named-taker offer, give 1 of a76c6edaea3c…, want 1 of ba4d4ef96e19…, 3569 s of life left
+[2026-08-20T09:53:39.958Z] taker[INTERVENE]: fundable — deficits {"0/shielded:ba4d4ef96e19cc326ad420350a58ab6046e18f26382ee13740daba8c5cf397b5":"-1"}, surpluses {}
+[2026-08-20T09:53:40.102Z] taker[INTERVENE]: balanceUnboundTransaction on a transaction it did not build
+[2026-08-20T09:53:41.646Z] taker[INTERVENE]: merged transaction balances; unswept non-dust surplus {}
+[2026-08-20T09:53:41.646Z] taker[INTERVENE]: submitting the merged transaction
+2026-08-20 05:53:42        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 239
+2026-08-20 05:53:42        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 239
+[2026-08-20T09:53:42.762Z] arm INTERVENE: REFUSED at settlement, code 239; custody unchanged: true
+
+## arm SHORT-TTL
+[2026-08-20T09:53:42.763Z] deploying Minter3 (TOKB2) …
+[2026-08-20T09:54:38.563Z]   Minter3 at c61974d57172f7cb4eae9b1554c35e9b775c9bb6cbd72782b424718471037e52: shielded c0833ec937b36493ff2f8d6729e24b593aa0d7b2df16a6ae9e287c3abd3e5a79 / unshielded 07f91a66c2f8a420cfeb93a9504a568d1f9a3124e1bff717ff0756125c8ddc44
+[2026-08-20T09:54:54.923Z] minted 16 S_B2 (c0833ec937b3…) in 0052cbf4463e1391d01543d6cf7ab697d1ea34bb98a7830f4ff32485137eb9aec6
+[2026-08-20T09:54:54.949Z] maker[named-taker]: building openSwapShielded(give 1 of a76c6edaea3c…, want 1 of c0833ec937b3…)
+[2026-08-20T09:54:55.077Z]   intent TTL rewrite -> 2026-08-20T09:56:25.000Z
+[2026-08-20T09:54:55.077Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T09:55:02.324Z] maker[named-taker]: offer proven in 7243 ms; 26818 bytes, sha256 228aa3818c3e26ff…; imbalances(0) = {"shielded:c0833ec937b36493ff2f8d6729e24b593aa0d7b2df16a6ae9e287c3abd3e5a79":"-1"}
+[2026-08-20T09:55:04.121Z] arm SHORT-TTL: waiting 120 s with NO other activity on this stack
+2026-08-20 05:57:04        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:57:04        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:57:04.666Z]   waiting for OwnerT-spender-4 to see 1 of shielded c0833ec937b3… before spending it …
+[2026-08-20T09:57:04.720Z] taker[SHORT-TTL-local]: envelope ok — named-taker offer, give 1 of a76c6edaea3c…, want 1 of c0833ec937b3…, -32 s of life left
+[2026-08-20T09:57:04.720Z] taker[SHORT-TTL-local]: REFUSED — offer expired 32 s ago (expiresAt 2026-08-20T09:56:32.323Z); refused locally without contacting the chain
+[2026-08-20T09:57:04.723Z] arm SHORT-TTL: local gate -> stage=expired ok=false
+2026-08-20 05:57:04        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 05:57:04        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T09:57:05.200Z]   waiting for OwnerT-spender-5 to see 1 of shielded c0833ec937b3… before spending it …
+[2026-08-20T09:57:05.251Z] taker[SHORT-TTL]: envelope ok — named-taker offer, give 1 of a76c6edaea3c…, want 1 of c0833ec937b3…, -33 s of life left
+[2026-08-20T09:57:05.255Z] taker[SHORT-TTL]: fundable — deficits {"0/shielded:c0833ec937b36493ff2f8d6729e24b593aa0d7b2df16a6ae9e287c3abd3e5a79":"-1"}, surpluses {}
+[2026-08-20T09:57:05.263Z] taker[SHORT-TTL]: balanceUnboundTransaction on a transaction it did not build
+[2026-08-20T09:57:06.759Z] taker[SHORT-TTL]: merged transaction balances; unswept non-dust surplus {}
+[2026-08-20T09:57:06.759Z] taker[SHORT-TTL]: submitting the merged transaction
+2026-08-20 05:57:07        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 228
+2026-08-20 05:57:07        RPC-CORE: submitAndWatchExtrinsic(extrinsic: Extrinsic): ExtrinsicStatus:: 1010: Invalid Transaction: Custom error: 228
+[2026-08-20T09:57:07.801Z] arm SHORT-TTL: REFUSED at settlement, code 228; custody unchanged: true
+
+## arm T1800
+[2026-08-20T09:57:07.802Z] deploying Minter4 (TOKB3) …
+[2026-08-20T09:58:01.952Z]   Minter4 at 248a6e59b702dcdef36c647f5736d0fa327b405ecfd6a5fc9a02399ce9fe26c7: shielded 054c2c049700b9d646aee0a15a77be3ed0609c29ac76079c5f8554523f4bee55 / unshielded 011181c089cb902993aa2fa38bb52aada546f7bd40ab084521cc1a93184e24b0
+[2026-08-20T09:58:19.653Z] minted 16 S_B3 (054c2c049700…) in 00680782d47673a8088dec4321c8cb27e012a4a398f8834ff5147596260e10893b
+[2026-08-20T09:58:19.678Z] maker[named-taker]: building openSwapShielded(give 1 of a76c6edaea3c…, want 1 of 054c2c049700…)
+[2026-08-20T09:58:19.812Z] maker[named-taker]: proving — the LAST thing the maker does (no balance, no dust, no submit)
+[2026-08-20T09:58:27.097Z] maker[named-taker]: offer proven in 7281 ms; 26818 bytes, sha256 7cea4f19f6304ab4…; imbalances(0) = {"shielded:054c2c049700b9d646aee0a15a77be3ed0609c29ac76079c5f8554523f4bee55":"-1"}
+[2026-08-20T09:58:28.913Z] arm T1800: waiting 1800 s with NO other activity on this stack
+2026-08-20 06:28:29        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+2026-08-20 06:28:29        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:33764/: 1000:: Normal Closure
+[2026-08-20T10:28:29.456Z]   waiting for OwnerT-spender-6 to see 1 of shielded 054c2c049700… before spending it …
+[2026-08-20T10:28:29.512Z] taker[T1800]: envelope ok — named-taker offer, give 1 of a76c6edaea3c…, want 1 of 054c2c049700…, 1798 s of life left
+[2026-08-20T10:28:29.517Z] taker[T1800]: fundable — deficits {"0/shielded:054c2c049700b9d646aee0a15a77be3ed0609c29ac76079c5f8554523f4bee55":"-1"}, surpluses {}
+[2026-08-20T10:28:29.596Z] taker[T1800]: balanceUnboundTransaction on a transaction it did not build
+[2026-08-20T10:28:31.134Z] taker[T1800]: merged transaction balances; unswept non-dust surplus {}
+[2026-08-20T10:28:31.134Z] taker[T1800]: submitting the merged transaction
+[2026-08-20T10:28:51.847Z] arm T1800: ACCEPTED (00c8ec2d5ae017c6404c024e5b2725cb46ba1bd456202903391f8630ade1fa5081)
+[2026-08-20T10:29:27.013Z] closing two-point observation: OP1 and OP2 agree
+
+## S5: MEASURED — as FR-311 predicted

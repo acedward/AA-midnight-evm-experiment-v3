@@ -1,0 +1,45 @@
+{
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-21T02:31:25.928Z",
+  "offlineParamsSource": "CHAIN parameters captured at evidence/g5-mitigation/chain-params.json",
+  "compared": 70,
+  "agreed": 65,
+  "disagreements": [
+    {
+      "variant": "manager",
+      "shape": "named-taker",
+      "cells": 2,
+      "offline": "FALLIBLE",
+      "live": "GUARANTEED"
+    },
+    {
+      "variant": "v4-slim",
+      "shape": "named-taker",
+      "cells": 2,
+      "offline": "FALLIBLE",
+      "live": "GUARANTEED"
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "shape": "named-taker",
+      "cells": 4,
+      "offline": "FALLIBLE",
+      "live": "GUARANTEED"
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "shape": "floating-surplus",
+      "cells": 4,
+      "offline": "FALLIBLE",
+      "live": "GUARANTEED"
+    },
+    {
+      "variant": "arm-b-nested",
+      "shape": "floating-surplus",
+      "cells": 1,
+      "offline": "GUARANTEED",
+      "live": "FALLIBLE"
+    }
+  ],
+  "verdict": "DIVERGENT"
+}

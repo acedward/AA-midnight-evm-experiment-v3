@@ -1,0 +1,28 @@
+# Plan 02 Phase 3 — spike results index
+
+`EXPERIMENTAL_LANE` / `LANE-DEV-1` · recorded 2026-08-20T15:35:52Z
+· compose project `aa00006-g2-20260820141345-69525` (disposable, this run only)
+
+| Spike | Question | Evidence | Verdict |
+|---|---|---|---|
+| S4 | can a holder whose keys the maker never knew settle a floating-surplus contract offer? | `s4.json` | GREEN |
+| s4b | — | `s4b.json` | NOT RUN |
+| S5b | how much custody state can the Manager hold and still build a PUBLISHABLE (guaranteed-section) offer? | `s5b.json` | MEASURED — the publishability boundary lies between step 1 (pools 1, cells 1) and step 2 (pools 1, cells 2) |
+| S5 | how long does a published contract offer stay takeable, and what invalidates it? | `s5.json` | MEASURED — as FR-311 predicted |
+| S6 | does the maker pay zero DUST and the taker cover the merged transaction's whole fee? | `s6.json` | GREEN |
+
+Human-readable write-ups: `S4.md`, `S4b.md`, `S5b.md`, `S5.md`, `S6.md` in this directory.
+
+## FR-308 openness: **GREEN — via the FLOATING-SURPLUS shape (FR-308 v2a)**
+
+See `OPENNESS.md`. The two halves of FR-308 are reported SEPARATELY and are never conflated:
+v1 (named taker) working says nothing about whether an arbitrary holder can take an offer.
+
+## VOIDed attempts
+
+None — every spike measured on its first attempt.
+
+Raw offer artifacts (`offers/*.offer`) are DELIBERATELY not committed: they are generated
+proof-carrying transactions, and the workspace rule forbids committing generated artifacts.
+Their byte counts and SHA-256 content addresses are recorded in the JSON files, which is what
+the FR-306 claims actually rest on.

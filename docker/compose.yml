@@ -1,8 +1,8 @@
-# 00005-open-colour-custody — isolated rc4 stack (EXPERIMENTAL_LANE)
+# 00006-unbalanced-zswap — isolated rc4 stack (EXPERIMENTAL_LANE)
 #
-# REUSED VERBATIM from 00003 (@ a8ebff9) through 00004 (@ f066a09): every digest below is asserted
-# unchanged against BOTH commits by scripts/lib/lane-pins.sh. This project verifies the lane; it
-# does not re-pin it.
+# REUSED VERBATIM from 00003 (@ a8ebff9) through 00004 (@ f066a09) and 00005 (@ e9701e9): every digest
+# below is asserted unchanged at EVERY hop of that chain by scripts/lib/lane-pins.sh. This project
+# verifies the lane; it does not re-pin it.
 #
 # Every image is pinned by immutable digest (see evidence/g1-lane/LANE.md).
 # Host ports come from docker/.env, produced by scripts/g1/probe-ports.sh, which verifies each

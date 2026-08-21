@@ -1,0 +1,117 @@
+{
+  "kind": "maker",
+  "label": "P-F310-fresh-colour-measured",
+  "lane": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T12:32:44.663Z",
+  "process": {
+    "pid": 39076,
+    "ppid": 39068
+  },
+  "spec": {
+    "label": "P-F310-fresh-colour-measured",
+    "managerAddress": "1f8f7b515d8da46148290b4ac780ddfa333a98e845972b21cfe30d4bad234e6d",
+    "witness": "ownerA",
+    "shape": "floating-surplus",
+    "gives": {
+      "colour": "586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31",
+      "value": "2"
+    },
+    "wants": {
+      "colour": "eb6596b6fc8481fceeebf0cb7af9610d6241f13cd48d2ade0c7e9ee18b0562ea",
+      "value": "3"
+    },
+    "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "measureOnly": true,
+    "out": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/io/pf310-fresh-measured.report.json"
+  },
+  "ok": true,
+  "terms": {
+    "version": 1,
+    "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+    "shape": "floating-surplus",
+    "circuitId": "openSwapShielded",
+    "form": "pre-binding",
+    "managerAddress": "1f8f7b515d8da46148290b4ac780ddfa333a98e845972b21cfe30d4bad234e6d",
+    "gives": {
+      "colour": "586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31",
+      "value": "2"
+    },
+    "wants": {
+      "colour": "eb6596b6fc8481fceeebf0cb7af9610d6241f13cd48d2ade0c7e9ee18b0562ea",
+      "value": "3",
+      "nonce": "2381ce2c2791c0356a3fb0abdb48d28c566bf64701a3862d6904bd69178bd7f1"
+    },
+    "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+    "createdAt": "2026-08-20T12:32:50.259Z",
+    "expiresAt": "2026-08-20T13:32:50.259Z",
+    "ttlSeconds": 3600,
+    "placement": {
+      "segments": [
+        0,
+        61895
+      ],
+      "intentSegments": [
+        61895
+      ],
+      "fallibleOfferSegments": [
+        61895
+      ],
+      "imbalances": {
+        "0": {},
+        "61895": {
+          "shielded:586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31": "2",
+          "shielded:eb6596b6fc8481fceeebf0cb7af9610d6241f13cd48d2ade0c7e9ee18b0562ea": "-3"
+        }
+      },
+      "expectedAtSegment0": {
+        "shielded:586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31": "2",
+        "shielded:eb6596b6fc8481fceeebf0cb7af9610d6241f13cd48d2ade0c7e9ee18b0562ea": "-3"
+      },
+      "segment0Exact": false,
+      "otherSegmentsEmpty": false,
+      "offendingSegments": [
+        "61895: {\"shielded:586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31\":\"2\",\"shielded:eb6596b6fc8481fceeebf0cb7af9610d6241f13cd48d2ade0c7e9ee18b0562ea\":\"-3\"}"
+      ],
+      "ok": false
+    },
+    "makerAttachedDust": false,
+    "contentAddress": "6b581c8107a0f37add94bdc3f29cb46a1a8891478616c272c2d03c4e61b2bbfe",
+    "transactionBytes": 16394
+  },
+  "placement": {
+    "segments": [
+      0,
+      61895
+    ],
+    "intentSegments": [
+      61895
+    ],
+    "fallibleOfferSegments": [
+      61895
+    ],
+    "imbalances": {
+      "0": {},
+      "61895": {
+        "shielded:586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31": "2",
+        "shielded:eb6596b6fc8481fceeebf0cb7af9610d6241f13cd48d2ade0c7e9ee18b0562ea": "-3"
+      }
+    },
+    "expectedAtSegment0": {
+      "shielded:586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31": "2",
+      "shielded:eb6596b6fc8481fceeebf0cb7af9610d6241f13cd48d2ade0c7e9ee18b0562ea": "-3"
+    },
+    "segment0Exact": false,
+    "otherSegmentsEmpty": false,
+    "offendingSegments": [
+      "61895: {\"shielded:586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31\":\"2\",\"shielded:eb6596b6fc8481fceeebf0cb7af9610d6241f13cd48d2ade0c7e9ee18b0562ea\":\"-3\"}"
+    ],
+    "ok": false
+  },
+  "proveMs": 5051,
+  "transactionBytes": 16394,
+  "contentAddress": "6b581c8107a0f37add94bdc3f29cb46a1a8891478616c272c2d03c4e61b2bbfe",
+  "published": false,
+  "publishedNote": "measureOnly — the placement report is the deliverable; the artifact is discarded unpublished"
+}

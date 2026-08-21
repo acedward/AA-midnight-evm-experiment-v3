@@ -1,0 +1,79 @@
+# G5 END-TO-END — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-21T02:31:29.141Z
+# variant manager (baseline) — Manager v4 (SHIPPED, unchanged)
+# custody target: 2 cell(s); cases: u1; offer circuit openSwapShielded
+2026-08-20 22:31:29        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:31:29        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:31:29        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:31:29        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:31:32.859Z]   funding feePayer with 2000000000000 NIGHT from genesis
+[2026-08-21T02:31:49.685Z]   submitted tx 00057d27fcd8e074bb4ae75a30a4887c37eb2a1a4bf3b3686a80929a1ef66a396f (hash f649cf289a5f56765ca5f7f9b585dbf83c6c335f4af43d83d05ed0f6129fbb15)
+[2026-08-21T02:31:49.686Z]   waiting for feePayer NIGHT to arrive …
+[2026-08-21T02:31:49.952Z]   waiting for genesis to observe its own spend (NIGHT at or below 234000000000000) …
+[2026-08-21T02:32:00.692Z]   feePayer: NIGHT already registered for DUST
+2026-08-20 22:32:00        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:32:00        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:32:02.656Z]   funding OwnerN-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T02:32:19.060Z]   submitted tx 004a10e4611882a6caf57674ccdcde9b4ec36a79725dc504b3bf980501db426ef3 (hash e7a350c4445a52eb4798174ddc4a7cd032237a768324f2d17d29eca24ada3bd7)
+[2026-08-21T02:32:19.061Z]   waiting for OwnerN-funding NIGHT to arrive …
+[2026-08-21T02:32:19.255Z]   waiting for feePayer to observe its own spend (NIGHT at or below 7200000000000) …
+[2026-08-21T02:32:27.849Z]   OwnerN-funding: NIGHT already registered for DUST
+2026-08-20 22:32:28        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:32:28        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:32:29.964Z]   funding OwnerA-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T02:32:49.741Z]   submitted tx 003229ba6087df6ee3cfbddbfdc0160b4d6add04a8c31ea866103f6ee8076db52f (hash 9b876218819918a8f7d51f0a972dc30fbb2992d8de0ba3d994b9c76f7742ea8b)
+[2026-08-21T02:32:49.741Z]   waiting for OwnerA-funding NIGHT to arrive …
+[2026-08-21T02:32:49.935Z]   waiting for feePayer to observe its own spend (NIGHT at or below 6800000000000) …
+[2026-08-21T02:32:57.889Z]   OwnerA-funding: NIGHT already registered for DUST
+2026-08-20 22:32:58        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:32:58        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:33:00.191Z]   funding OwnerT-funding with 400000000000 NIGHT from feePayer
+[2026-08-21T02:33:19.080Z]   submitted tx 0040cd561cccd67f6b7230c78a15324d1ae5664b0f580aa2f4b2d0110645857cd3 (hash ace8cef8a51b5b6c75536d1311a6077f1dd290b695fdf6964fbb71fcc988f654)
+[2026-08-21T02:33:19.081Z]   waiting for OwnerT-funding NIGHT to arrive …
+[2026-08-21T02:33:19.235Z]   waiting for feePayer to observe its own spend (NIGHT at or below 6400000000000) …
+[2026-08-21T02:33:33.202Z]   OwnerT-funding: NIGHT already registered for DUST
+[2026-08-21T02:33:33.213Z] deploying G5 variant 'manager' (Manager v4 (SHIPPED, unchanged)) …
+[2026-08-21T02:33:50.971Z]   manager at 7f328dd6e8a86474920f601411b767a9fcf9cfe5d37e5e72a0a30d338fd644db
+[2026-08-21T02:33:50.986Z]   chain ledger parameters fetched (7284 chars rendered)
+2026-08-20 22:33:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:33:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:34:38.879Z]   colour G = 44d3040a5a54… from Minter1 at 4bb25e3a5f9812c683d6476a36729e875bc13826e31fbf04a54e3e66558bf222
+[2026-08-21T02:35:14.930Z]   colour B = 035b6dd088dc… from Minter2 at 7f3aeadafe6c84c446bdb70b5ad8be379137dd2c07b7e03d4cd44c01b760def4
+[2026-08-21T02:36:32.437Z]   account AA_A = 009a77de97356f5c… registered
+[2026-08-21T02:36:49.786Z]   account AA_1 = 890d6086517f8271… registered
+2026-08-20 22:36:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:36:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:36:51.736Z]   waiting for OwnerN to see 8 of shielded 44d3040a5a54… before depositing it …
+2026-08-20 22:37:21        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:37:21        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:37:23        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:37:23        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:37:25.328Z] g5[manager/floating-surplus]: building openSwapShielded(give 2 of 44d3040a5a54…, want 3 of 035b6dd088dc…)
+[2026-08-21T02:37:34.656Z] g5[manager/floating-surplus]: GUARANTEED — publishable; built 141 ms, proved 9184 ms, 21583 B; imbalances(0) = {"shielded:035b6dd088dc1ed295e2ccd9d5184a2b251ced5d5665bb185d23b5b42fa696e0":"-3","shielded:44d3040a5a5407e264cb770e5f340f9f389b62ecdba4e585bde6e0c7a9f70485":"2"}
+2026-08-20 22:37:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:37:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:37:36.442Z]   waiting for OwnerA-self-spender to see 3 of shielded 035b6dd088dc… before spending it …
+[2026-08-21T02:37:36.637Z] taker[manager-U1]: balanceUnboundTransaction on a transaction it did not build
+[2026-08-21T02:37:39.154Z] taker[manager-U1]: submitting the merged transaction
+2026-08-20 22:38:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:38:32        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:38:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:38:34        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:38:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:38:36        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:38:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:38:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:38:39.778Z] g5[manager/floating-surplus]: building openSwapShielded(give 2 of 44d3040a5a54…, want 3 of 035b6dd088dc…)
+[2026-08-21T02:38:47.905Z] g5[manager/floating-surplus]: FALLIBLE — NOT publishable; built 170 ms, proved 7954 ms, 37155 B; imbalances(0) = {}
+2026-08-20 22:38:48        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:38:48        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+[2026-08-21T02:38:49.673Z]   waiting for OwnerA-self-spender to see 3 of shielded 035b6dd088dc… before spending it …
+[2026-08-21T02:38:49.871Z] taker[manager-U1]: balanceUnboundTransaction on a transaction it did not build
+[2026-08-21T02:38:52.065Z] taker[manager-U1]: submitting the merged transaction
+2026-08-20 22:39:45        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:39:45        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:39:46        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+2026-08-20 22:39:46        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:39140/: 1000:: Normal Closure
+
+wrote /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g5-mitigation/u1-probe-v4.json and U1-PROBE-V4.md
+## U1 u1-control-1cell: placement GUARANTEED, settled=true, 0 failed check(s)
+## U1 u1-2cell: placement FALLIBLE, settled=true, 0 failed check(s)
