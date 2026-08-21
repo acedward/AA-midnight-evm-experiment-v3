@@ -14,6 +14,22 @@ decision paragraphs were added after that gate, and this 2026-08-21 G5 addendum 
 named retained G5 reports and JSON records. It is therefore not true that every final line is untouched
 machine output; every measured figure below is still traceable to the evidence file named beside it.
 
+### 2026-08-21 A-308 trust-model addendum
+
+The owner decided that serialized transaction bytes are the sole authority and that `expiresAt` is
+only a business note. The current `AA00006-OFFER/1` implementation therefore treats **every JSON
+field** as advisory, including version, expiry, form, shape, economics, bearer/attribution data and
+declared payload length/hash. The taker computes payload identity from the bytes it received, infers
+form and balancing route by deserializing those bytes, derives fundability from their imbalances, and
+leaves actual TTL and transaction validity to the serialized intent and ledger. No metadata value can
+authorize, block or alter settlement.
+
+This does not add maker authentication: the computed SHA-256 names the received payload. A different
+valid serialized transaction is a different offer; invalid transaction bytes still fail independently
+of any repaired JSON. The retained G1–G5 tables below describe the historical executions at their
+pinned commits. In particular, their local JSON expiry/content-address refusals remain accurate as
+historical evidence, but they are not the current A-308 take behavior.
+
 ## The two headline results
 
 ### v1 — the named-taker settlement (spec row 5, stage A) — **PASS**, 20/20 checks
@@ -39,7 +55,7 @@ machine output; every measured figure below is still traceable to the evidence f
 | What | Measured |
 |---|---|
 | transaction ids | **1** — `00f642666cfa697ea6e802c243423b440d7ee572a7e900fcb0f2614826de411164` |
-| the offer named no recipient at all | terms.gives.recipient absent |
+| the offer named no recipient at all | serialized transaction had the floating-surplus imbalance; retained advisory `terms.gives.recipient` was also absent |
 | placement, FR-302 | {"shielded:b4044b0c0bcf51955c683a8854c07243d1fbd6f6a900293f8ec8c8ef38f96532":"2","shielded:bf3656a8eb2d34b5250209000249d89c5fe634ed9ec4dee47b7b830c650fcfa2":"-3"} |
 | pool S_A | observed absent |
 | pool S_B | observed 3 |
@@ -114,8 +130,8 @@ Overall: **GREEN** — 23 run rows, 217 checks, 0 failing.
 | 6 | Double-take: OFFER-1 balanced and submitted again | A | `row-6` | PASS | 6/6 | preceded by ONE labelled fixture mint of S_B 7 to OwnerT: after row 5 the taker holds only 3 S_B and could not balance at all, so the refusal would come from its own wallet instead of the NODE. The spec's v1-only final table is asserted BEFORE the fixture, where it applies |
 | 7 | OFFER-2 built (v2 OPEN shape — floating surplus): give S_A 2 to no one the maker knows, want S_B 3 to AA_A | B | `row-7` | PASS | 13/13 | on a FRESH Manager whose AA_A holds exactly 2 S_A, so the give is the pool's whole balance and row 8's "pool removed" is reproduced exactly. The spec's literal row 7 is ALSO attempted on Manager #1 at two cells, where it fails closed — that is P-F310, the deviation's own evidence |
 | 8 | OwnerT — whose keys the maker never knew — takes OFFER-2 | B | `row-8` | PASS | 18/18 | the S_B TOTALS differ (absent→3, AA_A 0→3) because the +7 they carry happened on Manager #1. Every DELTA (−2 S_A with the pool REMOVED, +3 S_B, OwnerT +2/−3, maker dust 0) and the exact end-state map sizes 1/2/0 are reproduced identically |
-| 9 | Expiry negative: OFFER-3 (small give) held past its TTL, then taken | C | `row-9` | PASS | 9/9 | the intent TTL is rewritten to 120 s while the transaction is still UNPROVEN (F-306: rewriting a PROVEN transaction's intents invalidates its zswap proofs), because midnight-js hardcodes `ttlOneHour()` and the literal form costs an hour per observation. BOTH layers measured: the taker's own gate refuses OFFLINE, and with that gate forced off the node refuses with 228 |
-| 10 | Tamper negative: OFFER-1's retained bytes, one byte flipped, taken | A | `row-10` | PASS | 7/7 | TWO arms. (a) the flip alone is refused OFFLINE by the envelope's content-address check, before a wallet, a proof server or a node is contacted — STRONGER than the node refusal the spec anticipated, and recorded as such. (b) the flip with the content address REPAIRED reaches the layer the spec named |
+| 9 | Expiry negative: OFFER-3 (small give) held past its TTL, then taken | C | `row-9` | PASS | 9/9 | historical retained run: the intent TTL was rewritten to 120 s while still UNPROVEN. The then-current taker refused from JSON first and, with that gate bypassed, the node refused with 228. Under current A-308 only the latter serialized-intent/ledger authority remains |
+| 10 | Tamper negative: OFFER-1's retained bytes, one byte flipped, taken | A | `row-10` | PASS | 7/7 | historical retained run: one arm failed the then-current declared content-address comparison and a repaired arm reached deserialization. Under current A-308 both JSON declarations are advisory; invalid transaction bytes still fail deserialization independently |
 | 11 | Staleness probe (FR-311): OFFER-4 built on a live colour, then an ordinary deposit lands on that colour, then OFFER-4 taken | C | `row-11` | MEASURED | 6/6 | the MEASURED code is 239 = ZswapInvalidErrorCode::NullifierAlreadyPresent, not the predicted 104 (finding F-309, 3/3 in Plan 02): an ordinary deposit MERGES the pooled coin and merging SPENDS it, so the offer's pinned coin is already nullified. FR-311 asks for the measured rule, so the measured rule is asserted and the divergence recorded |
 | 12 | Cancellation: OFFER-5 built, maker then moves the backing pool coin (internal transfer / withdraw), OFFER-5 taken | C, C | `row-12a`, `row-12b` | MEASURED, MEASURED | 7/7, 7/7 | BOTH forms the spec names are measured separately, because they are not the same mechanism: a WITHDRAW spends the pooled coin, while `transferInternalShielded` performs NO token operation at all (the pooled coin is byte-identical afterwards) and can only invalidate an offer through the account cell its transcript read |
 
@@ -140,12 +156,16 @@ column plus the exact end-state map sizes: `row-8` {"pools":1,"shieldedCells":2,
 Every refusal below carries a verbatim, F-202-clean error, a funds-unchanged proof and a
 no-state-created proof (all three custody map SIZES plus the specific absent cells, named).
 
+Rows NC-303 and NC-304 retain the exact historical first-line output. A-308 supersedes only the
+current harness trust path: it removes the JSON expiry/hash gates while preserving the authoritative
+node/deserializer refusals demonstrated by the companion arms.
+
 | Control | What it asserts | Run row(s) | Status | Node code(s) | Verbatim (first line, truncated) |
 |---|---|---|---|---|---|
 | **NC-301** | direct submission of the unbalanced maker tx refused (row 4) | `row-4` (A) | PASS | 1 | invalid balance -7 for token Shielded(ShieldedTokenType(94144f1ff0b060425ddc65bb2c4740255fd306efa64463fc14350c… |
 | **NC-302** | double-take refused after settlement (row 6) | `row-6` (A) | PASS | 244 | 1010: Invalid Transaction: Custom error: 244 |
-| **NC-303** | expiry refused past TTL (row 9) | `row-9` (C) | PASS | 228 | offer expired 35 s ago (expiresAt 2026-08-20T12:52:50.044Z); refused locally without contacting the chain |
-| **NC-304** | tamper refused (row 10) | `row-10` (A) | PASS | — | offer content address mismatch: terms declare sha256 dde0ba1517179aae815ec60bf334d7d10bb050d50ac4772ed18e2a1da… |
+| **NC-303** | expiry refused past TTL (row 9; historical JSON first line, node arm code 228) | `row-9` (C) | PASS | 228 | offer expired 35 s ago (expiresAt 2026-08-20T12:52:50.044Z); refused locally without contacting the chain |
+| **NC-304** | tamper refused (row 10; historical JSON first line, repaired arm failed deserialization) | `row-10` (A) | PASS | — | offer content address mismatch: terms declare sha256 dde0ba1517179aae815ec60bf334d7d10bb050d50ac4772ed18e2a1da… |
 | **NC-305** | unauthorized make: OwnerN's witness (unregistered for AA_A) attempts to open an offer on AA_A's S_A | `nc-305` (A) | PASS | — | failed assert: caller's owner witness matches no registered account \| cause: Error executing circuit 'openSwap… |
 | **NC-306** | unbacked make: an offer giving more S_A than AA_A's cell holds while the pool WOULD cover it via another account | `nc-306` (C) | PASS | — | failed assert: account colour balance too low \| cause: Error executing circuit 'openSwapShielded' |
 | **P-104** | staleness probe (row 11) — measured lane behaviour, FR-311 | `row-11` (C) | MEASURED | 239 | 1010: Invalid Transaction: Custom error: 239 |
@@ -389,8 +409,9 @@ layer is not claimed** for that one.
 G5 left `contracts/manager.compact` and every G1–G4 artifact unchanged. It compiled a slim control
 and arms (a)–(e) under `contracts/variants/`, costed them before deployment, measured both offer
 shapes at 1/2/4/8/16 live custody cells, calibrated the offline instrument, then ran U1 and U2.
-The canonical G5 run carried 177/177 assertions; the final audit re-ran the expanded HEAD suite at
-213/213. The exact G2/G3-era subset remains 121.
+The canonical G5 run carried 177/177 assertions; the final audit re-ran its expanded HEAD suite at
+213/213, and Phase 8's A-308 remediation expanded and passed the current suite at 218/218. The exact
+G2/G3-era subset remains 121.
 Authoritative inputs: `evidence/g5-mitigation/RANKING.md`, `LIVE-MATRIX.md`, `CALIBRATION.md`,
 `U1-PROBE-V4.md` and `WINNER-ARM-E-ESCROW-4C.md`.
 
@@ -540,6 +561,10 @@ Full output: `evidence/g4-closeout/09-compare.out`, and the reproduction's own e
 | FR-314 U1 and U2 | **PASS / PASS** — v4 U1 at 2 cells; arm-e U2 at 4 | `U1-PROBE-V4.md`, `WINNER-ARM-E-ESCROW-4C.md` |
 | FR-315 honest ranking | **PASS** — every relaxation listed; (a)+(e) explicitly unmeasured | `g5-mitigation/RANKING.md` |
 | FR-316 fail-closed gate | **PASS**, with recorded lenient arm-failure policy | `scripts/g5/verify-g5-mitigation.sh`, G5 `run.log` |
+| FR-317 sole byte authority | **PASS after A-308 remediation** | current `offer-envelope.test.ts`: every JSON field changed/removed with one identical byte-derived decision |
+| FR-318 metadata-independent take path | **PASS after A-308 remediation** | current `prepareDecodedOffer` / `takeOffer` tests |
+| FR-319 advisory expiry/economics | **PASS after A-308 remediation** | current TTL-note and poisoned-metadata tests; historical node code 228 remains retained evidence |
+| FR-320 byte integrity/substitution boundary | **PASS after A-308 remediation** | computed payload identity plus corrupted-byte/deserialization test |
 | SC-301 the headline settlement | **PASS** | `row-5` |
 | SC-302 direct-submission refusal, verbatim + no state | **PASS** | `row-4` (three layers, F-311) |
 | SC-303 byte-identical round-trip, stable content address | **PASS** | `row-3`, `s3-offer-roundtrip.json` |

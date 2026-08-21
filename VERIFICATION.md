@@ -264,8 +264,9 @@ and all G1–G4 evidence remained unchanged.
 | `23-ranking` | exit 0 — exact current-run inputs selected; missing, stale, corrupt or contradictory evidence is RED |
 | teardown | exit 0 — Compose down, residue check and W-1 cleanup; `final_exit: 0` |
 
-The canonical run carried 177 tests. The final audit independently re-ran the expanded HEAD suite at
-**213/213**, which is the current total; 121 remains the exact G2/G3-era subset.
+The canonical run carried 177 tests. The final audit independently re-ran its expanded HEAD suite at
+**213/213**; later Phase 8 audit remediation expanded the current total further. The exact G2/G3-era
+subset remains 121.
 
 ### Measured endpoint and caveats
 
@@ -284,6 +285,27 @@ The canonical run carried 177 tests. The final audit independently re-ran the ex
 - Arm (a) is the strongest map-based fixture at four cells; arm (e) is the only size-independent
   direction measured. The proposed (a)+(e) combination was not compiled, costed or measured, and no
   fixture was productized.
+
+## Phase 8 — audit remediation and approved A-308 trust model
+
+Run on 2026-08-21 after the owner approved A-308. These are current source regressions, not edits to
+the retained G1–G5 evidence. Both Docker test runs mounted the product read-only at `/source`, copied
+it into a uniquely named disposable volume at `/workspace`, used `node:22-bookworm-slim` and frozen
+pnpm 11.5.1 dependencies, and removed the volume immediately afterward.
+
+| Command / environment | Result |
+|---|---|
+| `npx vitest run src/test/offer-envelope.test.ts` inside Docker | **PASS 31/31**. Every object field, including every nested field, in the retained OFFER/1 was changed and removed; unknown/bearer/version/expiry/form/shape/economics/hash/length values were inserted; every fixed-payload preparation decision was identical. The actual `takeOffer` path inferred `pre-binding`/`unbound` and reached the same wallet call with poisoned and empty JSON |
+| `scripts/typecheck.sh` inside Docker | **PASS**. The sole TS2322 at `src/wallet.ts:66` exactly matched the inherited baseline; A-308 introduced zero type errors |
+| complete `npx vitest run` inside Docker | **PASS 218/218 across 7 files** |
+| `scripts/g5/test-early-teardown.sh` on Docker Compose | **PASS**. Injected pre-env and post-service failures remained non-zero, normal completion remained zero, all three paths used separately verified-free ports above 10000, and no container, volume or network remained |
+| conditional live/deploy verification | **N/A**. OFFER/1 framing was preserved and neither transaction construction nor any contract/circuit changed |
+
+The corrupted-byte case flips the authoritative transaction header and repairs the advisory JSON
+hash/length. The decoder reports identity computed from those corrupt bytes, while both form
+deserializers reject them. Conversely, all JSON-only changes leave byte-derived form, route,
+deficits, surpluses and inferred shape unchanged. This proves metadata independence and invalid-byte
+failure; it deliberately does not call the computed SHA-256 maker authentication.
 
 ## Deviations, findings and workarounds, with where each was established
 
@@ -354,9 +376,12 @@ Stated plainly, because a verification document that only lists successes is a m
 11. **The G5 arm-failure policy is lenient by design.** An arm that fails deployment is recorded as
     that arm's verdict rather than failing the whole comparison gate. This does not make the arm
     usable; required U1/U2 outcomes, baseline integrity and apparatus correctness still gate.
-12. **The envelope terms line is unauthenticated.** SHA-256 authenticates serialized transaction
-    bytes, not JSON metadata. Gate 3 re-derives economic terms from transaction imbalances and the
-    remaining gates fail safely, but a production envelope should bind the metadata too.
+12. **Every envelope JSON field is advisory under approved amendment A-308.** The take path ignores
+    version, expiry, form, economics, bearer/attribution data and declared payload identity; it
+    computes identity and infers form/fundability from the received serialized bytes. SHA-256 is a
+    payload name, not maker authentication. A whole valid transaction replacement is a different
+    offer, while corrupt bytes still fail deserialization/proof/node validation. No metadata binding
+    is claimed or required by the owner-selected trust model.
 13. **Nothing here is a statement about a supported lane.** `EXPERIMENTAL_LANE` / `LANE-DEV-1`
    throughout, on a local fresh dev chain, with two HOST workarounds active.
 

@@ -1,4 +1,4 @@
-// The TAKER side of an offer: read the envelope, check what is being asked, settle with STOCK calls.
+// The TAKER side of an offer: read the authoritative transaction bytes, settle with STOCK calls.
 // 00006 Plan 02 Phase 2. EXPERIMENTAL_LANE / LANE-DEV-1.
 //
 // FR-303 says the taker uses ONLY stock facade calls, and the honest test of that claim is that this
@@ -6,22 +6,15 @@
 // then hands the deserialized transaction to `settleAsTaker`, which is nothing but
 // `validateTransaction` → balance → `signRecipe` → `finalizeRecipe` → `submitTransaction`.
 //
-// THE FOUR GATES, in the order they run, and why each one is where it is
+// THE THREE LOCAL GATES, in the order they run, and why each one is where it is
 //
-//   1. ENVELOPE      the content address is recomputed from the payload. A flipped byte dies here,
-//                    offline, before a wallet, a proof server or a node is touched. Cheapest possible
-//                    place to catch NC-304.
-//   2. EXPIRY        the declared TTL is compared to the local clock and an expired offer is refused
-//                    LOCALLY (FR-307b). The node would also refuse it, but "the taker never tried"
-//                    is a better property than "the node said no", and it is the only form of the
-//                    check available to a holder who is offline.
-//   3. FUNDABILITY   the deserialized transaction's own `imbalances(0)` is read and compared to the
-//                    terms. This is the taker's protection against a lying envelope: the terms are
-//                    just JSON the maker wrote, while the imbalances are what the taker will actually
-//                    be asked to fund. A mismatch, or an imbalance that cannot be read at all, is a
-//                    REFUSAL — never a pass. That is the Offer Files `nonDustImbalances` /
-//                    `ImbalanceUnreadableError` pattern, ported.
-//   4. PRE-SUBMIT    the MERGED transaction is checked for any remaining non-dust DEFICIT before
+//   1. ENVELOPE      the OFFER/1 framing is parsed and payload identity is computed FROM THE BYTES.
+//                    Amendment A-308 makes every JSON terms field advisory, so no field comparison
+//                    can authorize, block or alter settlement.
+//   2. FUNDABILITY   the deserialized transaction's own imbalances are read fail-closed. The actual
+//                    bytes must contain exactly one segment-0 deficit, at most one surplus, and no
+//                    relevant leg in a fallible segment. No JSON economic label participates.
+//   3. PRE-SUBMIT    the MERGED transaction is checked for any remaining non-dust DEFICIT before
 //                    `submitTransaction`. A deficit means the merge did not actually balance and the
 //                    node will refuse it; catching it here keeps a harness bug from being recorded as
 //                    a lane refusal. A remaining SURPLUS is legal, so it is recorded as value left on
@@ -42,13 +35,13 @@ import { settleAsTaker, type SettlementResult, type TakerRoute } from '../g1/tak
 import type { Party } from '../wallet.js';
 import type { NodeRefusal } from '../node-error.js';
 import {
+  advisoryOfferSecondsLeft,
   decodeEnvelope,
-  offerExpired,
-  offerSecondsLeft,
   OfferEnvelopeError,
   readEnvelope,
+  type AdvisoryOfferTerms,
   type DecodedEnvelope,
-  type OfferTerms,
+  type OfferForm,
 } from './envelope.js';
 
 const tokenLabel = (t: any): string =>
@@ -57,7 +50,6 @@ const tokenLabel = (t: any): string =>
 /** Where a take stopped. Every value except `settled` means nothing was submitted. */
 export type TakeStage =
   | 'envelope'
-  | 'expired'
   | 'deserialize'
   | 'fundability'
   | 'presubmit'
@@ -68,8 +60,10 @@ export type ImbalanceReading = Record<string, Record<string, string>>;
 
 /** Raised when an imbalance cannot be READ. Unreadable is a refusal, never a pass. */
 export class ImbalanceUnreadableError extends Error {}
-/** Raised when the transaction asks for something the terms did not declare. */
-export class OfferTermsMismatchError extends Error {}
+/** Raised when authoritative transaction bytes do not have a safely fundable offer shape. */
+export class OfferFundabilityError extends Error {}
+/** Raised when the serialized transaction form cannot be inferred from its own bytes. */
+export class OfferTransactionDeserializeError extends Error {}
 /** Raised when a merged transaction still carries a non-dust deficit. */
 export class MergedTransactionUnbalancedError extends Error {}
 
@@ -126,26 +120,19 @@ export type FundabilityReport = {
   deficits: Record<string, string>;
   /** What the taker may sweep. Non-empty for the floating-surplus shape and empty otherwise. */
   surpluses: Record<string, string>;
-  /** The terms' declared legs, rendered in the same key space, for a direct comparison. */
-  declared: { wants: string; gives?: string };
-  matchesTerms: boolean;
+  /** Shape inferred from authoritative imbalances, never from advisory JSON. */
+  inferredShape: 'named-output' | 'floating-surplus';
 };
 
 /**
- * Gate 3 — does the artifact ask for exactly what the terms say it asks for?
- *
- * The comparison is on the DESERIALIZED transaction, so it is a statement about the bytes the taker
- * holds rather than about the JSON beside them. It also re-checks FR-302 from the taker's side: no
- * segment other than 0 may carry anything, because a taker can only reach segment 0.
+ * Gate 2 — is the authoritative transaction shape fundable by an independent taker?
+ * No JSON term is accepted as an input. This re-checks FR-302 from the taker's side: no segment other
+ * than 0 may carry anything, because an independent taker can only reach segment 0.
  */
-export const assertFundable = (tx: any, terms: OfferTerms): FundabilityReport => {
-  const imbalances = readAllImbalances(tx, `offer ${terms.contentAddress.slice(0, 16)}…`);
+export const assertFundable = (tx: any, what = 'offer transaction'): FundabilityReport => {
+  const imbalances = readAllImbalances(tx, what);
   const deficits = nonDustDeficits(imbalances);
   const surpluses = nonDustSurpluses(imbalances);
-
-  const wantsKey = `0/shielded:${terms.wants.colour.toLowerCase()}`;
-  const givesKey = `0/shielded:${terms.gives.colour.toLowerCase()}`;
-  const declared: FundabilityReport['declared'] = { wants: wantsKey };
 
   const problems: string[] = [];
   for (const [seg, m] of Object.entries(imbalances)) {
@@ -156,40 +143,24 @@ export const assertFundable = (tx: any, terms: OfferTerms): FundabilityReport =>
       );
     }
   }
-  if (deficits[wantsKey] !== String(-BigInt(terms.wants.value))) {
-    problems.push(
-      `the terms want ${terms.wants.value} of ${terms.wants.colour} but the transaction's deficit at ` +
-        `${wantsKey} is ${deficits[wantsKey] ?? '(absent)'}`,
-    );
-  }
   if (Object.keys(deficits).length !== 1) {
     problems.push(`expected exactly ONE non-dust deficit, found ${JSON.stringify(deficits)}`);
   }
-  if (terms.shape === 'floating-surplus') {
-    declared.gives = givesKey;
-    if (surpluses[givesKey] !== terms.gives.value) {
-      problems.push(
-        `a floating-surplus offer must leave +${terms.gives.value} of ${terms.gives.colour} at ` +
-          `${givesKey}; found ${surpluses[givesKey] ?? '(absent)'}`,
-      );
-    }
-    if (Object.keys(surpluses).length !== 1) {
-      problems.push(`expected exactly ONE non-dust surplus, found ${JSON.stringify(surpluses)}`);
-    }
-  } else if (Object.keys(surpluses).length !== 0) {
-    problems.push(
-      `a ${terms.shape} offer pays colour A to a named key, so it must leave NO surplus; found ` +
-        `${JSON.stringify(surpluses)}`,
-    );
+  if (Object.keys(surpluses).length > 1) {
+    problems.push(`expected at most ONE non-dust surplus, found ${JSON.stringify(surpluses)}`);
   }
 
-  const report: FundabilityReport = { imbalances, deficits, surpluses, declared, matchesTerms: problems.length === 0 };
   if (problems.length) {
-    throw new OfferTermsMismatchError(
-      `offer ${terms.contentAddress.slice(0, 16)}… does not match its own terms:\n  - ${problems.join('\n  - ')}`,
+    throw new OfferFundabilityError(
+      `${what} is not a safely fundable transaction shape:\n  - ${problems.join('\n  - ')}`,
     );
   }
-  return report;
+  return {
+    imbalances,
+    deficits,
+    surpluses,
+    inferredShape: Object.keys(surpluses).length === 1 ? 'floating-surplus' : 'named-output',
+  };
 };
 
 /** Per-intent DUST actions on a transaction: `segment` → how many spends and registrations. */
@@ -224,7 +195,7 @@ export type MergedReport = {
 };
 
 /**
- * Gate 4 — the merged transaction must carry no non-dust deficit.
+ * Gate 3 — the merged transaction must carry no non-dust deficit.
  *
  * Returns what it found so the evidence can show the merge really did balance, including any surplus
  * the taker chose not to sweep (legal, but worth seeing: it is value handed to nobody) and which
@@ -249,9 +220,16 @@ export const assertMergedBalanced = (finalized: any): MergedReport => {
 export type TakeResult = {
   stage: TakeStage;
   ok: boolean;
-  terms?: OfferTerms;
+  /** Parsed JSON carried for display/evidence compatibility only; never trusted by the take path. */
+  terms?: AdvisoryOfferTerms;
+  /** SHA-256 computed from the serialized transaction payload actually received. */
   contentAddress?: string;
-  secondsLeft?: number;
+  /** Byte length computed from the serialized transaction payload actually received. */
+  transactionBytes?: number;
+  /** Form inferred by deserializing the bytes, never copied from JSON. */
+  serializedForm?: OfferForm;
+  /** Advisory display only; actual intent TTL is enforced by the ledger. */
+  advisorySecondsLeft?: number;
   fundability?: FundabilityReport;
   settlement?: SettlementResult;
   merged?: MergedReport;
@@ -266,16 +244,68 @@ export type TakeResult = {
 export type TakeOptions = {
   label?: string;
   ttlMs?: number;
-  /** Override the balancing entry point. Defaults to the form the envelope declares (D-306). */
+  /** Override the byte-inferred balancing entry point; never sourced from advisory JSON. */
   route?: TakerRoute;
-  /** Skip the local expiry gate — used only to measure what the NODE does with an expired offer. */
-  ignoreExpiry?: boolean;
-  now?: Date;
 };
 
-const routeFor = (terms: OfferTerms): TakerRoute => (terms.form === 'binding' ? 'bound' : 'unbound');
+export type DeserializedOffer = {
+  tx: any;
+  form: OfferForm;
+  route: TakerRoute;
+};
 
-/** Keep a local gate-4 refusal distinct from balancing/node submission failures. */
+/** Infer the transaction lifecycle form from the serialized bytes themselves. */
+export const deserializeOfferBytes = (bytes: Uint8Array): DeserializedOffer => {
+  const candidates: DeserializedOffer[] = [];
+  const errors: string[] = [];
+  for (const [form, route] of [
+    ['pre-binding', 'unbound'],
+    ['binding', 'bound'],
+  ] as const) {
+    try {
+      candidates.push({
+        tx: (ledger as any).Transaction.deserialize('signature', 'proof', form, bytes),
+        form,
+        route,
+      });
+    } catch (e) {
+      errors.push(`${form}: ${errorChain(e)}`);
+    }
+  }
+  if (candidates.length !== 1) {
+    const detail =
+      candidates.length === 0
+        ? `neither supported form deserialized (${errors.join(' | ')})`
+        : `both supported forms deserialized (${candidates.map((c) => c.form).join(', ')})`;
+    throw new OfferTransactionDeserializeError(
+      `serialized offer bytes do not identify exactly one transaction form: ${detail}`,
+    );
+  }
+  return candidates[0];
+};
+
+export type PreparedOffer = DeserializedOffer & {
+  decoded: DecodedEnvelope;
+  fundability: FundabilityReport;
+};
+
+/**
+ * The complete pre-settlement decision derived from authoritative bytes. Tests mutate every JSON
+ * field and call this exact helper to prove the decision does not change.
+ */
+export const prepareDecodedOffer = (decoded: DecodedEnvelope): PreparedOffer => {
+  const deserialized = deserializeOfferBytes(decoded.bytes);
+  return {
+    ...deserialized,
+    decoded,
+    fundability: assertFundable(
+      deserialized.tx,
+      `offer ${decoded.payload.contentAddress.slice(0, 16)}…`,
+    ),
+  };
+};
+
+/** Keep a local pre-submit refusal distinct from balancing/node submission failures. */
 export const takeStageForSettlement = (settlement: SettlementResult): TakeStage =>
   settlement.ok ? 'settled' : settlement.failureStage === 'presubmit' ? 'presubmit' : 'settlement';
 
@@ -289,7 +319,6 @@ export const takeOffer = async (
   opts: TakeOptions = {},
 ): Promise<TakeResult> => {
   const label = opts.label ?? 'take';
-  const now = opts.now ?? new Date();
 
   // --- gate 1: the envelope itself ---------------------------------------------------------------
   let decoded: DecodedEnvelope;
@@ -300,62 +329,40 @@ export const takeOffer = async (
     log(`taker[${label}]: REFUSED at the envelope — ${errorChain(e)}`);
     return { stage: 'envelope', ok: false, error: errorChain(e), offlineRefusal: offline };
   }
-  const { terms, bytes } = decoded;
-  const secondsLeft = offerSecondsLeft(terms, now);
+  const { terms, payload } = decoded;
+  const advisorySecondsLeft = advisoryOfferSecondsLeft(terms);
   log(
-    `taker[${label}]: envelope ok — ${terms.shape} offer, give ${terms.gives.value} of ` +
-      `${terms.gives.colour.slice(0, 12)}…, want ${terms.wants.value} of ${terms.wants.colour.slice(0, 12)}…, ` +
-      `${secondsLeft} s of life left`,
+    `taker[${label}]: OFFER/1 framing ok — authoritative payload ${payload.transactionBytes} bytes, ` +
+      `sha256 ${payload.contentAddress.slice(0, 16)}…; every JSON term is advisory and ignored`,
   );
 
-  // --- gate 2: expiry, checked locally ------------------------------------------------------------
-  if (!opts.ignoreExpiry && offerExpired(terms, now)) {
-    const error = `offer expired ${-secondsLeft} s ago (expiresAt ${terms.expiresAt}); refused locally without contacting the chain`;
-    log(`taker[${label}]: REFUSED — ${error}`);
-    return { stage: 'expired', ok: false, terms, contentAddress: terms.contentAddress, secondsLeft, error, offlineRefusal: true };
-  }
-
-  // --- deserialize ------------------------------------------------------------------------------
-  let tx: any;
+  // --- deserialize + gate 2: byte-derived form and fundability -----------------------------------
+  let prepared: PreparedOffer;
   try {
-    tx = (ledger as any).Transaction.deserialize('signature', 'proof', terms.form, bytes);
+    prepared = prepareDecodedOffer(decoded);
   } catch (e) {
-    log(`taker[${label}]: REFUSED at deserialize — ${errorChain(e)}`);
+    const stage: TakeStage = e instanceof OfferTransactionDeserializeError ? 'deserialize' : 'fundability';
+    log(`taker[${label}]: REFUSED at ${stage} — ${errorChain(e)}`);
     return {
-      stage: 'deserialize',
+      stage,
       ok: false,
       terms,
-      contentAddress: terms.contentAddress,
-      secondsLeft,
-      error: errorChain(e),
-      offlineRefusal: true,
-    };
-  }
-
-  // --- gate 3: is it fundable, and does it match its own terms? ----------------------------------
-  let fundability: FundabilityReport;
-  try {
-    fundability = assertFundable(tx, terms);
-  } catch (e) {
-    log(`taker[${label}]: REFUSED at the fundability gate — ${errorChain(e)}`);
-    return {
-      stage: 'fundability',
-      ok: false,
-      terms,
-      contentAddress: terms.contentAddress,
-      secondsLeft,
+      contentAddress: payload.contentAddress,
+      transactionBytes: payload.transactionBytes,
+      ...(advisorySecondsLeft === undefined ? {} : { advisorySecondsLeft }),
       error: errorChain(e),
       offlineRefusal: true,
     };
   }
   log(
-    `taker[${label}]: fundable — deficits ${JSON.stringify(fundability.deficits)}, ` +
-      `surpluses ${JSON.stringify(fundability.surpluses)}`,
+    `taker[${label}]: byte-derived ${prepared.form} transaction is fundable — deficits ` +
+      `${JSON.stringify(prepared.fundability.deficits)}, surpluses ` +
+      `${JSON.stringify(prepared.fundability.surpluses)}`,
   );
 
-  // --- settlement: stock facade calls only, with gate 4 wired in as `preSubmit` -------------------
+  // --- settlement: stock facade calls only, with gate 3 wired in as `preSubmit` -------------------
   let merged: TakeResult['merged'];
-  const settlement = await settleAsTaker(taker, tx, opts.route ?? routeFor(terms), {
+  const settlement = await settleAsTaker(taker, prepared.tx, opts.route ?? prepared.route, {
     label,
     ttlMs: opts.ttlMs,
     preSubmit: (finalized) => {
@@ -372,9 +379,11 @@ export const takeOffer = async (
     stage: takeStageForSettlement(settlement),
     ok: settlement.ok,
     terms,
-    contentAddress: terms.contentAddress,
-    secondsLeft,
-    fundability,
+    contentAddress: payload.contentAddress,
+    transactionBytes: payload.transactionBytes,
+    serializedForm: prepared.form,
+    ...(advisorySecondsLeft === undefined ? {} : { advisorySecondsLeft }),
+    fundability: prepared.fundability,
     settlement,
     merged,
     ...(settlement.ok ? {} : { error: settlement.error, nodeRefusal: settlement.nodeRefusal }),

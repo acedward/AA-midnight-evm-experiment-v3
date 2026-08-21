@@ -469,7 +469,7 @@ export const runReader = (envelope: string, ioName: string): any => {
   return parsed;
 };
 
-/** Flip ONE byte of a published envelope's PAYLOAD, leaving the terms untouched (row 10, arm a). */
+/** Flip ONE authoritative payload byte, leaving advisory JSON untouched (row 10, arm a). */
 export const tamperOneByte = (source: string, dest: string): { offset: number; from: number; to: number } => {
   const buf = Buffer.from(readFileSync(source));
   // Find the payload start: the framing is `magic\n` + `terms-json\n` + raw bytes.
@@ -486,12 +486,8 @@ export const tamperOneByte = (source: string, dest: string): { offset: number; f
 };
 
 /**
- * Flip one byte AND repair the terms' content address, so the envelope's own tamper check passes.
- *
- * Row 10 asks for a refusal "at deserialize/validate". The content-address check refuses a flipped
- * byte OFFLINE, before any of that — a stronger result, and the one this project actually gets. This
- * arm exists so the layer the spec named is exercised too: with the address repaired, the tampered
- * bytes reach the deserializer and the node.
+ * Flip the same byte AND repair the advisory content-address note. A-308 requires this repair to have
+ * no effect: both arms carry invalid authoritative bytes and must reach the same byte-derived decision.
  */
 export const tamperAndRepairAddress = (
   source: string,
@@ -508,7 +504,7 @@ export const tamperAndRepairAddress = (
   const to = from ^ 0x01;
   payload[offset] = to;
   const contentAddress = createHash('sha256').update(payload).digest('hex');
-  terms.contentAddress = contentAddress;
+  terms.contentAddress = contentAddress; // advisory only under A-308
   const head = Buffer.from(`${magic}\n${JSON.stringify(terms)}\n`, 'utf-8');
   mkdirSync(dirname(dest), { recursive: true });
   writeFileSync(dest, Buffer.concat([head, payload]));

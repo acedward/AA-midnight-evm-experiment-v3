@@ -66,14 +66,15 @@ sequenceDiagram
     Maker->>Maker: prove (proof server)
     Maker->>Maker: FR-302 assert — imbalances(0) EXACTLY the intended deltas,<br/>no other segment carries anything, no DUST attached
     Note over Maker: a fallible placement FAILS CLOSED here:<br/>nothing is published (F-308 / F-310)
-    Maker->>File: Transaction.serialize() + terms + SHA-256 content address
+    Maker->>File: Transaction.serialize() + advisory JSON + computed SHA-256 identity
     Note over Maker,File: the maker process EXITS. No balancing, no dust, no submission.
 
     File->>Node: (control) submit the offer alone
     Node-->>File: REFUSED — verbatim, and no state created
 
     File->>Taker: any holder reads the envelope
-    Taker->>Taker: deserialize -> validate (recorded, NEVER gating: F-303)
+    Taker->>Taker: ignore every JSON field; infer form and fundability from serialized bytes
+    Taker->>Taker: validate (recorded, NEVER gating: F-303)
     Taker->>Taker: balanceUnboundTransaction -> signRecipe -> finalizeRecipe (the merge)
     Taker->>Node: submitTransaction — ONE transaction
     Node->>Mgr: apply: pool A debited, pool B created/merged,<br/>maker's cells −A +B
@@ -119,11 +120,11 @@ contracts/
                                  fixtures only; no fixture or combination is productized here
 
 harness/                       TypeScript driver (midnight-js v5.0.0-beta.6, wallet-sdk 2.0.0-beta.2)
-  src/offer/envelope.ts          the offer format: `AA00006-OFFER/1`, one line of JSON terms, then the
-                                 RAW transaction bytes; content address = SHA-256 of those bytes
+  src/offer/envelope.ts          the offer format: `AA00006-OFFER/1`, one advisory JSON object, then
+                                 the authoritative RAW transaction bytes; identity is computed from them
   src/offer/build.ts             build -> prove -> FR-302 fail-closed placement assert -> publish
-  src/offer/take.ts              the taker: FOUR fail-closed gates (envelope, expiry, fundability,
-                                 pre-submit) then STOCK facade calls only — no transaction surgery;
+  src/offer/take.ts              the taker: parse framing, infer form/fundability from bytes, then
+                                 pre-submit check and STOCK facade calls — no transaction surgery;
                                  result stages distinguish local `presubmit` refusal from
                                  balancing/node `settlement` failure and successful `settled`
   src/offer/reader.ts            an offline reader: no network, no wallet, no proof server
@@ -219,10 +220,14 @@ sed -n '1,120p' evidence/g5-mitigation/CALIBRATION.md
   balance.
 - **The offer's own `fees()` figure is not the settlement fee** and must never be quoted as a price:
   the fee belongs to the MERGED transaction, whose size the maker cannot know in advance.
-- **The envelope's JSON terms line is not authenticated.** Its content address authenticates the
-  serialized transaction bytes only. A taker must treat the terms as convenience metadata and rely
-  on gate 3, which re-derives the economic terms from the transaction's own imbalances; transaction
-  TTL and bearer-key checks also fail safely, but a future production format should bind the terms.
+- **Every JSON field in `AA00006-OFFER/1` is advisory business metadata (A-308).** This includes
+  expiry, form, shape, economics, bearer data, declared byte length and declared content address.
+  None may authorize, block or alter settlement. The taker computes SHA-256 and length from the raw
+  bytes it received, infers transaction form and route by deserializing those bytes, reads economic
+  imbalances from them, and leaves actual TTL enforcement to the serialized intent and ledger. The
+  computed digest names the payload; it is not maker authentication. Replacing the payload with a
+  different valid serialized transaction creates a different offer, while corrupt transaction bytes
+  still fail independently of any repaired JSON note.
 - **Segment assignment is a build-time decision** (F-301 / F-306): re-keying a merged transaction's
   intents afterwards is accepted by the wasm setter and then refused by the node with `235`, even for
   transactions that would have been accepted untouched.

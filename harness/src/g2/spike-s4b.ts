@@ -105,7 +105,7 @@ const main = async () => {
     const published = publishAndReread(offer, 's4b-bearer');
     // The envelope MUST carry the secret — that is the mechanism, and a reader with no other
     // information has to be able to find it.
-    const secretTravelled = published.reader.terms?.bearerKey?.seedHex === bearer.seed;
+    const secretTravelled = published.reader.advisoryTerms?.bearerKey?.seedHex === bearer.seed;
 
     // --- settle: OwnerT, a wallet the maker never knew ------------------------------------------
     const spender = await rig.base.openSpender('OwnerT', SEEDS.ownerT, [
@@ -194,11 +194,11 @@ const main = async () => {
       {
         name: 'the envelope carries the bearer SECRET across the process boundary',
         ok: secretTravelled,
-        detail: `reader saw seedHex=${String(published.reader.terms?.bearerKey?.seedHex).slice(0, 16)}…`,
+        detail: `reader saw advisory seedHex=${String(published.reader.advisoryTerms?.bearerKey?.seedHex).slice(0, 16)}…`,
       },
       {
         name: 'FR-306: the envelope round-tripped byte-identically',
-        ok: Boolean(published.reader.envelopeVerified && published.reader.roundTripByteIdentical),
+        ok: Boolean(published.reader.envelopeFramingParsed && published.reader.roundTripByteIdentical),
         detail: `reader pid ${published.reader.process?.pid}`,
       },
       {

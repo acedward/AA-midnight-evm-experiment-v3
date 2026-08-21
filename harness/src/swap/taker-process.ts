@@ -36,8 +36,6 @@ export type TakerOpts = {
   takerSeedName: PartyName;
   /** F-107: colours this wallet must SEE before it is allowed to spend. */
   require?: Array<{ colour: string; amount: string }>;
-  /** Skip the taker's own local expiry gate, to measure what the NODE does with an expired offer. */
-  ignoreExpiry?: boolean;
   route?: TakerRoute;
   out: string;
 };
@@ -80,7 +78,6 @@ const main = async () => {
 
     const take: TakeResult = await takeOffer(party, opts.envelope, {
       label: opts.label,
-      ...(opts.ignoreExpiry ? { ignoreExpiry: true } : {}),
       ...(opts.route ? { route: opts.route } : {}),
     });
     report.ok = take.ok;

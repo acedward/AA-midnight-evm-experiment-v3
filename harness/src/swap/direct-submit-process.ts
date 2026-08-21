@@ -33,7 +33,7 @@ import { log, syncedState } from '../night.js';
 import { errorChain } from '../g3/actions.js';
 import { deepErrorText, nodeRefusalOf } from '../node-error.js';
 import { readEnvelope } from '../offer/envelope.js';
-import { readAllImbalances, nonDustDeficits } from '../offer/take.js';
+import { deserializeOfferBytes, readAllImbalances, nonDustDeficits } from '../offer/take.js';
 
 export type DirectSubmitOpts = {
   label: string;
@@ -84,13 +84,15 @@ const main = async () => {
   setNetworkId(NetworkId.NetworkId.Undeployed as any);
   let party: Awaited<ReturnType<typeof openParty>> | undefined;
   try {
-    const { terms, bytes } = readEnvelope(opts.envelope);
-    report.terms = terms;
-    report.payloadBytes = bytes.length;
+    const { terms, bytes, payload } = readEnvelope(opts.envelope);
+    report.advisoryTerms = terms;
+    report.payloadIdentity = payload;
 
-    const deserialize = () => (ledger as any).Transaction.deserialize('signature', 'proof', terms.form, bytes);
-    const tx = deserialize();
-    const imbalances = readAllImbalances(tx, `offer ${terms.contentAddress.slice(0, 16)}…`);
+    const deserialize = () => deserializeOfferBytes(bytes);
+    const initial = deserialize();
+    const tx = initial.tx;
+    report.serializedForm = initial.form;
+    const imbalances = readAllImbalances(tx, `offer ${payload.contentAddress.slice(0, 16)}…`);
     report.imbalances = imbalances;
     report.deficits = nonDustDeficits(imbalances);
     report.offlineWellFormed = offlineWellFormed(tx);
@@ -102,7 +104,8 @@ const main = async () => {
     // Each attempt gets a FRESHLY deserialized transaction: `bind()` is a lifecycle transition and a
     // rejected submission must never be blamed on an object the previous attempt had already moved.
     for (const form of ['as-published (unbound, D-306)', 'bound'] as const) {
-      const candidate = form === 'bound' ? deserialize().bind() : deserialize();
+      const fresh = deserialize().tx;
+      const candidate = form === 'bound' ? fresh.bind() : fresh;
       const attempt: Record<string, unknown> = { form, submitted: false };
       try {
         const txId = String(await facade.submitTransaction(candidate));

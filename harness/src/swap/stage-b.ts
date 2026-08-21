@@ -188,8 +188,8 @@ const main = async () => {
         .check('FR-301: the maker attached NO DUST', offer2Report.terms.makerAttachedDust === false, '')
         .check(
           'FR-306: the envelope round-tripped a real process boundary byte-identically',
-          Boolean(reader.envelopeVerified && reader.roundTripByteIdentical && reader.contentAddressMatches),
-          `reader pid ${reader.process?.pid}, ${reader.payloadBytes} bytes, sha ${String(reader.payloadSha256).slice(0, 16)}…`,
+          Boolean(reader.envelopeFramingParsed && reader.roundTripByteIdentical),
+          `reader pid ${reader.process?.pid}, ${reader.payloadIdentity?.transactionBytes} bytes, sha ${String(reader.payloadIdentity?.contentAddress).slice(0, 16)}… computed from payload`,
         )
         .check(
           'a reader with NO NETWORK sees the +A surplus the terms declare',

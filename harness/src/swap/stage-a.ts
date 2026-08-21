@@ -250,8 +250,8 @@ const main = async () => {
         .check('FR-301: the maker attached NO DUST', offer1Report.terms.makerAttachedDust === false, '')
         .check(
           'FR-306: the envelope round-tripped a real process boundary byte-identically',
-          Boolean(reader.envelopeVerified && reader.roundTripByteIdentical && reader.contentAddressMatches),
-          `reader pid ${reader.process?.pid}, ${reader.payloadBytes} bytes, sha ${String(reader.payloadSha256).slice(0, 16)}…`,
+          Boolean(reader.envelopeFramingParsed && reader.roundTripByteIdentical),
+          `reader pid ${reader.process?.pid}, ${reader.payloadIdentity?.transactionBytes} bytes, sha ${String(reader.payloadIdentity?.contentAddress).slice(0, 16)}… computed from payload`,
         )
         .check(
           'a reader with NO NETWORK sees exactly the deficit the terms declare',
@@ -487,12 +487,11 @@ const main = async () => {
         return;
       }
       const before = await obs({ users: true });
-      // arm (a): the flip alone. The envelope's content address catches it OFFLINE.
+      // arm (a): the flip alone; its stale JSON hash is advisory under A-308.
       const fileA = join(OFFERS_DIR, 'offer-1-tampered.offer');
       const flipA = tamperOneByte(offer1File, fileA);
       const repA = runTaker({ label: 'row-10a', envelope: fileA, takerSeedName: 'ownerT' }, 'row10a-taker');
-      // arm (b): the flip WITH the content address repaired, so the tampered bytes reach the layer
-      // the spec named (deserialize / validate / node).
+      // arm (b): the SAME flip with the advisory hash repaired. Its decision must match arm (a).
       const fileB = join(OFFERS_DIR, 'offer-1-tampered-repaired.offer');
       const flipB = tamperAndRepairAddress(offer1File, fileB);
       const repB = runTaker({ label: 'row-10b', envelope: fileB, takerSeedName: 'ownerT' }, 'row10b-taker');
@@ -506,15 +505,15 @@ const main = async () => {
         .verbatim(repB.take?.error)
         .check('arm (a): the tampered offer was REFUSED', repA.take?.ok === false, `stage=${repA.take?.stage}`)
         .check(
-          'arm (a): refused OFFLINE by the envelope content-address check — no wallet, proof server or node contacted',
-          repA.take?.stage === 'envelope' && repA.take?.offlineRefusal === true,
-          `stage=${repA.take?.stage} offline=${repA.take?.offlineRefusal}`,
+          'A-308: stale versus repaired advisory hash produces the same byte-derived take decision',
+          repA.take?.stage === repB.take?.stage && repA.take?.contentAddress === repB.take?.contentAddress,
+          `armA stage/hash=${repA.take?.stage}/${repA.take?.contentAddress}; armB=${repB.take?.stage}/${repB.take?.contentAddress}`,
         )
         .check('arm (b): the re-addressed tampered offer was ALSO refused', repB.take?.ok === false, `stage=${repB.take?.stage}`)
         .note(
-          `arm (b) was refused at stage \`${repB.take?.stage}\`` +
-            `${repB.take?.nodeRefusal?.code != null ? ` with node code ${repB.take.nodeRefusal.code}` : ' (offline)'} — ` +
-            'this is the layer the spec anticipated (deserialize/validate); arm (a) is a STRONGER refusal, one layer earlier.',
+          `both invalid serialized payloads were refused at byte-derived stage \`${repB.take?.stage}\`` +
+            `${repB.take?.nodeRefusal?.code != null ? ` with node code ${repB.take.nodeRefusal.code}` : ' (offline)'}; ` +
+            'repairing advisory JSON granted no authority.',
         )
         .noStateCreated(before, after, ['AA_B/S_A', 'AA_B/S_B']);
     });
