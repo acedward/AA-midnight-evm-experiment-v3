@@ -105,4 +105,3 @@ Placement that was bypassed: **GUARANTEED**, fallible segments
 | 10 | FR-306: the envelope crossed a REAL process boundary byte-identically | PASS | reader pid 7509, 16057 bytes |
 | 11 | THE OPEN CLAIM: the settler is a wallet whose keys the maker never knew | PASS | settler seed is OwnerT, disjoint from every maker key |
 | 12 | arm (e): the SELF-BALANCED phases landed on their own (F-310 does not constrain them) | PASS | stage 00ba214963f7d05881a0783d49602953eb21aea48d25086b327a4ecb7b277cca35 / consolidate 0041d4240d6b8dd1aeacc0f2db2785c560ddbff1b171076543ed53e6fbb36443e8 |
-

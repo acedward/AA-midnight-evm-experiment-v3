@@ -18,14 +18,16 @@
 #   * the offline half must pass outright: every fixture must COMPILE, the control and baseline must be
 #     measurable, the unit suites and typecheck must be clean, and every variant must be costed UNDER
 #     the F-307 deploy ceiling BEFORE anything is deployed;
-#   * AN ARM THAT FAILS TO COMPILE OR DEPLOY IS A RECORDED ARM VERDICT, NOT A GATE FAILURE. The gate
-#     fails only on rig/infra defects, or on a BASELINE that contradicts F-310 — because in that case
-#     nothing else in the run is anchored;
+#   * AN ARM THAT FAILS TO DEPLOY IS A RECORDED ARM VERDICT, NOT A GATE FAILURE. The gate fails on
+#     rig/build/prove defects, or on a BASELINE that contradicts F-310 — because in that case nothing
+#     else in the run is anchored;
 #   * placement is MEASURED, not scored: a FALLIBLE reading is a result. The matrix is red only if an
 #     offer failed to build for a reason that was not placement, which would mean the dose is reading
 #     something other than what it claims;
-#   * a REFUSAL in the end-to-end cases is a result too. Those are red only when a case SETTLED and
-#     then failed its own assertions — evidence contradicting itself.
+#   * the end-to-end CLI names REQUIRED cases. Each must appear once, settle, carry no apparatus
+#     error, and pass every check; a refusal is retained evidence but is RED for this selected gate;
+#   * ranking receives exact current-run paths and a wrapper-derived run-start timestamp. Missing,
+#     stale, corrupt, or contradictory inputs are RED; no directory scan chooses the winner.
 #
 # Fail-safe contract (inherited 00003 -> 00004 -> 00005 -> G1-G4): set -euo pipefail, EXIT/INT/TERM
 # traps, argv/cwd/UTC before each step and duration/exit after, and a TEARDOWN FAILURE REPLACES an
@@ -76,6 +78,7 @@ EVID="$ROOT/evidence/g5-mitigation"
 GATE=$([ "$MODE" = "offline" ] && echo "G5-OFFLINE" || echo "G5")
 
 fs_init "$GATE" "$EVID" "$MODE"
+RUN_STARTED_UTC="$(sed -n 's/^started_utc: //p' "$EVID/run.log" | head -1)"
 
 PROJECT="aa00006-g5-$(date -u +%Y%m%d%H%M%S)-$$"
 COMPOSE=(docker compose --env-file "$ROOT/docker/.env" -f "$ROOT/docker/compose.yml")
@@ -135,7 +138,22 @@ step_winner_e2e() {
     --out "winner-${WINNER}-${WINNER_CELLS}c"
 }
 
-step_ranking() { H npx tsx src/g5/ranking.ts; }
+step_ranking() {
+  local winner_evidence="$EVID/winner-${WINNER}-${WINNER_CELLS}c.json"
+  H npx tsx src/g5/ranking.ts \
+    --offline "$EVID/offline-sweep.json" \
+    --matrix "$EVID/live-matrix.json" \
+    --calibration "$EVID/calibration.json" \
+    --u1 "$EVID/u1-probe-v4.json" \
+    --winner-evidence "$winner_evidence" \
+    --expected-winner "$WINNER" \
+    --winner-cells "$WINNER_CELLS" \
+    --deploy-cost "$EVID/12-deploy-cost.out" \
+    --compile-fast "$EVID/compile/STATUS-skip-zk.tsv" \
+    --compile-zk "$EVID/compile/STATUS-zk.tsv" \
+    --run-start "$RUN_STARTED_UTC" \
+    --out "$EVID/RANKING.md"
+}
 
 echo "[${GATE}] EXPERIMENTAL_LANE / LANE-DEV-1 — Plan 05 F-310 mitigation rig, mode=${MODE}"
 echo "[${GATE}] compose project: ${PROJECT}"

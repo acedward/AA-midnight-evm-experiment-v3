@@ -58,6 +58,7 @@ import { captureParams } from './placement-model.js';
 import { actAs, bootstrapG5Rig, shieldedKeysOf, type Account, type Colour, type G5Rig } from './rig.js';
 import { buildG5Offer, offerCircuitOf } from './offer.js';
 import { variantById, VARIANTS, type VariantSpec } from './variants.js';
+import { matrixVerdict, printVerdictErrors } from './verdicts.js';
 
 const EVID = join(REPO_ROOT, 'evidence', 'g5-mitigation');
 const stamp = () => new Date().toISOString();
@@ -385,10 +386,7 @@ const main = async () => {
   md.push(...table(['variant', 'address'], summary.map((s) => [`\`${s.variant}\``, `\`${s.contractAddress ?? '(not deployed)'}\``])));
 
   mkdirSync(EVID, { recursive: true });
-  writeFileSync(
-    join(EVID, 'live-matrix.json'),
-    `${JSON.stringify(
-      {
+  const evidence = {
         label: LANE_STAMP,
         utc: stamp(),
         question:
@@ -399,23 +397,18 @@ const main = async () => {
         f310Reproduced,
         summary,
         runs,
-      },
-      bigints,
-      2,
-    )}\n`,
-  );
+      };
+  writeFileSync(join(EVID, 'live-matrix.json'), `${JSON.stringify(evidence, bigints, 2)}\n`);
   writeFileSync(join(EVID, 'LIVE-MATRIX.md'), `${md.join('\n')}\n`);
   console.log(`\nwrote ${join(EVID, 'live-matrix.json')} and LIVE-MATRIX.md`);
   console.log(`baseline reproduces F-310: ${f310Reproduced}`);
 
-  // RED only if the measurement apparatus failed: the baseline could not be measured at all, or an
-  // offer failed to build for a reason that was not placement (which would mean the dose is reading
-  // something else). An ARM being bad, or an arm failing to deploy, is a RESULT.
-  const baselineRun = runs.find((r) => r.variant === 'manager');
-  if (baselineRun && baselineRun.fatal) {
-    console.error('\nFAILED: the BASELINE could not be measured — nothing else in this run is anchored.');
-    process.exitCode = 1;
-  }
+  // A FALLIBLE placement remains a measurement. Missing/contradictory baseline evidence or a caught
+  // build/prove failure is an apparatus failure and therefore RED. Run this AFTER both evidence files
+  // are written so a failed gate still leaves an auditable record.
+  const verdict = matrixVerdict(evidence, which);
+  printVerdictErrors('live matrix', verdict);
+  if (!verdict.ok) process.exitCode = 1;
 };
 
 main().then(

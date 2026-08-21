@@ -9,17 +9,17 @@
 //   deploy-cost.out      the offline deploy cost per fixture against the F-307 ceiling
 //   compile/STATUS-*.tsv what compiled, and with how many provable circuits
 //   u1-probe-v4.json     whether the owner's FIRST use case already works past the F-310 boundary
-//   winner-*.json        the winner's live U1 and U2 settlements
+//   exact winner JSON    the winner's live U1 and U2 settlements, selected by the gate CLI
 //
 // Nothing is computed here that could instead be measured, and nothing is quoted that no file supports.
-// Where a file is missing the row says so rather than being dropped, because a silently absent arm
-// reads as an arm that was never proposed.
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { LANE_STAMP, REPO_ROOT } from '../lane.js';
+// Every path is explicit and validated before rendering. Missing, stale, corrupt, or contradictory
+// inputs make the process non-zero and leave the previous canonical report untouched.
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { basename, dirname } from 'node:path';
+import { LANE_STAMP } from '../lane.js';
 import { VARIANTS } from './variants.js';
+import { loadRankingInputs, parseDeployCost } from './ranking-inputs.js';
 
-const EVID = join(REPO_ROOT, 'evidence', 'g5-mitigation');
 const stamp = () => new Date().toISOString();
 const table = (header: string[], rows: string[][]): string[] => [
   `| ${header.join(' | ')} |`,
@@ -40,49 +40,37 @@ const renderBoundaryReading = (lastGuaranteed: number | null, firstFallible: num
   return `last GUARANTEED at ${lastGuaranteed} cell(s), first FALLIBLE at ${firstFallible}`;
 };
 
-const readJson = (name: string): any => {
-  const f = join(EVID, name);
-  return existsSync(f) ? JSON.parse(readFileSync(f, 'utf-8')) : null;
-};
-const readText = (name: string): string | null => {
-  const f = join(EVID, name);
-  return existsSync(f) ? readFileSync(f, 'utf-8') : null;
-};
-
-/** Pull `verifier keys: N, X bytes` and the bytesWritten ratio per contract out of the coster output. */
-const parseDeployCost = (out: string | null): Record<string, { keys: string; bytesWritten: string; pct: string }> => {
-  const res: Record<string, { keys: string; bytesWritten: string; pct: string }> = {};
-  if (!out) return res;
-  let current = '';
-  for (const line of out.split('\n')) {
-    const h = line.match(/^##\s+(\S+)/);
-    if (h) {
-      current = h[1]!;
-      continue;
-    }
-    const k = line.match(/verifier keys:\s*(\d+),\s*([\d,]+)\s*bytes/);
-    if (k && current) res[current] = { keys: k[1]!, bytesWritten: '', pct: '' };
-    const b = line.match(/\|\s*bytesWritten\s*\|\s*([\d,]+)\s*\|\s*[\d,]+\s*\|\s*([\d.]+)%/);
-    if (b && current && res[current]) {
-      res[current]!.bytesWritten = b[1]!;
-      res[current]!.pct = b[2]!;
-    }
-  }
-  return res;
+const requiredArg = (flag: string): string => {
+  const index = process.argv.indexOf(flag);
+  const value = index >= 0 ? process.argv[index + 1] : undefined;
+  if (!value) throw new Error(`missing required ${flag}`);
+  return value;
 };
 
 const main = () => {
-  const offline = readJson('offline-sweep.json');
-  const liveDoc = readJson('live-matrix.json');
-  const cal = readJson('calibration.json');
-  const cost = parseDeployCost(readText('deploy-cost.out'));
-  const u1 = readJson('u1-probe-v4.json');
-
-  // The winner file's name carries the variant and cell count, so find it rather than guessing.
-  const winnerFile = existsSync(EVID)
-    ? readdirSync(EVID).find((f) => f.startsWith('winner-') && f.endsWith('.json'))
-    : undefined;
-  const winner = winnerFile ? JSON.parse(readFileSync(join(EVID, winnerFile), 'utf-8')) : null;
+  const winnerFile = requiredArg('--winner-evidence');
+  const outFile = requiredArg('--out');
+  const loaded = loadRankingInputs({
+    offline: requiredArg('--offline'),
+    matrix: requiredArg('--matrix'),
+    calibration: requiredArg('--calibration'),
+    u1: requiredArg('--u1'),
+    winner: winnerFile,
+    deployCost: requiredArg('--deploy-cost'),
+    compileFast: requiredArg('--compile-fast'),
+    compileZk: requiredArg('--compile-zk'),
+    runStart: requiredArg('--run-start'),
+    expectedWinner: requiredArg('--expected-winner'),
+    winnerCells: Number(requiredArg('--winner-cells')),
+  });
+  if (!loaded.ok || !loaded.inputs) {
+    console.error('FAILED: ranking inputs are not a complete, current-run GREEN set:');
+    for (const error of loaded.errors) console.error(`  - ${error}`);
+    process.exitCode = 1;
+    return;
+  }
+  const { offline, liveDoc, cal, u1, winner, deployCostText } = loaded.inputs;
+  const cost = parseDeployCost(deployCostText);
 
   const offlineSummary: any[] = offline?.summary ?? [];
   const liveSummary: any[] = liveDoc?.summary ?? [];
@@ -221,9 +209,6 @@ const main = () => {
       md.push('way. Do not quote this section as evidence for or against.');
     }
     md.push('');
-  } else {
-    md.push('### U1 — NOT MEASURED in this run (`u1-probe-v4.json` absent).');
-    md.push('');
   }
 
   if (winner) {
@@ -253,9 +238,6 @@ const main = () => {
       md.push(`**U2 did NOT settle at ${u2.cells} cells.** The boundary is not lifted by this arm at this`);
       md.push('size; see the refusal record. This is a measured arm verdict, not a rig failure.');
     }
-    md.push('');
-  } else {
-    md.push('### The winner end-to-end — NOT RUN in this run (no `winner-*.json`).');
     md.push('');
   }
 
@@ -315,30 +297,28 @@ const main = () => {
     ...table(
       ['claim', 'file', 'present?'],
       [
-        ['offer transcript ops, modelled boundary', '`offline-sweep.json`', offline ? 'yes' : '**NO**'],
-        ['LIVE boundary per fixture', '`live-matrix.json`', liveDoc ? 'yes' : '**NO**'],
-        ['may the model be quoted absolutely?', '`calibration.json`', cal ? 'yes' : '**NO**'],
-        ['deploy cost vs the F-307 ceiling', '`deploy-cost.out`', readText('deploy-cost.out') ? 'yes' : '**NO**'],
-        ['U1 on the shipped v4', '`u1-probe-v4.json`', u1 ? 'yes' : '**NO**'],
-        ['the winner, both use cases, live', winnerFile ? `\`${winnerFile}\`` : '`winner-*.json`', winner ? 'yes' : '**NO**'],
-        ['what compiled, and with how many circuits', '`compile/STATUS-*.tsv`', existsSync(join(EVID, 'compile')) ? 'yes' : '**NO**'],
+        ['offer transcript ops, modelled boundary', '`offline-sweep.json`', 'yes — exact current-run input'],
+        ['LIVE boundary per fixture', '`live-matrix.json`', 'yes — exact current-run input'],
+        ['may the model be quoted absolutely?', '`calibration.json`', 'yes — exact current-run input'],
+        ['deploy cost vs the F-307 ceiling', '`12-deploy-cost.out`', 'yes — exact current-run input'],
+        ['U1 on the shipped v4', '`u1-probe-v4.json`', 'yes — exact current-run input'],
+        ['the winner, both use cases, live', `\`${basename(winnerFile)}\``, 'yes — explicitly selected'],
+        ['what compiled, and with how many circuits', '`compile/STATUS-{skip-zk,zk}.tsv`', 'yes — exact current-run inputs'],
       ],
     ),
   );
   md.push('');
-  md.push('A missing file is reported rather than worked around: a silently absent arm reads as an arm');
-  md.push('nobody proposed, which is the one reporting failure this rig must not commit.');
+  md.push('Every row above was validated before this report was written. A missing, stale, corrupt, or');
+  md.push('contradictory input is a non-zero gate result; no directory scan can select another winner.');
 
-  mkdirSync(EVID, { recursive: true });
-  writeFileSync(join(EVID, 'RANKING.md'), `${md.join('\n')}\n`);
-  console.log(`wrote ${join(EVID, 'RANKING.md')}`);
-
-  // Ranking RENDERS. It fails only if the two files the whole report is built on are missing, which
-  // would mean it is reporting on nothing.
-  if (!offline) {
-    console.error('FAILED: no offline-sweep.json — there is nothing to rank.');
-    process.exitCode = 1;
-  }
+  mkdirSync(dirname(outFile), { recursive: true });
+  writeFileSync(outFile, `${md.join('\n')}\n`);
+  console.log(`wrote ${outFile}`);
 };
 
-main();
+try {
+  main();
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exitCode = 1;
+}

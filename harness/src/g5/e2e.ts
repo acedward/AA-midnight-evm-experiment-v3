@@ -50,6 +50,7 @@ import { buildG5Offer, offerCircuitOf, type G5Offer } from './offer.js';
 import { variantById, type VariantSpec } from './variants.js';
 import { assertMergedBalanced } from '../offer/take.js';
 import { execFileSync } from 'node:child_process';
+import { e2eVerdict, parseRequiredUseCases, printVerdictErrors } from './verdicts.js';
 
 const EVID = join(REPO_ROOT, 'evidence', 'g5-mitigation');
 const OFFERS = join(EVID, 'offers');
@@ -98,6 +99,8 @@ export type CaseResult = {
   txId?: string;
   refusingLayer?: string;
   error?: string;
+  /** A caught runner/build/observe exception, distinct from a measured node or publication refusal. */
+  apparatusError?: string;
   /** Arm (e) only: the self-balanced transactions around the offer. */
   stageTxId?: string;
   consolidateTxId?: string;
@@ -431,7 +434,8 @@ const runCase = async (spec: CaseSpec): Promise<CaseResult> => {
       });
     }
   } catch (e) {
-    res.error = errorChain(e);
+    res.apparatusError = errorChain(e);
+    res.error = res.apparatusError;
     res.refusingLayer = classifyRefusal('settlement', res.error);
     res.checks.push({ name: 'the case ran to completion', ok: false, detail: res.error.slice(0, 300) });
   }
@@ -442,7 +446,7 @@ const runCase = async (spec: CaseSpec): Promise<CaseResult> => {
 const main = async () => {
   const variantId = arg('--variant') ?? 'manager';
   const cells = Number(arg('--cells') ?? '2');
-  const cases = (arg('--cases') ?? 'u1').split(',').map((s) => s.trim().toLowerCase());
+  const cases = parseRequiredUseCases(arg('--cases') ?? 'u1');
   const outName = arg('--out') ?? `e2e-${variantId}-${cells}c`;
   const v = variantById(variantId);
 
@@ -651,11 +655,11 @@ const main = async () => {
   }
 
   mkdirSync(EVID, { recursive: true });
-  writeFileSync(
-    join(EVID, `${outName}.json`),
-    `${JSON.stringify({ label: LANE_STAMP, utc: stamp(), variant: v.id, arm: v.arm, cells, cases, results, fatal: fatal ?? null }, bigints, 2)}\n`,
-  );
-  writeFileSync(join(EVID, `${outName.toUpperCase()}.md`), `${md.join('\n')}\n`);
+  const evidence = { label: LANE_STAMP, utc: stamp(), variant: v.id, arm: v.arm, cells, cases, results, fatal: fatal ?? null };
+  writeFileSync(join(EVID, `${outName}.json`), `${JSON.stringify(evidence, bigints, 2)}\n`);
+  // A single POSIX newline is structured report normalization; verbatim refusal text inside the body
+  // is untouched. This makes the named closeout diff check reproducible without excluding Markdown.
+  writeFileSync(join(EVID, `${outName.toUpperCase()}.md`), `${md.join('\n').replace(/\n+$/u, '')}\n`);
   console.log(`\nwrote ${join(EVID, `${outName}.json`)} and ${outName.toUpperCase()}.md`);
   for (const r of results) {
     const failed = r.checks.filter((c) => !c.ok);
@@ -663,13 +667,11 @@ const main = async () => {
     for (const f of failed) console.log(`   FAILED: ${f.name} — ${f.detail}`);
   }
 
-  // A REFUSAL IS A RESULT. This exits nonzero only when the apparatus failed: a fatal before any case
-  // ran, or a case that SETTLED and then failed its own assertions (which would mean the evidence
-  // contradicts itself).
-  if (fatal && results.length === 0) process.exitCode = 1;
-  for (const r of results) {
-    if (r.settled && r.checks.some((c) => !c.ok)) process.exitCode = 1;
-  }
+  // The CLI names REQUIRED cases. A refusal can still be recorded, but it cannot satisfy this gate:
+  // every named case must exist once, settle, avoid apparatus errors, and pass every check.
+  const verdict = e2eVerdict(evidence, { variant: v.id, cells, requested: cases });
+  printVerdictErrors('end-to-end', verdict);
+  if (!verdict.ok) process.exitCode = 1;
 };
 
 main().then(

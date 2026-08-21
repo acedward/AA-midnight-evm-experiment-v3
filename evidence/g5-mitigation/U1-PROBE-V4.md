@@ -73,4 +73,3 @@ Placement that was bypassed: **FALLIBLE**, fallible segments
 | 7 | the SETTLER swept the 2 G surplus and funded the 3 B deficit | PASS | OwnerA-self G 2 -> 4, B 9 -> 6 |
 | 8 | OP1 and OP2 agree on every cell this case claims (FR-208, two observation points) | PASS | OP1 == OP2 for AA_A/G, AA_A/B |
 | 9 | the MAKER attached no dust action to the SETTLED transaction | PASS | maker intent segment(s) [10743]; settled dust actions {"1":{"spends":1,"registrations":0},"10743":{"spends":0,"registrations":0}} |
-

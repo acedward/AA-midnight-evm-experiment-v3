@@ -1,6 +1,6 @@
 # G5 RANKING — the five F-310 mitigation arms, measured
 
-`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-21T03:41:24.142Z
+`EXPERIMENTAL_LANE / LANE-DEV-1` · recorded 2026-08-21T04:43:00.729Z
 
 Owner direction, 2026-08-20 (verbatim): *"OK lets update the plan to test these
 alternatives."* — with the top goal *"to be able to create valid, unbalanced, zswaps from the
@@ -166,13 +166,13 @@ issue 0004 mitigation 1d in its stronger form: the OFFER circuit reads escrow CE
 
 | claim | file | present? |
 |---|---|---|
-| offer transcript ops, modelled boundary | `offline-sweep.json` | yes |
-| LIVE boundary per fixture | `live-matrix.json` | yes |
-| may the model be quoted absolutely? | `calibration.json` | yes |
-| deploy cost vs the F-307 ceiling | `deploy-cost.out` | yes |
-| U1 on the shipped v4 | `u1-probe-v4.json` | yes |
-| the winner, both use cases, live | `winner-arm-e-escrow-4c.json` | yes |
-| what compiled, and with how many circuits | `compile/STATUS-*.tsv` | yes |
+| offer transcript ops, modelled boundary | `offline-sweep.json` | yes — exact current-run input |
+| LIVE boundary per fixture | `live-matrix.json` | yes — exact current-run input |
+| may the model be quoted absolutely? | `calibration.json` | yes — exact current-run input |
+| deploy cost vs the F-307 ceiling | `12-deploy-cost.out` | yes — exact current-run input |
+| U1 on the shipped v4 | `u1-probe-v4.json` | yes — exact current-run input |
+| the winner, both use cases, live | `winner-arm-e-escrow-4c.json` | yes — explicitly selected |
+| what compiled, and with how many circuits | `compile/STATUS-{skip-zk,zk}.tsv` | yes — exact current-run inputs |
 
-A missing file is reported rather than worked around: a silently absent arm reads as an arm
-nobody proposed, which is the one reporting failure this rig must not commit.
+Every row above was validated before this report was written. A missing, stale, corrupt, or
+contradictory input is a non-zero gate result; no directory scan can select another winner.
