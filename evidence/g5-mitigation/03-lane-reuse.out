@@ -30,9 +30,9 @@ digest ok: node -> sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1
 digest ok: indexer -> sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a
 digest ok: proof-server -> sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f
 -- images compose will run:
+    midnightntwrk/midnight-node@sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e
     midnightntwrk/indexer-standalone@sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a
     midnightntwrk/proof-server@sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f
-    midnightntwrk/midnight-node@sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e
 
 == lane component table (EXPERIMENTAL_LANE / LANE-DEV-1)
     midnight-node            node-2.0.0-rc.4

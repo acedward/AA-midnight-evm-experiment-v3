@@ -1,0 +1,2187 @@
+{
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T21:31:22.788Z",
+  "question": "per contract variant, at what custody size does a real proven offer stop being placed in the GUARANTEED section?",
+  "cells": [
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "buildAndProveOnly": true,
+  "f310Reproduced": true,
+  "summary": [
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "title": "Manager v4 (SHIPPED, unchanged)",
+      "offerCircuit": "openSwapShielded",
+      "contractAddress": "5960d84257f1652ce916887af744442e5941aefe1df456b141c10aec211ebaef",
+      "named": {
+        "lastGuaranteed": 2,
+        "firstFallible": 4,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "surplus": {
+        "lastGuaranteed": 1,
+        "firstFallible": 2,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "relaxations": [],
+      "fatal": null
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "title": "v4-slim — v4 minus the unshielded family",
+      "offerCircuit": "openSwapShielded",
+      "contractAddress": "0c613386df373b8f2b3ebd417add66ff59f130d669f926bc85e9d2123708dff4",
+      "named": {
+        "lastGuaranteed": 2,
+        "firstFallible": 4,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "surplus": {
+        "lastGuaranteed": 1,
+        "firstFallible": 2,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "relaxations": [
+        "R1: the unshielded family is deleted (ledger field `unshieldedBalances`, key domain `unshieldedKey`, circuits `depositUnshielded` / `withdrawUnshielded` / `transferInternalUnshielded` / `unshieldedAccountBalance`). Breaks v3 raw-state layout compatibility and makes FR-203 family separation and the P-COLL probe inapplicable."
+      ],
+      "fatal": null
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "title": "arm (a) dedupe-flat",
+      "offerCircuit": "openSwapShielded",
+      "contractAddress": "1a810ee1f842571c9db3c0346d6f758f2f4dab69af7ab8c0b146fdd382c9ce8d",
+      "named": {
+        "lastGuaranteed": 4,
+        "firstFallible": 8,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "surplus": {
+        "lastGuaranteed": 4,
+        "firstFallible": 8,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "relaxations": [
+        "R1 (inherited from v4-slim). No further relaxation: behaviour-preserving."
+      ],
+      "fatal": null
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "title": "arm (b) nested-balances",
+      "offerCircuit": "openSwapShielded",
+      "contractAddress": "96efc8684b800f77e3ae708b64e8f7ced0a6748bc573ee0d7429a3771ad2a946",
+      "named": {
+        "lastGuaranteed": 1,
+        "firstFallible": 2,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "surplus": {
+        "lastGuaranteed": null,
+        "firstFallible": 1,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "relaxations": [
+        "R1 (inherited).",
+        "R2: the `shieldedBalances` map layout changes. Breaks (i) v3/v4 raw-state decoders, (ii) the `shieldedKey` pure-circuit key-reproduction tooling that makes 00005 \"zero unaccounted keys\" assertion an enumeration of real state, and (iii) the domain-separator half of FR-203 family separation."
+      ],
+      "fatal": null
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "title": "arm (c) nested + deduped",
+      "offerCircuit": "openSwapShielded",
+      "contractAddress": "59ce68bbbddfde1c85db40e74ea930057b1f56e5a37c8d65820f7e0532b4b579",
+      "named": {
+        "lastGuaranteed": 1,
+        "firstFallible": 2,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "surplus": {
+        "lastGuaranteed": 1,
+        "firstFallible": 2,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "relaxations": [
+        "R1 (inherited).",
+        "R2 (from arm b)."
+      ],
+      "fatal": null
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "title": "arm (d) unified per-account coin map",
+      "offerCircuit": "openSwapShielded",
+      "contractAddress": "63c789bd62619afb1cccbb3b9f4a926393bb3e9a368a35e51cbd9e1b94505747",
+      "named": {
+        "lastGuaranteed": 2,
+        "firstFallible": 4,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "surplus": {
+        "lastGuaranteed": 2,
+        "firstFallible": 4,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "relaxations": [
+        "R1 (inherited).",
+        "R2': BOTH custody fields change — `shieldedBalances` deleted, `pools` re-keyed to account -> colour -> coin. Every v3/v4 decoder breaks and FR-205 conservation becomes vacuous as written (the two sides are the same number), so it is restated as credited-minus-debited.",
+        "R3': `poolValue` / `poolHasColour` removed (no per-colour pool exists), replaced by `accountHasColour`. The v3/v4 reader API is not preserved.",
+        "R4': `transferInternalShielded` stops being free — it becomes a real zswap split and merge. Measured as this arm price rather than excluded."
+      ],
+      "fatal": null
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "title": "arm (e) two-phase escrow Cell",
+      "offerCircuit": "openSwap",
+      "contractAddress": "6a9a6af396218dc5323fcf52dd897085b40d232a14279363da190f5e6b7ab95c",
+      "named": {
+        "lastGuaranteed": 16,
+        "firstFallible": null,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "surplus": {
+        "lastGuaranteed": 16,
+        "firstFallible": null,
+        "monotone": true,
+        "allBuilt": true
+      },
+      "relaxations": [
+        "R1 (inherited).",
+        "R3'': the escrow is a SINGLE GLOBAL SLOT — one staged offer per Manager at a time. Keying it by account restores a map traversal, so this measures the BEST CASE and is quoted as an upper bound on what the approach can buy.",
+        "R4'': the give amount is fixed at staging time (`openSwap` gives the whole staged coin).",
+        "R5'': no `cancelStage` circuit — a staged coin can only leave through `openSwap`. A real gap for any product, not a design position.",
+        "R6'': the received colour attribution is DELAYED to `consolidate`, so FR-205 conservation holds only BETWEEN phases and must be restated as `pool + escrowed + received == cells + staged`."
+      ],
+      "fatal": null
+    }
+  ],
+  "runs": [
+    {
+      "variant": "manager",
+      "arm": "baseline",
+      "points": [
+        {
+          "variant": "manager",
+          "arm": "baseline",
+          "shape": "named-taker",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            60962
+          ],
+          "intentSegments": [
+            60962
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 127,
+          "proveMs": 22608,
+          "offerBytes": 26818
+        },
+        {
+          "variant": "manager",
+          "arm": "baseline",
+          "shape": "floating-surplus",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            17348
+          ],
+          "intentSegments": [
+            17348
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1",
+            "shielded:de87877daf0d7bc0f8afdde1c84c7bbdb543510a67e4fccc7901d40eeb538587": "1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 106,
+          "proveMs": 5500,
+          "offerBytes": 21581
+        },
+        {
+          "variant": "manager",
+          "arm": "baseline",
+          "shape": "named-taker",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            36103
+          ],
+          "intentSegments": [
+            36103
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 118,
+          "proveMs": 6284,
+          "offerBytes": 26818
+        },
+        {
+          "variant": "manager",
+          "arm": "baseline",
+          "shape": "floating-surplus",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            39797
+          ],
+          "intentSegments": [
+            39797
+          ],
+          "fallibleOfferSegments": [
+            39797
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "39797": {
+              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1",
+              "shielded:de87877daf0d7bc0f8afdde1c84c7bbdb543510a67e4fccc7901d40eeb538587": "1"
+            }
+          },
+          "buildMs": 117,
+          "proveMs": 5281,
+          "offerBytes": 21630
+        },
+        {
+          "variant": "manager",
+          "arm": "baseline",
+          "shape": "named-taker",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            7981
+          ],
+          "intentSegments": [
+            7981
+          ],
+          "fallibleOfferSegments": [
+            7981
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "7981": {
+              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1"
+            }
+          },
+          "buildMs": 115,
+          "proveMs": 6035,
+          "offerBytes": 26869
+        },
+        {
+          "variant": "manager",
+          "arm": "baseline",
+          "shape": "floating-surplus",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            6784
+          ],
+          "intentSegments": [
+            6784
+          ],
+          "fallibleOfferSegments": [
+            6784
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "6784": {
+              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1",
+              "shielded:de87877daf0d7bc0f8afdde1c84c7bbdb543510a67e4fccc7901d40eeb538587": "1"
+            }
+          },
+          "buildMs": 111,
+          "proveMs": 5292,
+          "offerBytes": 21632
+        },
+        {
+          "variant": "manager",
+          "arm": "baseline",
+          "shape": "named-taker",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            18703
+          ],
+          "intentSegments": [
+            18703
+          ],
+          "fallibleOfferSegments": [
+            18703
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "18703": {
+              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1"
+            }
+          },
+          "buildMs": 120,
+          "proveMs": 6064,
+          "offerBytes": 26871
+        },
+        {
+          "variant": "manager",
+          "arm": "baseline",
+          "shape": "floating-surplus",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            46106
+          ],
+          "intentSegments": [
+            46106
+          ],
+          "fallibleOfferSegments": [
+            46106
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "46106": {
+              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1",
+              "shielded:de87877daf0d7bc0f8afdde1c84c7bbdb543510a67e4fccc7901d40eeb538587": "1"
+            }
+          },
+          "buildMs": 112,
+          "proveMs": 5500,
+          "offerBytes": 21632
+        },
+        {
+          "variant": "manager",
+          "arm": "baseline",
+          "shape": "named-taker",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            10375
+          ],
+          "intentSegments": [
+            10375
+          ],
+          "fallibleOfferSegments": [
+            10375
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "10375": {
+              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1"
+            }
+          },
+          "buildMs": 127,
+          "proveMs": 6091,
+          "offerBytes": 26929
+        },
+        {
+          "variant": "manager",
+          "arm": "baseline",
+          "shape": "floating-surplus",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            30247
+          ],
+          "intentSegments": [
+            30247
+          ],
+          "fallibleOfferSegments": [
+            30247
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "30247": {
+              "shielded:8ccdaf7fa7e40beb7c11aa8877cfd9ea5d536dba84cbd930ce244b8614ba3f08": "-1",
+              "shielded:de87877daf0d7bc0f8afdde1c84c7bbdb543510a67e4fccc7901d40eeb538587": "1"
+            }
+          },
+          "buildMs": 115,
+          "proveMs": 5304,
+          "offerBytes": 21633
+        }
+      ],
+      "contractAddress": "5960d84257f1652ce916887af744442e5941aefe1df456b141c10aec211ebaef"
+    },
+    {
+      "variant": "v4-slim",
+      "arm": "control",
+      "points": [
+        {
+          "variant": "v4-slim",
+          "arm": "control",
+          "shape": "named-taker",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            19976
+          ],
+          "intentSegments": [
+            19976
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 111,
+          "proveMs": 7600,
+          "offerBytes": 26819
+        },
+        {
+          "variant": "v4-slim",
+          "arm": "control",
+          "shape": "floating-surplus",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            2595
+          ],
+          "intentSegments": [
+            2595
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:237b5fb4605cc5d6511b4061fc6f49c23aeef5381a22c75e1236af112a54a00d": "1",
+            "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 104,
+          "proveMs": 5450,
+          "offerBytes": 21591
+        },
+        {
+          "variant": "v4-slim",
+          "arm": "control",
+          "shape": "named-taker",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            6144
+          ],
+          "intentSegments": [
+            6144
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 119,
+          "proveMs": 6960,
+          "offerBytes": 26818
+        },
+        {
+          "variant": "v4-slim",
+          "arm": "control",
+          "shape": "floating-surplus",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            26469
+          ],
+          "intentSegments": [
+            26469
+          ],
+          "fallibleOfferSegments": [
+            26469
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "26469": {
+              "shielded:237b5fb4605cc5d6511b4061fc6f49c23aeef5381a22c75e1236af112a54a00d": "1",
+              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            }
+          },
+          "buildMs": 110,
+          "proveMs": 6494,
+          "offerBytes": 21631
+        },
+        {
+          "variant": "v4-slim",
+          "arm": "control",
+          "shape": "named-taker",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            11122
+          ],
+          "intentSegments": [
+            11122
+          ],
+          "fallibleOfferSegments": [
+            11122
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "11122": {
+              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            }
+          },
+          "buildMs": 127,
+          "proveMs": 6289,
+          "offerBytes": 26870
+        },
+        {
+          "variant": "v4-slim",
+          "arm": "control",
+          "shape": "floating-surplus",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            62654
+          ],
+          "intentSegments": [
+            62654
+          ],
+          "fallibleOfferSegments": [
+            62654
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "62654": {
+              "shielded:237b5fb4605cc5d6511b4061fc6f49c23aeef5381a22c75e1236af112a54a00d": "1",
+              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            }
+          },
+          "buildMs": 116,
+          "proveMs": 5703,
+          "offerBytes": 21632
+        },
+        {
+          "variant": "v4-slim",
+          "arm": "control",
+          "shape": "named-taker",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            11843
+          ],
+          "intentSegments": [
+            11843
+          ],
+          "fallibleOfferSegments": [
+            11843
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "11843": {
+              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            }
+          },
+          "buildMs": 123,
+          "proveMs": 6383,
+          "offerBytes": 26871
+        },
+        {
+          "variant": "v4-slim",
+          "arm": "control",
+          "shape": "floating-surplus",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            33422
+          ],
+          "intentSegments": [
+            33422
+          ],
+          "fallibleOfferSegments": [
+            33422
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "33422": {
+              "shielded:237b5fb4605cc5d6511b4061fc6f49c23aeef5381a22c75e1236af112a54a00d": "1",
+              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            }
+          },
+          "buildMs": 114,
+          "proveMs": 5864,
+          "offerBytes": 21633
+        },
+        {
+          "variant": "v4-slim",
+          "arm": "control",
+          "shape": "named-taker",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            25486
+          ],
+          "intentSegments": [
+            25486
+          ],
+          "fallibleOfferSegments": [
+            25486
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "25486": {
+              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            }
+          },
+          "buildMs": 123,
+          "proveMs": 7221,
+          "offerBytes": 26870
+        },
+        {
+          "variant": "v4-slim",
+          "arm": "control",
+          "shape": "floating-surplus",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            36809
+          ],
+          "intentSegments": [
+            36809
+          ],
+          "fallibleOfferSegments": [
+            36809
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "36809": {
+              "shielded:237b5fb4605cc5d6511b4061fc6f49c23aeef5381a22c75e1236af112a54a00d": "1",
+              "shielded:8d8008650e5ccb31d564d04582ce70b4d463239ffa73f16ceb1f948d44e89a30": "-1"
+            }
+          },
+          "buildMs": 116,
+          "proveMs": 5635,
+          "offerBytes": 21633
+        }
+      ],
+      "contractAddress": "0c613386df373b8f2b3ebd417add66ff59f130d669f926bc85e9d2123708dff4"
+    },
+    {
+      "variant": "arm-a-dedupe",
+      "arm": "a",
+      "points": [
+        {
+          "variant": "arm-a-dedupe",
+          "arm": "a",
+          "shape": "named-taker",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            16788
+          ],
+          "intentSegments": [
+            16788
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 109,
+          "proveMs": 7444,
+          "offerBytes": 26771
+        },
+        {
+          "variant": "arm-a-dedupe",
+          "arm": "a",
+          "shape": "floating-surplus",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            39195
+          ],
+          "intentSegments": [
+            39195
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1",
+            "shielded:a60e586e73358509a59c04fea9cd7fbffddad3e86e960f3b19d028cda54d2002": "1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 97,
+          "proveMs": 5510,
+          "offerBytes": 21565
+        },
+        {
+          "variant": "arm-a-dedupe",
+          "arm": "a",
+          "shape": "named-taker",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            10694
+          ],
+          "intentSegments": [
+            10694
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 116,
+          "proveMs": 6035,
+          "offerBytes": 26769
+        },
+        {
+          "variant": "arm-a-dedupe",
+          "arm": "a",
+          "shape": "floating-surplus",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            10153
+          ],
+          "intentSegments": [
+            10153
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1",
+            "shielded:a60e586e73358509a59c04fea9cd7fbffddad3e86e960f3b19d028cda54d2002": "1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 100,
+          "proveMs": 5240,
+          "offerBytes": 21556
+        },
+        {
+          "variant": "arm-a-dedupe",
+          "arm": "a",
+          "shape": "named-taker",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            44800
+          ],
+          "intentSegments": [
+            44800
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 112,
+          "proveMs": 6014,
+          "offerBytes": 26770
+        },
+        {
+          "variant": "arm-a-dedupe",
+          "arm": "a",
+          "shape": "floating-surplus",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            27440
+          ],
+          "intentSegments": [
+            27440
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1",
+            "shielded:a60e586e73358509a59c04fea9cd7fbffddad3e86e960f3b19d028cda54d2002": "1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 102,
+          "proveMs": 5683,
+          "offerBytes": 21557
+        },
+        {
+          "variant": "arm-a-dedupe",
+          "arm": "a",
+          "shape": "named-taker",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            30241
+          ],
+          "intentSegments": [
+            30241
+          ],
+          "fallibleOfferSegments": [
+            30241
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "30241": {
+              "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1"
+            }
+          },
+          "buildMs": 115,
+          "proveMs": 6130,
+          "offerBytes": 26821
+        },
+        {
+          "variant": "arm-a-dedupe",
+          "arm": "a",
+          "shape": "floating-surplus",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            49892
+          ],
+          "intentSegments": [
+            49892
+          ],
+          "fallibleOfferSegments": [
+            49892
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "49892": {
+              "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1",
+              "shielded:a60e586e73358509a59c04fea9cd7fbffddad3e86e960f3b19d028cda54d2002": "1"
+            }
+          },
+          "buildMs": 108,
+          "proveMs": 5426,
+          "offerBytes": 21608
+        },
+        {
+          "variant": "arm-a-dedupe",
+          "arm": "a",
+          "shape": "named-taker",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            37315
+          ],
+          "intentSegments": [
+            37315
+          ],
+          "fallibleOfferSegments": [
+            37315
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "37315": {
+              "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1"
+            }
+          },
+          "buildMs": 115,
+          "proveMs": 6108,
+          "offerBytes": 26821
+        },
+        {
+          "variant": "arm-a-dedupe",
+          "arm": "a",
+          "shape": "floating-surplus",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            44057
+          ],
+          "intentSegments": [
+            44057
+          ],
+          "fallibleOfferSegments": [
+            44057
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "44057": {
+              "shielded:9a035c6d42e58ec988841d949889a7db10bd7d894e9d2d6cc5e9e4809a0a0539": "-1",
+              "shielded:a60e586e73358509a59c04fea9cd7fbffddad3e86e960f3b19d028cda54d2002": "1"
+            }
+          },
+          "buildMs": 109,
+          "proveMs": 5669,
+          "offerBytes": 21608
+        }
+      ],
+      "contractAddress": "1a810ee1f842571c9db3c0346d6f758f2f4dab69af7ab8c0b146fdd382c9ce8d"
+    },
+    {
+      "variant": "arm-b-nested",
+      "arm": "b",
+      "points": [
+        {
+          "variant": "arm-b-nested",
+          "arm": "b",
+          "shape": "named-taker",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            28226
+          ],
+          "intentSegments": [
+            28226
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 121,
+          "proveMs": 7510,
+          "offerBytes": 26783
+        },
+        {
+          "variant": "arm-b-nested",
+          "arm": "b",
+          "shape": "floating-surplus",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            26484
+          ],
+          "intentSegments": [
+            26484
+          ],
+          "fallibleOfferSegments": [
+            26484
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "26484": {
+              "shielded:166d8c2444ffdb1f74222748602dd31f13ec4950a72b32b97c7ad6bc93b475cc": "1",
+              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            }
+          },
+          "buildMs": 110,
+          "proveMs": 5505,
+          "offerBytes": 21607
+        },
+        {
+          "variant": "arm-b-nested",
+          "arm": "b",
+          "shape": "named-taker",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            45745
+          ],
+          "intentSegments": [
+            45745
+          ],
+          "fallibleOfferSegments": [
+            45745
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "45745": {
+              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            }
+          },
+          "buildMs": 123,
+          "proveMs": 6079,
+          "offerBytes": 26882
+        },
+        {
+          "variant": "arm-b-nested",
+          "arm": "b",
+          "shape": "floating-surplus",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            22501
+          ],
+          "intentSegments": [
+            22501
+          ],
+          "fallibleOfferSegments": [
+            22501
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "22501": {
+              "shielded:166d8c2444ffdb1f74222748602dd31f13ec4950a72b32b97c7ad6bc93b475cc": "1",
+              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            }
+          },
+          "buildMs": 131,
+          "proveMs": 5169,
+          "offerBytes": 21606
+        },
+        {
+          "variant": "arm-b-nested",
+          "arm": "b",
+          "shape": "named-taker",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            44875
+          ],
+          "intentSegments": [
+            44875
+          ],
+          "fallibleOfferSegments": [
+            44875
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "44875": {
+              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            }
+          },
+          "buildMs": 125,
+          "proveMs": 6883,
+          "offerBytes": 26833
+        },
+        {
+          "variant": "arm-b-nested",
+          "arm": "b",
+          "shape": "floating-surplus",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            11594
+          ],
+          "intentSegments": [
+            11594
+          ],
+          "fallibleOfferSegments": [
+            11594
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "11594": {
+              "shielded:166d8c2444ffdb1f74222748602dd31f13ec4950a72b32b97c7ad6bc93b475cc": "1",
+              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            }
+          },
+          "buildMs": 113,
+          "proveMs": 5662,
+          "offerBytes": 21607
+        },
+        {
+          "variant": "arm-b-nested",
+          "arm": "b",
+          "shape": "named-taker",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            7648
+          ],
+          "intentSegments": [
+            7648
+          ],
+          "fallibleOfferSegments": [
+            7648
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "7648": {
+              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            }
+          },
+          "buildMs": 127,
+          "proveMs": 6507,
+          "offerBytes": 26834
+        },
+        {
+          "variant": "arm-b-nested",
+          "arm": "b",
+          "shape": "floating-surplus",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            15053
+          ],
+          "intentSegments": [
+            15053
+          ],
+          "fallibleOfferSegments": [
+            15053
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "15053": {
+              "shielded:166d8c2444ffdb1f74222748602dd31f13ec4950a72b32b97c7ad6bc93b475cc": "1",
+              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            }
+          },
+          "buildMs": 120,
+          "proveMs": 5620,
+          "offerBytes": 21608
+        },
+        {
+          "variant": "arm-b-nested",
+          "arm": "b",
+          "shape": "named-taker",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            48379
+          ],
+          "intentSegments": [
+            48379
+          ],
+          "fallibleOfferSegments": [
+            48379
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "48379": {
+              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            }
+          },
+          "buildMs": 130,
+          "proveMs": 5972,
+          "offerBytes": 26834
+        },
+        {
+          "variant": "arm-b-nested",
+          "arm": "b",
+          "shape": "floating-surplus",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            42494
+          ],
+          "intentSegments": [
+            42494
+          ],
+          "fallibleOfferSegments": [
+            42494
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "42494": {
+              "shielded:166d8c2444ffdb1f74222748602dd31f13ec4950a72b32b97c7ad6bc93b475cc": "1",
+              "shielded:728fac92256710daf406250c52343e0ddc8aaa8388b7b7239cc687b077eacc63": "-1"
+            }
+          },
+          "buildMs": 121,
+          "proveMs": 5629,
+          "offerBytes": 21608
+        }
+      ],
+      "contractAddress": "96efc8684b800f77e3ae708b64e8f7ced0a6748bc573ee0d7429a3771ad2a946"
+    },
+    {
+      "variant": "arm-c-both",
+      "arm": "c",
+      "points": [
+        {
+          "variant": "arm-c-both",
+          "arm": "c",
+          "shape": "named-taker",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            35915
+          ],
+          "intentSegments": [
+            35915
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 112,
+          "proveMs": 7614,
+          "offerBytes": 26723
+        },
+        {
+          "variant": "arm-c-both",
+          "arm": "c",
+          "shape": "floating-surplus",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            26675
+          ],
+          "intentSegments": [
+            26675
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:5eae3960c292e3242bf496b7c49f985a077a6a10cc6a2ae0812504b699ad50dc": "1",
+            "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 102,
+          "proveMs": 5729,
+          "offerBytes": 21497
+        },
+        {
+          "variant": "arm-c-both",
+          "arm": "c",
+          "shape": "named-taker",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            35228
+          ],
+          "intentSegments": [
+            35228
+          ],
+          "fallibleOfferSegments": [
+            35228
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "35228": {
+              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            }
+          },
+          "buildMs": 121,
+          "proveMs": 6157,
+          "offerBytes": 26821
+        },
+        {
+          "variant": "arm-c-both",
+          "arm": "c",
+          "shape": "floating-surplus",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            38311
+          ],
+          "intentSegments": [
+            38311
+          ],
+          "fallibleOfferSegments": [
+            38311
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "38311": {
+              "shielded:5eae3960c292e3242bf496b7c49f985a077a6a10cc6a2ae0812504b699ad50dc": "1",
+              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            }
+          },
+          "buildMs": 113,
+          "proveMs": 5473,
+          "offerBytes": 21546
+        },
+        {
+          "variant": "arm-c-both",
+          "arm": "c",
+          "shape": "named-taker",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            57250
+          ],
+          "intentSegments": [
+            57250
+          ],
+          "fallibleOfferSegments": [
+            57250
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "57250": {
+              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            }
+          },
+          "buildMs": 122,
+          "proveMs": 6137,
+          "offerBytes": 26773
+        },
+        {
+          "variant": "arm-c-both",
+          "arm": "c",
+          "shape": "floating-surplus",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            11147
+          ],
+          "intentSegments": [
+            11147
+          ],
+          "fallibleOfferSegments": [
+            11147
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "11147": {
+              "shielded:5eae3960c292e3242bf496b7c49f985a077a6a10cc6a2ae0812504b699ad50dc": "1",
+              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            }
+          },
+          "buildMs": 107,
+          "proveMs": 5484,
+          "offerBytes": 21546
+        },
+        {
+          "variant": "arm-c-both",
+          "arm": "c",
+          "shape": "named-taker",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            20474
+          ],
+          "intentSegments": [
+            20474
+          ],
+          "fallibleOfferSegments": [
+            20474
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "20474": {
+              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            }
+          },
+          "buildMs": 121,
+          "proveMs": 6007,
+          "offerBytes": 26774
+        },
+        {
+          "variant": "arm-c-both",
+          "arm": "c",
+          "shape": "floating-surplus",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            56838
+          ],
+          "intentSegments": [
+            56838
+          ],
+          "fallibleOfferSegments": [
+            56838
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "56838": {
+              "shielded:5eae3960c292e3242bf496b7c49f985a077a6a10cc6a2ae0812504b699ad50dc": "1",
+              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            }
+          },
+          "buildMs": 108,
+          "proveMs": 5460,
+          "offerBytes": 21547
+        },
+        {
+          "variant": "arm-c-both",
+          "arm": "c",
+          "shape": "named-taker",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            15210
+          ],
+          "intentSegments": [
+            15210
+          ],
+          "fallibleOfferSegments": [
+            15210
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "15210": {
+              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            }
+          },
+          "buildMs": 127,
+          "proveMs": 6072,
+          "offerBytes": 26775
+        },
+        {
+          "variant": "arm-c-both",
+          "arm": "c",
+          "shape": "floating-surplus",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            5928
+          ],
+          "intentSegments": [
+            5928
+          ],
+          "fallibleOfferSegments": [
+            5928
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "5928": {
+              "shielded:5eae3960c292e3242bf496b7c49f985a077a6a10cc6a2ae0812504b699ad50dc": "1",
+              "shielded:aa5fbe5ec22a779f2ea0725ba4ceb973fa7e741551819f5e71838075a096485a": "-1"
+            }
+          },
+          "buildMs": 114,
+          "proveMs": 5213,
+          "offerBytes": 21549
+        }
+      ],
+      "contractAddress": "59ce68bbbddfde1c85db40e74ea930057b1f56e5a37c8d65820f7e0532b4b579"
+    },
+    {
+      "variant": "arm-d-unified",
+      "arm": "d",
+      "points": [
+        {
+          "variant": "arm-d-unified",
+          "arm": "d",
+          "shape": "named-taker",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            41256
+          ],
+          "intentSegments": [
+            41256
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 108,
+          "proveMs": 8144,
+          "offerBytes": 26579
+        },
+        {
+          "variant": "arm-d-unified",
+          "arm": "d",
+          "shape": "floating-surplus",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            17313
+          ],
+          "intentSegments": [
+            17313
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1",
+            "shielded:b382cb127efca39cf5a461cd2f974169272c09eff85ecce806f9a993947466a2": "1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 99,
+          "proveMs": 5747,
+          "offerBytes": 21345
+        },
+        {
+          "variant": "arm-d-unified",
+          "arm": "d",
+          "shape": "named-taker",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            43639
+          ],
+          "intentSegments": [
+            43639
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 116,
+          "proveMs": 7208,
+          "offerBytes": 26581
+        },
+        {
+          "variant": "arm-d-unified",
+          "arm": "d",
+          "shape": "floating-surplus",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            56514
+          ],
+          "intentSegments": [
+            56514
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1",
+            "shielded:b382cb127efca39cf5a461cd2f974169272c09eff85ecce806f9a993947466a2": "1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 98,
+          "proveMs": 5594,
+          "offerBytes": 21338
+        },
+        {
+          "variant": "arm-d-unified",
+          "arm": "d",
+          "shape": "named-taker",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            51365
+          ],
+          "intentSegments": [
+            51365
+          ],
+          "fallibleOfferSegments": [
+            51365
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "51365": {
+              "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1"
+            }
+          },
+          "buildMs": 120,
+          "proveMs": 6097,
+          "offerBytes": 26631
+        },
+        {
+          "variant": "arm-d-unified",
+          "arm": "d",
+          "shape": "floating-surplus",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            39145
+          ],
+          "intentSegments": [
+            39145
+          ],
+          "fallibleOfferSegments": [
+            39145
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "39145": {
+              "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1",
+              "shielded:b382cb127efca39cf5a461cd2f974169272c09eff85ecce806f9a993947466a2": "1"
+            }
+          },
+          "buildMs": 103,
+          "proveMs": 5546,
+          "offerBytes": 21388
+        },
+        {
+          "variant": "arm-d-unified",
+          "arm": "d",
+          "shape": "named-taker",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            20704
+          ],
+          "intentSegments": [
+            20704
+          ],
+          "fallibleOfferSegments": [
+            20704
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "20704": {
+              "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1"
+            }
+          },
+          "buildMs": 115,
+          "proveMs": 6039,
+          "offerBytes": 26631
+        },
+        {
+          "variant": "arm-d-unified",
+          "arm": "d",
+          "shape": "floating-surplus",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            57775
+          ],
+          "intentSegments": [
+            57775
+          ],
+          "fallibleOfferSegments": [
+            57775
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "57775": {
+              "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1",
+              "shielded:b382cb127efca39cf5a461cd2f974169272c09eff85ecce806f9a993947466a2": "1"
+            }
+          },
+          "buildMs": 102,
+          "proveMs": 5131,
+          "offerBytes": 21388
+        },
+        {
+          "variant": "arm-d-unified",
+          "arm": "d",
+          "shape": "named-taker",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            59005
+          ],
+          "intentSegments": [
+            59005
+          ],
+          "fallibleOfferSegments": [
+            59005
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "59005": {
+              "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1"
+            }
+          },
+          "buildMs": 139,
+          "proveMs": 13193,
+          "offerBytes": 26630
+        },
+        {
+          "variant": "arm-d-unified",
+          "arm": "d",
+          "shape": "floating-surplus",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": false,
+          "built": true,
+          "placement": "FALLIBLE",
+          "segments": [
+            0,
+            37964
+          ],
+          "intentSegments": [
+            37964
+          ],
+          "fallibleOfferSegments": [
+            37964
+          ],
+          "imbalancesAtSegment0": {},
+          "imbalancesElsewhere": {
+            "37964": {
+              "shielded:2a43d2dd46339a238c3cc07335c17c6a8bd4a0b658b1cb914fbfa0e5b82b7b29": "-1",
+              "shielded:b382cb127efca39cf5a461cd2f974169272c09eff85ecce806f9a993947466a2": "1"
+            }
+          },
+          "buildMs": 152,
+          "proveMs": 8095,
+          "offerBytes": 21388
+        }
+      ],
+      "contractAddress": "63c789bd62619afb1cccbb3b9f4a926393bb3e9a368a35e51cbd9e1b94505747"
+    },
+    {
+      "variant": "arm-e-escrow",
+      "arm": "e",
+      "points": [
+        {
+          "variant": "arm-e-escrow",
+          "arm": "e",
+          "shape": "named-taker",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            1494
+          ],
+          "intentSegments": [
+            1494
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 104,
+          "proveMs": 3946,
+          "offerBytes": 21302
+        },
+        {
+          "variant": "arm-e-escrow",
+          "arm": "e",
+          "shape": "floating-surplus",
+          "cells": 1,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            49856
+          ],
+          "intentSegments": [
+            49856
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:b24a242b40ab67afe33032117c0e112bc8b0509c75b7c797a982869a94be36e5": "1",
+            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 86,
+          "proveMs": 2984,
+          "offerBytes": 16056
+        },
+        {
+          "variant": "arm-e-escrow",
+          "arm": "e",
+          "shape": "named-taker",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            50774
+          ],
+          "intentSegments": [
+            50774
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 103,
+          "proveMs": 3434,
+          "offerBytes": 21302
+        },
+        {
+          "variant": "arm-e-escrow",
+          "arm": "e",
+          "shape": "floating-surplus",
+          "cells": 2,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            53509
+          ],
+          "intentSegments": [
+            53509
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:b24a242b40ab67afe33032117c0e112bc8b0509c75b7c797a982869a94be36e5": "1",
+            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 91,
+          "proveMs": 3124,
+          "offerBytes": 16055
+        },
+        {
+          "variant": "arm-e-escrow",
+          "arm": "e",
+          "shape": "named-taker",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            62202
+          ],
+          "intentSegments": [
+            62202
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 105,
+          "proveMs": 3457,
+          "offerBytes": 21302
+        },
+        {
+          "variant": "arm-e-escrow",
+          "arm": "e",
+          "shape": "floating-surplus",
+          "cells": 4,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            49362
+          ],
+          "intentSegments": [
+            49362
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:b24a242b40ab67afe33032117c0e112bc8b0509c75b7c797a982869a94be36e5": "1",
+            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 91,
+          "proveMs": 3000,
+          "offerBytes": 16056
+        },
+        {
+          "variant": "arm-e-escrow",
+          "arm": "e",
+          "shape": "named-taker",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            36559
+          ],
+          "intentSegments": [
+            36559
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 112,
+          "proveMs": 4828,
+          "offerBytes": 21303
+        },
+        {
+          "variant": "arm-e-escrow",
+          "arm": "e",
+          "shape": "floating-surplus",
+          "cells": 8,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            17146
+          ],
+          "intentSegments": [
+            17146
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:b24a242b40ab67afe33032117c0e112bc8b0509c75b7c797a982869a94be36e5": "1",
+            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 90,
+          "proveMs": 3342,
+          "offerBytes": 16057
+        },
+        {
+          "variant": "arm-e-escrow",
+          "arm": "e",
+          "shape": "named-taker",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            60770
+          ],
+          "intentSegments": [
+            60770
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 105,
+          "proveMs": 3535,
+          "offerBytes": 21302
+        },
+        {
+          "variant": "arm-e-escrow",
+          "arm": "e",
+          "shape": "floating-surplus",
+          "cells": 16,
+          "pools": 1,
+          "cellsExact": true,
+          "built": true,
+          "placement": "GUARANTEED",
+          "segments": [
+            0,
+            18918
+          ],
+          "intentSegments": [
+            18918
+          ],
+          "fallibleOfferSegments": [],
+          "imbalancesAtSegment0": {
+            "shielded:b24a242b40ab67afe33032117c0e112bc8b0509c75b7c797a982869a94be36e5": "1",
+            "shielded:e89656877e3f588ade7c9d11ab32b22f7c0da29983c4cf719a26d9851fc0b5ff": "-1"
+          },
+          "imbalancesElsewhere": {},
+          "buildMs": 94,
+          "proveMs": 3153,
+          "offerBytes": 16056
+        }
+      ],
+      "contractAddress": "6a9a6af396218dc5323fcf52dd897085b40d232a14279363da190f5e6b7ab95c",
+      "stagingTxIds": [
+        "00640bfd3df1e5472dd3498ce0b2875358180d49859483b57c72e2a3da6034258d"
+      ]
+    }
+  ]
+}

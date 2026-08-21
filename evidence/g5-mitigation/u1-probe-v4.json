@@ -1,0 +1,266 @@
+{
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T21:39:23.806Z",
+  "variant": "manager",
+  "arm": "baseline",
+  "cells": 2,
+  "cases": [
+    "u1"
+  ],
+  "results": [
+    {
+      "useCase": "U1",
+      "label": "u1-control-1cell",
+      "variant": "manager",
+      "cells": 1,
+      "pools": 1,
+      "placement": "GUARANTEED",
+      "settled": true,
+      "before": {
+        "size": {
+          "pools": 1,
+          "cells": 1,
+          "cellsExact": true
+        },
+        "cells": {
+          "AA_A/G": "8",
+          "AA_A/B": "absent-or-zero",
+          "AA_1/G": "absent-or-zero",
+          "AA_1/B": "absent-or-zero"
+        },
+        "held": {
+          "G": "8",
+          "B": "0"
+        }
+      },
+      "settlerBefore": {
+        "G": "0",
+        "B": "12"
+      },
+      "checks": [
+        {
+          "name": "the offer was BUILT and PROVEN",
+          "ok": true,
+          "detail": "21583 B in 6875 ms"
+        },
+        {
+          "name": "FR-301: the maker attached no DUST to its own artifact",
+          "ok": true,
+          "detail": "makerAttachedDust=false"
+        },
+        {
+          "name": "the settlement landed under ONE transaction id",
+          "ok": true,
+          "detail": "0092342af5b84b7ab0cf10000e48865eacda8f561ac83b715fadf4c9071649ca9e"
+        },
+        {
+          "name": "custody gave 2 of G",
+          "ok": true,
+          "detail": "held(G) 8 -> 6 (expected 6)"
+        },
+        {
+          "name": "custody gained 3 of B",
+          "ok": true,
+          "detail": "held(B) 0 -> 3 (expected 3)"
+        },
+        {
+          "name": "the maker's own cell was debited G and credited B",
+          "ok": true,
+          "detail": "AA_A/G 8 -> 6; AA_A/B absent-or-zero -> 3 (expected +3 B, -2 G)"
+        },
+        {
+          "name": "the SETTLER swept the 2 G surplus and funded the 3 B deficit",
+          "ok": true,
+          "detail": "OwnerA-self G 0 -> 2, B 12 -> 9"
+        },
+        {
+          "name": "OP1 and OP2 agree on every cell this case claims (FR-208, two observation points)",
+          "ok": true,
+          "detail": "OP1 == OP2 for AA_A/G, AA_A/B"
+        },
+        {
+          "name": "the MAKER attached no dust action to the SETTLED transaction",
+          "ok": true,
+          "detail": "maker intent segment(s) [14090]; settled dust actions {\"1\":{\"spends\":1,\"registrations\":0},\"14090\":{\"spends\":0,\"registrations\":0}}"
+        }
+      ],
+      "offer": {
+        "circuitId": "openSwapShielded",
+        "shape": "floating-surplus",
+        "bytes": 21583,
+        "contentAddress": "3b235defc44f14743004478dcbbba961e5baab6e4ab1465ed007de34b8b64c54",
+        "imbalancesAtSegment0": {
+          "shielded:1a4e7f7934912b7f75d168505ef7c40d7b11b4b1cc4b4c0240637295c33fdf9b": "2",
+          "shielded:d75feb7d4fece756b7b3e079ac2d11db3b211f665f22513aca5b10e5793a97ba": "-3"
+        },
+        "fallibleOfferSegments": [],
+        "proveMs": 6875,
+        "makerAttachedDust": false
+      },
+      "fr302GateBypassed": true,
+      "txId": "0092342af5b84b7ab0cf10000e48865eacda8f561ac83b715fadf4c9071649ca9e",
+      "makerDustActions": {
+        "1": {
+          "spends": 1,
+          "registrations": 0
+        },
+        "14090": {
+          "spends": 0,
+          "registrations": 0
+        }
+      },
+      "after": {
+        "size": {
+          "pools": 2,
+          "cells": 2,
+          "cellsExact": true
+        },
+        "cells": {
+          "AA_A/G": "6",
+          "AA_A/B": "3",
+          "AA_1/G": "absent-or-zero",
+          "AA_1/B": "absent-or-zero"
+        },
+        "held": {
+          "G": "6",
+          "B": "3"
+        }
+      },
+      "onChainCells": {
+        "AA_A/G": "6",
+        "AA_A/B": "3"
+      },
+      "settlerAfter": {
+        "G": "2",
+        "B": "9"
+      }
+    },
+    {
+      "useCase": "U1",
+      "label": "u1-2cell",
+      "variant": "manager",
+      "cells": 2,
+      "pools": 2,
+      "placement": "FALLIBLE",
+      "settled": true,
+      "before": {
+        "size": {
+          "pools": 2,
+          "cells": 2,
+          "cellsExact": true
+        },
+        "cells": {
+          "AA_A/G": "6",
+          "AA_A/B": "3",
+          "AA_1/G": "absent-or-zero",
+          "AA_1/B": "absent-or-zero"
+        },
+        "held": {
+          "G": "6",
+          "B": "3"
+        }
+      },
+      "settlerBefore": {
+        "G": "2",
+        "B": "9"
+      },
+      "checks": [
+        {
+          "name": "the offer was BUILT and PROVEN",
+          "ok": true,
+          "detail": "37103 B in 7580 ms"
+        },
+        {
+          "name": "FR-301: the maker attached no DUST to its own artifact",
+          "ok": true,
+          "detail": "makerAttachedDust=false"
+        },
+        {
+          "name": "the settlement landed under ONE transaction id",
+          "ok": true,
+          "detail": "00904e54833c0a609016c54f62dec4fa5e3b319ac5e6e867efa4050d26cb1786bd"
+        },
+        {
+          "name": "custody gave 2 of G",
+          "ok": true,
+          "detail": "held(G) 6 -> 4 (expected 4)"
+        },
+        {
+          "name": "custody gained 3 of B",
+          "ok": true,
+          "detail": "held(B) 3 -> 6 (expected 6)"
+        },
+        {
+          "name": "the maker's own cell was debited G and credited B",
+          "ok": true,
+          "detail": "AA_A/G 6 -> 4; AA_A/B 3 -> 6 (expected +3 B, -2 G)"
+        },
+        {
+          "name": "the SETTLER swept the 2 G surplus and funded the 3 B deficit",
+          "ok": true,
+          "detail": "OwnerA-self G 2 -> 4, B 9 -> 6"
+        },
+        {
+          "name": "OP1 and OP2 agree on every cell this case claims (FR-208, two observation points)",
+          "ok": true,
+          "detail": "OP1 == OP2 for AA_A/G, AA_A/B"
+        },
+        {
+          "name": "the MAKER attached no dust action to the SETTLED transaction",
+          "ok": true,
+          "detail": "maker intent segment(s) [52261]; settled dust actions {\"1\":{\"spends\":1,\"registrations\":0},\"52261\":{\"spends\":0,\"registrations\":0}}"
+        }
+      ],
+      "offer": {
+        "circuitId": "openSwapShielded",
+        "shape": "floating-surplus",
+        "bytes": 37103,
+        "contentAddress": "f27102821a3103c19fbc3c61122da5253a12bd9093ec943b1ae25ddc0fc4012f",
+        "imbalancesAtSegment0": {},
+        "fallibleOfferSegments": [
+          52261
+        ],
+        "proveMs": 7580,
+        "makerAttachedDust": false
+      },
+      "fr302GateBypassed": true,
+      "txId": "00904e54833c0a609016c54f62dec4fa5e3b319ac5e6e867efa4050d26cb1786bd",
+      "makerDustActions": {
+        "1": {
+          "spends": 1,
+          "registrations": 0
+        },
+        "52261": {
+          "spends": 0,
+          "registrations": 0
+        }
+      },
+      "after": {
+        "size": {
+          "pools": 2,
+          "cells": 2,
+          "cellsExact": true
+        },
+        "cells": {
+          "AA_A/G": "4",
+          "AA_A/B": "6",
+          "AA_1/G": "absent-or-zero",
+          "AA_1/B": "absent-or-zero"
+        },
+        "held": {
+          "G": "4",
+          "B": "6"
+        }
+      },
+      "onChainCells": {
+        "AA_A/G": "4",
+        "AA_A/B": "6"
+      },
+      "settlerAfter": {
+        "G": "4",
+        "B": "6"
+      }
+    }
+  ],
+  "fatal": null
+}

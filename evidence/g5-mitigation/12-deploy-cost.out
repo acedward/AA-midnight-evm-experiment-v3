@@ -5,17 +5,17 @@
 
 ## manager
    verifier keys: 13, 24,475 bytes total
-   unproven deploy transaction: 25,673 bytes
+   unproven deploy transaction: 25,675 bytes
    | dimension | cost | block limit | ratio | verdict |
    |---|---|---|---|---|
    | readTime | 1,785,000,000 | 1,000,000,000,000 | 0.2% | ok |
    | computeTime | 1,975,817,471 | 1,000,000,000,000 | 0.2% | ok |
-   | blockUsage | 25,601 | 200,000 | 12.8% | ok |
+   | blockUsage | 25,602 | 200,000 | 12.8% | ok |
    | bytesWritten | 29,846 | 50,000 | 59.7% | ok |
    | bytesChurned | 6,144 | 1,000,000 | 0.6% | ok |
    normalizeFullness: OK
    => within every block limit.
-   fees: 7310690000000001 SPECKs
+   fees: 7310740000000001 SPECKs
    per-circuit verifier keys:
        2119  depositShielded
        2119  depositUnshielded

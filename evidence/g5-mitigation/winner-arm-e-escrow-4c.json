@@ -1,0 +1,514 @@
+{
+  "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+  "utc": "2026-08-20T21:55:36.046Z",
+  "variant": "arm-e-escrow",
+  "arm": "e",
+  "cells": 4,
+  "cases": [
+    "u1",
+    "u2"
+  ],
+  "results": [
+    {
+      "useCase": "U1",
+      "label": "u1-control-1cell",
+      "variant": "arm-e-escrow",
+      "cells": 1,
+      "pools": 1,
+      "placement": "GUARANTEED",
+      "settled": true,
+      "before": {
+        "size": {
+          "pools": 1,
+          "cells": 1,
+          "cellsExact": true
+        },
+        "cells": {
+          "AA_A/G": "8",
+          "AA_A/B": "absent-or-zero",
+          "AA_1/G": "absent-or-zero",
+          "AA_1/B": "absent-or-zero",
+          "AA_2/G": "absent-or-zero",
+          "AA_2/B": "absent-or-zero",
+          "AA_3/G": "absent-or-zero",
+          "AA_3/B": "absent-or-zero"
+        },
+        "held": {
+          "G": "8",
+          "B": "0"
+        },
+        "escrow": {
+          "active": "false",
+          "coinValue": "0",
+          "coinColour": "0000000000000000000000000000000000000000000000000000000000000000",
+          "owner": "0000000000000000000000000000000000000000000000000000000000000000",
+          "receivedActive": "false",
+          "receivedValue": "0",
+          "receivedColour": "0000000000000000000000000000000000000000000000000000000000000000",
+          "receivedOwner": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      },
+      "settlerBefore": {
+        "G": "0",
+        "B": "12"
+      },
+      "checks": [
+        {
+          "name": "the offer was BUILT and PROVEN",
+          "ok": true,
+          "detail": "16056 B in 3772 ms"
+        },
+        {
+          "name": "FR-301: the maker attached no DUST to its own artifact",
+          "ok": true,
+          "detail": "makerAttachedDust=false"
+        },
+        {
+          "name": "the settlement landed under ONE transaction id",
+          "ok": true,
+          "detail": "007f3a38c2947c815c855fd40aaaba5e5da28e305b17c36db2e6e8ce257136edec"
+        },
+        {
+          "name": "custody gave 2 of G",
+          "ok": true,
+          "detail": "held(G) 8 -> 6 (expected 6)"
+        },
+        {
+          "name": "custody gained 3 of B",
+          "ok": true,
+          "detail": "held(B) 0 -> 3 (expected 3)"
+        },
+        {
+          "name": "the maker's own cell was debited G and credited B",
+          "ok": true,
+          "detail": "AA_A/G 8 -> 6; AA_A/B absent-or-zero -> 3 (expected +3 B, -2 G)"
+        },
+        {
+          "name": "the SETTLER swept the 2 G surplus and funded the 3 B deficit",
+          "ok": true,
+          "detail": "OwnerA-self G 0 -> 2, B 12 -> 9"
+        },
+        {
+          "name": "OP1 and OP2 agree on every cell this case claims (FR-208, two observation points)",
+          "ok": true,
+          "detail": "OP1 == OP2 for AA_A/G, AA_A/B"
+        },
+        {
+          "name": "the MAKER attached no dust action to the SETTLED transaction",
+          "ok": true,
+          "detail": "maker intent segment(s) [19692]; settled dust actions {\"1\":{\"spends\":1,\"registrations\":0},\"19692\":{\"spends\":0,\"registrations\":0}}"
+        },
+        {
+          "name": "arm (e): the SELF-BALANCED phases landed on their own (F-310 does not constrain them)",
+          "ok": true,
+          "detail": "stage 00983e74e750c7c7b380cabd29db5a3ed4d5fc35de63f5988706ff73e824831141 / consolidate 00805a7ba0f7d1b3eef0e6e174ad854e21dec9b674a3d3a020bfb446986ebb3fb5"
+        }
+      ],
+      "stageTxId": "00983e74e750c7c7b380cabd29db5a3ed4d5fc35de63f5988706ff73e824831141",
+      "offer": {
+        "circuitId": "openSwap",
+        "shape": "floating-surplus",
+        "bytes": 16056,
+        "contentAddress": "68ebea479ff7b2487fef3c05a66d2953d93f3fa5fb8cd2281067f65e405bc0b4",
+        "imbalancesAtSegment0": {
+          "shielded:2e23e4da8b0839459368b08cf93d1fd1d8624995b9b0888f660a930c77e60766": "2",
+          "shielded:529552f56067bbf1decf6e004ce429f2d478bb4bc42b57be4941d5b231d7b9eb": "-3"
+        },
+        "fallibleOfferSegments": [],
+        "proveMs": 3772,
+        "makerAttachedDust": false
+      },
+      "fr302GateBypassed": true,
+      "txId": "007f3a38c2947c815c855fd40aaaba5e5da28e305b17c36db2e6e8ce257136edec",
+      "makerDustActions": {
+        "1": {
+          "spends": 1,
+          "registrations": 0
+        },
+        "19692": {
+          "spends": 0,
+          "registrations": 0
+        }
+      },
+      "consolidateTxId": "00805a7ba0f7d1b3eef0e6e174ad854e21dec9b674a3d3a020bfb446986ebb3fb5",
+      "after": {
+        "size": {
+          "pools": 2,
+          "cells": 2,
+          "cellsExact": true
+        },
+        "cells": {
+          "AA_A/G": "6",
+          "AA_A/B": "3",
+          "AA_1/G": "absent-or-zero",
+          "AA_1/B": "absent-or-zero",
+          "AA_2/G": "absent-or-zero",
+          "AA_2/B": "absent-or-zero",
+          "AA_3/G": "absent-or-zero",
+          "AA_3/B": "absent-or-zero"
+        },
+        "held": {
+          "G": "6",
+          "B": "3"
+        },
+        "escrow": {
+          "active": "false",
+          "coinValue": "0",
+          "coinColour": "0000000000000000000000000000000000000000000000000000000000000000",
+          "owner": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+          "receivedActive": "false",
+          "receivedValue": "0",
+          "receivedColour": "0000000000000000000000000000000000000000000000000000000000000000",
+          "receivedOwner": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b"
+        }
+      },
+      "onChainCells": {
+        "AA_A/G": "6",
+        "AA_A/B": "3"
+      },
+      "settlerAfter": {
+        "G": "2",
+        "B": "9"
+      }
+    },
+    {
+      "useCase": "U1",
+      "label": "u1-4cell",
+      "variant": "arm-e-escrow",
+      "cells": 4,
+      "pools": 2,
+      "placement": "GUARANTEED",
+      "settled": true,
+      "before": {
+        "size": {
+          "pools": 2,
+          "cells": 4,
+          "cellsExact": true
+        },
+        "cells": {
+          "AA_A/G": "14",
+          "AA_A/B": "3",
+          "AA_1/G": "8",
+          "AA_1/B": "absent-or-zero",
+          "AA_2/G": "8",
+          "AA_2/B": "absent-or-zero",
+          "AA_3/G": "absent-or-zero",
+          "AA_3/B": "absent-or-zero"
+        },
+        "held": {
+          "G": "30",
+          "B": "3"
+        },
+        "escrow": {
+          "active": "false",
+          "coinValue": "0",
+          "coinColour": "0000000000000000000000000000000000000000000000000000000000000000",
+          "owner": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+          "receivedActive": "false",
+          "receivedValue": "0",
+          "receivedColour": "0000000000000000000000000000000000000000000000000000000000000000",
+          "receivedOwner": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b"
+        }
+      },
+      "settlerBefore": {
+        "G": "2",
+        "B": "9"
+      },
+      "checks": [
+        {
+          "name": "the case ran to completion",
+          "ok": false,
+          "detail": "timed out after 180000ms waiting for custody to reach G=28 B=6; last {\"size\":{\"pools\":2,\"cells\":5,\"cellsExact\":true},\"cells\":{\"AA_A/G\":\"12\",\"AA_A/B\":\"6\",\"AA_1/G\":\"8\",\"AA_1/B\":\"absent-or-zero\",\"AA_2/G\":\"8\",\"AA_2/B\":\"absent-or-zero\",\"AA_3/G\":\"8\",\"AA_3/B\":\"absent-or-zero\"},\"held\":{\"G\":\"36\",\"B\":\"6\"},\"es"
+        }
+      ],
+      "stageTxId": "0024a70a2e339642ac68dd1d008b43d6f0d194363a900a328e87a4a37ff1e18197",
+      "offer": {
+        "circuitId": "openSwap",
+        "shape": "floating-surplus",
+        "bytes": 16056,
+        "contentAddress": "8f0fa5f6564a422a5a9ac2e047a064a4fa2fc6aba7c1759d32ea6011f5b6698a",
+        "imbalancesAtSegment0": {
+          "shielded:2e23e4da8b0839459368b08cf93d1fd1d8624995b9b0888f660a930c77e60766": "2",
+          "shielded:529552f56067bbf1decf6e004ce429f2d478bb4bc42b57be4941d5b231d7b9eb": "-3"
+        },
+        "fallibleOfferSegments": [],
+        "proveMs": 3816,
+        "makerAttachedDust": false
+      },
+      "fr302GateBypassed": true,
+      "txId": "00bb61ffdadfc0b7e64ecea72d53d244c19bf346acd8820c3708571ca6f0e08c05",
+      "makerDustActions": {
+        "1": {
+          "spends": 1,
+          "registrations": 0
+        },
+        "41270": {
+          "spends": 0,
+          "registrations": 0
+        }
+      },
+      "consolidateTxId": "00c9420cbdc850f020cd6c26ba1fa9e3d2ea487d701559e3ecefb721ebd69372c6",
+      "error": "timed out after 180000ms waiting for custody to reach G=28 B=6; last {\"size\":{\"pools\":2,\"cells\":5,\"cellsExact\":true},\"cells\":{\"AA_A/G\":\"12\",\"AA_A/B\":\"6\",\"AA_1/G\":\"8\",\"AA_1/B\":\"absent-or-zero\",\"AA_2/G\":\"8\",\"AA_2/B\":\"absent-or-zero\",\"AA_3/G\":\"8\",\"AA_3/B\":\"absent-or-zero\"},\"held\":{\"G\":\"36\",\"B\":\"6\"},\"escrow\":{\"active\":\"false\",\"coinValue\":\"0\",\"coinColour\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"owner\":\"009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b\",\"receivedActive\":\"false\",\"receivedValue\":\"0\",\"receivedColour\":\"0000000000000000000000000000000000000000000000000000000000000000\",\"receivedOwner\":\"009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b\"}}",
+      "refusingLayer": "unclassified — see the verbatim text"
+    },
+    {
+      "useCase": "U2",
+      "label": "u2-4cell",
+      "variant": "arm-e-escrow",
+      "cells": 5,
+      "pools": 2,
+      "placement": "GUARANTEED",
+      "settled": true,
+      "before": {
+        "size": {
+          "pools": 2,
+          "cells": 5,
+          "cellsExact": true
+        },
+        "cells": {
+          "AA_A/G": "12",
+          "AA_A/B": "6",
+          "AA_1/G": "8",
+          "AA_1/B": "absent-or-zero",
+          "AA_2/G": "8",
+          "AA_2/B": "absent-or-zero",
+          "AA_3/G": "8",
+          "AA_3/B": "absent-or-zero"
+        },
+        "held": {
+          "G": "36",
+          "B": "6"
+        },
+        "escrow": {
+          "active": "false",
+          "coinValue": "0",
+          "coinColour": "0000000000000000000000000000000000000000000000000000000000000000",
+          "owner": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+          "receivedActive": "false",
+          "receivedValue": "0",
+          "receivedColour": "0000000000000000000000000000000000000000000000000000000000000000",
+          "receivedOwner": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b"
+        }
+      },
+      "settlerBefore": {
+        "G": "0",
+        "B": "12"
+      },
+      "checks": [
+        {
+          "name": "the offer was BUILT and PROVEN",
+          "ok": true,
+          "detail": "16057 B in 3608 ms"
+        },
+        {
+          "name": "FR-301: the maker attached no DUST to its own artifact",
+          "ok": true,
+          "detail": "makerAttachedDust=false"
+        },
+        {
+          "name": "the settlement landed under ONE transaction id",
+          "ok": true,
+          "detail": "00b25ca0109405c4ef33ccd998ca01687329e34405bc46ba850747b72299bb66ab"
+        },
+        {
+          "name": "custody gave 2 of G",
+          "ok": true,
+          "detail": "held(G) 36 -> 34 (expected 34)"
+        },
+        {
+          "name": "custody gained 3 of B",
+          "ok": true,
+          "detail": "held(B) 6 -> 9 (expected 9)"
+        },
+        {
+          "name": "the maker's own cell was debited G and credited B",
+          "ok": true,
+          "detail": "AA_A/G 12 -> 10; AA_A/B 6 -> 9 (expected +3 B, -2 G)"
+        },
+        {
+          "name": "the SETTLER swept the 2 G surplus and funded the 3 B deficit",
+          "ok": true,
+          "detail": "OwnerT G 0 -> 2, B 12 -> 9"
+        },
+        {
+          "name": "OP1 and OP2 agree on every cell this case claims (FR-208, two observation points)",
+          "ok": true,
+          "detail": "OP1 == OP2 for AA_A/G, AA_A/B"
+        },
+        {
+          "name": "the MAKER attached no dust action to the SETTLED transaction",
+          "ok": true,
+          "detail": "maker intent segment(s) [13353]; settled dust actions {\"1\":{\"spends\":1,\"registrations\":0},\"13353\":{\"spends\":0,\"registrations\":0}}"
+        },
+        {
+          "name": "FR-306: the envelope crossed a REAL process boundary byte-identically",
+          "ok": true,
+          "detail": "reader pid 9343, 16057 bytes"
+        },
+        {
+          "name": "THE OPEN CLAIM: the settler is a wallet whose keys the maker never knew",
+          "ok": true,
+          "detail": "settler seed is OwnerT, disjoint from every maker key"
+        },
+        {
+          "name": "arm (e): the SELF-BALANCED phases landed on their own (F-310 does not constrain them)",
+          "ok": true,
+          "detail": "stage 00872d4c44765dc89402a4aa2c5fe2d2aafb26dd28740486c7f2ad475351e0b3b9 / consolidate 0012417f46aaa30c698d9f68f2346335b208eb8886c71b7a2efd66d7172166486d"
+        }
+      ],
+      "stageTxId": "00872d4c44765dc89402a4aa2c5fe2d2aafb26dd28740486c7f2ad475351e0b3b9",
+      "offer": {
+        "circuitId": "openSwap",
+        "shape": "floating-surplus",
+        "bytes": 16057,
+        "contentAddress": "74ed44da41995fe73f31971f3df9edd314879172c01c5b02782dbd757854c5d6",
+        "imbalancesAtSegment0": {
+          "shielded:2e23e4da8b0839459368b08cf93d1fd1d8624995b9b0888f660a930c77e60766": "2",
+          "shielded:529552f56067bbf1decf6e004ce429f2d478bb4bc42b57be4941d5b231d7b9eb": "-3"
+        },
+        "fallibleOfferSegments": [],
+        "proveMs": 3608,
+        "makerAttachedDust": false
+      },
+      "readerProcess": {
+        "process": {
+          "pid": 9343,
+          "ppid": 9336,
+          "network": "none used"
+        },
+        "file": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g5-mitigation/offers/arm-e-escrow-u2-74ed44da41995fe7.offer",
+        "envelopeBytes": 17494,
+        "envelopeVerified": true,
+        "terms": {
+          "version": 1,
+          "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
+          "shape": "floating-surplus",
+          "circuitId": "openSwap",
+          "form": "pre-binding",
+          "managerAddress": "a71ac834f81e7808e1b20a3ecf5ebb93a8d8c6d91450cde0d3b125ffb647e774",
+          "gives": {
+            "colour": "2e23e4da8b0839459368b08cf93d1fd1d8624995b9b0888f660a930c77e60766",
+            "value": "2"
+          },
+          "wants": {
+            "colour": "529552f56067bbf1decf6e004ce429f2d478bb4bc42b57be4941d5b231d7b9eb",
+            "value": "3",
+            "nonce": "89cfbb04db682c3c1ef41554b729d2c69437a77070a0ae939feca66d09517368"
+          },
+          "creditAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+          "makerAccount": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+          "createdAt": "2026-08-20T21:54:07.177Z",
+          "expiresAt": "2026-08-20T22:54:07.177Z",
+          "ttlSeconds": 3600,
+          "placement": {
+            "segments": [
+              0,
+              13353
+            ],
+            "intentSegments": [
+              13353
+            ],
+            "fallibleOfferSegments": [],
+            "imbalances": {
+              "0": {
+                "shielded:2e23e4da8b0839459368b08cf93d1fd1d8624995b9b0888f660a930c77e60766": "2",
+                "shielded:529552f56067bbf1decf6e004ce429f2d478bb4bc42b57be4941d5b231d7b9eb": "-3"
+              },
+              "13353": {}
+            },
+            "expectedAtSegment0": {
+              "shielded:2e23e4da8b0839459368b08cf93d1fd1d8624995b9b0888f660a930c77e60766": "2",
+              "shielded:529552f56067bbf1decf6e004ce429f2d478bb4bc42b57be4941d5b231d7b9eb": "-3"
+            },
+            "segment0Exact": true,
+            "otherSegmentsEmpty": true,
+            "offendingSegments": [],
+            "ok": true
+          },
+          "makerAttachedDust": false,
+          "contentAddress": "74ed44da41995fe73f31971f3df9edd314879172c01c5b02782dbd757854c5d6",
+          "transactionBytes": 16057
+        },
+        "payloadBytes": 16057,
+        "payloadSha256": "74ed44da41995fe73f31971f3df9edd314879172c01c5b02782dbd757854c5d6",
+        "contentAddressMatches": true,
+        "deserialized": true,
+        "roundTripByteIdentical": true,
+        "imbalances": {
+          "0": {
+            "shielded:2e23e4da8b0839459368b08cf93d1fd1d8624995b9b0888f660a930c77e60766": "2",
+            "shielded:529552f56067bbf1decf6e004ce429f2d478bb4bc42b57be4941d5b231d7b9eb": "-3"
+          },
+          "13353": {}
+        },
+        "deficits": {
+          "0/shielded:529552f56067bbf1decf6e004ce429f2d478bb4bc42b57be4941d5b231d7b9eb": "-3"
+        },
+        "surpluses": {
+          "0/shielded:2e23e4da8b0839459368b08cf93d1fd1d8624995b9b0888f660a930c77e60766": "2"
+        },
+        "intentSegments": [
+          13353
+        ],
+        "fallibleOfferSegments": [],
+        "unsubmittableAlone": {
+          "proven": true,
+          "error": "invalid balance -3 for token Shielded(ShieldedTokenType(529552f56067bbf1decf6e004ce429f2d478bb4bc42b57be4941d5b231d7b9eb)) in segment 0; balance must be positive"
+        },
+        "ok": true
+      },
+      "txId": "00b25ca0109405c4ef33ccd998ca01687329e34405bc46ba850747b72299bb66ab",
+      "makerDustActions": {
+        "1": {
+          "spends": 1,
+          "registrations": 0
+        },
+        "13353": {
+          "spends": 0,
+          "registrations": 0
+        }
+      },
+      "consolidateTxId": "0012417f46aaa30c698d9f68f2346335b208eb8886c71b7a2efd66d7172166486d",
+      "after": {
+        "size": {
+          "pools": 2,
+          "cells": 5,
+          "cellsExact": true
+        },
+        "cells": {
+          "AA_A/G": "10",
+          "AA_A/B": "9",
+          "AA_1/G": "8",
+          "AA_1/B": "absent-or-zero",
+          "AA_2/G": "8",
+          "AA_2/B": "absent-or-zero",
+          "AA_3/G": "8",
+          "AA_3/B": "absent-or-zero"
+        },
+        "held": {
+          "G": "34",
+          "B": "9"
+        },
+        "escrow": {
+          "active": "false",
+          "coinValue": "0",
+          "coinColour": "0000000000000000000000000000000000000000000000000000000000000000",
+          "owner": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b",
+          "receivedActive": "false",
+          "receivedValue": "0",
+          "receivedColour": "0000000000000000000000000000000000000000000000000000000000000000",
+          "receivedOwner": "009a77de97356f5caec09a9f582208d448e7ea81404d0a8501f077a032e4ce4b"
+        }
+      },
+      "onChainCells": {
+        "AA_A/G": "10",
+        "AA_A/B": "9"
+      },
+      "settlerAfter": {
+        "G": "2",
+        "B": "9"
+      }
+    }
+  ],
+  "fatal": null
+}

@@ -1,4 +1,4 @@
-# G5 OFFLINE SWEEP — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-20T18:57:48.551Z
+# G5 OFFLINE SWEEP — EXPERIMENTAL_LANE / LANE-DEV-1 — 2026-08-20T19:32:50.965Z
 # parameters: LedgerParameters.initialParameters() — the LEDGER CRATE defaults, NOT the chain. Absolute boundaries from this run are not lane facts (F-313); relative ordering is.
 # cells: 1, 2, 4, 8, 16   shapes: named-taker, floating-surplus
 

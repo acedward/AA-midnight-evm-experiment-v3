@@ -1,17 +1,15 @@
 {
   "label": "EXPERIMENTAL_LANE / LANE-DEV-1",
-  "utc": "2026-08-20T18:07:10.190Z",
+  "utc": "2026-08-20T21:31:29.803Z",
   "question": "per contract variant, at what custody size does an offer stop being placed in the GUARANTEED section, and how many transcript operations does its offer circuit take?",
-  "paramsSource": "CHAIN parameters captured at ../evidence/g5-mitigation/chain-params.json",
-  "paramsFile": "../evidence/g5-mitigation/chain-params.json",
+  "paramsSource": "CHAIN parameters captured at evidence/g5-mitigation/chain-params.json",
+  "paramsFile": "/Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g5-mitigation/chain-params.json",
   "cells": [
     1,
     2,
     4,
     8,
-    16,
-    32,
-    64
+    16
   ],
   "shapes": [
     "named-taker",
@@ -206,7 +204,7 @@
         "variant": "arm-e-escrow",
         "arm": "e",
         "shape": "named-taker",
-        "lastGuaranteedCells": 64,
+        "lastGuaranteedCells": 16,
         "firstFallibleCells": null,
         "monotone": true
       },
@@ -214,7 +212,7 @@
         "variant": "arm-e-escrow",
         "arm": "e",
         "shape": "floating-surplus",
-        "lastGuaranteedCells": 64,
+        "lastGuaranteedCells": 16,
         "firstFallibleCells": null,
         "monotone": true
       },
@@ -502,114 +500,6 @@
       }
     },
     {
-      "variant": "manager",
-      "arm": "baseline",
-      "shape": "named-taker",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 126,
-          "gas": {
-            "readTime": "5304000000",
-            "computeTime": "8948290005",
-            "bytesWritten": "2036",
-            "bytesDeleted": "1479"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 126
-      }
-    },
-    {
-      "variant": "manager",
-      "arm": "baseline",
-      "shape": "floating-surplus",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 117,
-          "gas": {
-            "readTime": "5304000000",
-            "computeTime": "8840083816",
-            "bytesWritten": "2036",
-            "bytesDeleted": "1479"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 117
-      }
-    },
-    {
-      "variant": "manager",
-      "arm": "baseline",
-      "shape": "named-taker",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 126,
-          "gas": {
-            "readTime": "5304000000",
-            "computeTime": "8959224650",
-            "bytesWritten": "2039",
-            "bytesDeleted": "1480"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 126
-      }
-    },
-    {
-      "variant": "manager",
-      "arm": "baseline",
-      "shape": "floating-surplus",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 117,
-          "gas": {
-            "readTime": "5304000000",
-            "computeTime": "8851018461",
-            "bytesWritten": "2039",
-            "bytesDeleted": "1480"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 117
-      }
-    },
-    {
       "variant": "v4-slim",
       "arm": "control",
       "shape": "named-taker",
@@ -871,114 +761,6 @@
             "computeTime": "7911156679",
             "bytesWritten": "2014",
             "bytesDeleted": "1455"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 117
-      }
-    },
-    {
-      "variant": "v4-slim",
-      "arm": "control",
-      "shape": "named-taker",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 126,
-          "gas": {
-            "readTime": "5304000000",
-            "computeTime": "8948290005",
-            "bytesWritten": "2014",
-            "bytesDeleted": "1457"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 126
-      }
-    },
-    {
-      "variant": "v4-slim",
-      "arm": "control",
-      "shape": "floating-surplus",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 117,
-          "gas": {
-            "readTime": "5304000000",
-            "computeTime": "8840083816",
-            "bytesWritten": "2014",
-            "bytesDeleted": "1457"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 117
-      }
-    },
-    {
-      "variant": "v4-slim",
-      "arm": "control",
-      "shape": "named-taker",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 126,
-          "gas": {
-            "readTime": "5304000000",
-            "computeTime": "8959224650",
-            "bytesWritten": "2018",
-            "bytesDeleted": "1458"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 126
-      }
-    },
-    {
-      "variant": "v4-slim",
-      "arm": "control",
-      "shape": "floating-surplus",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 117,
-          "gas": {
-            "readTime": "5304000000",
-            "computeTime": "8851018461",
-            "bytesWritten": "2018",
-            "bytesDeleted": "1458"
           },
           "claimedNullifiers": 1,
           "claimedShieldedReceives": 2,
@@ -1258,114 +1040,6 @@
       }
     },
     {
-      "variant": "arm-a-dedupe",
-      "arm": "a",
-      "shape": "named-taker",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 107,
-          "gas": {
-            "readTime": "4080000000",
-            "computeTime": "7593229389",
-            "bytesWritten": "2014",
-            "bytesDeleted": "1457"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 107
-      }
-    },
-    {
-      "variant": "arm-a-dedupe",
-      "arm": "a",
-      "shape": "floating-surplus",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 98,
-          "gas": {
-            "readTime": "4080000000",
-            "computeTime": "7485023200",
-            "bytesWritten": "2014",
-            "bytesDeleted": "1457"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 98
-      }
-    },
-    {
-      "variant": "arm-a-dedupe",
-      "arm": "a",
-      "shape": "named-taker",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 107,
-          "gas": {
-            "readTime": "4080000000",
-            "computeTime": "7604131828",
-            "bytesWritten": "2018",
-            "bytesDeleted": "1458"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 107
-      }
-    },
-    {
-      "variant": "arm-a-dedupe",
-      "arm": "a",
-      "shape": "floating-surplus",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 98,
-          "gas": {
-            "readTime": "4080000000",
-            "computeTime": "7495925640",
-            "bytesWritten": "2018",
-            "bytesDeleted": "1458"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 98
-      }
-    },
-    {
       "variant": "arm-b-nested",
       "arm": "b",
       "shape": "named-taker",
@@ -1462,7 +1136,7 @@
           "ops": 139,
           "gas": {
             "readTime": "6630000000",
-            "computeTime": "10131145245",
+            "computeTime": "10131247300",
             "bytesWritten": "216",
             "bytesDeleted": "2242"
           },
@@ -1627,114 +1301,6 @@
             "computeTime": "10909367763",
             "bytesWritten": "2679",
             "bytesDeleted": "2120"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 139
-      }
-    },
-    {
-      "variant": "arm-b-nested",
-      "arm": "b",
-      "shape": "named-taker",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": false
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 148,
-          "gas": {
-            "readTime": "8058000000",
-            "computeTime": "12458443275",
-            "bytesWritten": "2679",
-            "bytesDeleted": "2122"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 148
-      }
-    },
-    {
-      "variant": "arm-b-nested",
-      "arm": "b",
-      "shape": "floating-surplus",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": false
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 139,
-          "gas": {
-            "readTime": "8058000000",
-            "computeTime": "12350237086",
-            "bytesWritten": "2679",
-            "bytesDeleted": "2122"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 139
-      }
-    },
-    {
-      "variant": "arm-b-nested",
-      "arm": "b",
-      "shape": "named-taker",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": false
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 148,
-          "gas": {
-            "readTime": "8058000000",
-            "computeTime": "12471320106",
-            "bytesWritten": "2682",
-            "bytesDeleted": "2123"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 148
-      }
-    },
-    {
-      "variant": "arm-b-nested",
-      "arm": "b",
-      "shape": "floating-surplus",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": false
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 139,
-          "gas": {
-            "readTime": "8058000000",
-            "computeTime": "12363113917",
-            "bytesWritten": "2682",
-            "bytesDeleted": "2123"
           },
           "claimedNullifiers": 1,
           "claimedShieldedReceives": 2,
@@ -2014,114 +1580,6 @@
       }
     },
     {
-      "variant": "arm-c-both",
-      "arm": "c",
-      "shape": "named-taker",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": false
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 117,
-          "gas": {
-            "readTime": "5406000000",
-            "computeTime": "9591072591",
-            "bytesWritten": "2679",
-            "bytesDeleted": "2122"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 117
-      }
-    },
-    {
-      "variant": "arm-c-both",
-      "arm": "c",
-      "shape": "floating-surplus",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": false
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 108,
-          "gas": {
-            "readTime": "5406000000",
-            "computeTime": "9482968458",
-            "bytesWritten": "2679",
-            "bytesDeleted": "2122"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 108
-      }
-    },
-    {
-      "variant": "arm-c-both",
-      "arm": "c",
-      "shape": "named-taker",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": false
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 117,
-          "gas": {
-            "readTime": "5406000000",
-            "computeTime": "9603987066",
-            "bytesWritten": "2682",
-            "bytesDeleted": "2123"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 117
-      }
-    },
-    {
-      "variant": "arm-c-both",
-      "arm": "c",
-      "shape": "floating-surplus",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": false
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 108,
-          "gas": {
-            "readTime": "5406000000",
-            "computeTime": "9495780877",
-            "bytesWritten": "2682",
-            "bytesDeleted": "2123"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 108
-      }
-    },
-    {
       "variant": "arm-d-unified",
       "arm": "d",
       "shape": "named-taker",
@@ -2164,7 +1622,7 @@
           "ops": 89,
           "gas": {
             "readTime": "2652000000",
-            "computeTime": "5481479818",
+            "computeTime": "5481641302",
             "bytesWritten": "1472",
             "bytesDeleted": "917"
           },
@@ -2353,7 +1811,7 @@
           "ops": 98,
           "gas": {
             "readTime": "3672000000",
-            "computeTime": "7591891501",
+            "computeTime": "7591888700",
             "bytesWritten": "1560",
             "bytesDeleted": "1560"
           },
@@ -2383,114 +1841,6 @@
             "computeTime": "7483685312",
             "bytesWritten": "1560",
             "bytesDeleted": "1560"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 89
-      }
-    },
-    {
-      "variant": "arm-d-unified",
-      "arm": "d",
-      "shape": "named-taker",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": false
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 98,
-          "gas": {
-            "readTime": "4692000000",
-            "computeTime": "8624695479",
-            "bytesWritten": "1560",
-            "bytesDeleted": "1560"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 98
-      }
-    },
-    {
-      "variant": "arm-d-unified",
-      "arm": "d",
-      "shape": "floating-surplus",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": false
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 89,
-          "gas": {
-            "readTime": "4692000000",
-            "computeTime": "8516489290",
-            "bytesWritten": "1560",
-            "bytesDeleted": "1560"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 89
-      }
-    },
-    {
-      "variant": "arm-d-unified",
-      "arm": "d",
-      "shape": "named-taker",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": false
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 98,
-          "gas": {
-            "readTime": "4692000000",
-            "computeTime": "8637499458",
-            "bytesWritten": "1562",
-            "bytesDeleted": "1562"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 98
-      }
-    },
-    {
-      "variant": "arm-d-unified",
-      "arm": "d",
-      "shape": "floating-surplus",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": false
-      },
-      "offer": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 89,
-          "gas": {
-            "readTime": "4692000000",
-            "computeTime": "8529293269",
-            "bytesWritten": "1562",
-            "bytesDeleted": "1562"
           },
           "claimedNullifiers": 1,
           "claimedShieldedReceives": 2,
@@ -2826,7 +2176,7 @@
           "ops": 100,
           "gas": {
             "readTime": "3264000000",
-            "computeTime": "6596652531",
+            "computeTime": "6596491047",
             "bytesWritten": "1184",
             "bytesDeleted": "1186"
           },
@@ -3081,242 +2431,6 @@
             "computeTime": "5155222100",
             "bytesWritten": "2369",
             "bytesDeleted": "1971"
-          },
-          "claimedNullifiers": 0,
-          "claimedShieldedReceives": 0,
-          "claimedShieldedSpends": 0
-        },
-        "totalOps": 48
-      }
-    },
-    {
-      "variant": "arm-e-escrow",
-      "arm": "e",
-      "shape": "named-taker",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "GUARANTEED",
-        "guaranteed": {
-          "ops": 64,
-          "gas": {
-            "readTime": "1734000000",
-            "computeTime": "4131101061",
-            "bytesWritten": "1306",
-            "bytesDeleted": "1222"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 1,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 64
-      },
-      "stagePhase": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 100,
-          "gas": {
-            "readTime": "3876000000",
-            "computeTime": "7225147362",
-            "bytesWritten": "1887",
-            "bytesDeleted": "1654"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 100
-      },
-      "consolidatePhase": {
-        "placement": "GUARANTEED",
-        "guaranteed": {
-          "ops": 48,
-          "gas": {
-            "readTime": "2856000000",
-            "computeTime": "5568652996",
-            "bytesWritten": "2369",
-            "bytesDeleted": "1971"
-          },
-          "claimedNullifiers": 0,
-          "claimedShieldedReceives": 0,
-          "claimedShieldedSpends": 0
-        },
-        "totalOps": 48
-      }
-    },
-    {
-      "variant": "arm-e-escrow",
-      "arm": "e",
-      "shape": "floating-surplus",
-      "targetCells": 32,
-      "observed": {
-        "pools": 1,
-        "cells": 32,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "GUARANTEED",
-        "guaranteed": {
-          "ops": 55,
-          "gas": {
-            "readTime": "1734000000",
-            "computeTime": "4022900570",
-            "bytesWritten": "1306",
-            "bytesDeleted": "1222"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 1,
-          "claimedShieldedSpends": 0
-        },
-        "totalOps": 55
-      },
-      "stagePhase": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 100,
-          "gas": {
-            "readTime": "3876000000",
-            "computeTime": "7225147362",
-            "bytesWritten": "1887",
-            "bytesDeleted": "1654"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 100
-      },
-      "consolidatePhase": {
-        "placement": "GUARANTEED",
-        "guaranteed": {
-          "ops": 48,
-          "gas": {
-            "readTime": "2856000000",
-            "computeTime": "5568652996",
-            "bytesWritten": "2369",
-            "bytesDeleted": "1971"
-          },
-          "claimedNullifiers": 0,
-          "claimedShieldedReceives": 0,
-          "claimedShieldedSpends": 0
-        },
-        "totalOps": 48
-      }
-    },
-    {
-      "variant": "arm-e-escrow",
-      "arm": "e",
-      "shape": "named-taker",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "GUARANTEED",
-        "guaranteed": {
-          "ops": 64,
-          "gas": {
-            "readTime": "1734000000",
-            "computeTime": "4131101061",
-            "bytesWritten": "1308",
-            "bytesDeleted": "1224"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 1,
-          "claimedShieldedSpends": 1
-        },
-        "totalOps": 64
-      },
-      "stagePhase": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 100,
-          "gas": {
-            "readTime": "3876000000",
-            "computeTime": "7230651110",
-            "bytesWritten": "1890",
-            "bytesDeleted": "1655"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 100
-      },
-      "consolidatePhase": {
-        "placement": "GUARANTEED",
-        "guaranteed": {
-          "ops": 48,
-          "gas": {
-            "readTime": "2856000000",
-            "computeTime": "5574083893",
-            "bytesWritten": "2373",
-            "bytesDeleted": "1974"
-          },
-          "claimedNullifiers": 0,
-          "claimedShieldedReceives": 0,
-          "claimedShieldedSpends": 0
-        },
-        "totalOps": 48
-      }
-    },
-    {
-      "variant": "arm-e-escrow",
-      "arm": "e",
-      "shape": "floating-surplus",
-      "targetCells": 64,
-      "observed": {
-        "pools": 1,
-        "cells": 64,
-        "cellsExact": true
-      },
-      "offer": {
-        "placement": "GUARANTEED",
-        "guaranteed": {
-          "ops": 55,
-          "gas": {
-            "readTime": "1734000000",
-            "computeTime": "4022900570",
-            "bytesWritten": "1308",
-            "bytesDeleted": "1224"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 1,
-          "claimedShieldedSpends": 0
-        },
-        "totalOps": 55
-      },
-      "stagePhase": {
-        "placement": "FALLIBLE",
-        "fallible": {
-          "ops": 100,
-          "gas": {
-            "readTime": "3876000000",
-            "computeTime": "7230651110",
-            "bytesWritten": "1890",
-            "bytesDeleted": "1655"
-          },
-          "claimedNullifiers": 1,
-          "claimedShieldedReceives": 2,
-          "claimedShieldedSpends": 2
-        },
-        "totalOps": 100
-      },
-      "consolidatePhase": {
-        "placement": "GUARANTEED",
-        "guaranteed": {
-          "ops": 48,
-          "gas": {
-            "readTime": "2856000000",
-            "computeTime": "5574083893",
-            "bytesWritten": "2373",
-            "bytesDeleted": "1974"
           },
           "claimedNullifiers": 0,
           "claimedShieldedReceives": 0,

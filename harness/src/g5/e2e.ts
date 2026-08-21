@@ -472,13 +472,35 @@ const main = async () => {
     }
     const maker = accts[0]!;
 
-    /** Grow custody to at least `n` cells of colour G. */
+    /**
+     * Grow custody to at least `n` cells of colour G.
+     *
+     * THE WAIT MUST BE ON *THIS* DEPOSIT, and the first version of this loop got that wrong in a way
+     * worth recording, because it produced evidence that contradicted itself rather than an obvious
+     * failure. It waited for `size.cells >= i + 1` — a predicate ALREADY SATISFIED by cells created
+     * before the loop ran (a settled case leaves the maker holding two colours, hence two cells). So
+     * the wait returned instantly without the current deposit having landed, which did two things:
+     * the loop's next termination read saw a stale cell count and deposited AGAIN, and `before` in
+     * `runCase` was read before the last deposit was indexed. The case then settled correctly and the
+     * post-settlement custody assertion timed out against arithmetic derived from a stale baseline
+     * (`expected G=28`, actual `36` — exactly the one extra 8-unit deposit). Gate run 3 went RED on it,
+     * which is the gate working: a rig defect is a gate failure.
+     *
+     * Waiting on `held.G` rising by the deposited amount is a predicate only THIS deposit can satisfy,
+     * so it is both a correct F-107 visibility wait and a correct termination guarantee.
+     */
     const growTo = async (n: number) => {
       for (let i = 0; i < n; i++) {
         const view = await rig!.read([G, B], accts);
         if (view.size.cells >= n) break;
+        const expectHeld = BigInt(view.held.G!) + G_PER_CELL;
         await rig!.depositManyFrom(SEEDS.ownerN, 'OwnerN', G, G_PER_CELL, accts[i]!.id);
-        await rig!.waitFor([G, B], accts, (x) => x.size.cells >= i + 1, `custody to reach ${i + 1} cell(s)`);
+        await rig!.waitFor(
+          [G, B],
+          accts,
+          (x) => BigInt(x.held.G!) >= expectHeld,
+          `custody to hold ${expectHeld} G after the deposit to ${accts[i]!.label} (this deposit, not a previous one)`,
+        );
       }
     };
 
