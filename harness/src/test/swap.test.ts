@@ -501,26 +501,30 @@ describe('Manager v4 — GUARD ORDER is the owner-critical property (FR-204 carr
 });
 
 // =================================================================================================
-describe('Manager v4 — v3 is extended, never weakened', () => {
-  it('adds exactly ONE provable circuit and keeps every v3 circuit', async () => {
+describe('Manager v5 candidate — inherited behavior behind one gateway', () => {
+  it('exposes execute as the sole registration/debit circuit and keeps only open-credit/read paths', async () => {
     const { sim } = await setup(0n);
     const impure = Object.keys((sim as any).contract.impureCircuits).sort();
-    const v3 = [
-      'registerAccount',
-      'myAccount',
+    expect(impure).toEqual([
+      'accountRecord',
+      'depositShielded',
+      'depositUnshielded',
+      'execute',
       'isRegistered',
+      'myAccount',
+      'poolHasColour',
+      'poolValue',
       'shieldedAccountBalance',
       'unshieldedAccountBalance',
-      'poolValue',
-      'poolHasColour',
-      'depositShielded',
+    ].sort());
+    for (const oldName of [
+      'registerAccount',
       'withdrawShielded',
-      'depositUnshielded',
       'withdrawUnshielded',
       'transferInternalShielded',
       'transferInternalUnshielded',
-    ].sort();
-    expect(impure).toEqual([...v3, 'openSwapShielded'].sort());
+      'openSwapShielded',
+    ]) expect(impure).not.toContain(oldName);
     // Still no admin surface of any kind (FR-201, inherited).
     expect(impure).not.toContain('configure');
     // The two new PURE circuits cost no proving key, so they are free to export.

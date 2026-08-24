@@ -13,6 +13,7 @@ import {
   sampleContractAddress,
   type CircuitContext,
 } from '@midnight-ntwrk/compact-runtime';
+import { publicPointForPrivateKey } from '../auth/signature.js';
 
 // The compiled contracts. Built by scripts/g2/compile.sh into harness/generated/*.
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -48,6 +49,7 @@ export type ZswapOutputView = {
 /** A circuit call's result plus the zswap structure and effects it produced. */
 export type CallDetail<T> = {
   result: T;
+  logEvents: readonly unknown[];
   inputs: ZswapInputView[];
   outputs: ZswapOutputView[];
   effects: {
@@ -108,6 +110,40 @@ export const secretOf = (label: string): Uint8Array => {
 export const pad32 = secretOf;
 
 const COIN_PK = '0'.repeat(64);
+const ZERO_32 = () => new Uint8Array(32);
+const ZERO_20 = () => new Uint8Array(20);
+const DEPLOYMENT_DOMAIN = new Uint8Array(32).fill(0xdd);
+const INERT_SIGNATURE = {
+  r: BigInt('0x18c8c0b1a03a9d14923824f037423de763035cc9b4ae011b10519473553845fa'),
+  s: BigInt('0x4b23d69e009b1b012a044d2651134524419f420f6157d333eda0b3cb2d469f81'),
+};
+const INERT_POINT_SOURCE = publicPointForPrivateKey(
+  '0x4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318',
+);
+const INERT_POINT = {
+  x: INERT_POINT_SOURCE.x,
+  y: INERT_POINT_SOURCE.y,
+  identity: false,
+};
+
+export const defaultExecutePayload = () => ({
+  selector: 0n,
+  authMode: 0n,
+  account: ZERO_32(),
+  owner: ZERO_20(),
+  accountSalt: ZERO_32(),
+  nonce: 0n,
+  validUntil: 0n,
+  primaryColor: ZERO_32(),
+  primaryAmount: 0n,
+  recipientKind: 0n,
+  recipient: ZERO_32(),
+  toAccount: ZERO_32(),
+  wantNonce: ZERO_32(),
+  wantColor: ZERO_32(),
+  wantAmount: 0n,
+  creditAccount: ZERO_32(),
+});
 
 // --- Minter (00004, unchanged) --------------------------------------------------------------------
 
@@ -201,25 +237,41 @@ export class MinterCollideSim {
 
 export class ManagerSim {
   readonly address = sampleContractAddress();
+  readonly deploymentDomain: Uint8Array;
   private contract: any;
   /** The contract's charged ledger state. Updated from the query context after every call. */
   private state: any;
   private privateState: ManagerPS;
+  private readonly knownSecrets = new Map<string, Uint8Array>();
 
-  private constructor(contract: any, state: any, privateState: ManagerPS) {
+  private constructor(
+    contract: any,
+    state: any,
+    privateState: ManagerPS,
+    deploymentDomain: Uint8Array,
+  ) {
     this.contract = contract;
     this.state = state;
     this.privateState = privateState;
+    this.deploymentDomain = Uint8Array.from(deploymentDomain);
   }
 
-  static async create(initialSecret: Uint8Array): Promise<ManagerSim> {
+  static async create(
+    initialSecret: Uint8Array,
+    deploymentDomain: Uint8Array = DEPLOYMENT_DOMAIN,
+  ): Promise<ManagerSim> {
     const witnesses = {
       localOwnerSecret: (ctx: any): [ManagerPS, Uint8Array] => [ctx.privateState, ctx.privateState.ownerSecret],
     };
     const contract = new ManagerContract(witnesses);
     const ps: ManagerPS = { ownerSecret: initialSecret };
-    const res = await contract.initialState(createConstructorContext(ps, COIN_PK));
-    return new ManagerSim(contract, res.currentContractState.data, res.currentPrivateState ?? ps);
+    const res = await contract.initialState(createConstructorContext(ps, COIN_PK), deploymentDomain);
+    return new ManagerSim(
+      contract,
+      res.currentContractState.data,
+      res.currentPrivateState ?? ps,
+      deploymentDomain,
+    );
   }
 
   /** Act as a given owner for the next call (drives the wrong-owner-witness tests). */
@@ -231,8 +283,18 @@ export class ManagerSim {
     return managerLedger(this.state);
   }
 
-  private ctx(circuitId: string): CircuitContext<ManagerPS> {
-    return createCircuitContext<ManagerPS>(circuitId as any, this.address, COIN_PK, this.state, this.privateState);
+  private ctx(circuitId: string, time?: number): CircuitContext<ManagerPS> {
+    return createCircuitContext<ManagerPS>(
+      circuitId as any,
+      this.address,
+      COIN_PK,
+      this.state,
+      this.privateState,
+      undefined,
+      undefined,
+      undefined,
+      time,
+    );
   }
 
   /** The account id the contract derives for a given owner secret. */
@@ -240,7 +302,9 @@ export class ManagerSim {
     const prev = this.privateState;
     this.privateState = { ...this.privateState, ownerSecret: secret };
     try {
-      return await this.call<Uint8Array>('myAccount');
+      const account = await this.call<Uint8Array>('myAccount');
+      this.knownSecrets.set(hex(account), Uint8Array.from(secret));
+      return account;
     } finally {
       this.privateState = prev;
     }
@@ -249,6 +313,87 @@ export class ManagerSim {
   /** Call an impure circuit, committing the resulting state on success. */
   async call<T = unknown>(circuitId: string, ...args: unknown[]): Promise<T> {
     return (await this.callDetailed<T>(circuitId, ...args)).result;
+  }
+
+  private async currentNativeAccount(): Promise<Uint8Array> {
+    const res = await this.contract.impureCircuits.myAccount(this.ctx('myAccount'));
+    return res.result as Uint8Array;
+  }
+
+  private async adaptLegacyCall(
+    circuitId: string,
+    args: unknown[],
+  ): Promise<{ circuitId: string; args: unknown[]; restore?: ManagerPS }> {
+    if (circuitId === 'registerAccount') {
+      const account = args[0] as Uint8Array;
+      const secret = this.knownSecrets.get(hex(account));
+      if (!secret) throw new Error('native registration adapter has no witness for requested account');
+      const restore = this.privateState;
+      this.privateState = { ownerSecret: Uint8Array.from(secret) };
+      return {
+        circuitId: 'execute',
+        args: [defaultExecutePayload(), INERT_SIGNATURE, INERT_POINT],
+        restore,
+      };
+    }
+
+    const selectors: Record<string, bigint> = {
+      withdrawShielded: 2n,
+      withdrawUnshielded: 3n,
+      transferInternalShielded: 4n,
+      transferInternalUnshielded: 5n,
+      openSwapShielded: 6n,
+    };
+    const selector = selectors[circuitId];
+    if (selector === undefined) return { circuitId, args };
+
+    const account = await this.currentNativeAccount();
+    const payload = { ...defaultExecutePayload(), selector, account };
+    if (circuitId === 'withdrawShielded') {
+      const [color, amount, recipient] = args as [Uint8Array, bigint, any];
+      Object.assign(payload, {
+        primaryColor: color,
+        primaryAmount: amount,
+        recipientKind: recipient.is_left ? 0n : 1n,
+        recipient: recipient.is_left ? recipient.left.bytes : recipient.right.bytes,
+      });
+    } else if (circuitId === 'withdrawUnshielded') {
+      const [color, amount, recipient] = args as [Uint8Array, bigint, any];
+      Object.assign(payload, {
+        primaryColor: color,
+        primaryAmount: amount,
+        recipientKind: recipient.is_left ? 0n : 1n,
+        recipient: recipient.is_left ? recipient.left.bytes : recipient.right.bytes,
+      });
+    } else if (circuitId === 'transferInternalShielded' || circuitId === 'transferInternalUnshielded') {
+      const [toAccount, color, amount] = args as [Uint8Array, Uint8Array, bigint];
+      Object.assign(payload, { toAccount, primaryColor: color, primaryAmount: amount });
+    } else {
+      const [giveColor, giveAmount, recipient, wanted, creditAccount] = args as [
+        Uint8Array,
+        bigint,
+        any,
+        { nonce: Uint8Array; color: Uint8Array; value: bigint },
+        Uint8Array,
+      ];
+      const kind = !recipient.is_some ? 0n : recipient.value.is_left ? 1n : 2n;
+      const recipientBytes = !recipient.is_some
+        ? ZERO_32()
+        : recipient.value.is_left
+          ? recipient.value.left.bytes
+          : recipient.value.right.bytes;
+      Object.assign(payload, {
+        primaryColor: giveColor,
+        primaryAmount: giveAmount,
+        recipientKind: kind,
+        recipient: recipientBytes,
+        wantNonce: wanted.nonce,
+        wantColor: wanted.color,
+        wantAmount: wanted.value,
+        creditAccount,
+      });
+    }
+    return { circuitId: 'execute', args: [payload, INERT_SIGNATURE, INERT_POINT] };
   }
 
   /**
@@ -265,15 +410,35 @@ export class ManagerSim {
    * live refusal can be attributed to a layer rather than guessed at.
    */
   async callDetailed<T = unknown>(circuitId: string, ...args: unknown[]): Promise<CallDetail<T>> {
-    const res = await this.contract.impureCircuits[circuitId](this.ctx(circuitId), ...args);
+    return this.callDetailedAt<T>(undefined, circuitId, ...args);
+  }
+
+  /** Execute at a pinned Unix-second ledger time (used by deadline boundary tests). */
+  async callDetailedAt<T = unknown>(
+    time: number | undefined,
+    circuitId: string,
+    ...args: unknown[]
+  ): Promise<CallDetail<T>> {
+    const adapted = await this.adaptLegacyCall(circuitId, args);
+    let res: any;
+    try {
+      res = await this.contract.impureCircuits[adapted.circuitId](
+        this.ctx(adapted.circuitId, time),
+        ...adapted.args,
+      );
+    } finally {
+      if (adapted.restore) this.privateState = adapted.restore;
+    }
     // The post-call ledger state lives in this contract's query context.
     const qc = res.context?.queryContexts?.[this.address];
     if (qc?.state) this.state = qc.state;
     const ps = res.context?.callContext?.currentPrivateState;
-    if (ps) this.privateState = ps;
+    if (adapted.restore) this.privateState = adapted.restore;
+    else if (ps) this.privateState = ps;
     const zswap = res.context?.callContext?.currentZswapLocalState;
     return {
       result: res.result as T,
+      logEvents: res.context?.events ?? [],
       inputs: (zswap?.inputs ?? []).map((c: any) => ({
         nonce: hex(c.nonce),
         colour: hex(c.color),
@@ -302,9 +467,18 @@ export class ManagerSim {
    * empty cell would be caught even though the cell's value is zero.
    */
   async expectReject(circuitId: string, ...args: unknown[]): Promise<string> {
+    return this.expectRejectAt(undefined, circuitId, ...args);
+  }
+
+  /** Deadline-aware rejection helper with the same whole-ledger atomicity assertion. */
+  async expectRejectAt(
+    time: number | undefined,
+    circuitId: string,
+    ...args: unknown[]
+  ): Promise<string> {
     const before = JSON.stringify(snapshotLedger(this.ledger));
     try {
-      await this.contract.impureCircuits[circuitId](this.ctx(circuitId), ...args);
+      await this.callDetailedAt(time, circuitId, ...args);
     } catch (e) {
       const after = JSON.stringify(snapshotLedger(this.ledger));
       if (before !== after) throw new Error(`state changed on a rejected call to ${circuitId}`);
@@ -338,9 +512,19 @@ export const snapshotLedger = (l: any) => {
   const accounts: string[] = [];
   for (const a of l.accounts) accounts.push(hex(a));
   accounts.sort();
+  const accountModes: Record<string, string> = {};
+  for (const [k, v] of l.accountModes) accountModes[hex(k)] = String(v);
+  const evmOwners: Record<string, string> = {};
+  for (const [k, v] of l.evmOwners) evmOwners[hex(k)] = hex(v);
+  const evmNonces: Record<string, string> = {};
+  for (const [k, v] of l.evmNonces) evmNonces[hex(k)] = String(v);
 
   return {
     accounts,
+    accountModes,
+    evmOwners,
+    evmNonces,
+    deploymentDomain: hex(l.deploymentDomain),
     poolCount: String(l.pools.size()),
     pools,
     shieldedCount: String(l.shieldedBalances.size()),

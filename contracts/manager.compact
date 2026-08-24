@@ -132,33 +132,66 @@
 //
 // Derived from the pinned standard library at compactc-v0.33.0-rc.2 and from 00004's Manager v2.
 
+pragma language_version >= 0.25.0;
+
 import CompactStandardLibrary;
 
 export {
-  registerAccount,
+  execute,
   depositShielded,
-  withdrawShielded,
   depositUnshielded,
-  withdrawUnshielded,
-  transferInternalShielded,
-  transferInternalUnshielded,
-  // --- v4 (00006): the swap maker ---
-  openSwapShielded,
   zswapNullifierOf,
   zswapCommitmentOf,
-  // --- readers, unchanged from v3 ---
   myAccount,
   isRegistered,
+  accountRecord,
   shieldedAccountBalance,
   unshieldedAccountBalance,
   shieldedKey,
   unshieldedKey,
   poolValue,
   poolHasColour,
+  evmAccountIdFor,
+  evmDomainSeparatorFor,
+  evmStructHashFor,
+  evmDigestFor,
+  semanticCommitmentFor,
   accounts,
   shieldedBalances,
   unshieldedBalances,
-  pools
+  pools,
+  accountModes,
+  evmOwners,
+  evmNonces,
+  deploymentDomain
+}
+
+/// The single fixed-width v1 action/auth envelope. Every inactive field is constrained to its
+/// canonical zero representation before authentication or custody logic runs.
+export struct ExecutePayload {
+  selector: Uint<8>;
+  authMode: Uint<8>;
+  account: Bytes<32>;
+  owner: Bytes<20>;
+  accountSalt: Bytes<32>;
+  nonce: Uint<64>;
+  validUntil: Uint<64>;
+  primaryColor: Bytes<32>;
+  primaryAmount: Uint<128>;
+  recipientKind: Uint<8>;
+  recipient: Bytes<32>;
+  toAccount: Bytes<32>;
+  wantNonce: Bytes<32>;
+  wantColor: Bytes<32>;
+  wantAmount: Uint<128>;
+  creditAccount: Bytes<32>;
+}
+
+export struct AccountRecord {
+  registered: Boolean;
+  mode: Uint<8>;
+  owner: Bytes<20>;
+  nextNonce: Uint<64>;
 }
 
 // --- ledger state -------------------------------------------------------------------------------
@@ -176,6 +209,21 @@ export ledger accounts: Set<Bytes<32>>;
 export ledger shieldedBalances: Map<Bytes<32>, Uint<128>>;
 export ledger unshieldedBalances: Map<Bytes<32>, Uint<128>>;
 
+/// Authorization policy is mode-separated. Native records have no EVM owner or nonce entries.
+/// 0 = native witness; 1 = EVM EOA.
+export ledger accountModes: Map<Bytes<32>, Uint<8>>;
+export ledger evmOwners: Map<Bytes<32>, Bytes<20>>;
+export ledger evmNonces: Map<Bytes<32>, Uint<64>>;
+
+/// Fresh-deployment EIP-712 salt. No circuit writes it after construction.
+export ledger deploymentDomain: Bytes<32>;
+
+constructor(deploymentDomain_: Bytes<32>) {
+  const domain = disclose(deploymentDomain_);
+  assert(domain != default<Bytes<32>>, "deployment domain must be nonzero");
+  deploymentDomain = domain;
+}
+
 // --- owner authorization --------------------------------------------------------------------
 
 witness localOwnerSecret(): Bytes<32>;
@@ -188,9 +236,11 @@ circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
 
 /// The account of whoever supplied the witness, asserted to be registered.
 /// THE single authorization choke point for every debiting circuit (FR-204). Unchanged from v2.
-circuit authenticatedAccount(): Bytes<32> {
+circuit authenticatedNativeAccount(): Bytes<32> {
   const acct = ownerCommitment(localOwnerSecret());
   assert(accounts.member(acct), "caller's owner witness matches no registered account");
+  assert(accountModes.member(acct), "registered account has no authorization mode");
+  assert(accountModes.lookup(acct) == 0, "EVM account cannot enter native authorization");
   return acct;
 }
 
@@ -236,15 +286,187 @@ circuit unshieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
 
 // --- setup ------------------------------------------------------------------------------------
 
-/// Register an account under `owner` (a commitment produced by `ownerCommitment`).
-///
-/// It seeds NOTHING. v2 seeded one zero cell per configured colour; v3 has no colours to seed, and
-/// that absence is directly observable: after registering both accounts, all three custody maps are
-/// still size 0. Every later cell in either map was created by a credit.
-export circuit registerAccount(owner: Bytes<32>): [] {
-  const acct = disclose(owner);
+/// Shared collision gateway. It seeds no custody cell and never stores a secret/signature/key.
+circuit registerAccount(acct: Bytes<32>, mode: Uint<8>): [] {
+  assert(acct != default<Bytes<32>>, "account id must be nonzero");
   assert(!accounts.member(acct), "account already registered");
+  assert(!accountModes.member(acct), "account mode collision");
   accounts.insert(acct);
+  accountModes.insert(acct, mode);
+}
+
+// --- AUTH-EIP712-AA-V3-V1 byte codec -----------------------------------------------------------
+
+circuit reverseBytes32(value: Bytes<32>): Bytes<32> {
+  return Bytes[value[31], value[30], value[29], value[28], value[27], value[26], value[25], value[24],
+               value[23], value[22], value[21], value[20], value[19], value[18], value[17], value[16],
+               value[15], value[14], value[13], value[12], value[11], value[10], value[9],  value[8],
+               value[7],  value[6],  value[5],  value[4],  value[3],  value[2],  value[1],  value[0]];
+}
+
+circuit reverseBytes16(value: Bytes<16>): Bytes<16> {
+  return Bytes[value[15], value[14], value[13], value[12], value[11], value[10], value[9], value[8],
+               value[7], value[6], value[5], value[4], value[3], value[2], value[1], value[0]];
+}
+
+circuit bytes32LexicographicLt(leftValue: Bytes<32>, rightValue: Bytes<32>): Boolean {
+  const leftHigh = reverseBytes16(slice<16>(leftValue, 0)) as Uint<128>;
+  const rightHigh = reverseBytes16(slice<16>(rightValue, 0)) as Uint<128>;
+  const leftLow = reverseBytes16(slice<16>(leftValue, 16)) as Uint<128>;
+  const rightLow = reverseBytes16(slice<16>(rightValue, 16)) as Uint<128>;
+  return leftHigh < rightHigh || (leftHigh == rightHigh && leftLow < rightLow);
+}
+
+circuit uint64Word(value: Uint<64>): Bytes<32> { return reverseBytes32(value as Bytes<32>); }
+circuit uint128Word(value: Uint<128>): Bytes<32> { return reverseBytes32(value as Bytes<32>); }
+circuit uint8Word(value: Uint<8>): Bytes<32> { return reverseBytes32(value as Bytes<32>); }
+
+circuit addressWord(value: Bytes<20>): Bytes<32> {
+  return slice<32>([...pad(12, ""), ...value], 0) as Bytes<32>;
+}
+
+circuit accountTag(): Bytes<32> {
+  return Bytes[0x55, 0xbc, 0x94, 0x0f, 0x83, 0x53, 0x37, 0xf1,
+               0x22, 0x4c, 0x18, 0x11, 0x10, 0xb2, 0xb7, 0x7f,
+               0x57, 0xed, 0x69, 0x4c, 0xae, 0x0c, 0x4b, 0xf8,
+               0xff, 0x6b, 0xb3, 0xe0, 0x3b, 0xe6, 0xa9, 0x88];
+}
+
+circuit domainType(): Bytes<32> {
+  return Bytes[0x36, 0xc2, 0x5d, 0xe3, 0xe5, 0x41, 0xd5, 0xd9,
+               0x70, 0xf6, 0x6e, 0x42, 0x10, 0xd7, 0x28, 0x72,
+               0x12, 0x20, 0xff, 0xf5, 0xc0, 0x77, 0xcc, 0x6c,
+               0xd0, 0x08, 0xb3, 0xa0, 0xc6, 0x2a, 0xda, 0xb7];
+}
+
+circuit domainName(): Bytes<32> {
+  return Bytes[0xb2, 0xa1, 0x61, 0xc1, 0xe1, 0xfe, 0x09, 0xf6,
+               0x31, 0x58, 0x5b, 0x3b, 0xda, 0x0e, 0x4a, 0x22,
+               0xf3, 0x17, 0xd7, 0xc6, 0x63, 0xc5, 0x82, 0xa0,
+               0x7c, 0x1d, 0x68, 0x3e, 0x61, 0xfd, 0xcd, 0xb1];
+}
+
+circuit domainVersion(): Bytes<32> {
+  return Bytes[0xc8, 0x9e, 0xfd, 0xaa, 0x54, 0xc0, 0xf2, 0x0c,
+               0x7a, 0xdf, 0x61, 0x28, 0x82, 0xdf, 0x09, 0x50,
+               0xf5, 0xa9, 0x51, 0x63, 0x7e, 0x03, 0x07, 0xcd,
+               0xcb, 0x4c, 0x67, 0x2f, 0x29, 0x8b, 0x8b, 0xc6];
+}
+
+circuit registerType(): Bytes<32> {
+  return Bytes[0xe6, 0xac, 0xe6, 0xc7, 0x0a, 0x9d, 0x92, 0xef,
+               0x85, 0x1c, 0x2e, 0x2a, 0x67, 0xb2, 0x30, 0x90,
+               0x17, 0xb0, 0x51, 0xd3, 0x9e, 0x05, 0x54, 0xc7,
+               0x46, 0x27, 0x4a, 0x17, 0x69, 0x59, 0xac, 0x4f];
+}
+
+circuit withdrawShieldedType(): Bytes<32> {
+  return Bytes[0x71, 0x7e, 0x1e, 0x74, 0x12, 0x98, 0x52, 0xbd,
+               0x43, 0x67, 0x44, 0xa5, 0xa1, 0x10, 0x8f, 0x0d,
+               0xb9, 0x02, 0x92, 0x70, 0x31, 0xf5, 0xe7, 0x79,
+               0x96, 0x18, 0xec, 0x12, 0x93, 0x66, 0xd6, 0x1e];
+}
+
+circuit withdrawUnshieldedType(): Bytes<32> {
+  return Bytes[0xb6, 0x01, 0x29, 0xea, 0x6c, 0xa4, 0xc1, 0xb5,
+               0x1d, 0x86, 0x60, 0x77, 0xd1, 0x1c, 0xdb, 0x02,
+               0x30, 0xe6, 0x06, 0x58, 0x76, 0xa5, 0x42, 0x06,
+               0xfe, 0xce, 0x04, 0x41, 0x3e, 0xda, 0xba, 0x9d];
+}
+
+circuit transferShieldedType(): Bytes<32> {
+  return Bytes[0x06, 0xbe, 0xb8, 0x3e, 0xc8, 0xde, 0xd3, 0xa8,
+               0x08, 0x0b, 0xfa, 0xb5, 0x91, 0xd8, 0x9a, 0x1b,
+               0x86, 0xed, 0x9e, 0x3f, 0x8d, 0xf6, 0xc1, 0x0e,
+               0xd3, 0x67, 0x74, 0x16, 0xd0, 0xa5, 0x60, 0x64];
+}
+
+circuit transferUnshieldedType(): Bytes<32> {
+  return Bytes[0x46, 0xe9, 0x6f, 0x44, 0x96, 0xc1, 0x82, 0xe9,
+               0x83, 0x95, 0xb6, 0x89, 0x70, 0x1a, 0x94, 0x5c,
+               0xbd, 0xb4, 0x75, 0x43, 0x57, 0x42, 0x42, 0xcc,
+               0x17, 0xf9, 0xb6, 0x44, 0x8c, 0x04, 0x9a, 0x07];
+}
+
+circuit openSwapType(): Bytes<32> {
+  return Bytes[0xf7, 0x87, 0xd7, 0xf9, 0x63, 0xe8, 0x9e, 0xfc,
+               0xda, 0x8e, 0x6a, 0x54, 0x6b, 0xaf, 0xff, 0x33,
+               0x38, 0x8c, 0xbd, 0xf4, 0x4b, 0x81, 0xf6, 0xf5,
+               0x95, 0x0c, 0x4b, 0xd3, 0xb0, 0x66, 0x58, 0x48];
+}
+
+circuit frozenTypeHash(selector: Uint<8>): Bytes<32> {
+  if (selector == 1) { return registerType(); }
+  if (selector == 2) { return withdrawShieldedType(); }
+  if (selector == 3) { return withdrawUnshieldedType(); }
+  if (selector == 4) { return transferShieldedType(); }
+  if (selector == 5) { return transferUnshieldedType(); }
+  if (selector == 6) { return openSwapType(); }
+  return default<Bytes<32>>;
+}
+
+export circuit evmAccountIdFor(manager: Bytes<32>, owner: Bytes<20>, salt: Bytes<32>): Bytes<32> {
+  const preimage: Bytes<128> = slice<128>([
+    ...accountTag(), ...manager, ...addressWord(owner), ...salt
+  ], 0) as Bytes<128>;
+  return disclose(keccak256<Bytes<128>>(preimage));
+}
+
+export circuit evmDomainSeparatorFor(manager: Bytes<32>, domain: Bytes<32>): Bytes<32> {
+  const alias = slice<20>(keccak256<Bytes<32>>(manager), 12);
+  const preimage: Bytes<160> = slice<160>([
+    ...domainType(), ...domainName(), ...domainVersion(), ...addressWord(alias), ...domain
+  ], 0) as Bytes<160>;
+  return disclose(keccak256<Bytes<160>>(preimage));
+}
+
+export circuit evmStructHashFor(manager: Bytes<32>, payload: ExecutePayload): Bytes<32> {
+  const p = payload;
+  if (p.selector == 1) {
+    const preimage: Bytes<192> = slice<192>([
+      ...registerType(), ...manager, ...p.account, ...addressWord(p.owner), ...p.accountSalt,
+      ...uint64Word(p.validUntil)
+    ], 0) as Bytes<192>;
+    return disclose(keccak256<Bytes<192>>(preimage));
+  }
+  if (p.selector == 2 || p.selector == 3) {
+    const typeHash = p.selector == 2 ? withdrawShieldedType() : withdrawUnshieldedType();
+    const preimage: Bytes<320> = slice<320>([
+      ...typeHash, ...manager, ...p.account, ...addressWord(p.owner), ...uint64Word(p.nonce),
+      ...uint64Word(p.validUntil), ...p.primaryColor, ...uint128Word(p.primaryAmount),
+      ...uint8Word(p.recipientKind), ...p.recipient
+    ], 0) as Bytes<320>;
+    return disclose(keccak256<Bytes<320>>(preimage));
+  }
+  if (p.selector == 4 || p.selector == 5) {
+    const typeHash = p.selector == 4 ? transferShieldedType() : transferUnshieldedType();
+    const preimage: Bytes<288> = slice<288>([
+      ...typeHash, ...manager, ...p.account, ...addressWord(p.owner), ...uint64Word(p.nonce),
+      ...uint64Word(p.validUntil), ...p.toAccount, ...p.primaryColor, ...uint128Word(p.primaryAmount)
+    ], 0) as Bytes<288>;
+    return disclose(keccak256<Bytes<288>>(preimage));
+  }
+  assert(p.selector == 6, "EIP-712 selector must be 1..6");
+  const preimage: Bytes<448> = slice<448>([
+    ...openSwapType(), ...manager, ...p.account, ...addressWord(p.owner), ...uint64Word(p.nonce),
+    ...uint64Word(p.validUntil), ...p.primaryColor, ...uint128Word(p.primaryAmount),
+    ...uint8Word(p.recipientKind), ...p.recipient, ...p.wantNonce, ...p.wantColor,
+    ...uint128Word(p.wantAmount), ...p.creditAccount
+  ], 0) as Bytes<448>;
+  return disclose(keccak256<Bytes<448>>(preimage));
+}
+
+circuit eip712Digest(domain: Bytes<32>, structHash: Bytes<32>): Bytes<32> {
+  const preimage: Bytes<66> = slice<66>([0x19, 0x01, ...domain, ...structHash], 0) as Bytes<66>;
+  return keccak256<Bytes<66>>(preimage);
+}
+
+export circuit evmDigestFor(
+  manager: Bytes<32>, domain: Bytes<32>, payload: ExecutePayload
+): Bytes<32> {
+  return disclose(eip712Digest(
+    evmDomainSeparatorFor(manager, domain), evmStructHashFor(manager, payload)
+  ));
 }
 
 // --- readers -----------------------------------------------------------------------------------
@@ -258,6 +480,38 @@ export circuit myAccount(): Bytes<32> {
 
 export circuit isRegistered(owner: Bytes<32>): Boolean {
   return accounts.member(disclose(owner));
+}
+
+/// One browser-facing policy query. Native records return zero owner/nonce without creating EVM
+/// map entries; unknown accounts return the all-zero inactive record.
+export circuit accountRecord(account: Bytes<32>): AccountRecord {
+  const acct = disclose(account);
+  if (!accounts.member(acct)) {
+    return AccountRecord{
+      registered: false,
+      mode: 0,
+      owner: default<Bytes<20>>,
+      nextNonce: 0
+    };
+  }
+  const mode = accountModes.lookup(acct);
+  if (mode == 0) {
+    assert(!evmOwners.member(acct) && !evmNonces.member(acct), "native record carries EVM state");
+    return AccountRecord{
+      registered: true,
+      mode: 0,
+      owner: default<Bytes<20>>,
+      nextNonce: 0
+    };
+  }
+  assert(mode == 1, "unknown account authorization mode");
+  assert(evmOwners.member(acct) && evmNonces.member(acct), "EVM record is incomplete");
+  return AccountRecord{
+    registered: true,
+    mode: 1,
+    owner: evmOwners.lookup(acct),
+    nextNonce: evmNonces.lookup(acct)
+  };
 }
 
 /// One cell of the dynamic table, shielded family. Returns 0 for a colour this Manager has never
@@ -324,7 +578,8 @@ export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
 
 /// Pay `value` of `colour` out of that colour's pool to `recipient`, debiting the WITNESS OWNER's
 /// account. FR-204 guard order is load-bearing and is asserted by NC-1, NC-2 and NC-3.
-export circuit withdrawShielded(
+circuit withdrawShielded(
+  account: Bytes<32>,
   colour: Bytes<32>,
   value: Uint<128>,
   recipient: Either<ZswapCoinPublicKey, ContractAddress>
@@ -332,8 +587,8 @@ export circuit withdrawShielded(
   const col = disclose(colour);
   const val = disclose(value);
 
-  // 1. the witness choke point — the debited account is derived, never supplied (NC-1).
-  const acct = authenticatedAccount();
+  // 1. authorization already derived and checked the account before dispatch.
+  const acct = account;
   // 2. THE PER-ACCOUNT, PER-COLOUR GUARD, BEFORE any pool guard (FR-204). A MISSING cell reads 0, so
   //    a colour this account has never held is refused here without creating a cell for it — that is
   //    NC-2 (pool rich, account absent) and NC-3 (colour dormant everywhere) in one line.
@@ -378,7 +633,8 @@ export circuit depositUnshielded(colour: Bytes<32>, amount: Uint<128>, account: 
   );
 }
 
-export circuit withdrawUnshielded(
+circuit withdrawUnshielded(
+  account: Bytes<32>,
   colour: Bytes<32>,
   amount: Uint<128>,
   recipient: Either<ContractAddress, UserAddress>
@@ -388,7 +644,7 @@ export circuit withdrawUnshielded(
 
   // Same order as the shielded side: witness, then the per-(account, colour) guard reading a missing
   // cell as 0, and only then the contract's own holdings.
-  const acct = authenticatedAccount();
+  const acct = account;
   assert(unshieldedBalanceOf(acct, col) >= amt, "account colour balance too low");
   // Comparison guard rather than an exact-balance read (stdlib note on `unshieldedBalance`).
   assert(unshieldedBalanceGte(col, amt), "contract unshielded balance too low");
@@ -405,12 +661,14 @@ export circuit withdrawUnshielded(
 ///
 /// The CREDIT SIDE creates the destination's cell lazily if it does not exist (FR-202; spec step 12:
 /// the (AA_B, S1) cell comes into being through an internal transfer, not a deposit).
-export circuit transferInternalShielded(to: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+circuit transferInternalShielded(
+  account: Bytes<32>, to: Bytes<32>, colour: Bytes<32>, amount: Uint<128>
+): [] {
   const dst = disclose(to);
   const col = disclose(colour);
   const amt = disclose(amount);
 
-  const fromAcct = authenticatedAccount();
+  const fromAcct = account;
   assert(accounts.member(dst), "destination account is not registered");
   assert(fromAcct != dst, "internal transfer to the same account");
   assert(amt > 0, "internal transfer must be positive");
@@ -424,12 +682,14 @@ export circuit transferInternalShielded(to: Bytes<32>, colour: Bytes<32>, amount
 
 /// The unshielded family's internal transfer. Same shape, different map and different key domain —
 /// so the same 32-byte colour moved here can never touch a shielded cell (FR-203, P-COLL).
-export circuit transferInternalUnshielded(to: Bytes<32>, colour: Bytes<32>, amount: Uint<128>): [] {
+circuit transferInternalUnshielded(
+  account: Bytes<32>, to: Bytes<32>, colour: Bytes<32>, amount: Uint<128>
+): [] {
   const dst = disclose(to);
   const col = disclose(colour);
   const amt = disclose(amount);
 
-  const fromAcct = authenticatedAccount();
+  const fromAcct = account;
   assert(accounts.member(dst), "destination account is not registered");
   assert(fromAcct != dst, "internal transfer to the same account");
   assert(amt > 0, "internal transfer must be positive");
@@ -540,6 +800,7 @@ export circuit zswapCommitmentOf(
 // with a readable reason instead.
 
 circuit assertSwapPreconditions(
+  account: Bytes<32>,
   colA: Bytes<32>,
   val: Uint<128>,
   coinB: ShieldedCoinInfo,
@@ -549,8 +810,8 @@ circuit assertSwapPreconditions(
   assert(val > 0, "swap must give a positive amount");
   assert(coinB.value > 0, "swap must want a positive amount");
   assert(colA != coinB.color, "swap legs must be different colours");
-  // 1. the witness choke point.
-  const acct = authenticatedAccount();
+  // 1. authorization already derived and checked the account before dispatch.
+  const acct = account;
   // 2. THE PER-ACCOUNT, PER-COLOUR GUARD, BEFORE any pool guard.
   assert(shieldedBalanceOf(acct, colA) >= val, "account colour balance too low");
   // 3. only now, the pool.
@@ -631,7 +892,8 @@ circuit repoolOrRemove(col: Bytes<32>, change: Maybe<ShieldedCoinInfo>): [] {
 /// Returns nothing. v3's `withdrawShielded` hands back the coin it sent, but there is no useful
 /// analogue here: the `none` branch pays out no coin at all, and the maker already knows the terms it
 /// asked for — the artifact, not a return value, is what a taker reads.
-export circuit openSwapShielded(
+circuit openSwapShielded(
+  account: Bytes<32>,
   colourA: Bytes<32>,
   valA: Uint<128>,
   recipientA: Maybe<Either<ZswapCoinPublicKey, ContractAddress>>,
@@ -646,7 +908,7 @@ export circuit openSwapShielded(
   const cb = disclose(coinB);
   const credit = disclose(creditAccount);
 
-  const acct = assertSwapPreconditions(colA, val, cb, credit);
+  const acct = assertSwapPreconditions(account, colA, val, cb, credit);
   const selfAddr = kernel.self();
   const pooled = pools.lookup(colA);
 
@@ -683,4 +945,347 @@ export circuit openSwapShielded(
 
   // --- WANT: +B, credited to `creditAccount` ---
   claimWantedColour(cb, credit);
+}
+
+// ================================================================================================
+// Manager v5 candidate — one dual-authorization registration/debit gateway
+// ================================================================================================
+
+circuit assertActionEnvelope(p: ExecutePayload): [] {
+  assert(p.selector <= 6, "unknown execute selector");
+  assert(p.authMode <= 1, "unknown authorization mode");
+
+  if (p.selector == 0) {
+    assert(p.authMode == 0, "native registration requires native authorization");
+    assert(p.account == default<Bytes<32>>, "native registration account is derived");
+    assert(p.owner == default<Bytes<20>> && p.accountSalt == default<Bytes<32>>, "native registration EVM fields must be inactive");
+    assert(p.nonce == 0 && p.validUntil == 0, "native registration replay fields must be inactive");
+    assert(p.primaryColor == default<Bytes<32>> && p.primaryAmount == 0, "native registration action fields must be inactive");
+    assert(p.recipientKind == 0 && p.recipient == default<Bytes<32>>, "native registration recipient must be inactive");
+    assert(p.toAccount == default<Bytes<32>> && p.wantNonce == default<Bytes<32>>, "native registration targets must be inactive");
+    assert(p.wantColor == default<Bytes<32>> && p.wantAmount == 0 && p.creditAccount == default<Bytes<32>>, "native registration swap fields must be inactive");
+    return;
+  }
+
+  if (p.selector == 1) {
+    assert(p.authMode == 1, "EVM registration requires EVM authorization");
+    assert(p.account != default<Bytes<32>>, "EVM registration account must be supplied");
+    assert(p.owner != default<Bytes<20>>, "EVM registration owner must be nonzero");
+    assert(p.accountSalt != default<Bytes<32>>, "EVM registration salt must be nonzero");
+    assert(p.nonce == 0 && p.validUntil > 0, "EVM registration replay fields are noncanonical");
+    assert(p.primaryColor == default<Bytes<32>> && p.primaryAmount == 0, "EVM registration action fields must be inactive");
+    assert(p.recipientKind == 0 && p.recipient == default<Bytes<32>>, "EVM registration recipient must be inactive");
+    assert(p.toAccount == default<Bytes<32>> && p.wantNonce == default<Bytes<32>>, "EVM registration targets must be inactive");
+    assert(p.wantColor == default<Bytes<32>> && p.wantAmount == 0 && p.creditAccount == default<Bytes<32>>, "EVM registration swap fields must be inactive");
+    return;
+  }
+
+  assert(p.account != default<Bytes<32>>, "action account must be supplied");
+  assert(p.accountSalt == default<Bytes<32>>, "action account salt must be inactive");
+  if (p.authMode == 0) {
+    assert(p.owner == default<Bytes<20>>, "native action owner must be inactive");
+    assert(p.nonce == 0 && p.validUntil == 0, "native action replay fields must be inactive");
+  } else {
+    assert(p.owner != default<Bytes<20>>, "EVM action owner must be nonzero");
+    assert(p.validUntil > 0, "EVM action deadline must be nonzero");
+  }
+
+  if (p.selector == 2 || p.selector == 3) {
+    assert(p.primaryAmount > 0, "withdraw amount must be positive");
+    assert(p.recipientKind <= 1, "withdraw recipient kind is invalid");
+    assert(p.recipient != default<Bytes<32>>, "withdraw recipient must be nonzero");
+    assert(p.toAccount == default<Bytes<32>>, "withdraw transfer target must be inactive");
+    assert(p.wantNonce == default<Bytes<32>> && p.wantColor == default<Bytes<32>>, "withdraw swap fields must be inactive");
+    assert(p.wantAmount == 0 && p.creditAccount == default<Bytes<32>>, "withdraw swap target must be inactive");
+    return;
+  }
+
+  if (p.selector == 4 || p.selector == 5) {
+    assert(p.primaryAmount > 0, "internal transfer must be positive");
+    assert(p.recipientKind == 0 && p.recipient == default<Bytes<32>>, "internal transfer recipient must be inactive");
+    assert(p.toAccount != default<Bytes<32>>, "internal transfer target must be supplied");
+    assert(p.wantNonce == default<Bytes<32>> && p.wantColor == default<Bytes<32>>, "internal transfer swap fields must be inactive");
+    assert(p.wantAmount == 0 && p.creditAccount == default<Bytes<32>>, "internal transfer swap target must be inactive");
+    return;
+  }
+
+  assert(p.selector == 6, "unknown execute selector");
+  assert(p.primaryAmount > 0, "swap must give a positive amount");
+  assert(p.recipientKind <= 2, "swap recipient kind is invalid");
+  if (p.recipientKind == 0) {
+    assert(p.recipient == default<Bytes<32>>, "open swap recipient must be zero");
+  } else {
+    assert(p.recipient != default<Bytes<32>>, "named swap recipient must be nonzero");
+  }
+  assert(p.toAccount == default<Bytes<32>>, "swap transfer target must be inactive");
+  assert(p.wantAmount > 0, "swap must want a positive amount");
+  assert(p.primaryColor != p.wantColor, "swap legs must be different colours");
+  assert(p.creditAccount != default<Bytes<32>>, "swap credit account must be supplied");
+}
+
+circuit assertLiveDeadline(validUntil: Uint<64>): [] {
+  assert(validUntil > 3600, "EVM authorization deadline cannot satisfy the horizon");
+  const earliest = (validUntil - 3600) as Uint<64>;
+  assert(blockTimeGte(earliest), "EVM authorization deadline exceeds 3600-second horizon");
+  assert(blockTimeLt(validUntil), "EVM authorization has expired");
+}
+
+circuit authenticatedActionAccount(
+  p: ExecutePayload,
+  signatureOk: Boolean,
+  signer: Bytes<20>
+): Bytes<32> {
+  if (p.authMode == 0) {
+    const acct = authenticatedNativeAccount();
+    assert(acct == p.account, "native witness does not match supplied account transcript");
+    assert(accountModes.lookup(acct) == p.authMode, "authorization mode does not match account record");
+    assert(!evmOwners.member(acct) && !evmNonces.member(acct), "native account carries EVM state");
+    return acct;
+  }
+
+  assert(p.authMode == 1, "unknown account authorization mode");
+  assert(accounts.member(p.account), "gateway account is not registered");
+  assert(accountModes.member(p.account), "registered account has no authorization mode");
+  assert(accountModes.lookup(p.account) == 1, "authorization mode does not match account record");
+  assert(evmOwners.member(p.account) && evmNonces.member(p.account), "EVM account record is incomplete");
+  assert(p.owner == evmOwners.lookup(p.account), "signed owner does not match stored owner");
+  assert(p.nonce == evmNonces.lookup(p.account), "EVM nonce mismatch");
+  assertLiveDeadline(p.validUntil);
+  assert(signatureOk, "EVM signature does not verify");
+  assert(signer == p.owner, "EVM signer does not control account");
+  return p.account;
+}
+
+circuit shieldedRecipient(kind: Uint<8>, recipient: Bytes<32>): Either<ZswapCoinPublicKey, ContractAddress> {
+  if (kind == 0) {
+    return left<ZswapCoinPublicKey, ContractAddress>(ZswapCoinPublicKey{ bytes: recipient });
+  }
+  assert(kind == 1, "shielded recipient kind is invalid");
+  return right<ZswapCoinPublicKey, ContractAddress>(ContractAddress{ bytes: recipient });
+}
+
+circuit unshieldedRecipient(kind: Uint<8>, recipient: Bytes<32>): Either<ContractAddress, UserAddress> {
+  if (kind == 0) {
+    return left<ContractAddress, UserAddress>(ContractAddress{ bytes: recipient });
+  }
+  assert(kind == 1, "unshielded recipient kind is invalid");
+  return right<ContractAddress, UserAddress>(UserAddress{ bytes: recipient });
+}
+
+circuit swapRecipient(
+  kind: Uint<8>, recipient: Bytes<32>
+): Maybe<Either<ZswapCoinPublicKey, ContractAddress>> {
+  if (kind == 0) {
+    return none<Either<ZswapCoinPublicKey, ContractAddress>>();
+  }
+  if (kind == 1) {
+    return some<Either<ZswapCoinPublicKey, ContractAddress>>(
+      left<ZswapCoinPublicKey, ContractAddress>(ZswapCoinPublicKey{ bytes: recipient })
+    );
+  }
+  assert(kind == 2, "swap recipient kind is invalid");
+  return some<Either<ZswapCoinPublicKey, ContractAddress>>(
+    right<ZswapCoinPublicKey, ContractAddress>(ContractAddress{ bytes: recipient })
+  );
+}
+
+// --- FR-031 authoritative semantic commitment -------------------------------------------------
+
+circuit semanticTag(): Bytes<32> {
+  return Bytes[0xe2, 0x11, 0x48, 0x48, 0x81, 0xf2, 0x54, 0x57,
+               0xd3, 0x38, 0xef, 0xff, 0x10, 0x5e, 0x35, 0x53,
+               0x31, 0x43, 0x51, 0x33, 0x8b, 0x55, 0xee, 0x21,
+               0x55, 0x39, 0x10, 0x6f, 0xf5, 0xee, 0x9c, 0x6e];
+}
+
+circuit callTranscriptTag(): Bytes<32> {
+  return Bytes[0x6b, 0x26, 0xfd, 0x1f, 0x96, 0x66, 0x83, 0x29,
+               0x9a, 0xae, 0x5e, 0x9e, 0x5e, 0xcd, 0x2c, 0x57,
+               0x5f, 0x1a, 0x17, 0xe9, 0x16, 0xdb, 0x0a, 0x6f,
+               0xb2, 0x9d, 0xcd, 0x9e, 0xd8, 0x62, 0xf0, 0xdf];
+}
+
+circuit nativeAuthTag(): Bytes<32> {
+  return Bytes[0x2a, 0xdb, 0xa8, 0x74, 0x39, 0x0d, 0xb7, 0x25,
+               0xf4, 0x89, 0x15, 0x21, 0x7d, 0xa7, 0x03, 0xe3,
+               0xfd, 0x62, 0xec, 0x40, 0x29, 0x6c, 0x2a, 0x2d,
+               0x02, 0x60, 0x2e, 0x67, 0xa3, 0xb9, 0xe7, 0xf4];
+}
+
+circuit entrypointHash(): Bytes<32> {
+  return Bytes[0xc6, 0x40, 0x06, 0x0c, 0xdb, 0x34, 0xfc, 0xc2,
+               0x60, 0xf4, 0x1e, 0xac, 0x74, 0x74, 0xee, 0x1d,
+               0x7c, 0x80, 0xb7, 0xe3, 0x60, 0x7d, 0xaf, 0xf9,
+               0xac, 0x67, 0xc7, 0xea, 0x2e, 0xbb, 0x1c, 0x44];
+}
+
+circuit semanticEventName(): Bytes<32> {
+  return Bytes[0x53, 0x5c, 0x10, 0x31, 0xf5, 0x85, 0xe2, 0xd7,
+               0xa7, 0x95, 0xd0, 0xe3, 0x32, 0xa9, 0x74, 0x18,
+               0xcd, 0x8e, 0xdd, 0xde, 0x40, 0xee, 0xfa, 0x21,
+               0x4f, 0xb7, 0x8a, 0x2e, 0x18, 0x81, 0x2c, 0x1a];
+}
+
+circuit nativeAuthResult(account: Bytes<32>): Bytes<32> {
+  const preimage: Bytes<64> = slice<64>([...nativeAuthTag(), ...account], 0) as Bytes<64>;
+  return keccak256<Bytes<64>>(preimage);
+}
+
+circuit actionUnionHash(p: ExecutePayload): Bytes<32> {
+  const preimage: Bytes<384> = slice<384>([
+    ...addressWord(p.owner), ...uint64Word(p.validUntil), ...p.accountSalt,
+    ...p.primaryColor, ...uint128Word(p.primaryAmount), ...uint8Word(p.recipientKind),
+    ...p.recipient, ...p.toAccount, ...p.wantNonce, ...p.wantColor,
+    ...uint128Word(p.wantAmount), ...p.creditAccount
+  ], 0) as Bytes<384>;
+  return keccak256<Bytes<384>>(preimage);
+}
+
+circuit semanticCallTranscriptHash(
+  manager: Bytes<32>, p: ExecutePayload, account: Bytes<32>, authResult: Bytes<32>
+): Bytes<32> {
+  const preimage: Bytes<256> = slice<256>([
+    ...callTranscriptTag(), ...manager, ...entrypointHash(), ...uint8Word(p.selector),
+    ...frozenTypeHash(p.selector), ...account, ...authResult, ...actionUnionHash(p)
+  ], 0) as Bytes<256>;
+  return keccak256<Bytes<256>>(preimage);
+}
+
+circuit semanticCommitmentFromSlots(
+  manager: Bytes<32>, domain: Bytes<32>, p: ExecutePayload, account: Bytes<32>,
+  authResult: Bytes<32>, imbalanceCount: Uint<8>,
+  family0: Uint<8>, color0: Bytes<32>, direction0: Uint<8>, amount0: Uint<128>,
+  family1: Uint<8>, color1: Bytes<32>, direction1: Uint<8>, amount1: Uint<128>
+): Bytes<32> {
+  const semanticNonce = p.authMode == 1 ? p.nonce : (0 as Uint<64>);
+  const callHash = semanticCallTranscriptHash(manager, p, account, authResult);
+  const preimage: Bytes<1024> = slice<1024>([
+    ...semanticTag(), ...manager, ...domain, ...entrypointHash(), ...uint8Word(p.selector),
+    ...frozenTypeHash(p.selector), ...account, ...uint8Word(p.authMode), ...authResult,
+    ...uint64Word(semanticNonce), ...addressWord(p.owner), ...uint64Word(p.validUntil),
+    ...p.accountSalt, ...p.primaryColor, ...uint128Word(p.primaryAmount),
+    ...uint8Word(p.recipientKind), ...p.recipient, ...p.toAccount, ...p.wantNonce,
+    ...p.wantColor, ...uint128Word(p.wantAmount), ...p.creditAccount, ...callHash,
+    ...uint8Word(imbalanceCount),
+    ...uint8Word(family0), ...color0, ...uint8Word(direction0), ...uint128Word(amount0),
+    ...uint8Word(family1), ...color1, ...uint8Word(direction1), ...uint128Word(amount1)
+  ], 0) as Bytes<1024>;
+  return keccak256<Bytes<1024>>(preimage);
+}
+
+export circuit semanticCommitmentFor(
+  manager: Bytes<32>, domain: Bytes<32>, payload: ExecutePayload,
+  account: Bytes<32>, authResult: Bytes<32>
+): Bytes<32> {
+  const p = payload;
+  assertActionEnvelope(p);
+  if (p.selector != 6) {
+    return disclose(semanticCommitmentFromSlots(
+      manager, domain, p, account, authResult, 0,
+      0, default<Bytes<32>>, 0, 0,
+      0, default<Bytes<32>>, 0, 0
+    ));
+  }
+  if (p.recipientKind != 0) {
+    return disclose(semanticCommitmentFromSlots(
+      manager, domain, p, account, authResult, 1,
+      1, p.wantColor, 1, p.wantAmount,
+      0, default<Bytes<32>>, 0, 0
+    ));
+  }
+  const giveBeforeWant = bytes32LexicographicLt(p.primaryColor, p.wantColor);
+  if (giveBeforeWant) {
+    return disclose(semanticCommitmentFromSlots(
+      manager, domain, p, account, authResult, 2,
+      1, p.primaryColor, 2, p.primaryAmount,
+      1, p.wantColor, 1, p.wantAmount
+    ));
+  }
+  return disclose(semanticCommitmentFromSlots(
+    manager, domain, p, account, authResult, 2,
+    1, p.wantColor, 1, p.wantAmount,
+    1, p.primaryColor, 2, p.primaryAmount
+  ));
+}
+
+circuit emitSemanticCommitment(
+  manager: Bytes<32>, p: ExecutePayload, account: Bytes<32>, authResult: Bytes<32>
+): [] {
+  const commitment = semanticCommitmentFor(manager, deploymentDomain, p, account, authResult);
+  // `Misc.payload` is fixed at Bytes<256>. Put the authoritative commitment first; every committed
+  // field is recovered from the proved execute transcript and recomputed before this value is
+  // accepted. The pinned simulator currently exposes only the first 192 bytes of the 288-byte raw
+  // event cell, so readers deliberately support its degraded raw-prefix representation too.
+  const eventPayload: Bytes<256> = slice<256>([
+    ...commitment, ...default<Bytes<32>>, ...default<Bytes<32>>, ...default<Bytes<32>>,
+    ...default<Bytes<32>>, ...default<Bytes<32>>, ...default<Bytes<32>>, ...default<Bytes<32>>
+  ], 0) as Bytes<256>;
+  emit(Misc { name: semanticEventName(), payload: eventPayload });
+}
+
+/// The only externally callable registration/debit gateway. ECDSA/address operations stay
+/// straight-line because the pinned ZKIR-v3 backend cannot lower guarded secp operations.
+export circuit execute(
+  payload: ExecutePayload,
+  sig: Secp256k1EcdsaSignature,
+  pk: Secp256k1Point
+): [] {
+  const p = disclose(payload);
+  assertActionEnvelope(p);
+  const manager = kernel.self().bytes;
+  const digest = p.selector == 0
+    ? default<Bytes<32>>
+    : evmDigestFor(manager, deploymentDomain, p);
+  const signatureOk = disclose(secp256k1EcdsaVerify(digest, sig, pk));
+  const signer = disclose(secp256k1EthereumAddress(pk));
+
+  if (p.selector == 0) {
+    const account = ownerCommitment(localOwnerSecret());
+    registerAccount(account, 0);
+    emitSemanticCommitment(manager, p, account, nativeAuthResult(account));
+    return;
+  }
+
+  if (p.selector == 1) {
+    assertLiveDeadline(p.validUntil);
+    const account = evmAccountIdFor(manager, p.owner, p.accountSalt);
+    assert(account == p.account, "EVM registration account id mismatch");
+    assert(signatureOk, "EVM registration signature does not verify");
+    assert(signer == p.owner, "EVM registration signer does not match owner");
+    registerAccount(account, 1);
+    evmOwners.insert(account, p.owner);
+    evmNonces.insert(account, 0);
+    emitSemanticCommitment(manager, p, account, digest);
+    return;
+  }
+
+  const account = authenticatedActionAccount(p, signatureOk, signer);
+  if (p.selector == 2) {
+    withdrawShielded(account, p.primaryColor, p.primaryAmount, shieldedRecipient(p.recipientKind, p.recipient));
+  } else if (p.selector == 3) {
+    withdrawUnshielded(account, p.primaryColor, p.primaryAmount, unshieldedRecipient(p.recipientKind, p.recipient));
+  } else if (p.selector == 4) {
+    transferInternalShielded(account, p.toAccount, p.primaryColor, p.primaryAmount);
+  } else if (p.selector == 5) {
+    transferInternalUnshielded(account, p.toAccount, p.primaryColor, p.primaryAmount);
+  } else {
+    openSwapShielded(
+      account,
+      p.primaryColor,
+      p.primaryAmount,
+      swapRecipient(p.recipientKind, p.recipient),
+      ShieldedCoinInfo{ nonce: p.wantNonce, color: p.wantColor, value: p.wantAmount },
+      p.creditAccount
+    );
+  }
+
+  // The checked nonce write is deliberately last: every custody guard/effect must succeed first.
+  if (p.authMode == 1) {
+    const next = (p.nonce + 1) as Uint<64>;
+    assert(next > p.nonce, "EVM nonce overflow");
+    evmNonces.insert(account, next);
+    emitSemanticCommitment(manager, p, account, digest);
+  } else {
+    emitSemanticCommitment(manager, p, account, nativeAuthResult(account));
+  }
 }
