@@ -33,3 +33,7 @@ harness/generated-phase4r/
 
 # 00009 circuit-weight measurement outputs (compiler artifacts + transient BZKIR). Never committed.
 harness/generated-00009/
+
+# 00010 manager-k19 compiler artifacts, transient BZKIR and the ONE gated proving/verifier
+# key set (multi-GB). NEVER committed — hashes and sizes are recorded in evidence instead.
+harness/generated-00010/
