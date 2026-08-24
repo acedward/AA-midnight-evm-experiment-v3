@@ -30,3 +30,6 @@ evidence/**/offers/
 
 # Phase 4R compiler/test/key outputs are isolated evidence inputs and are never committed.
 harness/generated-phase4r/
+
+# 00009 circuit-weight measurement outputs (compiler artifacts + transient BZKIR). Never committed.
+harness/generated-00009/
