@@ -130,5 +130,37 @@ rechecked after every product/diagnostic transition and remained fully GREEN.
 
 ## Final-key gate
 
-Pending the required changed-source local commit. Exactly one bounded final full-key generation is
-authorized after that commit because the committed Manager is regression GREEN and measures k=20.
+Changed source commit: `7b0d03d97679efe5eaf2756a25d42e4ac7da569b`.
+
+The exact sole final command was:
+
+```sh
+/usr/bin/time -lp docker run --rm \
+  --name aa00008-phase4r-final-keys-u17 --cpus 4 \
+  --memory 20g --memory-swap 20g \
+  -e RAYON_NUM_THREADS=4 -e PHASE4R_PORT=47639 \
+  -v "$PWD:/work:ro" \
+  -v "$PWD/harness/generated-phase4r/final-7b0d03d:/out" \
+  -w /work \
+  aa00006-compactc@sha256:f57ca2d88cec1c66f377eb8bb2d616779202dd1ccb99517a4f7ddfffa9d0d86b \
+  compactc --feature-zkir-v3 contracts/manager.compact /out/manager
+```
+
+A shell watchdog stopped the named container if elapsed time reached 1,800 seconds. The compiler
+exited `0` after real `521.55` seconds; wrapper elapsed time was 525 seconds and
+`WATCHDOG_TIMED_OUT=0`.
+
+The fresh output contains 41 files: five compiler/contract files, 18 non-empty prover/verifier files,
+and nine text plus nine binary ZKIRs. Total size is 2,379,840 KiB by `du -sk`. The execute artifacts
+are:
+
+| File | Bytes | SHA-256 |
+|---|---:|---|
+| `keys/execute.prover` | 2,282,126,073 | `06fd33a9368185081d345bce748aa59c34a96aba8e4f5c056a697f128bd28993` |
+| `keys/execute.verifier` | 3,321 | `a119a3c2d65f5741e72055f9f976f22ca3963b87f5b5b01b3701680914cf4117` |
+| `zkir/execute.bzkir` | 417,826 | `1ddbbf0b77ec17e06f44b8a8e48de25291dce84eb28421c67ee9988e735dc808` |
+| `zkir/execute.zkir` | 1,336,032 | `3cf7204bd1e454e08baee8a0c6fcec86e83718912c2acadc036bfbefbad94b0f` |
+
+The full 41-file content-address manifest is `FINAL-SHA256SUMS.txt`. Post-run checks found zero
+matching containers, volumes, or worker processes. The preserved u13 manifest passed 17/17 after
+the run. No retry and no unchanged-k22 key generation occurred.
