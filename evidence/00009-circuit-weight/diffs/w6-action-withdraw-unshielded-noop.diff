@@ -1,0 +1,28 @@
+--- contracts/manager.compact	2026-08-24 13:16:56
++++ contracts/variants/w6-action-withdraw-unshielded-noop.compact	2026-08-24 13:32:14
+@@ -1,5 +1,14 @@
+ // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
++// 00009 MEASUREMENT-ONLY ABLATION ARM `w6-action-withdraw-unshielded-noop` — NOT A SHIPPING CONTRACT.
+ //
++// This source is DELIBERATELY BROKEN. It exists only so that
++//   weight(component) = rows(w0-baseline) - rows(this arm)
++// can be measured with `compactc --skip-zk` + `zkir-v3 mock-compile`.
++// Ablated component: only the `withdrawUnshielded` custody leg (selector 3)
++// It must never ship, never be promoted into contracts/manager.compact, never be
++// proved, and never be deployed.
++//
++//
+ // ================================================================================================
+ // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+ // ================================================================================================
+@@ -1280,7 +1289,9 @@
+     if (p.selector == 2) {
+       withdrawShielded(account, p.primaryColor, p.primaryAmount, shieldedRecipient(p.recipientKind, p.recipient));
+     } else if (p.selector == 3) {
+-      withdrawUnshielded(account, p.primaryColor, p.primaryAmount, unshieldedRecipient(p.recipientKind, p.recipient));
++      // 00009 w6 ABLATION: this custody leg is removed; the branch body is empty.
++      // Every other leg, and the dispatch structure itself, is untouched, so
++      // baseline - this arm is THIS leg's weight.
+     } else if (p.selector == 4) {
+       transferInternalShielded(account, p.toAccount, p.primaryColor, p.primaryAmount);
+     } else if (p.selector == 5) {
