@@ -48,24 +48,74 @@ This command did not generate keys or measure K/rows.
 
 The authoritative whole-volume Docker run was `aa00008-phase4r-step1-tests-u8`, using confirmed-free
 port marker `58199`, the pinned Node digest above, and disposable
-`scripts/phase4r/pnpm-workspace.test.yaml`. The exact test commands inside the disposable volume
-were:
+`scripts/phase4r/pnpm-workspace.test.yaml`. Audit F1 identified that the retained record omitted the
+outer whole-volume staging/final-artifact overlay and the loaded generated implementation hash.
+The independently rerun, final-artifact-bound recipe below closes that reproducibility gap. It
+copies the tracked source into a disposable named volume, excludes every host generated tree, then
+overlays only the manifest-verified final K=20 compiler/contract output from
+`harness/generated-phase4r/final-7b0d03d/manager` into the import path used by the tests:
 
 ```sh
-corepack prepare pnpm@11.5.1 --activate
-pnpm install --frozen-lockfile
-pnpm run auth:fixtures:check
-pnpm run typecheck:auth
-pnpm run test:auth
-pnpm exec vitest run \
-  src/test/manager.test.ts src/test/minter.test.ts \
-  src/test/step-ledger.test.ts src/test/swap.test.ts
+docker volume create \
+  --label com.docker.compose.project=aa00008_phase4r_audit_20260824_61843_u2 \
+  aa00008_phase4r_audit_20260824_61843_u2_work
+docker run --rm --name aa00008-phase4r-audit-20260824-61843-u2-stage \
+  --label com.docker.compose.project=aa00008_phase4r_audit_20260824_61843_u2 \
+  -e PHASE4R_PORT=61843 -v "$PWD:/src:ro" \
+  -v aa00008_phase4r_audit_20260824_61843_u2_work:/work -w /src \
+  node@sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e \
+  sh -euc 'tar --exclude="./.git" --exclude="./harness/node_modules" \
+    --exclude="./harness/generated/manager" --exclude="./harness/generated-phase4r" \
+    --exclude="./harness/generated-zk*" --exclude="./harness/midnight-level-db" \
+    -cf - . | tar -xf - -C /work; mkdir -p /work/harness/generated/manager; \
+    cp -a /src/harness/generated-phase4r/final-7b0d03d/manager/compiler \
+      /work/harness/generated/manager/; \
+    cp -a /src/harness/generated-phase4r/final-7b0d03d/manager/contract \
+      /work/harness/generated/manager/; \
+    cp /src/scripts/phase4r/pnpm-workspace.test.yaml /work/harness/pnpm-workspace.yaml'
 ```
 
-Every command exited `0`. Auth/byte/dual-mode/refusal tests passed 36/36 across six files, including
+Before dependency installation or test collection, the runnable test command asserts that the
+generated module actually loaded from `harness/generated/manager/contract/index.js` has SHA-256
+**exactly** `8b3073068c7b9ebaae991db7140dbf5d3f8493c4ec34089833866dbcba28607d`
+(and its public declaration remains `92c251d34d3f875b80f238acee3244919d255a630531b0a47da50850ba2f8fc5`):
+
+```sh
+docker run --rm --name aa00008-phase4r-audit-20260824-61843-u2-tests \
+  --label com.docker.compose.project=aa00008_phase4r_audit_20260824_61843_u2 \
+  -e PHASE4R_PORT=61843 \
+  -v aa00008_phase4r_audit_20260824_61843_u2_work:/work -w /work/harness \
+  node@sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e \
+  sh -euc 'test "$(sha256sum generated/manager/contract/index.js | cut -d " " -f 1)" \
+      = "8b3073068c7b9ebaae991db7140dbf5d3f8493c4ec34089833866dbcba28607d"; \
+    test "$(sha256sum generated/manager/contract/index.d.ts | cut -d " " -f 1)" \
+      = "92c251d34d3f875b80f238acee3244919d255a630531b0a47da50850ba2f8fc5"; \
+    corepack enable; corepack prepare pnpm@11.5.1 --activate; \
+    pnpm install --frozen-lockfile; pnpm run auth:fixtures:check; \
+    pnpm run typecheck:auth; pnpm run test:auth; \
+    pnpm exec vitest run src/test/manager.test.ts src/test/minter.test.ts \
+      src/test/step-ledger.test.ts src/test/swap.test.ts'
+docker volume rm aa00008_phase4r_audit_20260824_61843_u2_work
+```
+
+The final 41-file manifest passed 41/41 before this recipe was used. Every command above exited `0`.
+Auth/byte/dual-mode/refusal tests passed 36/36 across six files, including
 the EVM/native-witness and native/dummy-EVM-transport independence cases. The inherited Manager,
 Minter, step-ledger, and swap suites passed 95/95 (25 + 17 + 14 + 39), for 131 total passing tests.
-The outer Docker run exited `0`; teardown left zero project containers and zero volumes.
+The outer Docker run exited `0`; teardown left zero matching containers, volumes, networks, and
+processes, and port `61843` was free afterward. This recipe and result are the authoritative
+final-generated-artifact regression evidence; the earlier u8 inner-command-only record remains
+historical apparatus context.
+
+F1 closure validation on 2026-08-24 reran the complete recipe in fresh Docker project
+`aa00008_phase4_f1_20260824_38399` using newly probed free loopback port marker `38399`. Before
+dependency installation, the staged generated `index.js` and `index.d.ts` hashes printed and
+matched exactly `8b3073068c7b9ebaae991db7140dbf5d3f8493c4ec34089833866dbcba28607d`
+and `92c251d34d3f875b80f238acee3244919d255a630531b0a47da50850ba2f8fc5`.
+Fixture drift and auth typecheck exited `0`; the final-artifact auth suite passed 36/36 and the
+inherited Manager/Minter/step-ledger/swap suites passed 95/95. The outer command exited `0`.
+Teardown residue was containers `0`, volumes `0`, networks `0`, processes `0`, and port `38399`
+was free afterward. This was evidence validation only: no product source or generated key changed.
 
 Pre-product apparatus was not treated as a product result: u3, u4, and u6 failed before collection
 and are VOID; u7 collected 34 passing/2 invalid-test-precondition failures before the comparison
