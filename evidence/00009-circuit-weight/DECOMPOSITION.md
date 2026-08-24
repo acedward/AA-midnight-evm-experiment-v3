@@ -300,7 +300,7 @@ frozen-byte circuits.
 
 | # | Mechanism | Ceiling (rows) | % of `execute` | Affected frozen surface | Expected from the unit model |
 |---:|---|---:|---:|---|---|
-| 1 | **Big-endian-native integer encoding.** `uint64Word`/`uint128Word`/`uint8Word` are `reverseBytes32(value as Bytes<32>)`; the cast costs 113 rows and the reversal 8,526 in situ, because touching a packed word at byte granularity forces a full decompose+recompose. Producing the big-endian word directly from the integer would skip the second pass. 32 call sites, no CSE. | **272,847** | 28.00% | **NONE** if the emitted bytes are identical — a pure implementation change | Ceiling is measured (`d31`). The achievable fraction is **UNKNOWN**: it depends on whether Compact 0.25 can express a big-endian decomposition of an integer directly. **Not measured by this project** — see Q4. |
+| 1 | **Big-endian-native integer encoding.** `uint64Word`/`uint128Word`/`uint8Word` are `reverseBytes32(value as Bytes<32>)`; the cast costs 113 rows and the reversal 8,526 in situ, because touching a packed word at byte granularity forces a full decompose+recompose. Producing the big-endian word directly from the integer would skip the second pass. 32 call sites, no CSE. | **272,847** | 28.00% | **NONE** — confirmed by execution, not by inspection | **MEASURED IN PHASE 5 — 267,216 rows, 97.94% of the ceiling, and it changes no frozen byte.** Arm `e1-bigendian-encoders` = k=20 / **707,356 rows** (−27.42% of baseline), keyless parity **29/29 PASS**. See §8. |
 | 2 | **Shrink the 1024-byte FR-031 final preimage.** 32 words, 30 variable, 9 encoders unique to it, 8 permutations. 22 of its words duplicate fields already committed through `callHash`. | 260,752 | 26.76% | **FR-031 semantic commitment bytes** (SPEC-CHANGE) | ≈4,514/word removed (≈2,257 if the word survives elsewhere) + 4,176/permutation. Phase 2's `o6` measured a partial instance at 45,889. |
 | 3 | **Unify the four EIP-712 struct-hash branches into one.** All four compile unconditionally: 92,636 + 78,329 + 64,401 + 27,670. | 267,303 | 27.43% | **EVM wallet-signed bytes** (SPEC-CHANGE; this is questions-file Q1 option B) | Phase 2's `o4` measured a concrete instance at 156,245. |
 | 4 | **Remove selector-6 (open swap) from this gateway.** Its EIP-712 branch (92,636) plus its custody leg (99,353) are compiled for every call regardless of selector. | 191,989 | 19.70% | NONE cryptographically; the **contract ABI** changes and deployment needs staged verifier-key registration | Structural; this is the Phase 4S split route, already measured there. |
@@ -321,7 +321,8 @@ frozen-byte circuits.
    the 13 semantic permutations total 54,288, under 15% of the semantic chain's 366,831.
 2. **Opportunity 1 was invisible to Phase 1 and Phase 2** because no w- or o-arm isolated the byte
    encoders; it is the largest single mechanism in the circuit, and on its face it changes no
-   frozen byte.
+   frozen byte. **Phase 5 measured it: 267,216 rows — 97.94% of the ceiling — with 29/29 executed
+   byte-equality.** See §8; the scope note below is superseded for opportunity 1 only.
 3. **Two of the previously-assumed levers are dead ends.** "Simplify validation" is worth 0.07%,
    and "use a SNARK-friendly hash" was already measured at only −128,281 in Phase 2 — because it
    swaps the cheap part (the permutation) while leaving the expensive part (the preimage
@@ -365,5 +366,149 @@ measurement was affected: the failure was at authoring time, before any arm was 
 | Provable-circuit surface, every d-arm | exactly the product's nine names |
 | Measurement concurrency | never more than two at a time |
 | Marker ports | one random confirmed-free loopback port > 10000 per run |
+| Docker residue attributable to this project | containers/volumes/networks/processes `0/0/0/0` |
+| Push to any remote | none; push URL disabled on both remotes |
+
+---
+
+## 8. Phase 5 — the encoder ceiling, measured (owner Q4 Option A, 2026-08-24)
+
+Phase 4 could only price opportunity 1 as a CEILING: arm `d31` made `reverseBytes32` the identity
+and measured 272,847 rows (28.00% of `execute`), but `d31` produces DIFFERENT bytes, so it priced
+the mechanism without implementing it. Phase 5 implemented a big-endian-native encoder that emits
+IDENTICAL bytes and measured what fraction of that ceiling is actually purchasable on Compact
+0.33.0 / language 0.25.0.
+
+**Answer: 97.94% of it, with no frozen byte moved.**
+
+| Quantity | Value |
+|---|---:|
+| Baseline `execute` (`w0`) | 974,572 |
+| `e1-bigendian-encoders` `execute` | **707,356** (k=20) |
+| Saving | **267,216 rows = 27.42% of baseline** |
+| `d31` ceiling | 272,847 |
+| **Achievable fraction** | **97.94%** |
+| Keyless byte-equality parity | **29/29 PASS** (control `w0` re-run 29/29 in the same session) |
+
+### 8.1 Why the old encoder was expensive
+
+`uintNWord(v)` is `reverseBytes32(v as Bytes<32>)`: cast the integer to a full 32-byte
+little-endian word, then permute all 32 bytes. But 24, 16 or 31 of those bytes are KNOWN ZERO, and
+this backend charges only for VARIABLE bytes. The product was paying a 32-byte decompose plus a
+32-byte recompose to move at most 16 bytes of real content.
+
+### 8.2 Candidates and their measured cost (40 probe circuits, `probe-encoders`)
+
+Comparability is proven, not assumed: this probe file's canonical ledger-touch control measures
+**129** (as in all three Phase 4 probe files and the product's `isRegistered`), its cast-only
+controls reproduce Phase 4 exactly (**212 / 226 / 242**) and its verbatim copies of the product
+encoders reproduce Phase 4 exactly (**9,635 / 9,649 / 9,665**).
+
+Conversion cost = rows(probe) − rows(matched cast-only control), directly comparable to 9,423:
+
+| Candidate | Construction | u8 | u64 | u128 |
+|---|---|---:|---:|---:|
+| baseline | `reverseBytes32(v as Bytes<32>)` | 9,423 | 9,423 | 9,423 |
+| **A** | narrow cast + `Bytes[...]` with literal-zero prefix | **149** | **2,390** | **4,718** |
+| B | wide cast, index only the significant bytes | 291 | 2,518 | 4,830 |
+| **C** | the product's own `addressWord` idiom (`slice<32>([...pad(n,""), ...rev], 0)`) | **−145** | 3,454 | 6,998 |
+| D | explicit `Vector<32, Uint<8>> as Bytes<32>` | 149 | 2,390 | 4,718 |
+| W1 | witness supplies the whole `Bytes<32>`; circuit constrains all 32 bytes | 9,171 | 9,178 | 9,186 |
+| W2 | witness supplies the n significant bytes; circuit constrains n | 153 | 3,416 | 6,912 |
+
+C's negative figure at u8 is real: 31 of the 32 output bytes are compile-time constants, so the
+encode-and-use is cheaper than a plain little-endian cast of the same integer. **D compiles to
+exactly A** — identical row counts at all three widths.
+
+In-situ (each encoder spliced into a 64-byte keccak preimage; control splices a ready `Bytes<32>`):
+
+| Form | u8 | u64 | u128 |
+|---|---:|---:|---:|
+| control — splice a ready word | 13,531 | 13,545 | 13,561 |
+| product encoder | 22,976 | 22,990 | 23,006 |
+| candidate A | 9,291 | 16,052 | 18,304 |
+| candidate C | **9,003** | 17,026 | 20,554 |
+| E — direct splice, no `Bytes<32>` intermediate | **9,003** | **12,579** | **16,131** |
+
+`e1` therefore uses **C for `uint8Word`, A for `uint64Word` and `uint128Word`** — the best measured
+pure encoder at each width.
+
+### 8.3 Three verdicts worth not re-discovering
+
+1. **Arithmetic big-endian extraction (`v / 256^k % 256`) is NOT EXPRESSIBLE.** Compact 0.25's only
+   binary arithmetic operators are `+`, `-`, `*`. Verbatim, from compiling
+   `contracts/variants/probe-encoders-div.compact` (exit `255`):
+   ```
+   Exception: probe-encoders-div.compact line 19 char 21:
+     parse error: found "/" looking for "||", "&&", "==", "!=", "as", "+", "-", "*", "[", ".", ",",
+     ")", ":", "?", "=", "+=", "-=", "<", "<=", ">=", ">", "(", or a generic argument list
+   ```
+   There is no way to emit big-endian bytes without decomposing the integer into bytes; the only
+   question the language leaves open is HOW MANY bytes are decomposed and repacked.
+2. **The witness-hint ("verify, don't compute") encoder is expressible and REFUTED.** W1 saves only
+   237–252 rows (~2.6%): pinning all 32 output bytes costs the same full decomposition the reversal
+   was paying for. W2 is a genuine saving but is strictly worse than the pure candidate A at every
+   width, while additionally adding a private input to the circuit's witness interface. **On this
+   backend verification is not cheaper than computation, because the cost is byte decomposition and
+   verification pays it too.**
+3. **`d31`'s 272,847 was never a true upper bound.** `d31` removed only the byte permutation and
+   still spliced a full 32-variable-byte word into every preimage; a narrow encoder additionally
+   makes the SPLICE cheaper. The in-situ probes predicted 284,076 (104% of the "ceiling"); the
+   measured 267,216 came in 6.31% under that prediction, with the sign and cause §5 already
+   documents — isolated probes charge each site a full decomposition, while the product shares some
+   decompositions between consumers.
+
+### 8.4 The arm
+
+`contracts/variants/e1-bigendian-encoders.compact` — 58 changed lines: the non-shipping header plus
+**exactly one hunk** replacing the three encoder bodies. `reverseBytes32` itself is left
+byte-for-byte in place (`bytes32LexicographicLt` still needs its 16-byte sibling). The site
+inventory was verified mechanically: **32 sites — 12 `uint8Word`, 10 `uint64Word`, 10
+`uint128Word`**, distributed `evmStructHashFor` 13 · `semanticCommitmentFromSlots` 14 ·
+`actionUnionHash` 4 · `semanticCallTranscriptHash` 1.
+
+`check-frozen-surface.py` reports 3/34 frozen circuits MODIFIED, and they are exactly the three
+encoders. That is the correct result and not a failure: a source-verbatim check cannot certify byte
+equality for a REIMPLEMENTED circuit. This is the one arm in the project where the executed parity
+suite is doing the whole job — and it passed 29/29, including `pure.evmDigestFor` against the frozen
+KAT digest and `pure.semanticCommitmentFor` against the independently-computed oracle.
+
+### 8.5 DERIVED — the split `openSwapShieldedAuthorized` gateway
+
+**Not measured.** The 4S split source belongs to project 00008 and rebuilding it was outside Phase
+5's task list. Assumptions: (1) a selector-6-only gateway folds `evmStructHashFor` to its
+selector-6 branch alone — supported by 4S's own numbers, where `withdrawShieldedAuthorized` is
+389,808 against the monolith's 974,572; (2) the semantic chain is unchanged in every gateway.
+Surviving encoder sites: **24** (`uint8Word` 11, `uint64Word` 5, `uint128Word` 8).
+
+| Derivation | Saving | Implied gateway rows | vs 2^19 = 524,288 |
+|---|---:|---:|---|
+| Site model × e1's measured 0.9407 realisation factor | 212,600 | **408,154** | **116,134 under** |
+| Uniform average (8,350.5 rows/site × 24) — conservative | 200,412 | **420,342** | **103,946 under** |
+| FLOOR — semantic-chain sites only (14 of 24), every EIP-712 site ignored | 135,900 | **484,854** | **39,434 under** |
+
+All three clear k=19, including the deliberately pessimistic floor, because the gateway starts only
+96,466 rows (18.4%) above the ceiling. **This is DERIVED arithmetic, not a measurement, and no route
+is selected — Q3 remains deferred.** The obvious next measurement is to rebuild the 4S split with
+these encoders and measure it directly.
+
+DERIVED, secondary: `e1` + `o2` composed predicts ≈**606,427** rows for the monolith — still 82,139
+above 2^19. Not measured. The headline verdict is unchanged: **the monolithic `execute` does not
+reach k≤19 without a spec change.** What changed is that the split route now has a large, valid,
+no-spec-change lever available to it.
+
+### 8.6 Phase 5 integrity
+
+| Check | Result |
+|---|---|
+| Product Manager SHA-256 | `85b538bc…` — unchanged |
+| Prover/verifier files anywhere in the clone | **0** (`KEY_FILES=0` on all Phase 5 runs) |
+| Compile exits ≠ 0 | 2, both recorded: the div/mod probe (the candidate's verdict) and one authoring-time `Field`/`Uint` equality slip |
+| Measure exits ≠ 0 | **0 of 42** |
+| Watchdog timeouts / OOM / retries | none |
+| Provable-circuit surface, `e1` | exactly the product's nine names |
+| Measurement concurrency | serial — never more than one at a time |
+| Marker ports | one random confirmed-free loopback port > 10000 per run |
+| Parity volume | torn down, `residual_volumes=0` |
 | Docker residue attributable to this project | containers/volumes/networks/processes `0/0/0/0` |
 | Push to any remote | none; push URL disabled on both remotes |
