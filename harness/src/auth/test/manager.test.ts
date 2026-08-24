@@ -254,6 +254,32 @@ describe("Manager v5 owner actions through the one gateway", () => {
 });
 
 describe("Manager v5 EVM refusal matrix is atomic", () => {
+  it("rejects unknown envelopes, zero registration fields, and duplicate registration", async () => {
+    const sim = await ManagerSim.create(NATIVE_A);
+    const manager = managerAddressHex(sim.address);
+    const domain = bytesToHex(sim.deploymentDomain) as Hex32;
+    const action = registration(manager, EVM_OWNER_A, SALT_A);
+    const prepared = prepareEvmExecute(action, domain, metamaskSign(EVM_KEY_A, action, domain));
+    const probes: Array<{ label: string; payload: ManagerExecutePayload }> = [
+      { label: "selector", payload: { ...prepared.payload, selector: 7n } },
+      { label: "auth mode", payload: { ...prepared.payload, authMode: 2n } },
+      { label: "zero owner", payload: { ...prepared.payload, owner: new Uint8Array(20) } },
+      { label: "zero salt", payload: { ...prepared.payload, accountSalt: new Uint8Array(32) } },
+    ];
+    for (const probe of probes) {
+      const before = JSON.stringify(snapshotLedger(sim.ledger));
+      await sim.expectRejectAt(NOW, "execute", probe.payload, prepared.signature, prepared.point);
+      expect(JSON.stringify(snapshotLedger(sim.ledger)), probe.label).toBe(before);
+    }
+
+    await sim.callDetailedAt(NOW, "execute", prepared.payload, prepared.signature, prepared.point);
+    const afterRegistration = JSON.stringify(snapshotLedger(sim.ledger));
+    expect(
+      await sim.expectRejectAt(NOW, "execute", prepared.payload, prepared.signature, prepared.point),
+    ).toMatch(/already registered|collision/);
+    expect(JSON.stringify(snapshotLedger(sim.ledger))).toBe(afterRegistration);
+  });
+
   it("rejects wrong signer, domain, Manager/account/type/field, and deadline boundaries", async () => {
     const sim = await ManagerSim.create(NATIVE_A);
     const manager = managerAddressHex(sim.address);
@@ -347,5 +373,95 @@ describe("Manager v5 EVM refusal matrix is atomic", () => {
       /witness|mode|account transcript/,
     );
     expect(JSON.stringify(snapshotLedger(sim.ledger))).toBe(afterCommit);
+  });
+
+  it("rejects wrong type/field, malformed points, and secp scalar boundary probes", async () => {
+    const sim = await ManagerSim.create(NATIVE_A);
+    const source = (await registerEvm(sim, EVM_KEY_A, SALT_A)).action.accountId;
+    const destination = (await registerEvm(sim, EVM_KEY_B, SALT_B)).action.accountId;
+    const manager = managerAddressHex(sim.address);
+    const domain = bytesToHex(sim.deploymentDomain) as Hex32;
+    const common = {
+      manager,
+      accountId: source,
+      owner: EVM_OWNER_A,
+      nonce: 0n,
+      validUntil: DEADLINE,
+    };
+    const withdraw: Eip712Action = {
+      ...common,
+      primaryType: "WithdrawShielded",
+      color: COLOR_A,
+      amount: 1n,
+      recipientKind: 0n,
+      recipient: RECIPIENT,
+    };
+    const signedWrongType = prepareEvmExecute(
+      withdraw,
+      domain,
+      metamaskSign(EVM_KEY_A, withdraw, domain),
+    );
+    const wrongTypePayload: ManagerExecutePayload = {
+      ...signedWrongType.payload,
+      selector: 4n,
+      recipientKind: 0n,
+      recipient: new Uint8Array(32),
+      toAccount: bytes(destination),
+    };
+    const transfer: Eip712Action = {
+      ...common,
+      primaryType: "TransferInternalShielded",
+      toAccountId: destination,
+      color: COLOR_A,
+      amount: 1n,
+    };
+    const valid = prepareEvmExecute(
+      transfer,
+      domain,
+      metamaskSign(EVM_KEY_A, transfer, domain),
+    );
+    const probes: Array<{ label: string; payload?: ManagerExecutePayload; signature?: any; point?: any }> = [
+      { label: "wrong type", payload: wrongTypePayload, signature: signedWrongType.signature, point: signedWrongType.point },
+      { label: "wrong field", payload: { ...valid.payload, primaryAmount: 2n } },
+      { label: "off-curve point", point: { x: 1n, y: 1n, identity: false } },
+      { label: "identity point", point: { x: 0n, y: 0n, identity: true } },
+      { label: "zero scalar", signature: { r: 0n, s: valid.signature.s } },
+      { label: "curve-order scalar", signature: { r: (1n << 256n) - 1n, s: valid.signature.s } },
+      { label: "width-overflow scalar", signature: { r: 1n << 256n, s: valid.signature.s } },
+    ];
+    for (const probe of probes) {
+      const before = JSON.stringify(snapshotLedger(sim.ledger));
+      await sim.expectRejectAt(
+        NOW,
+        "execute",
+        probe.payload ?? valid.payload,
+        probe.signature ?? valid.signature,
+        probe.point ?? valid.point,
+      );
+      expect(JSON.stringify(snapshotLedger(sim.ledger)), probe.label).toBe(before);
+    }
+  });
+
+  it("rejects a native action under the wrong witness without changing state", async () => {
+    const sim = await ManagerSim.create(NATIVE_A);
+    const source = await sim.ownerCommitmentFor(NATIVE_A);
+    const destination = await sim.ownerCommitmentFor(NATIVE_B);
+    await sim.call("registerAccount", source);
+    await sim.call("registerAccount", destination);
+    await sim.call("depositShielded", coin(COLOR_A, 5n, 1), source);
+    const payload: ManagerExecutePayload = {
+      ...emptyExecutePayload(),
+      selector: 4n,
+      account: source,
+      primaryColor: bytes(COLOR_A),
+      primaryAmount: 1n,
+      toAccount: destination,
+    };
+    sim.actAs(NATIVE_B);
+    const before = JSON.stringify(snapshotLedger(sim.ledger));
+    expect(await sim.expectReject("execute", payload, inert.signature, inert.point)).toMatch(
+      /witness|account transcript/,
+    );
+    expect(JSON.stringify(snapshotLedger(sim.ledger))).toBe(before);
   });
 });
