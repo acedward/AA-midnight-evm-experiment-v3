@@ -381,6 +381,11 @@ IDENTICAL bytes and measured what fraction of that ceiling is actually purchasab
 
 **Answer: 97.94% of it, with no frozen byte moved.**
 
+The cleanest single check, independent of any model: `d31` — the ablation that deletes the reversal
+and therefore emits the WRONG bytes — measures **701,725** rows. `e1`, which emits the RIGHT bytes,
+measures **707,356**. Correct big-endian encoding at all 32 sites now costs **5,631 rows more than
+not encoding at all**, where it used to cost 272,847.
+
 | Quantity | Value |
 |---|---:|
 | Baseline `execute` (`w0`) | 974,572 |
