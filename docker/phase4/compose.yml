@@ -1,0 +1,96 @@
+services:
+  proof-server:
+    image: midnightntwrk/proof-server@sha256:4f02ca2734649eb238d13924df299b1c82bd5546ec928c5d67bdd0ce86dd0bd1
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    ports:
+      - "127.0.0.1:${PORT_PROOF_SERVER}:6300"
+    environment:
+      RUST_BACKTRACE: "full"
+      EXTRA_ARGS: "-v"
+
+  plain-proof-server:
+    image: midnightntwrk/proof-server@sha256:c68c25e870751c907cd779b122988e59362f60be2a53142b56bda41573ec775f
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    ports:
+      - "127.0.0.1:${PORT_PLAIN_PROOF_SERVER}:6300"
+    environment:
+      RUST_BACKTRACE: "full"
+      EXTRA_ARGS: "-v"
+
+  node:
+    image: midnightntwrk/midnight-node@sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
+    ports:
+      - "127.0.0.1:${PORT_NODE_RPC}:9944"
+    volumes:
+      - node-data:/data
+    environment:
+      CFG_PRESET: "dev"
+      SHOW_CONFIG: "false"
+      SIDECHAIN_BLOCK_BENEFICIARY: "04bcf7ad3be7a5c790460be82a713af570f22e0f801f6659ab8e84a52be6969e"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >
+          curl -fs -H 'Content-Type: application/json' -d
+          '{"id":1,"jsonrpc":"2.0","method":"chain_getBlockHash","params":[1]}'
+          http://localhost:9944 | grep -q '"result":"0x'
+      interval: 2s
+      timeout: 5s
+      retries: 60
+      start_period: 5s
+
+  indexer:
+    image: midnightntwrk/indexer-standalone@sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      node:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${PORT_INDEXER}:8088"
+    environment:
+      RUST_LOG: "indexer=debug,chain_indexer=debug,indexer_api=debug,wallet_indexer=debug,indexer_common=debug,fastrace_opentelemetry=off,info"
+      APP__INFRA__NODE__URL: "ws://node:9944"
+      APP__APPLICATION__NETWORK_ID: "undeployed"
+      APP__INFRA__SECRET: "${APP_INFRA_SECRET}"
+      APP__INFRA__SPO_NODE__URL: "ws://node:9944"
+      APP__INFRA__SPO_NODE__BLOCKFROST_ID: "local-dev-dummy-not-using-spo"
+
+  runner:
+    image: node@sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e
+    profiles: [runner]
+    working_dir: /work/harness
+    volumes:
+      - work:/work
+      - evidence:/evidence
+    environment:
+      LANE_NODE_RPC_URL: "http://node:9944"
+      LANE_INDEXER_HTTP_URL: "http://indexer:8088/api/v4/graphql"
+      LANE_INDEXER_WS_URL: "ws://indexer:8088/api/v4/graphql/ws"
+      LANE_PROVING_SERVER_URL: "http://proof-server:6300"
+      LANE_RELAY_URL: "ws://node:9944"
+      PHASE4_PLAIN_PROOF_URL: "http://plain-proof-server:6300"
+      PHASE4_EVIDENCE_DIR: /evidence
+      PHASE4_PROOF_IMAGE: "midnightntwrk/proof-server@sha256:4f02ca2734649eb238d13924df299b1c82bd5546ec928c5d67bdd0ce86dd0bd1"
+    depends_on:
+      node:
+        condition: service_healthy
+      indexer:
+        condition: service_started
+      proof-server:
+        condition: service_started
+      plain-proof-server:
+        condition: service_started
+
+volumes:
+  node-data:
+  work:
+    external: true
+    name: ${PHASE4_WORK_VOLUME}
+  evidence:
+    external: true
+    name: ${PHASE4_EVIDENCE_VOLUME}

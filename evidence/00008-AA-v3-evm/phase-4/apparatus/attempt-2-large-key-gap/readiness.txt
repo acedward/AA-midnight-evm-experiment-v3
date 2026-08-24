@@ -1,0 +1,4 @@
+node_rpc={"jsonrpc":"2.0","id":1,"result":"0x2bc2737d5eb85aa52bfa76e4ea201b57f1fab0f2384ae0ddfbe1369e871f7403"}
+indexer_status=200
+proof_version=9.0.0-rc.5
+plain_proof_version=9.0.0-rc.3

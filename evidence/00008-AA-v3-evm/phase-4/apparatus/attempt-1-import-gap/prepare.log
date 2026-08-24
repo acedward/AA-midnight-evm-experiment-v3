@@ -1,0 +1,117 @@
+Preparing pnpm@11.5.1 for immediate activation...
+? Verifying lockfile against supply-chain policies (298 entries)...
+
+   ╭───────────────────────────────────────────────╮
+   │                                               │
+   │      Update available! 11.5.1 → 11.23.0.      │
+   │     Changelog: https://pnpm.io/v/11.23.0      │
+   │   To update, run: corepack use pnpm@11.23.0   │
+   │                                               │
+   ╰───────────────────────────────────────────────╯
+
+✓ Lockfile passes supply-chain policies (298 entries in 4.3s)
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +244
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 244, reused 0, downloaded 215, added 215
+Progress: resolved 244, reused 0, downloaded 244, added 244, done
+.../node_modules/classic-level install$ node-gyp-build
+.../node_modules/msgpackr-extract install$ node-gyp-build-optional-packages
+.../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+.../node_modules/classic-level install: Done
+.../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+.../node_modules/msgpackr-extract install: node:internal/errors:540
+.../node_modules/msgpackr-extract install:       throw error;
+.../node_modules/msgpackr-extract install:       ^
+.../node_modules/msgpackr-extract install: TypeError [ERR_INVALID_ARG_TYPE]: The "id" argument must be of type string. Received undefined
+.../node_modules/msgpackr-extract install:     at Module.require (node:internal/modules/cjs/loader:1438:3)
+.../node_modules/msgpackr-extract install:     at require (node:internal/modules/helpers:135:16)
+.../node_modules/msgpackr-extract install:     at load (/work/harness/node_modules/.pnpm/node-gyp-build-optional-packages@5.2.2/node_modules/node-gyp-build-optional-packages/node-gyp-build.js:28:10)
+.../node_modules/msgpackr-extract install:     at Object.<anonymous> (/work/harness/node_modules/.pnpm/node-gyp-build-optional-packages@5.2.2/node_modules/node-gyp-build-optional-packages/build-test.js:19:19)
+.../node_modules/msgpackr-extract install:     at Module._compile (node:internal/modules/cjs/loader:1688:14)
+.../node_modules/msgpackr-extract install:     at Object..js (node:internal/modules/cjs/loader:1820:10)
+.../node_modules/msgpackr-extract install:     at Module.load (node:internal/modules/cjs/loader:1423:32)
+.../node_modules/msgpackr-extract install:     at Function._load (node:internal/modules/cjs/loader:1246:12)
+.../node_modules/msgpackr-extract install:     at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+.../node_modules/msgpackr-extract install:     at wrapModuleLoad (node:internal/modules/cjs/loader:235:24) {
+.../node_modules/msgpackr-extract install:   code: 'ERR_INVALID_ARG_TYPE'
+.../node_modules/msgpackr-extract install: }
+.../node_modules/msgpackr-extract install: Node.js v22.18.0
+.../node_modules/msgpackr-extract install: The failure above indicates the primary issue with the native builds which are included for all major platforms. Will now attempt to build the package locally in case this can be resolved by re-compiling.
+.../node_modules/msgpackr-extract install: gyp info it worked if it ends with ok
+.../node_modules/msgpackr-extract install: gyp info using node-gyp@12.3.0
+.../node_modules/msgpackr-extract install: gyp info using node@22.18.0 | linux | arm64
+.../node_modules/msgpackr-extract install: gyp ERR! find Python 
+.../node_modules/msgpackr-extract install: gyp ERR! find Python --python was not set on the command line
+.../node_modules/msgpackr-extract install: gyp ERR! find Python Python is not set from environment variable PYTHON
+.../node_modules/msgpackr-extract install: gyp ERR! find Python checking if "python3" can be used
+.../node_modules/msgpackr-extract install: gyp ERR! find Python - executable path is ""
+.../node_modules/msgpackr-extract install: gyp ERR! find Python - "" could not be run
+.../node_modules/msgpackr-extract install: gyp ERR! find Python checking if "python" can be used
+.../node_modules/msgpackr-extract install: gyp ERR! find Python - executable path is ""
+.../node_modules/msgpackr-extract install: gyp ERR! find Python - "" could not be run
+.../node_modules/msgpackr-extract install: gyp ERR! find Python 
+.../node_modules/msgpackr-extract install: gyp ERR! find Python **********************************************************
+.../node_modules/msgpackr-extract install: gyp ERR! find Python You need to install the latest version of Python.
+.../node_modules/msgpackr-extract install: gyp ERR! find Python Node-gyp should be able to find and use Python. If not,
+.../node_modules/msgpackr-extract install: gyp ERR! find Python you can try one of the following options:
+.../node_modules/msgpackr-extract install: gyp ERR! find Python - Use the switch --python="/path/to/pythonexecutable"
+.../node_modules/msgpackr-extract install: gyp ERR! find Python (accepted by both node-gyp and npm)
+.../node_modules/msgpackr-extract install: gyp ERR! find Python - Set the environment variable PYTHON
+.../node_modules/msgpackr-extract install: gyp ERR! find Python For more information consult the documentation at:
+.../node_modules/msgpackr-extract install: gyp ERR! find Python https://github.com/nodejs/node-gyp#installation
+.../node_modules/msgpackr-extract install: gyp ERR! find Python **********************************************************
+.../node_modules/msgpackr-extract install: gyp ERR! find Python 
+.../node_modules/msgpackr-extract install: gyp ERR! configure error 
+.../node_modules/msgpackr-extract install: gyp ERR! stack Error: Could not find any Python installation to use
+.../node_modules/msgpackr-extract install: gyp ERR! stack at PythonFinder.fail (/root/.cache/node/corepack/v1/pnpm/11.5.1/dist/node_modules/node-gyp/lib/find-python.js:300:11)
+.../node_modules/msgpackr-extract install: gyp ERR! stack at PythonFinder.findPython (/root/.cache/node/corepack/v1/pnpm/11.5.1/dist/node_modules/node-gyp/lib/find-python.js:160:17)
+.../node_modules/msgpackr-extract install: gyp ERR! stack at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+.../node_modules/msgpackr-extract install: gyp ERR! stack at async configure (/root/.cache/node/corepack/v1/pnpm/11.5.1/dist/node_modules/node-gyp/lib/configure.js:27:18)
+.../node_modules/msgpackr-extract install: gyp ERR! stack at async run (/root/.cache/node/corepack/v1/pnpm/11.5.1/dist/node_modules/node-gyp/bin/node-gyp.js:81:18)
+.../node_modules/msgpackr-extract install: gyp ERR! System Linux 7.0.12-linuxkit
+.../node_modules/msgpackr-extract install: gyp ERR! command "/usr/local/bin/node" "/root/.cache/node/corepack/v1/pnpm/11.5.1/dist/node_modules/node-gyp/bin/node-gyp.js" "rebuild"
+.../node_modules/msgpackr-extract install: gyp ERR! cwd /work/harness/node_modules/.pnpm/msgpackr-extract@3.0.4/node_modules/msgpackr-extract
+.../node_modules/msgpackr-extract install: gyp ERR! node -v v22.18.0
+.../node_modules/msgpackr-extract install: gyp ERR! node-gyp -v v12.3.0
+.../node_modules/msgpackr-extract install: gyp ERR! $npm_package_name msgpackr-extract
+.../node_modules/msgpackr-extract install: gyp ERR! $npm_package_version 3.0.4
+.../node_modules/msgpackr-extract install: gyp ERR! not ok 
+.../node_modules/msgpackr-extract install: Failed
+
+dependencies:
++ @metamask/eth-sig-util 8.2.0
++ @midnight-ntwrk/compact-runtime 0.18.0-rc.1
++ @midnight-ntwrk/midnight-js-contracts 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-http-client-proof-provider 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-indexer-public-data-provider 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-level-private-state-provider 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-network-id 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-node-zk-config-provider 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-protocol 5.0.0-beta.6
++ @midnight-ntwrk/midnight-js-types 5.0.0-beta.6
++ @midnightntwrk/ledger-v9 1.0.0-rc.3
++ @midnightntwrk/wallet-sdk 2.0.0-beta.2
++ @midnightntwrk/wallet-sdk-abstractions 3.0.0-beta.0
++ @midnightntwrk/wallet-sdk-address-format 4.0.0-beta.2
++ @midnightntwrk/wallet-sdk-capabilities 4.0.0-beta.2
++ @midnightntwrk/wallet-sdk-dust-wallet 5.0.0-beta.2
++ @midnightntwrk/wallet-sdk-facade 5.0.0-beta.2
++ @midnightntwrk/wallet-sdk-hd 3.1.0-beta.1
++ @midnightntwrk/wallet-sdk-runtime 1.0.6-beta.0
++ @midnightntwrk/wallet-sdk-shielded 4.0.0-beta.2
++ @midnightntwrk/wallet-sdk-unshielded-wallet 4.0.0-beta.2
++ @noble/curves 2.2.0
++ @noble/hashes 2.2.0
++ rxjs 7.8.2
+
+devDependencies:
++ @types/node 24.13.2
++ tsx 4.20.6
++ typescript 5.9.3
++ vitest 4.1.9
+
+Done in 6.1s using pnpm v11.5.1
+tsx v4.20.6
+node v22.18.0

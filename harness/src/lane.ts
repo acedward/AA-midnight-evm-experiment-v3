@@ -22,6 +22,12 @@ export type LaneEnv = {
 };
 
 export const readLaneEnv = (): LaneEnv => {
+  if (
+    process.env.LANE_NODE_RPC_URL && process.env.LANE_INDEXER_HTTP_URL &&
+    process.env.LANE_INDEXER_WS_URL && process.env.LANE_PROVING_SERVER_URL
+  ) {
+    return { composeProject: process.env.COMPOSE_PROJECT_NAME ?? 'compose-runner', nodeRpcPort: 1, indexerPort: 1, proofServerPort: 1 };
+  }
   const raw = readFileSync(join(REPO_ROOT, 'docker', '.env'), 'utf-8');
   const map = new Map<string, string>();
   for (const line of raw.split('\n')) {
@@ -44,12 +50,16 @@ export const readLaneEnv = (): LaneEnv => {
   };
 };
 
+/**
+ * Compose runners use service DNS while host-run historical gates keep loopback ports. Explicit
+ * URL overrides are test-lane plumbing only; absent overrides preserve the established behavior.
+ */
 export const endpoints = (env: LaneEnv) => ({
-  indexerHttpUrl: `http://127.0.0.1:${env.indexerPort}/api/v4/graphql`,
-  indexerWsUrl: `ws://127.0.0.1:${env.indexerPort}/api/v4/graphql/ws`,
-  provingServerUrl: new URL(`http://127.0.0.1:${env.proofServerPort}`),
-  relayURL: new URL(`ws://127.0.0.1:${env.nodeRpcPort}`),
-  nodeHttpUrl: `http://127.0.0.1:${env.nodeRpcPort}`,
+  indexerHttpUrl: process.env.LANE_INDEXER_HTTP_URL ?? `http://127.0.0.1:${env.indexerPort}/api/v4/graphql`,
+  indexerWsUrl: process.env.LANE_INDEXER_WS_URL ?? `ws://127.0.0.1:${env.indexerPort}/api/v4/graphql/ws`,
+  provingServerUrl: new URL(process.env.LANE_PROVING_SERVER_URL ?? `http://127.0.0.1:${env.proofServerPort}`),
+  relayURL: new URL(process.env.LANE_RELAY_URL ?? `ws://127.0.0.1:${env.nodeRpcPort}`),
+  nodeHttpUrl: process.env.LANE_NODE_RPC_URL ?? `http://127.0.0.1:${env.nodeRpcPort}`,
 });
 
 // Demo parties. The genesis seed (…0001) is the funded wallet on a fresh `undeployed` network,
