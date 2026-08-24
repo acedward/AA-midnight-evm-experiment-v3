@@ -236,7 +236,7 @@ export class MinterCollideSim {
 // --- Manager v3 -----------------------------------------------------------------------------------
 
 export class ManagerSim {
-  readonly address = sampleContractAddress();
+  readonly address: ReturnType<typeof sampleContractAddress>;
   readonly deploymentDomain: Uint8Array;
   private contract: any;
   /** The contract's charged ledger state. Updated from the query context after every call. */
@@ -249,16 +249,19 @@ export class ManagerSim {
     state: any,
     privateState: ManagerPS,
     deploymentDomain: Uint8Array,
+    address: ReturnType<typeof sampleContractAddress>,
   ) {
     this.contract = contract;
     this.state = state;
     this.privateState = privateState;
     this.deploymentDomain = Uint8Array.from(deploymentDomain);
+    this.address = address;
   }
 
   static async create(
     initialSecret: Uint8Array,
     deploymentDomain: Uint8Array = DEPLOYMENT_DOMAIN,
+    address: ReturnType<typeof sampleContractAddress> = sampleContractAddress(),
   ): Promise<ManagerSim> {
     const witnesses = {
       localOwnerSecret: (ctx: any): [ManagerPS, Uint8Array] => [ctx.privateState, ctx.privateState.ownerSecret],
@@ -271,6 +274,7 @@ export class ManagerSim {
       res.currentContractState.data,
       res.currentPrivateState ?? ps,
       deploymentDomain,
+      address,
     );
   }
 

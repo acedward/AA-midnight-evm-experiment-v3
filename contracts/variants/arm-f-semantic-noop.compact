@@ -1,5 +1,7 @@
 // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
 //
+// PHASE 4R MEASUREMENT-ONLY DIAGNOSTIC. This source must never ship or replace manager.compact.
+//
 // ================================================================================================
 // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
 // ================================================================================================
@@ -234,9 +236,10 @@ circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
   return persistentCommit<Bytes<21>>("aa00005:manager:owner", disclose(sk));
 }
 
-/// Assert the witness-derived account selected by `execute` is a registered native record.
-/// THE single authorization choke point for every native debiting action (FR-204).
-circuit authenticatedNativeAccount(acct: Bytes<32>): Bytes<32> {
+/// The account of whoever supplied the witness, asserted to be registered.
+/// THE single authorization choke point for every debiting circuit (FR-204). Unchanged from v2.
+circuit authenticatedNativeAccount(): Bytes<32> {
+  const acct = ownerCommitment(localOwnerSecret());
   assert(accounts.member(acct), "caller's owner witness matches no registered account");
   assert(accountModes.member(acct), "registered account has no authorization mode");
   assert(accountModes.lookup(acct) == 0, "EVM account cannot enter native authorization");
@@ -1031,10 +1034,11 @@ circuit assertLiveDeadline(validUntil: Uint<64>): [] {
 
 circuit authenticatedActionAccount(
   p: ExecutePayload,
-  nativeAccount: Bytes<32>
+  signatureOk: Boolean,
+  signer: Bytes<20>
 ): Bytes<32> {
   if (p.authMode == 0) {
-    const acct = authenticatedNativeAccount(nativeAccount);
+    const acct = authenticatedNativeAccount();
     assert(acct == p.account, "native witness does not match supplied account transcript");
     assert(accountModes.lookup(acct) == p.authMode, "authorization mode does not match account record");
     assert(!evmOwners.member(acct) && !evmNonces.member(acct), "native account carries EVM state");
@@ -1048,21 +1052,10 @@ circuit authenticatedActionAccount(
   assert(evmOwners.member(p.account) && evmNonces.member(p.account), "EVM account record is incomplete");
   assert(p.owner == evmOwners.lookup(p.account), "signed owner does not match stored owner");
   assert(p.nonce == evmNonces.lookup(p.account), "EVM nonce mismatch");
+  assertLiveDeadline(p.validUntil);
+  assert(signatureOk, "EVM signature does not verify");
+  assert(signer == p.owner, "EVM signer does not control account");
   return p.account;
-}
-
-circuit gatewayAccount(
-  p: ExecutePayload,
-  nativeAccount: Bytes<32>,
-  evmRegistrationAccount: Bytes<32>
-): Bytes<32> {
-  if (p.selector == 0) {
-    return nativeAccount;
-  }
-  if (p.selector == 1) {
-    return evmRegistrationAccount;
-  }
-  return authenticatedActionAccount(p, nativeAccount);
 }
 
 circuit shieldedRecipient(kind: Uint<8>, recipient: Bytes<32>): Either<ZswapCoinPublicKey, ContractAddress> {
@@ -1182,58 +1175,47 @@ circuit semanticCommitmentFromSlots(
   return keccak256<Bytes<1024>>(preimage);
 }
 
-/// Private slot-selection core used by both the exported byte oracle and the one execute event.
-/// Muxing values into one call keeps every frozen byte while avoiding branch-duplicated Keccak.
-circuit semanticCommitmentCore(
-  manager: Bytes<32>, domain: Bytes<32>, payload: ExecutePayload,
-  account: Bytes<32>, authResult: Bytes<32>
-): Bytes<32> {
-  const p = payload;
-  const isSwap = p.selector == 6;
-  const isOpenSwap = isSwap && p.recipientKind == 0;
-  const giveBeforeWant = isOpenSwap && bytes32LexicographicLt(p.primaryColor, p.wantColor);
-  const imbalanceCount = (isSwap ? (isOpenSwap ? 2 : 1) : 0) as Uint<8>;
-  const family0 = (isSwap ? 1 : 0) as Uint<8>;
-  const color0 = giveBeforeWant
-    ? p.primaryColor
-    : (isSwap ? p.wantColor : default<Bytes<32>>);
-  const direction0 = (giveBeforeWant ? 2 : (isSwap ? 1 : 0)) as Uint<8>;
-  const amount0 = (giveBeforeWant ? p.primaryAmount : (isSwap ? p.wantAmount : 0)) as Uint<128>;
-  const family1 = (isOpenSwap ? 1 : 0) as Uint<8>;
-  const color1 = isOpenSwap
-    ? (giveBeforeWant ? p.wantColor : p.primaryColor)
-    : default<Bytes<32>>;
-  const direction1 = (isOpenSwap ? (giveBeforeWant ? 1 : 2) : 0) as Uint<8>;
-  const amount1 = (isOpenSwap ? (giveBeforeWant ? p.wantAmount : p.primaryAmount) : 0) as Uint<128>;
-  return semanticCommitmentFromSlots(
-    manager, domain, p, account, authResult, imbalanceCount,
-    family0, color0, direction0, amount0,
-    family1, color1, direction1, amount1
-  );
-}
-
 export circuit semanticCommitmentFor(
   manager: Bytes<32>, domain: Bytes<32>, payload: ExecutePayload,
   account: Bytes<32>, authResult: Bytes<32>
 ): Bytes<32> {
   const p = payload;
   assertActionEnvelope(p);
-  return disclose(semanticCommitmentCore(manager, domain, p, account, authResult));
+  if (p.selector != 6) {
+    return disclose(semanticCommitmentFromSlots(
+      manager, domain, p, account, authResult, 0,
+      0, default<Bytes<32>>, 0, 0,
+      0, default<Bytes<32>>, 0, 0
+    ));
+  }
+  if (p.recipientKind != 0) {
+    return disclose(semanticCommitmentFromSlots(
+      manager, domain, p, account, authResult, 1,
+      1, p.wantColor, 1, p.wantAmount,
+      0, default<Bytes<32>>, 0, 0
+    ));
+  }
+  const giveBeforeWant = bytes32LexicographicLt(p.primaryColor, p.wantColor);
+  if (giveBeforeWant) {
+    return disclose(semanticCommitmentFromSlots(
+      manager, domain, p, account, authResult, 2,
+      1, p.primaryColor, 2, p.primaryAmount,
+      1, p.wantColor, 1, p.wantAmount
+    ));
+  }
+  return disclose(semanticCommitmentFromSlots(
+    manager, domain, p, account, authResult, 2,
+    1, p.wantColor, 1, p.wantAmount,
+    1, p.primaryColor, 2, p.primaryAmount
+  ));
 }
 
 circuit emitSemanticCommitment(
   manager: Bytes<32>, p: ExecutePayload, account: Bytes<32>, authResult: Bytes<32>
 ): [] {
-  const commitment = disclose(semanticCommitmentCore(manager, deploymentDomain, p, account, authResult));
-  // `Misc.payload` is fixed at Bytes<256>. Put the authoritative commitment first; every committed
-  // field is recovered from the proved execute transcript and recomputed before this value is
-  // accepted. The pinned simulator currently exposes only the first 192 bytes of the 288-byte raw
-  // event cell, so readers deliberately support its degraded raw-prefix representation too.
-  const eventPayload: Bytes<256> = slice<256>([
-    ...commitment, ...default<Bytes<32>>, ...default<Bytes<32>>, ...default<Bytes<32>>,
-    ...default<Bytes<32>>, ...default<Bytes<32>>, ...default<Bytes<32>>, ...default<Bytes<32>>
-  ], 0) as Bytes<256>;
-  emit(Misc { name: semanticEventName(), payload: eventPayload });
+  // PHASE 4R ATTRIBUTION ONLY: remove semantic-event constraints while retaining the frozen pure
+  // semanticCommitmentFor oracle. Never use this contract as a product artifact.
+  return;
 }
 
 /// The only externally callable registration/debit gateway. ECDSA/address operations stay
@@ -1251,61 +1233,54 @@ export circuit execute(
     : evmDigestFor(manager, deploymentDomain, p);
   const signatureOk = disclose(secp256k1EcdsaVerify(digest, sig, pk));
   const signer = disclose(secp256k1EthereumAddress(pk));
-  const isNativeRegistration = p.selector == 0;
-  const isEvmRegistration = p.selector == 1;
-  const isRegistration = isNativeRegistration || isEvmRegistration;
-  const isEvmAuthorized = p.authMode == 1;
-  const isEvmAction = isEvmAuthorized && !isEvmRegistration;
-  const nativeAccount = ownerCommitment(localOwnerSecret());
-  const evmRegistrationAccount = evmAccountIdFor(manager, p.owner, p.accountSalt);
-  assert(!isEvmRegistration || evmRegistrationAccount == p.account, "EVM registration account id mismatch");
-  const account = gatewayAccount(p, nativeAccount, evmRegistrationAccount);
 
-  if (isEvmAuthorized) {
+  if (p.selector == 0) {
+    const account = ownerCommitment(localOwnerSecret());
+    registerAccount(account, 0);
+    emitSemanticCommitment(manager, p, account, nativeAuthResult(account));
+    return;
+  }
+
+  if (p.selector == 1) {
     assertLiveDeadline(p.validUntil);
-  }
-  assert(!isEvmRegistration || signatureOk, "EVM registration signature does not verify");
-  assert(!isEvmRegistration || signer == p.owner, "EVM registration signer does not match owner");
-  assert(!isEvmAction || signatureOk, "EVM signature does not verify");
-  assert(!isEvmAction || signer == p.owner, "EVM signer does not control account");
-
-  if (isRegistration) {
-    registerAccount(account, (isEvmRegistration ? 1 : 0) as Uint<8>);
-  }
-  if (isEvmRegistration) {
+    const account = evmAccountIdFor(manager, p.owner, p.accountSalt);
+    assert(account == p.account, "EVM registration account id mismatch");
+    assert(signatureOk, "EVM registration signature does not verify");
+    assert(signer == p.owner, "EVM registration signer does not match owner");
+    registerAccount(account, 1);
     evmOwners.insert(account, p.owner);
+    evmNonces.insert(account, 0);
+    emitSemanticCommitment(manager, p, account, digest);
+    return;
   }
 
-  if (!isRegistration) {
-    if (p.selector == 2) {
-      withdrawShielded(account, p.primaryColor, p.primaryAmount, shieldedRecipient(p.recipientKind, p.recipient));
-    } else if (p.selector == 3) {
-      withdrawUnshielded(account, p.primaryColor, p.primaryAmount, unshieldedRecipient(p.recipientKind, p.recipient));
-    } else if (p.selector == 4) {
-      transferInternalShielded(account, p.toAccount, p.primaryColor, p.primaryAmount);
-    } else if (p.selector == 5) {
-      transferInternalUnshielded(account, p.toAccount, p.primaryColor, p.primaryAmount);
-    } else {
-      openSwapShielded(
-        account,
-        p.primaryColor,
-        p.primaryAmount,
-        swapRecipient(p.recipientKind, p.recipient),
-        ShieldedCoinInfo{ nonce: p.wantNonce, color: p.wantColor, value: p.wantAmount },
-        p.creditAccount
-      );
-    }
+  const account = authenticatedActionAccount(p, signatureOk, signer);
+  if (p.selector == 2) {
+    withdrawShielded(account, p.primaryColor, p.primaryAmount, shieldedRecipient(p.recipientKind, p.recipient));
+  } else if (p.selector == 3) {
+    withdrawUnshielded(account, p.primaryColor, p.primaryAmount, unshieldedRecipient(p.recipientKind, p.recipient));
+  } else if (p.selector == 4) {
+    transferInternalShielded(account, p.toAccount, p.primaryColor, p.primaryAmount);
+  } else if (p.selector == 5) {
+    transferInternalUnshielded(account, p.toAccount, p.primaryColor, p.primaryAmount);
+  } else {
+    openSwapShielded(
+      account,
+      p.primaryColor,
+      p.primaryAmount,
+      swapRecipient(p.recipientKind, p.recipient),
+      ShieldedCoinInfo{ nonce: p.wantNonce, color: p.wantColor, value: p.wantAmount },
+      p.creditAccount
+    );
   }
 
-  // The sole checked nonce write is deliberately after custody dispatch: every guard/effect must
-  // succeed first. EVM registration selects zero; native records never enter this write.
-  const incrementedNonce = (p.nonce + 1) as Uint<64>;
-  assert(!isEvmAction || incrementedNonce > p.nonce, "EVM nonce overflow");
-  const storedNonce = (isEvmRegistration ? 0 : incrementedNonce) as Uint<64>;
-  if (isEvmAuthorized) {
-    evmNonces.insert(account, storedNonce);
+  // The checked nonce write is deliberately last: every custody guard/effect must succeed first.
+  if (p.authMode == 1) {
+    const next = (p.nonce + 1) as Uint<64>;
+    assert(next > p.nonce, "EVM nonce overflow");
+    evmNonces.insert(account, next);
+    emitSemanticCommitment(manager, p, account, digest);
+  } else {
+    emitSemanticCommitment(manager, p, account, nativeAuthResult(account));
   }
-
-  const authResult = isEvmAuthorized ? digest : nativeAuthResult(account);
-  emitSemanticCommitment(manager, p, account, authResult);
 }

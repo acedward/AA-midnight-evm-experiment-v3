@@ -253,6 +253,119 @@ describe("Manager v5 owner actions through the one gateway", () => {
   });
 });
 
+describe("Manager v5 dual-authority transport independence", () => {
+  it("keeps one EVM-authorized effect byte-identical across two unused native witnesses", async () => {
+    const left = await ManagerSim.create(NATIVE_A);
+    const right = await ManagerSim.create(NATIVE_A, left.deploymentDomain, left.address);
+    expect(managerAddressHex(left.address)).toBe(managerAddressHex(right.address));
+    expect(bytesToHex(left.deploymentDomain)).toBe(bytesToHex(right.deploymentDomain));
+
+    const leftSource = (await registerEvm(left, EVM_KEY_A, SALT_A)).action.accountId;
+    const rightSource = (await registerEvm(right, EVM_KEY_A, SALT_A)).action.accountId;
+    const leftDestination = (await registerEvm(left, EVM_KEY_B, SALT_B)).action.accountId;
+    const rightDestination = (await registerEvm(right, EVM_KEY_B, SALT_B)).action.accountId;
+    expect(leftSource).toBe(rightSource);
+    expect(leftDestination).toBe(rightDestination);
+    await left.call("depositShielded", coin(COLOR_A, 10n, 1), bytes(leftSource));
+    await right.call("depositShielded", coin(COLOR_A, 10n, 1), bytes(rightSource));
+
+    const action: Eip712Action = {
+      primaryType: "TransferInternalShielded",
+      manager: managerAddressHex(left.address),
+      accountId: leftSource,
+      owner: EVM_OWNER_A,
+      nonce: 0n,
+      validUntil: DEADLINE,
+      toAccountId: leftDestination,
+      color: COLOR_A,
+      amount: 2n,
+    };
+    const domain = bytesToHex(left.deploymentDomain) as Hex32;
+    const prepared = prepareEvmExecute(action, domain, metamaskSign(EVM_KEY_A, action, domain));
+    left.actAs(NATIVE_A);
+    right.actAs(NATIVE_B);
+    const leftDetail = await left.callDetailedAt(
+      NOW,
+      "execute",
+      prepared.payload,
+      prepared.signature,
+      prepared.point,
+    );
+    const rightDetail = await right.callDetailedAt(
+      NOW,
+      "execute",
+      prepared.payload,
+      prepared.signature,
+      prepared.point,
+    );
+
+    expect(snapshotLedger(left.ledger)).toEqual(snapshotLedger(right.ledger));
+    expect(leftDetail.inputs).toEqual(rightDetail.inputs);
+    expect(leftDetail.outputs).toEqual(rightDetail.outputs);
+    expect(leftDetail.effects).toEqual(rightDetail.effects);
+    expect(extractManagerSemanticEvents(leftDetail.logEvents as readonly LogEvent[])).toEqual(
+      extractManagerSemanticEvents(rightDetail.logEvents as readonly LogEvent[]),
+    );
+    expect(left.ledger.evmNonces.lookup(bytes(leftSource))).toBe(1n);
+    expect(right.ledger.evmNonces.lookup(bytes(rightSource))).toBe(1n);
+  });
+
+  it("keeps one native-authorized effect byte-identical across two valid dummy EVM transports", async () => {
+    const setupNative = async (sim: ManagerSim) => {
+      const source = await sim.ownerCommitmentFor(NATIVE_A);
+      const destination = await sim.ownerCommitmentFor(NATIVE_B);
+      await sim.call("registerAccount", source);
+      await sim.call("registerAccount", destination);
+      await sim.call("depositShielded", coin(COLOR_A, 10n, 1), source);
+      return { sim, source, destination };
+    };
+    const leftSim = await ManagerSim.create(NATIVE_A);
+    const rightSim = await ManagerSim.create(NATIVE_A, leftSim.deploymentDomain, leftSim.address);
+    const left = await setupNative(leftSim);
+    const right = await setupNative(rightSim);
+    expect(managerAddressHex(left.sim.address)).toBe(managerAddressHex(right.sim.address));
+    expect(bytesToHex(left.source)).toBe(bytesToHex(right.source));
+    expect(bytesToHex(left.destination)).toBe(bytesToHex(right.destination));
+
+    const dummyAction = registration(KAT_MANAGER, EVM_OWNER_B, SALT_B, KAT_ACTION.validUntil);
+    const dummySignature = metamaskSign(EVM_KEY_B, dummyAction, KAT_DEPLOYMENT_DOMAIN);
+    const alternateDummy = prepareEvmExecute(dummyAction, KAT_DEPLOYMENT_DOMAIN, dummySignature);
+    expect(alternateDummy.signature).not.toEqual(inert.signature);
+    expect(alternateDummy.point).not.toEqual(inert.point);
+
+    const payload: ManagerExecutePayload = {
+      ...emptyExecutePayload(),
+      selector: 4n,
+      account: left.source,
+      primaryColor: bytes(COLOR_A),
+      primaryAmount: 2n,
+      toAccount: left.destination,
+    };
+    const leftDetail = await left.sim.callDetailed(
+      "execute",
+      payload,
+      inert.signature,
+      inert.point,
+    );
+    const rightDetail = await right.sim.callDetailed(
+      "execute",
+      payload,
+      alternateDummy.signature,
+      alternateDummy.point,
+    );
+
+    expect(snapshotLedger(left.sim.ledger)).toEqual(snapshotLedger(right.sim.ledger));
+    expect(leftDetail.inputs).toEqual(rightDetail.inputs);
+    expect(leftDetail.outputs).toEqual(rightDetail.outputs);
+    expect(leftDetail.effects).toEqual(rightDetail.effects);
+    expect(extractManagerSemanticEvents(leftDetail.logEvents as readonly LogEvent[])).toEqual(
+      extractManagerSemanticEvents(rightDetail.logEvents as readonly LogEvent[]),
+    );
+    expect(left.sim.ledger.evmNonces.size()).toBe(0n);
+    expect(right.sim.ledger.evmNonces.size()).toBe(0n);
+  });
+});
+
 describe("Manager v5 EVM refusal matrix is atomic", () => {
   it("rejects unknown envelopes, zero registration fields, and duplicate registration", async () => {
     const sim = await ManagerSim.create(NATIVE_A);
