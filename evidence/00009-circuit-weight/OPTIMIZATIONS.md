@@ -90,19 +90,32 @@ strength of that phrase should read this number first.
 
 Combining Phase 1 and Phase 2:
 
-| Observation | Evidence |
-|---|---|
-| Keccak dominates: 69.5% of `execute` is two hashing components | w2 (366,831) + w3 (310,805) |
-| A keccak-f permutation costs ≈19,500 rows | o4 removed 8 permutations for 156,245 rows |
-| Preimage WIDTH costs ≈90 rows/byte | o6 removed 512 bytes for 45,889 rows |
-| Per-CALL overhead is ≈30,000 rows | o4 removed 3 calls + 736 bytes for 156,245 rows |
-| Swapping keccak → `persistentHash` saves only ≈35% | o5: 128,281 of 366,831 |
-| Branch duplication is real and exactly additive | w5..w9 sum within 20 rows of w4; o3 exact; o7 within 1 row |
+> **SUPERSEDED (2026-08-24, Phase 4).** The three cost-model rows in the table below were INFERRED
+> from whole-arm deltas and are WRONG. Phase 4 measured the primitives directly with dedicated unit
+> probes: a keccak-f permutation is **4,176** rows, not ≈19,500; a hash CALL is **free**, not
+> ≈30,000; and preimage width costs **≈141 rows per byte of VARIABLE content and 0 for constants**,
+> not a flat ≈90. The dominant cost is byte serialisation (decomposing, reversing and splicing
+> packed `Bytes<32>` words), not Keccak. The measured ARM ROWS in this file are unaffected — only
+> the mechanism attributed to them changes. See `DECOMPOSITION.md` §2 for the corrected laws and
+> §5.2 for their validation (two predictions exact to the row).
 
-The practical rule this yields: **removing a hash CALL is worth ~30k rows plus ~90 rows per byte of
-its preimage; changing which hash function you call is worth much less.** That is why o4 (three
-fewer calls) beats o5 (same call count, cheaper function) despite the semantic commitment being the
-heavier component.
+| Observation | Evidence | Phase 4 status |
+|---|---|---|
+| Keccak dominates: 69.5% of `execute` is two hashing components | w2 (366,831) + w3 (310,805) | rows stand, but only ~15% of that is Keccak itself |
+| A keccak-f permutation costs ≈19,500 rows | o4 removed 8 permutations for 156,245 rows | **REFUTED — measured 4,176** |
+| Preimage WIDTH costs ≈90 rows/byte | o6 removed 512 bytes for 45,889 rows | **REFUTED — ≈141/byte variable, 0 constant** |
+| Per-CALL overhead is ≈30,000 rows | o4 removed 3 calls + 736 bytes for 156,245 rows | **REFUTED — a call is free** |
+| Swapping keccak → `persistentHash` saves only ≈35% | o5: 128,281 of 366,831 | STANDS, and Phase 4 explains it: o5 swaps the cheap part and leaves the serialisation |
+| Branch duplication is real and exactly additive | w5..w9 sum within 20 rows of w4; o3 exact; o7 within 1 row | STANDS |
+
+The practical rule this yielded — *"removing a hash CALL is worth ~30k rows plus ~90 rows per byte
+of its preimage"* — **is superseded**. The corrected rule is: **removing a hash call is worth almost
+nothing; removing a VARIABLE WORD from a preimage is worth ≈4,514 rows, and removing an endianness
+encoder is worth ≈9,423.** o4 still beats o5, but not for the reason recorded here: o4 replaces the
+four branches' **39 preimage words with 16**, and their **13 `uintNWord` + 4 `addressWord`
+conversions with 6 + 1** — it wins on serialisation deleted, not on "three fewer calls". (The
+isolated unit costs over-predict o4's measured 156,245, because many of the words it drops are
+still serialised for the semantic preimages; see `DECOMPOSITION.md` §5.1 on shared decompositions.)
 
 ## Additivity — verified three independent times
 

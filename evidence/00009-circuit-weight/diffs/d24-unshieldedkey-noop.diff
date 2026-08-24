@@ -1,0 +1,26 @@
+--- contracts/manager.compact	2026-08-24 13:16:56
++++ contracts/variants/d24-unshieldedkey-noop.compact	2026-08-24 14:49:41
+@@ -1,4 +1,13 @@
+ // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
++// 00009 MEASUREMENT-ONLY NESTED ABLATION ARM `d24-unshieldedkey-noop` — NOT A SHIPPING CONTRACT.
++//
++// This source is DELIBERATELY BROKEN. It exists only so that
++//   weight(sub-component) = rows(w0-baseline) - rows(this arm)
++// can be measured with `compactc --skip-zk` + `zkir-v3 mock-compile`.
++// Ablated sub-component: every `unshieldedKey` derivation (`persistentHash<Vector<3,Bytes<32>>>`) reached from `execute`
++// It must never ship, never be promoted into contracts/manager.compact, never be
++// proved, and never be deployed.
++//
+ //
+ // ================================================================================================
+ // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+@@ -268,7 +277,8 @@
+ }
+ 
+ export circuit unshieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
+-  return persistentHash<Vector<3, Bytes<32>>>([acct, colour, unshieldedFamilyTag()]);
++  // 00009 d24 ABLATION: same shape as d23, other family.
++  return colour;
+ }
+ 
+ /// A MISSING CELL READS AS 0 — never as an error, and never by creating the cell (FR-204, FR-206).

@@ -1,0 +1,26 @@
+--- contracts/manager.compact	2026-08-24 13:16:56
++++ contracts/variants/d15-ecdsa-address-noop.compact	2026-08-24 14:49:41
+@@ -1,4 +1,13 @@
+ // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
++// 00009 MEASUREMENT-ONLY NESTED ABLATION ARM `d15-ecdsa-address-noop` — NOT A SHIPPING CONTRACT.
++//
++// This source is DELIBERATELY BROKEN. It exists only so that
++//   weight(sub-component) = rows(w0-baseline) - rows(this arm)
++// can be measured with `compactc --skip-zk` + `zkir-v3 mock-compile`.
++// Ablated sub-component: ONLY `secp256k1EthereumAddress` (signature verification is kept)
++// It must never ship, never be promoted into contracts/manager.compact, never be
++// proved, and never be deployed.
++//
+ //
+ // ================================================================================================
+ // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+@@ -1250,7 +1259,8 @@
+     ? default<Bytes<32>>
+     : evmDigestFor(manager, deploymentDomain, p);
+   const signatureOk = disclose(secp256k1EcdsaVerify(digest, sig, pk));
+-  const signer = disclose(secp256k1EthereumAddress(pk));
++  // 00009 d15 ABLATION: address recovery only; `secp256k1EcdsaVerify` above is untouched.
++  const signer = p.owner;
+   const isNativeRegistration = p.selector == 0;
+   const isEvmRegistration = p.selector == 1;
+   const isRegistration = isNativeRegistration || isEvmRegistration;

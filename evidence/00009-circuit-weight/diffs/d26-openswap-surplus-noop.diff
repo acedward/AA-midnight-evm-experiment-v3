@@ -1,0 +1,47 @@
+--- contracts/manager.compact	2026-08-24 13:16:56
++++ contracts/variants/d26-openswap-surplus-noop.compact	2026-08-24 14:49:41
+@@ -1,4 +1,13 @@
+ // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
++// 00009 MEASUREMENT-ONLY NESTED ABLATION ARM `d26-openswap-surplus-noop` — NOT A SHIPPING CONTRACT.
++//
++// This source is DELIBERATELY BROKEN. It exists only so that
++//   weight(sub-component) = rows(w0-baseline) - rows(this arm)
++// can be measured with `compactc --skip-zk` + `zkir-v3 mock-compile`.
++// Ablated sub-component: the open-swap (`recipientA = none`) surplus machinery — `createZswapInput`, the nullifier transcription and claim, `evolveNonce`, `createZswapOutput`, the commitment transcription and both coin claims
++// It must never ship, never be promoted into contracts/manager.compact, never be
++// proved, and never be deployed.
++//
+ //
+ // ================================================================================================
+ // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+@@ -917,27 +926,9 @@
+     repoolOrRemove(colA, result.change);
+   } else {
+     // --- GIVE: −A released to NOBODY, becoming a segment-0 SURPLUS ---
+-    createZswapInput(pooled);
+-    kernel.claimZswapNullifier(zswapCoinNullifier(dropMerkleIndex(pooled), selfAddr));
+-    const changeValue = (pooled.value - val) as Uint<128>;
+-    if (changeValue == 0) {
+-      repoolOrRemove(colA, none<ShieldedCoinInfo>());
+-    } else {
+-      // A fresh nonce for the change coin. `evolveNonce`'s domain differs from the one `sendShielded`
+-      // uses for its own change, and the pooled coin can be spent only once anyway (its nullifier is
+-      // consumed right above), so no commitment this contract ever creates can collide with it.
+-      const changeCoin = ShieldedCoinInfo{
+-        nonce: evolveNonce(2, pooled.nonce),
+-        color: colA,
+-        value: changeValue
+-      };
+-      const selfRecipient = right<ZswapCoinPublicKey, ContractAddress>(selfAddr);
+-      createZswapOutput(changeCoin, selfRecipient);
+-      const cm = zswapCoinCommitment(changeCoin, selfRecipient);
+-      kernel.claimZswapCoinSpend(cm);
+-      kernel.claimZswapCoinReceive(cm);
+-      repoolOrRemove(colA, some<ShieldedCoinInfo>(changeCoin));
+-    }
++    // 00009 d26 ABLATION: drop the whole surplus branch's zswap machinery, keeping only the pool write so the
++    // branch still has an effect and the `none` shape still compiles.
++    repoolOrRemove(colA, none<ShieldedCoinInfo>());
+   }
+ 
+   shieldedBalances.insert(shieldedKey(acct, colA), (shieldedBalanceOf(acct, colA) - val) as Uint<128>);

@@ -1,0 +1,26 @@
+--- contracts/manager.compact	2026-08-24 13:16:56
++++ contracts/variants/d30-mergecoin-noop.compact	2026-08-24 14:49:41
+@@ -1,4 +1,13 @@
+ // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
++// 00009 MEASUREMENT-ONLY NESTED ABLATION ARM `d30-mergecoin-noop` — NOT A SHIPPING CONTRACT.
++//
++// This source is DELIBERATELY BROKEN. It exists only so that
++//   weight(sub-component) = rows(w0-baseline) - rows(this arm)
++// can be measured with `compactc --skip-zk` + `zkir-v3 mock-compile`.
++// Ablated sub-component: `mergeCoinImmediate` inside the swap's WANT leg (its zswap inputs, nullifier claims, output and coin commitment)
++// It must never ship, never be promoted into contracts/manager.compact, never be
++// proved, and never be deployed.
++//
+ //
+ // ================================================================================================
+ // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+@@ -833,7 +842,8 @@
+   if (pools.member(coinB.color)) {
+     pools.insertCoin(
+       coinB.color,
+-      mergeCoinImmediate(pools.lookup(coinB.color), coinB),
++      // 00009 d30 ABLATION: pool the wanted coin without merging it into the existing pool.
++      coinB,
+       right<ZswapCoinPublicKey, ContractAddress>(kernel.self())
+     );
+   } else {

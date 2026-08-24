@@ -1,0 +1,30 @@
+--- contracts/manager.compact	2026-08-24 13:16:56
++++ contracts/variants/d08-eip712-digest-noop.compact	2026-08-24 14:49:41
+@@ -1,5 +1,14 @@
+ // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
++// 00009 MEASUREMENT-ONLY NESTED ABLATION ARM `d08-eip712-digest-noop` — NOT A SHIPPING CONTRACT.
+ //
++// This source is DELIBERATELY BROKEN. It exists only so that
++//   weight(sub-component) = rows(w0-baseline) - rows(this arm)
++// can be measured with `compactc --skip-zk` + `zkir-v3 mock-compile`.
++// Ablated sub-component: `eip712Digest` — the 66-byte `0x1901` preimage and its keccak
++// It must never ship, never be promoted into contracts/manager.compact, never be
++// proved, and never be deployed.
++//
++//
+ // ================================================================================================
+ // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+ // ================================================================================================
+@@ -456,8 +465,10 @@
+ }
+ 
+ circuit eip712Digest(domain: Bytes<32>, structHash: Bytes<32>): Bytes<32> {
+-  const preimage: Bytes<66> = slice<66>([0x19, 0x01, ...domain, ...structHash], 0) as Bytes<66>;
+-  return keccak256<Bytes<66>>(preimage);
++  // 00009 d08 ABLATION: return the struct hash instead of the 0x1901 digest. The domain separator stays live
++  // through the assert below, so d08 removes only the final 66-byte splice and keccak.
++  assert(domain != structHash, "00009 d08: keep the domain separator live");
++  return structHash;
+ }
+ 
+ export circuit evmDigestFor(

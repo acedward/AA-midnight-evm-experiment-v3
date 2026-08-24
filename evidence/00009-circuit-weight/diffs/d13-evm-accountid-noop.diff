@@ -1,0 +1,30 @@
+--- contracts/manager.compact	2026-08-24 13:16:56
++++ contracts/variants/d13-evm-accountid-noop.compact	2026-08-24 14:49:41
+@@ -1,4 +1,13 @@
+ // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
++// 00009 MEASUREMENT-ONLY NESTED ABLATION ARM `d13-evm-accountid-noop` — NOT A SHIPPING CONTRACT.
++//
++// This source is DELIBERATELY BROKEN. It exists only so that
++//   weight(sub-component) = rows(w0-baseline) - rows(this arm)
++// can be measured with `compactc --skip-zk` + `zkir-v3 mock-compile`.
++// Ablated sub-component: `evmAccountIdFor` — the 128-byte / 4-word account-id preimage, its `addressWord` and its keccak
++// It must never ship, never be promoted into contracts/manager.compact, never be
++// proved, and never be deployed.
++//
+ //
+ // ================================================================================================
+ // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+@@ -405,10 +414,9 @@
+ }
+ 
+ export circuit evmAccountIdFor(manager: Bytes<32>, owner: Bytes<20>, salt: Bytes<32>): Bytes<32> {
+-  const preimage: Bytes<128> = slice<128>([
+-    ...accountTag(), ...manager, ...addressWord(owner), ...salt
+-  ], 0) as Bytes<128>;
+-  return disclose(keccak256<Bytes<128>>(preimage));
++  // 00009 d13 ABLATION: return the salt instead of the derived EVM account id. `execute`'s
++  // `evmRegistrationAccount == p.account` assert stays satisfiable, so nothing else changes.
++  return disclose(salt);
+ }
+ 
+ export circuit evmDomainSeparatorFor(manager: Bytes<32>, domain: Bytes<32>): Bytes<32> {
