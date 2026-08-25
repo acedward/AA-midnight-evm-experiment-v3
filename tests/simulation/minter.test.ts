@@ -13,8 +13,15 @@
 // MinterCollide is the INVERSE fixture, and the last `describe` block asserts the inverse property:
 // its two family colours must be BYTE-EQUAL. Everywhere else in this project a colour collision is a
 // failure; there it is the point (FR-203, probe P-COLL).
+//
+// PORTED (2026-08-25, repo reorganization). This suite predates the v5 Manager: it calls the
+// contract by the PER-SELECTOR circuit names that v5 deleted (`withdrawShielded`,
+// `transferInternalShielded`, `openSwapShielded`, `registerAccount`, ...). It still exercises the
+// CURRENT contract, because `tests/lib/sim.ts` translates each of those names into the equivalent
+// `execute` action envelope and drives v5's single gateway with it. So the vocabulary is historical
+// and the coverage is live: every assertion below is checked against today's compiled Manager.
 import { describe, expect, it } from 'vitest';
-import { hex, MinterCollideSim, MinterSim, pad32 } from './sim.js';
+import { hex, MinterCollideSim, MinterSim, pad32 } from '../lib/sim.js';
 
 const TOKA = pad32('TOKA');
 const TOKB = pad32('TOKB');

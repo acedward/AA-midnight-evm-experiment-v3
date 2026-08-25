@@ -1,12 +1,24 @@
-// Minimal in-process simulator for the compiled contracts (EXPERIMENTAL_LANE, LANE-DEV-1).
+// Minimal in-process simulator for the compiled contracts. This is what makes the simulation tier
+// keyless: it executes circuits directly through the pinned
+// `@midnight-ntwrk/compact-runtime@0.18.0-rc.1` — the same runtime version the compiler stamped
+// into the artifacts and the same one the pinned midnight-js depends on — so no node, no proof
+// server, no proving key and no wallet are involved.
 //
-// Uses only the pinned `@midnight-ntwrk/compact-runtime@0.18.0-rc.1` — the same runtime version the
-// compiler stamped into the artifacts and the same one the pinned midnight-js depends on.
+// Three contracts are wrapped:
+//   ManagerSim         the product. One gateway circuit, `execute`, taking a fixed-width action
+//                      envelope; deposits and the read-only views are separate circuits.
+//   MinterSim          the test-only token source: a per-deployment constructor tag becomes two
+//                      contract-scoped colours.
+//   MinterCollideSim   the inverse fixture — ONE separator feeding both families, so its two
+//                      colours are byte-EQUAL. Used to prove family separation is real.
 //
-// 00005 shape: the Minter is 00004's, UNCHANGED (per-deployment tag as a constructor argument);
-// MinterCollide is the P-COLL fixture with ONE separator feeding both families; and the Manager is
-// v3 — no `configure`, no colour list, family-scoped maps, everything created lazily on first
-// credit.
+// LEGACY CALL ADAPTER (`adaptLegacyCall`). Suites written before v5 call the Manager by the
+// per-selector circuit names that v5 deleted — `registerAccount`, `withdrawShielded`,
+// `withdrawUnshielded`, `transferInternalShielded`, `transferInternalUnshielded`,
+// `openSwapShielded`. Rather than rewrite those suites' vocabulary, this class translates each such
+// call into the equivalent `execute` action envelope (selector + fields) and drives the real
+// gateway. The translation is mechanical and total: an unknown circuit id is passed through
+// untouched, so nothing is silently swallowed.
 import {
   createCircuitContext,
   createConstructorContext,
@@ -15,7 +27,7 @@ import {
 } from '@midnight-ntwrk/compact-runtime';
 import { publicPointForPrivateKey } from './signature.js';
 
-// The compiled contracts. Built by scripts/g2/compile.sh into harness/generated/*.
+// The compiled contracts. Built by scripts/compile.sh into tests/generated/*.
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — generated artifact, present after compilation
 import {

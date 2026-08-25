@@ -14,8 +14,17 @@
 // snapshot — the account set, every pooled coin's identity and value, every cell in BOTH family maps
 // and all three map SIZES — to be byte-identical before and after. Size is what makes it a
 // no-state-created proof and not merely a no-value-changed one.
+// Custody-guard suite for the open custodian: no colour registry, lazy creation, family separation,
+// and the guard order that owner-only spending rests on. Runs entirely in the circuit simulator.
+//
+// PORTED (2026-08-25, repo reorganization). This suite predates the v5 Manager: it calls the
+// contract by the PER-SELECTOR circuit names that v5 deleted (`withdrawShielded`,
+// `transferInternalShielded`, `openSwapShielded`, `registerAccount`, ...). It still exercises the
+// CURRENT contract, because `tests/lib/sim.ts` translates each of those names into the equivalent
+// `execute` action envelope and drives v5's single gateway with it. So the vocabulary is historical
+// and the coverage is live: every assertion below is checked against today's compiled Manager.
 import { describe, expect, it } from 'vitest';
-import { hex, ManagerSim, mapSizes, secretOf, snapshotLedger } from './sim.js';
+import { hex, ManagerSim, mapSizes, secretOf, snapshotLedger } from '../lib/sim.js';
 
 // Colours are just 32-byte values to the Manager; it has never been told anything about them.
 const S1 = new Uint8Array(32).fill(0x11);

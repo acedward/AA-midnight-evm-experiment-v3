@@ -1125,9 +1125,9 @@ function extractLegacySemanticCommitment(events: readonly LogEvent[]): string | 
 //        invariant is the *reason* the guards are shadowed, so pinning it is what would actually
 //        catch a future edit that made them reachable.
 //
-//        This is NOT a coverage regression against the older suites. `harness/src/test/swap.test.ts`
+//        This is NOT a coverage regression against the older suites. `tests/simulation/swap.test.ts`
 //        (v3/v4 surface) never reached them either — its case at :435 says so verbatim, and asserts
-//        the guard ORDER instead — and `harness/src/test/g5-variants.test.ts` :99-110 asserts
+//        the guard ORDER instead — and `g5-variants.test.ts` (retired; tag `research/pre-reorg`) :99-110 asserts
 //        `not.toContain('pooled colour balance')` / `not.toContain('no pooled coin')` for the same
 //        reason. There was no mechanism to port, because none ever existed.
 
@@ -1209,7 +1209,7 @@ describe("k20 parity — the three swap guards flagged by 00010-Q3", () => {
     expect(shieldedCell(k19Pure, k19.ledger, p.ids.k19.account, COLOR_A)).toBe(10n);
     expect(poolAmount(k19.ledger, COLOR_A)).toBe(10n);
 
-    // ORDERING PROBE, ported from `harness/src/test/swap.test.ts:479` ("parameter sanity precedes
+    // ORDERING PROBE, ported from `tests/simulation/swap.test.ts:479` ("parameter sanity precedes
     // the choke point"). `execute` runs `assertActionEnvelope` BEFORE `gatewayAccount`, so a
     // zero-give from an UNREGISTERED witness reports the zero, not the authorization. That order is
     // deliberate: guard 0a is pure arithmetic on the caller's own arguments, reads no state, and can
@@ -1282,8 +1282,8 @@ describe("k20 parity — the three swap guards flagged by 00010-Q3", () => {
   }, PARITY_TIMEOUT_MS);
 
   it("guard 3b is UNREACHABLE by refusal — a RICH pool cannot rescue a short account cell, and never reports itself", async () => {
-    // Ported from `harness/src/test/swap.test.ts:379` (NC-306) and
-    // `harness/src/test/g5-variants.test.ts:99`, onto the v5 `execute` surface.
+    // Ported from `tests/simulation/swap.test.ts:379` (NC-306) and
+    // `g5-variants.test.ts:99` (retired; tag `research/pre-reorg`), onto the v5 `execute` surface.
     //
     // The maker holds 2 of COLOR_A; a second account holds 100 more of the SAME colour, so the pool
     // holds 102 — comfortably more than the 5 the maker asks to give. BOTH pool guards would

@@ -33,6 +33,13 @@
 // zswap input and it always creates an output for the value it moves. The first test compares the
 // transcription against the values the STDLIB ITSELF claims for the same coin. A wrong domain
 // separator or a reordered field fails there rather than three layers away in a proof server.
+//
+// PORTED (2026-08-25, repo reorganization). This suite predates the v5 Manager: it calls the
+// contract by the PER-SELECTOR circuit names that v5 deleted (`withdrawShielded`,
+// `transferInternalShielded`, `openSwapShielded`, `registerAccount`, ...). It still exercises the
+// CURRENT contract, because `tests/lib/sim.ts` translates each of those names into the equivalent
+// `execute` action envelope and drives v5's single gateway with it. So the vocabulary is historical
+// and the coverage is live: every assertion below is checked against today's compiled Manager.
 import { describe, expect, it } from 'vitest';
 import {
   hex,
@@ -43,7 +50,7 @@ import {
   snapshotLedger,
   zswapDeltas,
   type CallDetail,
-} from './sim.js';
+} from '../lib/sim.js';
 
 // Colours are 32-byte values the Manager has never been told anything about.
 const S_A = new Uint8Array(32).fill(0x11);

@@ -24,6 +24,16 @@
 // circuit, so the walk asserts step 14 reaches exactly it — which is itself the offline proof that
 // the witness choke point and the per-(account, colour) guard both passed for a legitimate
 // withdrawal — and rows 16-17 are then asserted with AA_A.U1 held at its pre-step-14 value.
+//
+// PORTED (2026-08-25, repo reorganization). This suite predates the v5 Manager: it calls the
+// contract by the PER-SELECTOR circuit names that v5 deleted (`withdrawShielded`,
+// `transferInternalShielded`, `openSwapShielded`, `registerAccount`, ...). It still exercises the
+// CURRENT contract, because `tests/lib/sim.ts` translates each of those names into the equivalent
+// `execute` action envelope and drives v5's single gateway with it. So the vocabulary is historical
+// and the coverage is live: every assertion below is checked against today's compiled Manager.
+//
+// Its frozen input — the spec's 18-row step table, transcribed by hand — now lives at
+// `tests/fixtures/step-ledger-table.ts` (it was `harness/src/g3/expected.ts`).
 import { describe, expect, it } from 'vitest';
 import {
   ACTIONS,
@@ -41,8 +51,8 @@ import {
   SIZE_CHANGED,
   type ColourKey,
   type ExpectedStep,
-} from '../g3/expected.js';
-import { ManagerSim, mapSizes, secretOf, snapshotLedger } from './sim.js';
+} from '../fixtures/step-ledger-table.js';
+import { ManagerSim, mapSizes, secretOf, snapshotLedger } from '../lib/sim.js';
 
 const COLOUR: Record<ColourKey, Uint8Array> = {
   S1: new Uint8Array(32).fill(0x11),
