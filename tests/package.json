@@ -1,19 +1,19 @@
 {
-  "name": "aa00008-aa-v3-evm-harness",
+  "name": "aa-midnight-evm-tests",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "AA v3 EVM custody harness for 00008-AA-v3-evm (experimental Midnight v2.0.0-rc.4 slot)",
+  "description": "Test runtime for the AA custody Manager: keyless simulation tier + shared codec/fixture library (Midnight v2.0.0-rc.4 pins)",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "auth:fixtures": "tsx src/auth/fixtures/generate.ts --write",
-    "auth:fixtures:check": "tsx src/auth/fixtures/generate.ts",
-    "test:auth": "vitest run src/auth/test",
-    "typecheck:auth": "tsc --noEmit -p src/auth/tsconfig.json",
-    "typecheck": "tsc --noEmit",
-    "wallets": "tsx src/g1/wallets.ts"
+    "fixtures": "tsx fixtures/generate.ts --write",
+    "fixtures:check": "tsx fixtures/generate.ts",
+    "test:sim": "vitest run simulation",
+    "test:integration": "vitest run integration",
+    "typecheck:sim": "tsc --noEmit -p simulation/tsconfig.json",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@metamask/eth-sig-util": "8.2.0",

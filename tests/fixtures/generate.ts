@@ -1,40 +1,40 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import { buildTypedDataV4, computeDigest, deriveAccountId } from "../codec.js";
+import { buildTypedDataV4, computeDigest, deriveAccountId } from "../lib/codec.js";
 import {
   ZERO_32,
   bytesToHex,
   hexToBytes,
   type Hex20,
   type Hex32,
-} from "../bytes.js";
+} from "../lib/bytes.js";
 import {
   metamaskDigestForTypedData,
   metamaskHashes,
   metamaskRecover,
   metamaskSign,
   metamaskTypeHash,
-} from "../metamask.js";
+} from "../lib/metamask.js";
 import {
   addressForPrivateKey,
   highSTwin,
   recoverSigner,
   SECP256K1_N,
-} from "../signature.js";
+} from "../lib/signature.js";
 import {
   buildSemanticCommitment,
   nativeAuthResult,
   type NonDustImbalance,
   type SemanticActionFields,
   type SemanticCommitmentInput,
-} from "../semantic.js";
+} from "../lib/semantic.js";
 import {
   TYPE_DEFINITIONS,
   type Eip712Action,
   type PrimaryType,
   type RegisterEvmAccount,
-} from "../schema.js";
+} from "../lib/schema.js";
 
 export const FIXTURE_VERSION = "AUTH-EIP712-AA-V3-V1/FIXTURES-1";
 export const RANDOM_SEED = "0x8aa3e712c0dec0de";

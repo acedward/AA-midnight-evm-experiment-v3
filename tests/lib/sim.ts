@@ -13,7 +13,7 @@ import {
   sampleContractAddress,
   type CircuitContext,
 } from '@midnight-ntwrk/compact-runtime';
-import { publicPointForPrivateKey } from '../auth/signature.js';
+import { publicPointForPrivateKey } from './signature.js';
 
 // The compiled contracts. Built by scripts/g2/compile.sh into harness/generated/*.
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -22,14 +22,14 @@ import {
   Contract as ManagerContract,
   ledger as managerLedger,
   pureCircuits as managerPureCircuits,
-} from '../../generated/manager/contract/index.js';
+} from '../generated/manager/contract/index.js';
 // @ts-ignore — generated artifact, present after compilation
-import { Contract as MinterContract, ledger as minterLedger } from '../../generated/minter/contract/index.js';
+import { Contract as MinterContract, ledger as minterLedger } from '../generated/minter/contract/index.js';
 // @ts-ignore — generated artifact, present after compilation
 import {
   Contract as MinterCollideContract,
   ledger as minterCollideLedger,
-} from '../../generated/minter-collide/contract/index.js';
+} from '../generated/minter-collide/contract/index.js';
 
 /** Private state: just the owner secret the witness hands to the circuit. */
 export type ManagerPS = { ownerSecret: Uint8Array };

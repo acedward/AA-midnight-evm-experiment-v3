@@ -20,18 +20,18 @@ import { describe, expect, it } from "vitest";
 import type { LogEvent } from "@midnight-ntwrk/midnight-js-contracts";
 
 // @ts-ignore — generated artifact
-import { pureCircuits as k19Pure, ledger as k19Ledger, Contract as K19Contract } from "../../../generated/manager/contract/index.js";
+import { pureCircuits as k19Pure, ledger as k19Ledger, Contract as K19Contract } from "../generated/manager/contract/index.js";
 // @ts-ignore — generated artifact (k=20 reference oracle)
-import { ledger as k20Ledger, Contract as K20Contract } from "../../../generated/manager-k20/contract/index.js";
+import { ledger as k20Ledger, Contract as K20Contract } from "../generated/manager-k20/contract/index.js";
 
-import { bytesToHex, hexToBytes, type Hex32 } from "../bytes.js";
-import { computeDigest } from "../codec.js";
+import { bytesToHex, hexToBytes, type Hex32 } from "../lib/bytes.js";
+import { computeDigest } from "../lib/codec.js";
 import { KAT_ACTION, KAT_DEPLOYMENT_DOMAIN } from "../fixtures/generate.js";
 import {
   assertManagerEmitsNoEvents,
   recomputeSemanticCommitment,
   type SemanticTranscript,
-} from "../manager-events.js";
+} from "../lib/manager-events.js";
 import {
   emptyExecutePayload,
   executePayloadForAction,
@@ -39,12 +39,12 @@ import {
   prepareEvmExecute,
   semanticCommitmentForExecute,
   type ManagerExecutePayload,
-} from "../manager.js";
-import { metamaskSign } from "../metamask.js";
-import { nativeAuthResult } from "../semantic.js";
-import { addressForPrivateKey } from "../signature.js";
-import type { Eip712Action } from "../schema.js";
-import { ManagerSim, secretOf, type ManagerBuild } from "../../test/sim.js";
+} from "../lib/manager.js";
+import { metamaskSign } from "../lib/metamask.js";
+import { nativeAuthResult } from "../lib/semantic.js";
+import { addressForPrivateKey } from "../lib/signature.js";
+import type { Eip712Action } from "../lib/schema.js";
+import { ManagerSim, secretOf, type ManagerBuild } from "../lib/sim.js";
 
 const K19: ManagerBuild = { Contract: K19Contract, ledger: k19Ledger };
 const K20: ManagerBuild = { Contract: K20Contract, ledger: k20Ledger };
@@ -285,7 +285,7 @@ describe("Tier-3 claim 4 — the recompute-only API guards, and is the only way 
   });
 
   it("exposes no function that reads a commitment from anywhere", async () => {
-    const module = await import("../manager-events.js");
+    const module = await import("../lib/manager-events.js");
     expect(Object.keys(module).sort()).toEqual([
       "assertManagerEmitsNoEvents",
       "recomputeSemanticCommitment",

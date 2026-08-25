@@ -6,8 +6,8 @@ import {
   computeDigest,
   deriveAccountId,
   recomputeFrozenHashes,
-} from "../codec.js";
-import { metamaskHashes } from "../metamask.js";
+} from "../lib/codec.js";
+import { metamaskHashes } from "../lib/metamask.js";
 import {
   KAT_ACCOUNT_ID,
   KAT_ACTION,
@@ -15,7 +15,7 @@ import {
   fixtureJson,
   generateFixture,
 } from "../fixtures/generate.js";
-import { FROZEN_HASHES, TYPE_DEFINITIONS, type Eip712Action } from "../schema.js";
+import { FROZEN_HASHES, TYPE_DEFINITIONS, type Eip712Action } from "../lib/schema.js";
 
 describe("AUTH-EIP712-AA-V3-V1 pure TypeScript codec", () => {
   it("recomputes the account/domain and all six frozen type hashes", () => {

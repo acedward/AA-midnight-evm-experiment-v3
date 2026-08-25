@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { bytesToHex, hexToBytes, type Hex32 } from "../bytes.js";
-import { computeDigest, deriveAccountId } from "../codec.js";
-import { pureCircuits } from "../compact/generated/contract/index.js";
+import { bytesToHex, hexToBytes, type Hex32 } from "../lib/bytes.js";
+import { computeDigest, deriveAccountId } from "../lib/codec.js";
+import { pureCircuits } from "../lib/compact/generated/contract/index.js";
 import {
   KAT_ACTION,
   KAT_DEPLOYMENT_DOMAIN,
@@ -11,9 +11,9 @@ import {
   generateFixture,
   semanticInputForAction,
 } from "../fixtures/generate.js";
-import { buildSemanticCommitment } from "../semantic.js";
-import { parseSignature, recoverSigner } from "../signature.js";
-import { TYPE_DEFINITIONS, type Eip712Action } from "../schema.js";
+import { buildSemanticCommitment } from "../lib/semantic.js";
+import { parseSignature, recoverSigner } from "../lib/signature.js";
+import { TYPE_DEFINITIONS, type Eip712Action } from "../lib/schema.js";
 
 function compactStructHash(action: Eip712Action): Uint8Array {
   const manager = hexToBytes(action.manager, 32);

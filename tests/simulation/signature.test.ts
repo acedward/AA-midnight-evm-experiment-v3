@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { bytesToHex, hexToBytes } from "../bytes.js";
-import { computeDigest } from "../codec.js";
+import { bytesToHex, hexToBytes } from "../lib/bytes.js";
+import { computeDigest } from "../lib/codec.js";
 import {
   KAT_ACTION,
   KAT_DEPLOYMENT_DOMAIN,
@@ -9,14 +9,14 @@ import {
   KAT_PRIVATE_KEY,
   KAT_SIGNATURE,
 } from "../fixtures/generate.js";
-import { metamaskRecover, metamaskSign } from "../metamask.js";
+import { metamaskRecover, metamaskSign } from "../lib/metamask.js";
 import {
   SECP256K1_N,
   addressForPrivateKey,
   highSTwin,
   parseSignature,
   recoverSigner,
-} from "../signature.js";
+} from "../lib/signature.js";
 
 function scalarBytes(value: bigint): Uint8Array {
   return hexToBytes(`0x${value.toString(16).padStart(64, "0")}`, 32);

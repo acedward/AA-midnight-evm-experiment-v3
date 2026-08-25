@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { ZERO_32, type Hex32 } from "../bytes.js";
-import { computeDigest } from "../codec.js";
+import { ZERO_32, type Hex32 } from "../lib/bytes.js";
+import { computeDigest } from "../lib/codec.js";
 import {
   KAT_ACTION,
   KAT_DEPLOYMENT_DOMAIN,
@@ -13,8 +13,8 @@ import {
   buildSemanticCommitment,
   nativeAuthResult,
   type SemanticCommitmentInput,
-} from "../semantic.js";
-import type { Eip712Action } from "../schema.js";
+} from "../lib/semantic.js";
+import type { Eip712Action } from "../lib/schema.js";
 
 describe("AA_V3_SEMANTIC_COMMITMENT_V1", () => {
   it("is an exact 32-word/1024-byte preimage and is stable under object key order", () => {

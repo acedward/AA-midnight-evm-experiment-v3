@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import type { LogEvent } from "@midnight-ntwrk/midnight-js-contracts";
 
-import { pureCircuits as managerContractPure } from "../../../generated/manager/contract/index.js";
-import { bytesToHex, hexToBytes, type Hex20, type Hex32 } from "../bytes.js";
-import { computeDigest, deriveAccountId } from "../codec.js";
+import { pureCircuits as managerContractPure } from "../generated/manager/contract/index.js";
+import { bytesToHex, hexToBytes, type Hex20, type Hex32 } from "../lib/bytes.js";
+import { computeDigest, deriveAccountId } from "../lib/codec.js";
 import {
   KAT_ACCOUNT_ID,
   KAT_ACTION,
@@ -18,7 +18,7 @@ import {
   assertManagerEmitsNoEvents,
   recomputeSemanticCommitment,
   type SemanticTranscript,
-} from "../manager-events.js";
+} from "../lib/manager-events.js";
 import {
   emptyExecutePayload,
   executePayloadForAction,
@@ -27,12 +27,12 @@ import {
   semanticCommitmentForExecute,
   type ManagerExecutePayload,
   type PreparedEvmExecute,
-} from "../manager.js";
-import { metamaskSign } from "../metamask.js";
-import type { Eip712Action, RegisterEvmAccount } from "../schema.js";
-import { addressForPrivateKey, highSTwin } from "../signature.js";
-import { nativeAuthResult } from "../semantic.js";
-import { ManagerSim, secretOf, snapshotLedger, type CallDetail } from "../../test/sim.js";
+} from "../lib/manager.js";
+import { metamaskSign } from "../lib/metamask.js";
+import type { Eip712Action, RegisterEvmAccount } from "../lib/schema.js";
+import { addressForPrivateKey, highSTwin } from "../lib/signature.js";
+import { nativeAuthResult } from "../lib/semantic.js";
+import { ManagerSim, secretOf, snapshotLedger, type CallDetail } from "../lib/sim.js";
 
 const NOW = 1_800_000_000;
 const DEADLINE = BigInt(NOW + 600);

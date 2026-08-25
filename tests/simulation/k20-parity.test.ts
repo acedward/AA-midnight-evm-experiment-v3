@@ -34,16 +34,16 @@ import {
   Contract as K19Contract,
   ledger as k19Ledger,
   pureCircuits as k19Pure,
-} from "../../../generated/manager/contract/index.js";
+} from "../generated/manager/contract/index.js";
 // @ts-ignore — generated artifact (the k=20 reference oracle, mounted by parity-suite.sh)
 import {
   Contract as K20Contract,
   ledger as k20Ledger,
   pureCircuits as k20Pure,
-} from "../../../generated/manager-k20/contract/index.js";
+} from "../generated/manager-k20/contract/index.js";
 
-import { bytesToHex, hexToBytes, utf8, type Hex32 } from "../bytes.js";
-import { computeDigest } from "../codec.js";
+import { bytesToHex, hexToBytes, utf8, type Hex32 } from "../lib/bytes.js";
+import { computeDigest } from "../lib/codec.js";
 import {
   KAT_ACTION,
   KAT_DEPLOYMENT_DOMAIN,
@@ -56,11 +56,11 @@ import {
   prepareEvmExecute,
   semanticCommitmentForExecute,
   type ManagerExecutePayload,
-} from "../manager.js";
-import { metamaskSign } from "../metamask.js";
-import type { Eip712Action } from "../schema.js";
-import { addressForPrivateKey } from "../signature.js";
-import { nativeAuthResult } from "../semantic.js";
+} from "../lib/manager.js";
+import { metamaskSign } from "../lib/metamask.js";
+import type { Eip712Action } from "../lib/schema.js";
+import { addressForPrivateKey } from "../lib/signature.js";
+import { nativeAuthResult } from "../lib/semantic.js";
 import {
   ManagerSim,
   hex,
@@ -69,7 +69,7 @@ import {
   snapshotLedger,
   type ManagerBuild,
   type CallDetail,
-} from "../../test/sim.js";
+} from "../lib/sim.js";
 
 const K19: ManagerBuild = { Contract: K19Contract, ledger: k19Ledger };
 const K20: ManagerBuild = { Contract: K20Contract, ledger: k20Ledger };
