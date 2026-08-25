@@ -324,7 +324,7 @@ Docker residue is reported as a **delta** because this is a shared machine carry
 |---|---|---|
 | 00010-Q1 | After the o2 mux, five leg circuits and three recipient helpers are uncalled dead code. Delete or retain? | **RESOLVED (owner 2026-08-25): option B — DELETE.** Implemented and verified; see §9. |
 | 00010-Q2 | Keygen cannot run under `--network none` — it needs the public SRS. How should it obtain it? | **RESOLVED (owner 2026-08-25): option B RATIFIED**, and made the standing workspace practice. SRS now pinned in `PROTOCOL.md`; see §9. |
-| 00010-Q3 | `assertSwapPreconditions` / `claimWantedColour` lost their only caller with `openSwapShielded`. Delete them too? | **UNRESOLVED, non-blocking.** Raised by the Q1-B follow-up; not in the owner's enumerated eight, so left in place. Provably zero-row either way. |
+| 00010-Q3 | `assertSwapPreconditions` / `claimWantedColour` lost their only caller with `openSwapShielded`. Delete them too? | **RESOLVED (owner 2026-08-25): delete — CONDITIONALLY, on first verifying the logic is present in the live mux.** Condition DISCHARGED (10/10 guards and effects mapped, no wiring gap) and option C implemented; see §10 and `Q3-WIRING-VERIFICATION.md`. |
 
 ---
 
@@ -397,3 +397,137 @@ Docker residue `aa00010*` **0/0/0/0**; the machine's unrelated baseline (15 cont
 3 custom networks) returned with **byte-identical** container and volume lists. Zero key files
 outside the gitignored path. No push, no deploy, no proving, no keygen re-run. The 00008/00009
 clones were not touched.
+
+## 10. Follow-up: implementing the Q3 resolution (2026-08-25)
+
+**Owner resolution Q3: delete the two orphaned swap helpers — CONDITIONALLY.** The owner's condition,
+verbatim: get rid of unused code, *"unless it's unused because we forgot to wire something — then let
+me know."* Executed in this clone on top of `0c4bd1f`; the commit hash is recorded in the master
+plan, the questions file and `project-summary.md`. Project state remains **COMPLETED**.
+No re-measurement, no re-keygen, no deployment, no proving, no push.
+
+### 10.1 Step 1 — WIRING VERIFICATION: **PASSED, 10 of 10 mapped. NO WIRING GAP.**
+
+Performed **before any deletion** and written up guard by guard in `Q3-WIRING-VERIFICATION.md`. The
+decision rule applied was the owner's: if any guard or effect were absent from the live path, delete
+nothing and report the gap. Nothing was absent.
+
+| From | Guard / effect | Live line @ `0c4bd1f` | Where |
+|---|---|---|---|
+| `assertSwapPreconditions` | swap amount > 0 | 1053 (+ envelope 924) | `custodyDispatch` + `assertActionEnvelope` |
+| | wanted amount > 0 | 1054 (+ envelope 932) | both |
+| | colour distinctness | 1055 (+ envelope 933) | both |
+| | **per-(account,colour) guard BEFORE any pool guard** | 1064–1067, and **1067 < 1070** | `custodyDispatch` |
+| | `pools.member` guard | 1071 | `custodyDispatch` |
+| | pool value guard | 1073 | `custodyDispatch` |
+| | credit-account registration guard | 1076 | `custodyDispatch` |
+| `claimWantedColour` | `receiveShielded` of the wanted coin | 1134 (before `insertCoin` 1136/1141) | `custodyDispatch` |
+| | pool merge-or-create for the wanted colour | 1135–1143 | `custodyDispatch` |
+| | credit-account balance write | 1147–1158 | `custodyDispatch` |
+
+Two things make this a verification rather than a reading:
+
+1. **Key-derivation equivalence is demonstrated, not assumed.** The per-(account,colour) guard is the
+   only one whose syntax differs, because o2 derives the balance key once with the family tag muxed.
+   For selector 6 `debitShielded` is true, so `debitKey` is character-for-character the body of
+   `shieldedKey(account, col)`, and `shieldedBalanceAt` is `shieldedBalanceOf`'s body with the key
+   supplied — the missing-cell-reads-0 property (FR-204/FR-206) is preserved, not re-implemented.
+   Likewise `creditKey` ≡ `shieldedKey(p.creditAccount, p.wantColor)` for the want leg.
+2. **The executed A/B parity is literally helper-vs-mux.** Both helper bodies were **byte-identical**
+   to the k=20 product's (`assertSwapPreconditions` 901 B, `claimWantedColour` 644 B, exact match
+   against `4282400:contracts/manager.compact`), and the k=20 artifact the 45-test suite runs against
+   (`1a6cf20d…`) is compiled from that source. So the suite compares these two helpers' behaviour
+   against `custodyDispatch`'s:
+   * `k20-parity.test.ts:282` runs all three selector-6 shapes (recipientKind 0 OPEN / 1 named key /
+     2 contract) and asserts, after each, full `snapshotLedger` equality **plus** zswap
+     `inputs`/`outputs`/`effects` equality (`expectSameEffects`, lines 260–271). W3's credit write is
+     observable as the `(destination, COLOR_B)` shielded cell; W2 is exercised in the **create**
+     direction by the first swap and the **merge** direction by the second and third.
+   * `k20-parity.test.ts:428` requires the same refusal with the same message text, state-neutrally on
+     both builds and cross-build, for `NC — swap with equal give/want colours` (guard 0c),
+     `NC — swap crediting an unregistered account` (guard 4) and `NC — swap wanting zero` (guard 0b).
+     The shared guard-2 line is exercised by four further negatives, including the FR-204 ordering
+     probe `NC — debit of a colour that was never credited`, which must refuse with
+     `"account colour balance too low"` and **not** `"no pooled coin for this colour"`.
+
+**Recorded coverage note, not a wiring gap:** three swap guards have no *dedicated* negative case in
+the 45-test suite — `"swap must give a positive amount"` and the two pool guards, the latter because
+guard 2 refuses first in every constructed case, which is the intended consequence of the FR-204
+order. All three are present in the live path and are exercised in the passing direction by all three
+swap parity cases. Older suites `harness/src/test/swap.test.ts` and `g5-variants.test.ts` carry
+explicit negatives for them, but target the v3/v4 surface and are not part of the 45-test suite, so
+they are context, not evidence.
+
+### 10.2 Step 2 — the deletion, under option C
+
+`assertSwapPreconditions` and `claimWantedColour` removed from `contracts/manager.compact`, together
+with the comment block that described only them. **1,405 → 1,381 lines; 57 insertions / 81 deletions.**
+**Every one of the 57 added lines is a comment or blank — no code was added.** 33 of the removed lines
+were code (the two circuit bodies); the remainder was their comment block. Source SHA-256
+`9fb3ae3e…` → `535b16695edbfd7b06994b3546253fefc2863996b8a66cd94397dd9f207f3d50`.
+Stored as `diffs/manager-k19-q3-deletion.diff`.
+
+**Call-graph verification before deleting** (mechanical, comments stripped): `assertSwapPreconditions`
+**0 callers**, `claimWantedColour` **0 callers**; `repoolOrRemove` has **1 caller (`custodyDispatch`)**
+and therefore stays. Reachability from the 19 exported roots: **62 of 67** before, **62 of 65** after —
+the reachable set is unchanged and **the deletion newly orphaned nothing**. The three circuits that
+remain unreachable (`nativeAuthResult`, `nativeAuthTag`, `reverseBytes32`) were already unreachable
+before this change and are out of scope; `nativeAuthResult` is retained deliberately as the normative
+in-contract definition of the native-mode `authResult` slot (Phase 1).
+
+**Option C applied — the FR-204 guard-order comment is rehomed onto `custodyDispatch`**, not deleted
+with the helpers. It is reworded to describe the mux: step 0 names the three `!isSwap || …` sanity
+lines and points the other selectors' sanity at `assertActionEnvelope`; step 1 names
+`gatewayAccount`/`authenticatedActionAccount` as the witness choke point that hands the circuit an
+already-derived account; step 2 states the single shared `assert(debitBalance >= val, …)` and the
+key-derivation equivalence; steps 3–4 are unchanged in substance; and the F-305 colour-distinctness
+rationale is carried over, noting the assert now lives in both `custodyDispatch` and
+`assertActionEnvelope`. The Q3 marker comment is removed and replaced by a record of the resolution
+pointing at `Q3-WIRING-VERIFICATION.md`. Two further comments the deletion made stale were corrected:
+the want-leg comment referred to `coinB` (a deleted parameter name) and now says `wantCoin`, and it
+absorbs the deleted `claimWantedColour` doc's load-bearing points — that `receiveShielded` is what
+makes the offer unbalanced, and that it must precede `insertCoin` because receiving allocates the
+Merkle-tree index. The v4 design narrative at the head of the file, already framed by Q1-B's
+"NOTE FOR v5 READERS" as describing v4, was left intact.
+
+### 10.3 THE ACCEPTANCE GATE PASSED — 9/9 ZKIRs BYTE-IDENTICAL
+
+Recompiled under the pinned image (`--feature-zkir-v3 --skip-zk`, Docker, `--network none`,
+`cpus:2, memory:8g, memory-swap:8g, rayon:2, wall-seconds:600`) into a **new arm `k19-q3`**, leaving
+the `k19-q1b` build intact for the comparison — the runner `rm -rf`s its own output directory, so a
+new arm name is what preserves the predecessor. Exit `0`, real **5.02 s**, `WATCHDOG_TIMEOUT=0`,
+`KEY_FILES=0`, nine ZKIRs with the unchanged name set. Log: `raw/compile-k19-q3.log`.
+
+| Artifact | `k19-q1b` vs `k19-q3` |
+|---|---|
+| All nine `zkir/*.zkir` | **BYTE-IDENTICAL — 9/9**, same SHA-256 (`execute.zkir` = `524c32a2414b98e6…`, 605,053 B) |
+| `contract/index.d.ts` | **BYTE-IDENTICAL** (`92c251d3…`) — exported surface unchanged |
+| `contract/index.js` | `8db6b55f…` → `9076c2a1…`, differing **only** in `manager.compact line N char N` provenance strings inside type-error messages (28 changed lines, all of that form). **Zero** non-provenance changed lines; identical after normalising them |
+
+A stronger statement than Q1-B was able to make is now available: normalising the provenance strings,
+the **originally measured `k19` build, the `k19-q1b` build and the `k19-q3` build all produce the same
+`index.js` digest `5ca96d0a…`** — the whole chain through both deletions is functionally one artifact.
+
+**Therefore, per the owner's stated rule and recorded explicitly: the measured `k=19 / 382,770 rows`,
+the 45/45 keyless suite results, and the nine generated proving/verifier keys ALL CARRY OVER
+unchanged. No re-measurement and no re-keygen were performed or needed.**
+
+**The suite was re-run nevertheless**, because `index.js` — the file the tests actually execute — was
+not byte-identical (line numbers only): **45/45 pass** across the same six files on the `k19-q3`
+build, against the same k=20 reference oracle (`1a6cf20d…`). Log: `raw/parity-k19-q3.log`.
+
+### 10.4 Cost, recorded rather than glossed
+
+The k=20→v5 product diff grew from **757 to 875 lines** (`diffs/manager-k20-to-k19.diff`, regenerated),
+continuing the trend the Q1 option table predicted for deletion. The two helper bodies are now
+recoverable only from git history — **`0c4bd1f` is the last commit that carries them** (as `56faa51`
+is for the eight Q1-B circuits).
+
+### 10.5 Integrity
+
+Docker residue `aa00010*` **0/0/0/0** (containers, volumes, networks, processes); the parity volume was
+torn down (`residual_volumes=0`) and the machine's unrelated baseline (15 containers / 36 volumes /
+6 networks) returned unchanged. Zero key files outside the gitignored path. Pinned image
+`aa00006-compactc@sha256:f57ca2d8…` throughout, never re-pinned; the container ran `--network none`.
+No push, no deploy, no proving, no keygen re-run. The 00008/00009 clones were not touched, and the
+frozen 00009 measurement variants under `contracts/variants/` were not edited.

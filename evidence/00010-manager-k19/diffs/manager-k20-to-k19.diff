@@ -1,10 +1,10 @@
---- /private/tmp/claude-501/-Users-edwardalvarado-todo-AA/2e5ba5c1-884b-4590-b97b-b763d9a2ffd6/scratchpad/manager-k20.compact	2026-08-24 21:16:43
-+++ contracts/manager.compact	2026-08-24 21:12:05
-@@ -1,5 +1,57 @@
+--- /private/tmp/claude-501/-Users-edwardalvarado-todo-AA/2e5ba5c1-884b-4590-b97b-b763d9a2ffd6/scratchpad/manager-k20.compact	2026-08-24 22:36:06
++++ contracts/manager.compact	2026-08-24 22:31:57
+@@ -1,6 +1,58 @@
 -// Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
 +// Manager v5 (k=19) — 00010-manager-k19 (EXPERIMENTAL_LANE / LANE-DEV-1)
-+//
-+// ================================================================================================
+ //
+ // ================================================================================================
 +// WHAT v5 CHANGES vs THE k=20 MANAGER, AND WHY
 +// ================================================================================================
 +//
@@ -51,14 +51,15 @@
 +//     losing exactly that.)
 +//   * The witness choke point, FR-204 guard order, the refusal set, custody state effects, the
 +//     nonce-after-custody ordering, account-mode isolation, and the nine provable circuits.
- //
++//
 +// Owner criterion for this project (2026-08-24): NO retrocompatibility of any kind is required —
 +// no historical signature, fixture, wallet, reader or ABI shape is preserved for its own sake. The
 +// only criteria are SECURITY and the measured size goal.
 +//
- // ================================================================================================
++// ================================================================================================
  // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
  // ================================================================================================
+ //
 @@ -8,7 +60,12 @@
  // BYTE-IDENTICAL to 00005's gate-green Manager v3 (`archive/00005/…`, base commit `e9701e9`), so
  // 00005's whole negative suite still applies unchanged. Nothing was weakened, renamed or reordered.
@@ -124,7 +125,7 @@
 +               0, 0, 0, 0, 0, 0, 0, 0,
 +               b[7], b[6], b[5], b[4], b[3], b[2], b[1], b[0]];
 +}
-+
+ 
 +circuit uint128Word(value: Uint<128>): Bytes<32> {
 +  const b = value as Bytes<16>;
 +  return Bytes[0, 0, 0, 0, 0, 0, 0, 0,
@@ -132,7 +133,7 @@
 +               b[15], b[14], b[13], b[12], b[11], b[10], b[9], b[8],
 +               b[7],  b[6],  b[5],  b[4],  b[3],  b[2],  b[1], b[0]];
 +}
- 
++
 +circuit uint8Word(value: Uint<8>): Bytes<32> {
 +  return slice<32>([...pad(31, ""), ...(value as Bytes<1>)], 0) as Bytes<32>;
 +}
@@ -140,12 +141,10 @@
  circuit addressWord(value: Bytes<20>): Bytes<32> {
    return slice<32>([...pad(12, ""), ...value], 0) as Bytes<32>;
  }
-@@ -573,40 +668,6 @@
-     shieldedKey(acct, c.color),
-     (shieldedBalanceOf(acct, c.color) + c.value) as Uint<128>
+@@ -575,40 +670,6 @@
    );
--}
--
+ }
+ 
 -/// Pay `value` of `colour` out of that colour's pool to `recipient`, debiting the WITNESS OWNER's
 -/// account. FR-204 guard order is load-bearing and is asserted by NC-1, NC-2 and NC-3.
 -circuit withdrawShielded(
@@ -178,13 +177,17 @@
 -
 -  shieldedBalances.insert(shieldedKey(acct, col), (shieldedBalanceOf(acct, col) - val) as Uint<128>);
 -  return result.sent;
- }
- 
+-}
+-
  // --- unshielded custody -------------------------------------------------------------------------
-@@ -632,72 +693,6 @@
-   );
- }
  
+ /// Credit `amount` of `colour` to `account`, unshielded family.
+@@ -630,74 +691,8 @@
+     unshieldedKey(acct, col),
+     (unshieldedBalanceOf(acct, col) + amt) as Uint<128>
+   );
+-}
+-
 -circuit withdrawUnshielded(
 -  account: Bytes<32>,
 -  colour: Bytes<32>,
@@ -230,8 +233,8 @@
 -
 -  shieldedBalances.insert(shieldedKey(fromAcct, col), (shieldedBalanceOf(fromAcct, col) - amt) as Uint<128>);
 -  shieldedBalances.insert(shieldedKey(dst, col), (shieldedBalanceOf(dst, col) + amt) as Uint<128>);
--}
--
+ }
+ 
 -/// The unshielded family's internal transfer. Same shape, different map and different key domain —
 -/// so the same 32-byte colour moved here can never touch a shielded cell (FR-203, P-COLL).
 -circuit transferInternalUnshielded(
@@ -266,26 +269,86 @@
  
  struct SwapCoinPreimage {
    // `midnight:zswap-cc[v1]` / `midnight:zswap-cn[v1]` — 21 bytes each, exactly as the stdlib.
-@@ -775,9 +771,16 @@
- 
- // --- the shared guard block --------------------------------------------------------------------
- //
+@@ -771,78 +767,6 @@
+   recipient: Either<ZswapCoinPublicKey, ContractAddress>
+ ): Bytes<32> {
+   return zswapCoinCommitment(coin, recipient);
+-}
+-
+-// --- the shared guard block --------------------------------------------------------------------
+-//
 -// Both swap circuits open with the SAME guards in the SAME order, and the order is the owner-critical
 -// property carried verbatim from v3's `withdrawShielded` (FR-204, FR-305):
-+// NOTE (2026-08-25, follow-up 00010-Q1 -> option B): `assertSwapPreconditions` and
-+// `claimWantedColour` below lost their only caller when `openSwapShielded` was deleted, and are now
-+// UNCALLED. They are private, so they still cost zero rows, and `custodyDispatch` inlines the
-+// equivalent guard order and want-claim for selector 6. They are left in place because the owner's
-+// Q1 resolution enumerated exactly eight circuits and these two were not among them — filed as
-+// question 00010-Q3 rather than removed on this executor's own authority.
- //
-+// Both swap circuits opened with the SAME guards in the SAME order, and the order is the
-+// owner-critical property carried verbatim from v3's `withdrawShielded` (FR-204, FR-305):
-+//
- //   0. parameter sanity      — pure arithmetic on the caller's own arguments; reads nothing, leaks
- //                              nothing, and cannot be confused with an authorization outcome.
- //   1. THE WITNESS CHOKE POINT — the debited account is DERIVED from the witness, never supplied
-@@ -855,97 +858,6 @@
+-//
+-//   0. parameter sanity      — pure arithmetic on the caller's own arguments; reads nothing, leaks
+-//                              nothing, and cannot be confused with an authorization outcome.
+-//   1. THE WITNESS CHOKE POINT — the debited account is DERIVED from the witness, never supplied
+-//                              (NC-305: an unregistered witness dies here, before any balance is read).
+-//   2. THE PER-(ACCOUNT, COLOUR) GUARD, BEFORE any pool guard, with a MISSING CELL READ AS 0
+-//                              (NC-306: a pool rich in A but a maker cell that is empty or short dies
+-//                              here — it never reaches the pool guard).
+-//   3. the pool guards       — only now does the contract's own holding matter.
+-//   4. the credit target     — the account the wanted colour is attributed to must be registered.
+-//
+-// Every guard precedes every write in both circuits, so a refused offer build is provably
+-// state-neutral: no cell, no pool, no map growth (FR-202 discipline, FR-305).
+-//
+-// Guard 0's colour-distinctness assert is NOT decoration, it is finding F-305 made explicit. Two
+-// same-colour shielded credits cannot be assembled in one transaction at these pins: the second needs
+-// the first coin's Merkle index, which is only allocated when the first is really inserted on chain.
+-// A swap whose two legs were the same colour would hit that as an opaque
+-// `invalid index into sparse merkle tree` from inside the proving path; refusing it here fails CLOSED
+-// with a readable reason instead.
+-
+-circuit assertSwapPreconditions(
+-  account: Bytes<32>,
+-  colA: Bytes<32>,
+-  val: Uint<128>,
+-  coinB: ShieldedCoinInfo,
+-  credit: Bytes<32>
+-): Bytes<32> {
+-  // 0. parameter sanity.
+-  assert(val > 0, "swap must give a positive amount");
+-  assert(coinB.value > 0, "swap must want a positive amount");
+-  assert(colA != coinB.color, "swap legs must be different colours");
+-  // 1. authorization already derived and checked the account before dispatch.
+-  const acct = account;
+-  // 2. THE PER-ACCOUNT, PER-COLOUR GUARD, BEFORE any pool guard.
+-  assert(shieldedBalanceOf(acct, colA) >= val, "account colour balance too low");
+-  // 3. only now, the pool.
+-  assert(pools.member(colA), "no pooled coin for this colour");
+-  assert(pools.lookup(colA).value >= val, "pooled colour balance too low");
+-  // 4. the credit target.
+-  assert(accounts.member(credit), "credit account is not registered");
+-  return acct;
+-}
+-
+-/// The WANT leg, shared by both shapes: claim `coinB` into custody and attribute it to `credit`.
+-///
+-/// `receiveShielded` creates an output the transaction does not fund, so this is what makes the offer
+-/// UNBALANCED — a deficit of `coinB.value` of `coinB.color` at the guaranteed segment. It is the same
+-/// deficit `depositShielded` creates, which is why spike S1 could prove the taker mechanics against
+-/// v3 before v4 existed.
+-circuit claimWantedColour(coinB: ShieldedCoinInfo, credit: Bytes<32>): [] {
+-  // Must precede insertCoin: this is what allocates the Merkle-tree index.
+-  receiveShielded(coinB);
+-  if (pools.member(coinB.color)) {
+-    pools.insertCoin(
+-      coinB.color,
+-      mergeCoinImmediate(pools.lookup(coinB.color), coinB),
+-      right<ZswapCoinPublicKey, ContractAddress>(kernel.self())
+-    );
+-  } else {
+-    pools.insertCoin(coinB.color, coinB, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+-  }
+-  shieldedBalances.insert(
+-    shieldedKey(credit, coinB.color),
+-    (shieldedBalanceOf(credit, coinB.color) + coinB.value) as Uint<128>
+-  );
+ }
+ 
+ /// Write back what is left of colour `col`'s pool after a debit, or drop the colour entirely.
+@@ -855,97 +779,6 @@
    }
  }
  
@@ -383,7 +446,7 @@
  // ================================================================================================
  // Manager v5 candidate — one dual-authorization registration/debit gateway
  // ================================================================================================
-@@ -1065,40 +977,224 @@
+@@ -1065,40 +898,279 @@
    return authenticatedActionAccount(p, nativeAccount);
  }
  
@@ -430,9 +493,18 @@
 +// deletion, which is why the measured `k=19 / 382,770 rows`, the 45/45 keyless suite and the
 +// generated proving keys all carry over unchanged, with no re-measurement.
 +//
++// ALSO DELETED (owner resolution 00010-Q3, 2026-08-25): `assertSwapPreconditions` and
++// `claimWantedColour`, the two swap helpers whose only caller was `openSwapShielded`. The owner's
++// condition was that they be unused because THIS mux reimplemented them, not because a wiring step
++// was forgotten, so before deleting them all ten of their guards and effects were mapped to live
++// lines in this circuit and cross-referenced against the executed k=20 A/B parity evidence —
++// 10 of 10 mapped, no gap. The mapping is `evidence/00010-manager-k19/Q3-WIRING-VERIFICATION.md`;
++// the guard order they documented is rehomed onto `custodyDispatch` immediately below.
++//
 +// `custodyDispatch` below is now the file's ONLY custody implementation — "which code debits an
 +// account" is answerable by inspection, and the old legs are recoverable from git history
-+// (commit `56faa51` is the last one that carries them).
++// (commit `56faa51` is the last one that carries them; `0c4bd1f` is the last one carrying the two
++// swap helpers).
 +
 +/// Balance at an ALREADY-DERIVED key. A missing cell reads 0 (FR-204, FR-206), exactly as
 +/// `shieldedBalanceOf` does — the only difference is that the key is computed by the caller, once.
@@ -455,6 +527,46 @@
 -): Maybe<Either<ZswapCoinPublicKey, ContractAddress>> {
 -  if (kind == 0) {
 -    return none<Either<ZswapCoinPublicKey, ContractAddress>>();
++// --- THE GUARD ORDER (FR-204, FR-305) — the owner-critical property, stated where it now lives ---
++//
++// (Rehomed here on 2026-08-25 from the deleted `assertSwapPreconditions` block, per the owner's
++//  resolution of 00010-Q3. The order below is the one carried verbatim from v3's `withdrawShielded`;
++//  what changed is only that ONE muxed circuit now enforces it for all five custody selectors
++//  instead of five per-selector copies. Line references are to this file.)
++//
++//   0. parameter sanity      — pure arithmetic on the caller's own arguments; reads nothing, leaks
++//                              nothing, and cannot be confused with an authorization outcome. The
++//                              swap sanity asserts are the three `!isSwap || …` lines that open the
++//                              body; every other selector's sanity lives in `assertActionEnvelope`,
++//                              which runs first, in `execute`.
++//   1. THE WITNESS CHOKE POINT — the debited account is DERIVED from the witness, never supplied
++//                              (NC-305: an unregistered witness dies there, before any balance is
++//                              read). It is derived by `gatewayAccount` / `authenticatedActionAccount`
++//                              in `execute` and arrives here as the `account` parameter, so this
++//                              circuit never has the option of trusting a supplied account.
++//   2. THE PER-(ACCOUNT, COLOUR) GUARD, BEFORE any pool guard, with a MISSING CELL READ AS 0
++//                              (NC-306: a pool rich in A but a maker cell that is empty or short dies
++//                              here — it never reaches the pool guard). This is the single
++//                              `assert(debitBalance >= val, …)` below, shared by all five selectors:
++//                              `debitKey` is derived ONCE with the family tag muxed, and for a
++//                              shielded selector it is exactly `shieldedKey(account, col)`'s body,
++//                              read through `shieldedBalanceAt`, which is `shieldedBalanceOf`'s body
++//                              with the key supplied — so the read-as-0 property is preserved, not
++//                              re-implemented.
++//   3. the pool guards       — only now does the contract's own holding matter (`if (needsPool)`).
++//   4. the credit target     — the account a swap's wanted colour is attributed to must be registered.
++//
++// Every guard precedes every write, so a refused action is provably state-neutral: no cell, no pool,
++// no map growth (FR-202 discipline, FR-305). The first write in this circuit is the give leg, which
++// sits after all of steps 0-4.
++//
++// Guard 0's colour-distinctness assert is NOT decoration, it is finding F-305 made explicit. Two
++// same-colour shielded credits cannot be assembled in one transaction at these pins: the second needs
++// the first coin's Merkle index, which is only allocated when the first is really inserted on chain.
++// A swap whose two legs were the same colour would hit that as an opaque
++// `invalid index into sparse merkle tree` from inside the proving path; refusing it here (and in
++// `assertActionEnvelope`) fails CLOSED with a readable reason instead.
++
 +/// The whole custody dispatch for selectors 2..6, with one copy of every expensive operation.
 +circuit custodyDispatch(p: ExecutePayload, account: Bytes<32>): [] {
 +  const isWithdrawShielded   = p.selector == 2;
@@ -561,7 +673,13 @@
 +    unshieldedBalances.insert(debitKey, newDebit);
 +  }
 +
-+  // --- the swap WANT leg: claim `coinB` into custody (this is what makes the offer unbalanced) ---
++  // --- the swap WANT leg: claim `wantCoin` into custody ---
++  //
++  // `receiveShielded` creates an output the transaction does not fund, so this is what makes the
++  // offer UNBALANCED — a deficit of `p.wantAmount` of `p.wantColor` at the guaranteed segment. It is
++  // the same deficit `depositShielded` creates, which is why spike S1 could prove the taker
++  // mechanics against v3 before v4 existed. It MUST precede `insertCoin`: receiving is what
++  // allocates the coin's Merkle-tree index.
 +  if (isSwap) {
 +    const wantCoin = ShieldedCoinInfo{
 +      nonce: p.wantNonce, color: p.wantColor, value: p.wantAmount
@@ -634,7 +752,7 @@
  
  circuit semanticTag(): Bytes<32> {
    return Bytes[0xe2, 0x11, 0x48, 0x48, 0x81, 0xf2, 0x54, 0x57,
-@@ -1128,13 +1224,15 @@
+@@ -1128,13 +1200,15 @@
                 0xac, 0x67, 0xc7, 0xea, 0x2e, 0xbb, 0x1c, 0x44];
  }
  
@@ -656,7 +774,7 @@
  circuit nativeAuthResult(account: Bytes<32>): Bytes<32> {
    const preimage: Bytes<64> = slice<64>([...nativeAuthTag(), ...account], 0) as Bytes<64>;
    return keccak256<Bytes<64>>(preimage);
-@@ -1182,7 +1280,8 @@
+@@ -1182,7 +1256,8 @@
    return keccak256<Bytes<1024>>(preimage);
  }
  
@@ -666,7 +784,7 @@
  /// Muxing values into one call keeps every frozen byte while avoiding branch-duplicated Keccak.
  circuit semanticCommitmentCore(
    manager: Bytes<32>, domain: Bytes<32>, payload: ExecutePayload,
-@@ -1212,6 +1311,14 @@
+@@ -1212,6 +1287,14 @@
    );
  }
  
@@ -681,7 +799,7 @@
  export circuit semanticCommitmentFor(
    manager: Bytes<32>, domain: Bytes<32>, payload: ExecutePayload,
    account: Bytes<32>, authResult: Bytes<32>
-@@ -1221,20 +1328,10 @@
+@@ -1221,20 +1304,10 @@
    return disclose(semanticCommitmentCore(manager, domain, p, account, authResult));
  }
  
@@ -706,7 +824,7 @@
  
  /// The only externally callable registration/debit gateway. ECDSA/address operations stay
  /// straight-line because the pinned ZKIR-v3 backend cannot lower guarded secp operations.
-@@ -1277,24 +1374,8 @@
+@@ -1277,24 +1350,8 @@
    }
  
    if (!isRegistration) {
@@ -733,7 +851,7 @@
    }
  
    // The sole checked nonce write is deliberately after custody dispatch: every guard/effect must
-@@ -1306,6 +1387,19 @@
+@@ -1306,6 +1363,19 @@
      evmNonces.insert(account, storedNonce);
    }
  
