@@ -1,0 +1,172 @@
+diff --git a/contracts/manager.compact b/contracts/manager.compact
+index 82c7591..72c3b12 100644
+--- a/contracts/manager.compact
++++ b/contracts/manager.compact
+@@ -769,85 +769,6 @@ export circuit zswapCommitmentOf(
+   return zswapCoinCommitment(coin, recipient);
+ }
+ 
+-// --- the shared guard block --------------------------------------------------------------------
+-//
+-// NOTE (2026-08-25, follow-up 00010-Q1 -> option B): `assertSwapPreconditions` and
+-// `claimWantedColour` below lost their only caller when `openSwapShielded` was deleted, and are now
+-// UNCALLED. They are private, so they still cost zero rows, and `custodyDispatch` inlines the
+-// equivalent guard order and want-claim for selector 6. They are left in place because the owner's
+-// Q1 resolution enumerated exactly eight circuits and these two were not among them — filed as
+-// question 00010-Q3 rather than removed on this executor's own authority.
+-//
+-// Both swap circuits opened with the SAME guards in the SAME order, and the order is the
+-// owner-critical property carried verbatim from v3's `withdrawShielded` (FR-204, FR-305):
+-//
+-//   0. parameter sanity      — pure arithmetic on the caller's own arguments; reads nothing, leaks
+-//                              nothing, and cannot be confused with an authorization outcome.
+-//   1. THE WITNESS CHOKE POINT — the debited account is DERIVED from the witness, never supplied
+-//                              (NC-305: an unregistered witness dies here, before any balance is read).
+-//   2. THE PER-(ACCOUNT, COLOUR) GUARD, BEFORE any pool guard, with a MISSING CELL READ AS 0
+-//                              (NC-306: a pool rich in A but a maker cell that is empty or short dies
+-//                              here — it never reaches the pool guard).
+-//   3. the pool guards       — only now does the contract's own holding matter.
+-//   4. the credit target     — the account the wanted colour is attributed to must be registered.
+-//
+-// Every guard precedes every write in both circuits, so a refused offer build is provably
+-// state-neutral: no cell, no pool, no map growth (FR-202 discipline, FR-305).
+-//
+-// Guard 0's colour-distinctness assert is NOT decoration, it is finding F-305 made explicit. Two
+-// same-colour shielded credits cannot be assembled in one transaction at these pins: the second needs
+-// the first coin's Merkle index, which is only allocated when the first is really inserted on chain.
+-// A swap whose two legs were the same colour would hit that as an opaque
+-// `invalid index into sparse merkle tree` from inside the proving path; refusing it here fails CLOSED
+-// with a readable reason instead.
+-
+-circuit assertSwapPreconditions(
+-  account: Bytes<32>,
+-  colA: Bytes<32>,
+-  val: Uint<128>,
+-  coinB: ShieldedCoinInfo,
+-  credit: Bytes<32>
+-): Bytes<32> {
+-  // 0. parameter sanity.
+-  assert(val > 0, "swap must give a positive amount");
+-  assert(coinB.value > 0, "swap must want a positive amount");
+-  assert(colA != coinB.color, "swap legs must be different colours");
+-  // 1. authorization already derived and checked the account before dispatch.
+-  const acct = account;
+-  // 2. THE PER-ACCOUNT, PER-COLOUR GUARD, BEFORE any pool guard.
+-  assert(shieldedBalanceOf(acct, colA) >= val, "account colour balance too low");
+-  // 3. only now, the pool.
+-  assert(pools.member(colA), "no pooled coin for this colour");
+-  assert(pools.lookup(colA).value >= val, "pooled colour balance too low");
+-  // 4. the credit target.
+-  assert(accounts.member(credit), "credit account is not registered");
+-  return acct;
+-}
+-
+-/// The WANT leg, shared by both shapes: claim `coinB` into custody and attribute it to `credit`.
+-///
+-/// `receiveShielded` creates an output the transaction does not fund, so this is what makes the offer
+-/// UNBALANCED — a deficit of `coinB.value` of `coinB.color` at the guaranteed segment. It is the same
+-/// deficit `depositShielded` creates, which is why spike S1 could prove the taker mechanics against
+-/// v3 before v4 existed.
+-circuit claimWantedColour(coinB: ShieldedCoinInfo, credit: Bytes<32>): [] {
+-  // Must precede insertCoin: this is what allocates the Merkle-tree index.
+-  receiveShielded(coinB);
+-  if (pools.member(coinB.color)) {
+-    pools.insertCoin(
+-      coinB.color,
+-      mergeCoinImmediate(pools.lookup(coinB.color), coinB),
+-      right<ZswapCoinPublicKey, ContractAddress>(kernel.self())
+-    );
+-  } else {
+-    pools.insertCoin(coinB.color, coinB, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+-  }
+-  shieldedBalances.insert(
+-    shieldedKey(credit, coinB.color),
+-    (shieldedBalanceOf(credit, coinB.color) + coinB.value) as Uint<128>
+-  );
+-}
+-
+ /// Write back what is left of colour `col`'s pool after a debit, or drop the colour entirely.
+ circuit repoolOrRemove(col: Bytes<32>, change: Maybe<ShieldedCoinInfo>): [] {
+   if (change.is_some) {
+@@ -1014,9 +935,18 @@ circuit gatewayAccount(
+ // deletion, which is why the measured `k=19 / 382,770 rows`, the 45/45 keyless suite and the
+ // generated proving keys all carry over unchanged, with no re-measurement.
+ //
++// ALSO DELETED (owner resolution 00010-Q3, 2026-08-25): `assertSwapPreconditions` and
++// `claimWantedColour`, the two swap helpers whose only caller was `openSwapShielded`. The owner's
++// condition was that they be unused because THIS mux reimplemented them, not because a wiring step
++// was forgotten, so before deleting them all ten of their guards and effects were mapped to live
++// lines in this circuit and cross-referenced against the executed k=20 A/B parity evidence —
++// 10 of 10 mapped, no gap. The mapping is `evidence/00010-manager-k19/Q3-WIRING-VERIFICATION.md`;
++// the guard order they documented is rehomed onto `custodyDispatch` immediately below.
++//
+ // `custodyDispatch` below is now the file's ONLY custody implementation — "which code debits an
+ // account" is answerable by inspection, and the old legs are recoverable from git history
+-// (commit `56faa51` is the last one that carries them).
++// (commit `56faa51` is the last one that carries them; `0c4bd1f` is the last one carrying the two
++// swap helpers).
+ 
+ /// Balance at an ALREADY-DERIVED key. A missing cell reads 0 (FR-204, FR-206), exactly as
+ /// `shieldedBalanceOf` does — the only difference is that the key is computed by the caller, once.
+@@ -1028,6 +958,46 @@ circuit unshieldedBalanceAt(k: Bytes<32>): Uint<128> {
+   return unshieldedBalances.member(k) ? unshieldedBalances.lookup(k) : 0;
+ }
+ 
++// --- THE GUARD ORDER (FR-204, FR-305) — the owner-critical property, stated where it now lives ---
++//
++// (Rehomed here on 2026-08-25 from the deleted `assertSwapPreconditions` block, per the owner's
++//  resolution of 00010-Q3. The order below is the one carried verbatim from v3's `withdrawShielded`;
++//  what changed is only that ONE muxed circuit now enforces it for all five custody selectors
++//  instead of five per-selector copies. Line references are to this file.)
++//
++//   0. parameter sanity      — pure arithmetic on the caller's own arguments; reads nothing, leaks
++//                              nothing, and cannot be confused with an authorization outcome. The
++//                              swap sanity asserts are the three `!isSwap || …` lines that open the
++//                              body; every other selector's sanity lives in `assertActionEnvelope`,
++//                              which runs first, in `execute`.
++//   1. THE WITNESS CHOKE POINT — the debited account is DERIVED from the witness, never supplied
++//                              (NC-305: an unregistered witness dies there, before any balance is
++//                              read). It is derived by `gatewayAccount` / `authenticatedActionAccount`
++//                              in `execute` and arrives here as the `account` parameter, so this
++//                              circuit never has the option of trusting a supplied account.
++//   2. THE PER-(ACCOUNT, COLOUR) GUARD, BEFORE any pool guard, with a MISSING CELL READ AS 0
++//                              (NC-306: a pool rich in A but a maker cell that is empty or short dies
++//                              here — it never reaches the pool guard). This is the single
++//                              `assert(debitBalance >= val, …)` below, shared by all five selectors:
++//                              `debitKey` is derived ONCE with the family tag muxed, and for a
++//                              shielded selector it is exactly `shieldedKey(account, col)`'s body,
++//                              read through `shieldedBalanceAt`, which is `shieldedBalanceOf`'s body
++//                              with the key supplied — so the read-as-0 property is preserved, not
++//                              re-implemented.
++//   3. the pool guards       — only now does the contract's own holding matter (`if (needsPool)`).
++//   4. the credit target     — the account a swap's wanted colour is attributed to must be registered.
++//
++// Every guard precedes every write, so a refused action is provably state-neutral: no cell, no pool,
++// no map growth (FR-202 discipline, FR-305). The first write in this circuit is the give leg, which
++// sits after all of steps 0-4.
++//
++// Guard 0's colour-distinctness assert is NOT decoration, it is finding F-305 made explicit. Two
++// same-colour shielded credits cannot be assembled in one transaction at these pins: the second needs
++// the first coin's Merkle index, which is only allocated when the first is really inserted on chain.
++// A swap whose two legs were the same colour would hit that as an opaque
++// `invalid index into sparse merkle tree` from inside the proving path; refusing it here (and in
++// `assertActionEnvelope`) fails CLOSED with a readable reason instead.
++
+ /// The whole custody dispatch for selectors 2..6, with one copy of every expensive operation.
+ circuit custodyDispatch(p: ExecutePayload, account: Bytes<32>): [] {
+   const isWithdrawShielded   = p.selector == 2;
+@@ -1126,7 +1096,13 @@ circuit custodyDispatch(p: ExecutePayload, account: Bytes<32>): [] {
+     unshieldedBalances.insert(debitKey, newDebit);
+   }
+ 
+-  // --- the swap WANT leg: claim `coinB` into custody (this is what makes the offer unbalanced) ---
++  // --- the swap WANT leg: claim `wantCoin` into custody ---
++  //
++  // `receiveShielded` creates an output the transaction does not fund, so this is what makes the
++  // offer UNBALANCED — a deficit of `p.wantAmount` of `p.wantColor` at the guaranteed segment. It is
++  // the same deficit `depositShielded` creates, which is why spike S1 could prove the taker
++  // mechanics against v3 before v4 existed. It MUST precede `insertCoin`: receiving is what
++  // allocates the coin's Merkle-tree index.
+   if (isSwap) {
+     const wantCoin = ShieldedCoinInfo{
+       nonce: p.wantNonce, color: p.wantColor, value: p.wantAmount

@@ -1,0 +1,60 @@
+--- contracts/manager.compact	2026-08-24 13:16:56
++++ contracts/variants/d07-eip712-structhash-noop.compact	2026-08-24 14:49:41
+@@ -1,5 +1,14 @@
+ // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
++// 00009 MEASUREMENT-ONLY NESTED ABLATION ARM `d07-eip712-structhash-noop` — NOT A SHIPPING CONTRACT.
+ //
++// This source is DELIBERATELY BROKEN. It exists only so that
++//   weight(sub-component) = rows(w0-baseline) - rows(this arm)
++// can be measured with `compactc --skip-zk` + `zkir-v3 mock-compile`.
++// Ablated sub-component: `evmStructHashFor` — ALL FOUR selector branches' preimages and keccaks
++// It must never ship, never be promoted into contracts/manager.compact, never be
++// proved, and never be deployed.
++//
++//
+ // ================================================================================================
+ // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+ // ================================================================================================
+@@ -420,39 +429,10 @@
+ }
+ 
+ export circuit evmStructHashFor(manager: Bytes<32>, payload: ExecutePayload): Bytes<32> {
++  // 00009 d07 ABLATION: return a payload field instead of any struct hash. All four branches go, so Δ(d07) is
++  // the whole struct-hash cost and Δ(d09..d12) must sum to it.
+   const p = payload;
+-  if (p.selector == 1) {
+-    const preimage: Bytes<192> = slice<192>([
+-      ...registerType(), ...manager, ...p.account, ...addressWord(p.owner), ...p.accountSalt,
+-      ...uint64Word(p.validUntil)
+-    ], 0) as Bytes<192>;
+-    return disclose(keccak256<Bytes<192>>(preimage));
+-  }
+-  if (p.selector == 2 || p.selector == 3) {
+-    const typeHash = p.selector == 2 ? withdrawShieldedType() : withdrawUnshieldedType();
+-    const preimage: Bytes<320> = slice<320>([
+-      ...typeHash, ...manager, ...p.account, ...addressWord(p.owner), ...uint64Word(p.nonce),
+-      ...uint64Word(p.validUntil), ...p.primaryColor, ...uint128Word(p.primaryAmount),
+-      ...uint8Word(p.recipientKind), ...p.recipient
+-    ], 0) as Bytes<320>;
+-    return disclose(keccak256<Bytes<320>>(preimage));
+-  }
+-  if (p.selector == 4 || p.selector == 5) {
+-    const typeHash = p.selector == 4 ? transferShieldedType() : transferUnshieldedType();
+-    const preimage: Bytes<288> = slice<288>([
+-      ...typeHash, ...manager, ...p.account, ...addressWord(p.owner), ...uint64Word(p.nonce),
+-      ...uint64Word(p.validUntil), ...p.toAccount, ...p.primaryColor, ...uint128Word(p.primaryAmount)
+-    ], 0) as Bytes<288>;
+-    return disclose(keccak256<Bytes<288>>(preimage));
+-  }
+-  assert(p.selector == 6, "EIP-712 selector must be 1..6");
+-  const preimage: Bytes<448> = slice<448>([
+-    ...openSwapType(), ...manager, ...p.account, ...addressWord(p.owner), ...uint64Word(p.nonce),
+-    ...uint64Word(p.validUntil), ...p.primaryColor, ...uint128Word(p.primaryAmount),
+-    ...uint8Word(p.recipientKind), ...p.recipient, ...p.wantNonce, ...p.wantColor,
+-    ...uint128Word(p.wantAmount), ...p.creditAccount
+-  ], 0) as Bytes<448>;
+-  return disclose(keccak256<Bytes<448>>(preimage));
++  return disclose(p.account);
+ }
+ 
+ circuit eip712Digest(domain: Bytes<32>, structHash: Bytes<32>): Bytes<32> {

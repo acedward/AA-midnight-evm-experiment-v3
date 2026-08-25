@@ -1,0 +1,30 @@
+--- contracts/manager.compact	2026-08-24 13:16:56
++++ contracts/variants/d09-eip712-struct-sel1-noop.compact	2026-08-24 14:49:41
+@@ -1,4 +1,13 @@
+ // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
++// 00009 MEASUREMENT-ONLY NESTED ABLATION ARM `d09-eip712-struct-sel1-noop` — NOT A SHIPPING CONTRACT.
++//
++// This source is DELIBERATELY BROKEN. It exists only so that
++//   weight(sub-component) = rows(w0-baseline) - rows(this arm)
++// can be measured with `compactc --skip-zk` + `zkir-v3 mock-compile`.
++// Ablated sub-component: only `evmStructHashFor`'s selector-1 branch (192-byte / 6-word preimage, 2 keccak-f)
++// It must never ship, never be promoted into contracts/manager.compact, never be
++// proved, and never be deployed.
++//
+ //
+ // ================================================================================================
+ // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+@@ -422,11 +431,8 @@
+ export circuit evmStructHashFor(manager: Bytes<32>, payload: ExecutePayload): Bytes<32> {
+   const p = payload;
+   if (p.selector == 1) {
+-    const preimage: Bytes<192> = slice<192>([
+-      ...registerType(), ...manager, ...p.account, ...addressWord(p.owner), ...p.accountSalt,
+-      ...uint64Word(p.validUntil)
+-    ], 0) as Bytes<192>;
+-    return disclose(keccak256<Bytes<192>>(preimage));
++    // 00009 d09 ABLATION: this selector branch only; every other branch is untouched.
++    return disclose(p.accountSalt);
+   }
+   if (p.selector == 2 || p.selector == 3) {
+     const typeHash = p.selector == 2 ? withdrawShieldedType() : withdrawUnshieldedType();

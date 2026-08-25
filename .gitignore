@@ -27,3 +27,13 @@ harness/generated-probes/
 # generated transactions (tens of KB of proof each); their sizes and SHA-256 content addresses are
 # what the FR-306 claim rests on and those ARE committed, inside the spike JSON.
 evidence/**/offers/
+
+# Phase 4R compiler/test/key outputs are isolated evidence inputs and are never committed.
+harness/generated-phase4r/
+
+# 00009 circuit-weight measurement outputs (compiler artifacts + transient BZKIR). Never committed.
+harness/generated-00009/
+
+# 00010 manager-k19 compiler artifacts, transient BZKIR and the ONE gated proving/verifier
+# key set (multi-GB). NEVER committed — hashes and sizes are recorded in evidence instead.
+harness/generated-00010/

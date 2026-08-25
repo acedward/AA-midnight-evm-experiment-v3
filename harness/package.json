@@ -8,10 +8,15 @@
     "node": ">=22"
   },
   "scripts": {
+    "auth:fixtures": "tsx src/auth/fixtures/generate.ts --write",
+    "auth:fixtures:check": "tsx src/auth/fixtures/generate.ts",
+    "test:auth": "vitest run src/auth/test",
+    "typecheck:auth": "tsc --noEmit -p src/auth/tsconfig.json",
     "typecheck": "tsc --noEmit",
     "wallets": "tsx src/g1/wallets.ts"
   },
   "dependencies": {
+    "@metamask/eth-sig-util": "8.2.0",
     "@midnight-ntwrk/compact-runtime": "0.18.0-rc.1",
     "@midnight-ntwrk/midnight-js-contracts": "5.0.0-beta.6",
     "@midnight-ntwrk/midnight-js-http-client-proof-provider": "5.0.0-beta.6",
@@ -32,6 +37,8 @@
     "@midnightntwrk/wallet-sdk-runtime": "1.0.6-beta.0",
     "@midnightntwrk/wallet-sdk-shielded": "4.0.0-beta.2",
     "@midnightntwrk/wallet-sdk-unshielded-wallet": "4.0.0-beta.2",
+    "@noble/curves": "2.2.0",
+    "@noble/hashes": "2.2.0",
     "rxjs": "7.8.2"
   },
   "devDependencies": {

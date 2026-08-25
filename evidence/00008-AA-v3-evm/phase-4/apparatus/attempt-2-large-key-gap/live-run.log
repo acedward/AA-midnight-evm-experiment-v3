@@ -1,0 +1,74 @@
+ Container aa00008_phase4_20260824_155524_32437-indexer-1 Running 
+ Container aa00008_phase4_20260824_155524_32437-proof-server-1 Running 
+ Container aa00008_phase4_20260824_155524_32437-plain-proof-server-1 Running 
+ Container aa00008_phase4_20260824_155524_32437-node-1 Running 
+ Container aa00008_phase4_20260824_155524_32437-node-1 Waiting 
+ Container aa00008_phase4_20260824_155524_32437-node-1 Healthy 
+ Container aa00008_phase4_20260824_155524_32437-node-1 Waiting 
+ Container aa00008_phase4_20260824_155524_32437-node-1 Healthy 
+ Container aa00008_phase4_20260824_155524_32437-runner-run-524a8721390c Creating 
+ Container aa00008_phase4_20260824_155524_32437-runner-run-524a8721390c Created 
+Preparing pnpm@11.5.1 for immediate activation...
+midnight-js: proof server URL uses unencrypted http:// for non-loopback host 'proof-server'; sensitive data may be transmitted in clear text. Use https:// in production.
+2026-08-24 15:55:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 15:55:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 15:55:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 15:55:50        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+[2026-08-24T15:55:51.144Z]   funding phase4-fee with 2000000000000 NIGHT from phase4-genesis-1
+2026-08-24 15:55:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 15:55:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 15:55:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 15:55:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 15:55:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 15:55:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 15:55:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 15:55:51        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+[2026-08-24T15:55:51.312Z]   fund phase4-fee: attempt 1 — DUST not yet generated, waiting 15s
+[2026-08-24T15:56:25.363Z]   submitted tx 00d38d3bc28a3f2e566b161fa35b42814793c53c1f029c756837a70db11d94f7d5 (hash 07a20fd3b0006bde9d2d7e712c7d900b847d274c927afae216e333e2b8e8b1e3)
+[2026-08-24T15:56:25.363Z]   waiting for phase4-fee NIGHT to arrive …
+[2026-08-24T15:56:25.499Z]   waiting for phase4-genesis-1 to observe its own spend (NIGHT at or below 248000000000000) …
+[2026-08-24T15:57:21.079Z]   phase4-fee: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-24T15:57:37.648Z]   phase4-fee: DUST registration tx 007afefdadad3530bfe5b204a6cb024d926deac474e44485d2a8f320f69c2d0949
+[2026-08-24T15:57:37.648Z]   waiting for phase4-fee NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-24 15:57:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 15:57:38        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+[2026-08-24T15:57:38.228Z]   funding phase4-fee2 with 2000000000000 NIGHT from phase4-genesis-2
+[2026-08-24T15:57:55.027Z]   submitted tx 00e2092c29f99df609e1e65a0b6cb8daf07ffab99924d58e866c2c5f45f323c101 (hash 8a1a10b25ed81c89225eeb73707572844a8f5ad1e5503339a2e816748ca0f1aa)
+[2026-08-24T15:57:55.027Z]   waiting for phase4-fee2 NIGHT to arrive …
+[2026-08-24T15:57:55.154Z]   waiting for phase4-genesis-2 to observe its own spend (NIGHT at or below 246000000000000) …
+[2026-08-24T15:59:27.912Z]   phase4-fee2: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-24T15:59:43.378Z]   phase4-fee2: DUST registration tx 0040f41ed6a7af5ab86ef7c8c0ebc98b907e71aea8c3672b6f7e768c00742f61b1
+[2026-08-24T15:59:43.378Z]   waiting for phase4-fee2 NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-24 15:59:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 15:59:43        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+[2026-08-24T15:59:43.941Z]   funding phase4-holder-mint with 2000000000000 NIGHT from phase4-genesis-3
+[2026-08-24T16:00:00.798Z]   submitted tx 002af27d1d381d01efbac64b4856341520c8b493ef119781a9592f59ca23baacdd (hash 4b1e481b8507920abd085e5d3da8c0056acc990503f5b947b887de1a06561294)
+[2026-08-24T16:00:00.798Z]   waiting for phase4-holder-mint NIGHT to arrive …
+[2026-08-24T16:00:00.992Z]   waiting for phase4-genesis-3 to observe its own spend (NIGHT at or below 244000000000000) …
+[2026-08-24T16:04:06.399Z]   phase4-holder-mint: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-24T16:04:25.727Z]   phase4-holder-mint: DUST registration tx 00566c71d8dec3b4f89a4eb8574a2420186d5f491061b7c04f7612a8b24ab87922
+[2026-08-24T16:04:25.727Z]   waiting for phase4-holder-mint NIGHT utxos to show registeredForDustGeneration=true …
+2026-08-24 16:04:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+2026-08-24 16:04:26        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://node:9944/: 1000:: Normal Closure
+[2026-08-24T16:04:26.318Z]   funding phase4-taker-mint with 2000000000000 NIGHT from phase4-genesis-4
+[2026-08-24T16:04:43.115Z]   submitted tx 00b5045ed786188c4513ce17e976f8c67e0a08941a65534ac535c8dffa461a62a0 (hash dc1834d48feae934a9a4949bec76cbfe3d537b7db2656220b2013dc14b3f2d02)
+[2026-08-24T16:04:43.115Z]   waiting for phase4-taker-mint NIGHT to arrive …
+[2026-08-24T16:04:43.281Z]   waiting for phase4-genesis-4 to observe its own spend (NIGHT at or below 242000000000000) …
+[2026-08-24T16:07:15.684Z]   phase4-taker-mint: registering 1 NIGHT utxo(s) for DUST generation
+[2026-08-24T16:07:31.739Z]   phase4-taker-mint: DUST registration tx 00d05baebab095afec752fdacde670202636b3d6478ba65abd6ecd2f2ffb76279e
+[2026-08-24T16:07:31.739Z]   waiting for phase4-taker-mint NIGHT utxos to show registeredForDustGeneration=true …
+midnight-js: indexer query URL uses unencrypted http:// for non-loopback host 'indexer'; sensitive data may be transmitted in clear text. Use https:// in production.
+midnight-js: indexer subscription URL uses unencrypted ws:// for non-loopback host 'indexer'; sensitive data may be transmitted in clear text. Use wss:// in production.
+midnight-js: proof server URL uses unencrypted http:// for non-loopback host 'proof-server'; sensitive data may be transmitted in clear text. Use https:// in production.
+Error: 'check' returned an error: RangeError [ERR_FS_FILE_TOO_LARGE]: File size (2282126073) is greater than 2 GiB
+    at __wbg_Error_e17e777aac105295 (file:///work/harness/node_modules/.pnpm/@midnightntwrk+ledger-v9@1.0.0-rc.3/node_modules/@midnightntwrk/ledger-v9/midnight_ledger_wasm_v9_bg.js:10092:17)
+    at wasm://wasm/02760daa:wasm-function[15716]:0x63705f
+    at wasm://wasm/02760daa:wasm-function[5908]:0x45646a
+    at wasm://wasm/02760daa:wasm-function[277]:0x830a3
+    at wasm://wasm/02760daa:wasm-function[2541]:0x32f2be
+    at wasm://wasm/02760daa:wasm-function[14821]:0x626b99
+    at wasm://wasm/02760daa:wasm-function[16425]:0x63f434
+    at __wbg_adapter_20 (file:///work/harness/node_modules/.pnpm/@midnightntwrk+ledger-v9@1.0.0-rc.3/node_modules/@midnightntwrk/ledger-v9/midnight_ledger_wasm_v9_bg.js:1454:10)
+    at real (file:///work/harness/node_modules/.pnpm/@midnightntwrk+ledger-v9@1.0.0-rc.3/node_modules/@midnightntwrk/ledger-v9/midnight_ledger_wasm_v9_bg.js:219:20)
+    at node:internal/process/task_queues:151:7
+

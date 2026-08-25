@@ -1,0 +1,7 @@
+command_exit=1
+trap_entry_exit=1
+containers=0
+volumes=0
+networks=0
+processes=0
+ports_busy=0

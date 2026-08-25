@@ -1,0 +1,403 @@
+// 00009 MEASUREMENT-ONLY UNIT-COST PROBE `probe-encoders` — NOT A SHIPPING CONTRACT.
+//
+// Phase 5 (owner Q4 Option A). No product purpose. Same rules as `probe-plumbing.compact`:
+// one ledger touch per probe to force a ZKIR and keep the work live, and a matched CONTROL for
+// every probe so that
+//     unit(op) = rows(probe) - rows(matching control).
+// Never ship, never promote, never prove, never deploy.
+//
+// WHY THIS FILE EXISTS. Phase 4 measured the product's endianness encoders
+//   uint8Word / uint64Word / uint128Word  ==  reverseBytes32(value as Bytes<32>)
+// at 9,423 rows each in isolation (the `as Bytes<32>` cast alone is 113), and arm `d31` measured
+// the whole in-situ bill of those 32 call sites at 272,847 rows = 28.00% of `execute`. `d31` is an
+// ABLATION: it produces DIFFERENT bytes, so 272,847 is a CEILING, not a saving.
+//
+// This file prices candidate encoders that emit the SAME bytes:
+//   (A) narrow cast + big-endian `Bytes[...]` construction — cast the integer to its OWN width
+//       (Bytes<1>/Bytes<8>/Bytes<16>) so only the significant bytes are ever decomposed, then
+//       place them MSB-first with the leading zero bytes as literal constants;
+//   (B) wide cast + index — keep `value as Bytes<32>` but index only the significant bytes,
+//       testing whether the compiler materialises only the bytes actually read;
+//   (C) the `addressWord` idiom — `slice<32>([...pad(n, ""), ...reversed], 0) as Bytes<32>`;
+//   (D) an explicit `Vector<32, Uint<8>> as Bytes<32>` construction;
+//   (E) DIRECT SPLICE at the call site — no `Bytes<32>` intermediate at all, the big-endian bytes
+//       are spliced straight into the keccak preimage. Measured in a preimage context so the
+//       result is the IN-SITU marginal cost, directly comparable to `d31`'s 8,526 rows/site.
+//
+// NOT PROBED HERE, and why: arithmetic big-endian extraction by `value / 256^k % 256`. Compact
+// 0.25 has no division and no modulo operator — its only binary arithmetic operators are `+`, `-`
+// and `*` (language reference, "Binary arithmetic expressions"). The attempt and the verbatim
+// compiler error are recorded in the companion file `probe-encoders-div.compact`, which is
+// EXPECTED TO FAIL to compile and exists only to capture that error.
+//
+// BYTE-IDENTITY, stated so it can be checked by eye against the reference implementation:
+// `v as Bytes<32>` is little-endian (reference: "the first byte of the byte vector corresponding
+// to the least-significant byte of the integer"), so for a Uint<64> v with LE bytes b0..b7 and
+// zeros above, `reverseBytes32(v as Bytes<32>)` is
+//     [0]*24 ++ [b7, b6, b5, b4, b3, b2, b1, b0]
+// which is exactly what every candidate below constructs.
+
+pragma language_version >= 0.25.0;
+
+import CompactStandardLibrary;
+
+export ledger probeSet: Set<Bytes<32>>;
+
+// --- controls -----------------------------------------------------------------------------------
+
+/// The project's canonical minimum provable circuit (must measure 129, as in every other probe
+/// file and in the product's own `isRegistered`). Proves this file's numbers are comparable.
+export circuit e_ctl_k(k: Bytes<32>): Boolean { return probeSet.member(disclose(k)); }
+
+/// Cast-only floor: the same shape as each encoder probe but with the CONVERSION removed, leaving
+/// the plain little-endian `as Bytes<32>`. `rows(encoder) - rows(this)` is directly comparable to
+/// the Phase 4 figure of 9,423 rows for `uintNWord`.
+export circuit e_cast_u8(v: Uint<8>): Boolean { return probeSet.member(disclose(v as Bytes<32>)); }
+export circuit e_cast_u64(v: Uint<64>): Boolean { return probeSet.member(disclose(v as Bytes<32>)); }
+export circuit e_cast_u128(v: Uint<128>): Boolean { return probeSet.member(disclose(v as Bytes<32>)); }
+
+// --- BASELINE: the product encoders, verbatim ----------------------------------------------------
+
+circuit reverseBytes32(value: Bytes<32>): Bytes<32> {
+  return Bytes[value[31], value[30], value[29], value[28], value[27], value[26], value[25], value[24],
+               value[23], value[22], value[21], value[20], value[19], value[18], value[17], value[16],
+               value[15], value[14], value[13], value[12], value[11], value[10], value[9],  value[8],
+               value[7],  value[6],  value[5],  value[4],  value[3],  value[2],  value[1],  value[0]];
+}
+
+circuit uint64Word(value: Uint<64>): Bytes<32> { return reverseBytes32(value as Bytes<32>); }
+circuit uint128Word(value: Uint<128>): Bytes<32> { return reverseBytes32(value as Bytes<32>); }
+circuit uint8Word(value: Uint<8>): Bytes<32> { return reverseBytes32(value as Bytes<32>); }
+
+export circuit e_base_u8(v: Uint<8>): Boolean { return probeSet.member(disclose(uint8Word(v))); }
+export circuit e_base_u64(v: Uint<64>): Boolean { return probeSet.member(disclose(uint64Word(v))); }
+export circuit e_base_u128(v: Uint<128>): Boolean { return probeSet.member(disclose(uint128Word(v))); }
+
+// --- candidate A: narrow cast + big-endian Bytes[...] construction --------------------------------
+
+circuit beWord8A(value: Uint<8>): Bytes<32> {
+  const b = value as Bytes<1>;
+  return Bytes[0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, b[0]];
+}
+
+circuit beWord64A(value: Uint<64>): Bytes<32> {
+  const b = value as Bytes<8>;
+  return Bytes[0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               b[7], b[6], b[5], b[4], b[3], b[2], b[1], b[0]];
+}
+
+circuit beWord128A(value: Uint<128>): Bytes<32> {
+  const b = value as Bytes<16>;
+  return Bytes[0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               b[15], b[14], b[13], b[12], b[11], b[10], b[9], b[8],
+               b[7],  b[6],  b[5],  b[4],  b[3],  b[2],  b[1], b[0]];
+}
+
+export circuit e_a_u8(v: Uint<8>): Boolean { return probeSet.member(disclose(beWord8A(v))); }
+export circuit e_a_u64(v: Uint<64>): Boolean { return probeSet.member(disclose(beWord64A(v))); }
+export circuit e_a_u128(v: Uint<128>): Boolean { return probeSet.member(disclose(beWord128A(v))); }
+
+// --- candidate B: wide cast, index only the significant bytes -------------------------------------
+
+circuit beWord8B(value: Uint<8>): Bytes<32> {
+  const b = value as Bytes<32>;
+  return Bytes[0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, b[0]];
+}
+
+circuit beWord64B(value: Uint<64>): Bytes<32> {
+  const b = value as Bytes<32>;
+  return Bytes[0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               b[7], b[6], b[5], b[4], b[3], b[2], b[1], b[0]];
+}
+
+circuit beWord128B(value: Uint<128>): Bytes<32> {
+  const b = value as Bytes<32>;
+  return Bytes[0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               b[15], b[14], b[13], b[12], b[11], b[10], b[9], b[8],
+               b[7],  b[6],  b[5],  b[4],  b[3],  b[2],  b[1], b[0]];
+}
+
+export circuit e_b_u8(v: Uint<8>): Boolean { return probeSet.member(disclose(beWord8B(v))); }
+export circuit e_b_u64(v: Uint<64>): Boolean { return probeSet.member(disclose(beWord64B(v))); }
+export circuit e_b_u128(v: Uint<128>): Boolean { return probeSet.member(disclose(beWord128B(v))); }
+
+// --- candidate C: the `addressWord` pad + slice idiom ---------------------------------------------
+
+circuit reverseBytes8(v: Bytes<8>): Bytes<8> {
+  return Bytes[v[7], v[6], v[5], v[4], v[3], v[2], v[1], v[0]];
+}
+
+circuit reverseBytes16C(v: Bytes<16>): Bytes<16> {
+  return Bytes[v[15], v[14], v[13], v[12], v[11], v[10], v[9], v[8],
+               v[7],  v[6],  v[5],  v[4],  v[3],  v[2],  v[1], v[0]];
+}
+
+circuit beWord8C(value: Uint<8>): Bytes<32> {
+  return slice<32>([...pad(31, ""), ...(value as Bytes<1>)], 0) as Bytes<32>;
+}
+
+circuit beWord64C(value: Uint<64>): Bytes<32> {
+  return slice<32>([...pad(24, ""), ...reverseBytes8(value as Bytes<8>)], 0) as Bytes<32>;
+}
+
+circuit beWord128C(value: Uint<128>): Bytes<32> {
+  return slice<32>([...pad(16, ""), ...reverseBytes16C(value as Bytes<16>)], 0) as Bytes<32>;
+}
+
+export circuit e_c_u8(v: Uint<8>): Boolean { return probeSet.member(disclose(beWord8C(v))); }
+export circuit e_c_u64(v: Uint<64>): Boolean { return probeSet.member(disclose(beWord64C(v))); }
+export circuit e_c_u128(v: Uint<128>): Boolean { return probeSet.member(disclose(beWord128C(v))); }
+
+// --- candidate D: explicit Vector<32, Uint<8>> -> Bytes<32> cast -----------------------------------
+
+circuit beWord8D(value: Uint<8>): Bytes<32> {
+  const b = value as Bytes<1>;
+  const w: Vector<32, Uint<8>> = [0, 0, 0, 0, 0, 0, 0, 0,
+                                  0, 0, 0, 0, 0, 0, 0, 0,
+                                  0, 0, 0, 0, 0, 0, 0, 0,
+                                  0, 0, 0, 0, 0, 0, 0, b[0]];
+  return w as Bytes<32>;
+}
+
+circuit beWord64D(value: Uint<64>): Bytes<32> {
+  const b = value as Bytes<8>;
+  const w: Vector<32, Uint<8>> = [0, 0, 0, 0, 0, 0, 0, 0,
+                                  0, 0, 0, 0, 0, 0, 0, 0,
+                                  0, 0, 0, 0, 0, 0, 0, 0,
+                                  b[7], b[6], b[5], b[4], b[3], b[2], b[1], b[0]];
+  return w as Bytes<32>;
+}
+
+circuit beWord128D(value: Uint<128>): Bytes<32> {
+  const b = value as Bytes<16>;
+  const w: Vector<32, Uint<8>> = [0, 0, 0, 0, 0, 0, 0, 0,
+                                  0, 0, 0, 0, 0, 0, 0, 0,
+                                  b[15], b[14], b[13], b[12], b[11], b[10], b[9], b[8],
+                                  b[7],  b[6],  b[5],  b[4],  b[3],  b[2],  b[1], b[0]];
+  return w as Bytes<32>;
+}
+
+export circuit e_d_u8(v: Uint<8>): Boolean { return probeSet.member(disclose(beWord8D(v))); }
+export circuit e_d_u64(v: Uint<64>): Boolean { return probeSet.member(disclose(beWord64D(v))); }
+export circuit e_d_u128(v: Uint<128>): Boolean { return probeSet.member(disclose(beWord128D(v))); }
+
+// --- candidate W: WITNESS-HINT encoders (verify instead of compute) --------------------------------
+//
+// Owner follow-up, 2026-08-24. Hypothesis: if the 9,423-row encoder is dominated by a DOUBLE pass
+// (decompose the little-endian word, then recompose the big-endian one), a verify-only path that
+// pays a single pass could be cheaper. A witness supplies the big-endian bytes and the circuit
+// CONSTRAINS them by recomposing with big-endian weights and asserting equality with the integer.
+//
+// Two forms, because they pay different halves:
+//   W1 — the witness supplies the FULL Bytes<32>. No construction at all (the witness value IS the
+//        result), but all 32 bytes must be constrained: the significant ones by the recomposition
+//        equality, the leading ones by an explicit zero check (otherwise a prover could put
+//        arbitrary junk there and the emitted bytes would not be the specified ones).
+//   W2 — the witness supplies only the n significant big-endian bytes. The leading zeros are
+//        CIRCUIT CONSTANTS, so no zero check is needed; only n bytes are constrained, and the
+//        result is packed with the constant prefix.
+//
+// Soundness note for the record: multiplication by a constant is a linear operation, so the
+// recomposition itself is nearly free; what the witness path buys or loses is byte-decomposition
+// passes, which is exactly what this measures. Both forms are byte-identical to the product
+// encoder ONLY IF the constraints pin every one of the 32 output bytes — W1 pins 32 (recomposition
+// + zero check), W2 pins n and fixes 32-n by construction.
+//
+// PRODUCT IMPLICATION, recorded before the numbers land: a witness-hint encoder adds a new PRIVATE
+// input to the circuit's witness interface. It changes no public, emitted or signed byte, but it is
+// not a drop-in source change — every caller (harness, batcher, browser) must implement the witness.
+
+witness beHint32From8(value: Uint<8>): Bytes<32>;
+witness beHint32From64(value: Uint<64>): Bytes<32>;
+witness beHint32From128(value: Uint<128>): Bytes<32>;
+witness beHint1From8(value: Uint<8>): Bytes<1>;
+witness beHint8From64(value: Uint<64>): Bytes<8>;
+witness beHint16From128(value: Uint<128>): Bytes<16>;
+
+circuit beWord8W1(value: Uint<8>): Bytes<32> {
+  const w = beHint32From8(value);
+  const lead: Field =
+    (w[0] as Field) + (w[1] as Field) + (w[2] as Field) + (w[3] as Field) +
+    (w[4] as Field) + (w[5] as Field) + (w[6] as Field) + (w[7] as Field) +
+    (w[8] as Field) + (w[9] as Field) + (w[10] as Field) + (w[11] as Field) +
+    (w[12] as Field) + (w[13] as Field) + (w[14] as Field) + (w[15] as Field) +
+    (w[16] as Field) + (w[17] as Field) + (w[18] as Field) + (w[19] as Field) +
+    (w[20] as Field) + (w[21] as Field) + (w[22] as Field) + (w[23] as Field) +
+    (w[24] as Field) + (w[25] as Field) + (w[26] as Field) + (w[27] as Field) +
+    (w[28] as Field) + (w[29] as Field) + (w[30] as Field);
+  assert(lead == (0 as Field), "be hint: leading bytes must be zero");
+  assert((w[31] as Field) == (value as Field), "be hint: recomposition must equal the value");
+  return w;
+}
+
+circuit beWord64W1(value: Uint<64>): Bytes<32> {
+  const w = beHint32From64(value);
+  const lead: Field =
+    (w[0] as Field) + (w[1] as Field) + (w[2] as Field) + (w[3] as Field) +
+    (w[4] as Field) + (w[5] as Field) + (w[6] as Field) + (w[7] as Field) +
+    (w[8] as Field) + (w[9] as Field) + (w[10] as Field) + (w[11] as Field) +
+    (w[12] as Field) + (w[13] as Field) + (w[14] as Field) + (w[15] as Field) +
+    (w[16] as Field) + (w[17] as Field) + (w[18] as Field) + (w[19] as Field) +
+    (w[20] as Field) + (w[21] as Field) + (w[22] as Field) + (w[23] as Field);
+  assert(lead == (0 as Field), "be hint: leading bytes must be zero");
+  const acc: Field =
+    (w[24] as Field) * 72057594037927936 + (w[25] as Field) * 281474976710656 +
+    (w[26] as Field) * 1099511627776 + (w[27] as Field) * 4294967296 +
+    (w[28] as Field) * 16777216 + (w[29] as Field) * 65536 +
+    (w[30] as Field) * 256 + (w[31] as Field);
+  assert(acc == (value as Field), "be hint: recomposition must equal the value");
+  return w;
+}
+
+circuit beWord128W1(value: Uint<128>): Bytes<32> {
+  const w = beHint32From128(value);
+  const lead: Field =
+    (w[0] as Field) + (w[1] as Field) + (w[2] as Field) + (w[3] as Field) +
+    (w[4] as Field) + (w[5] as Field) + (w[6] as Field) + (w[7] as Field) +
+    (w[8] as Field) + (w[9] as Field) + (w[10] as Field) + (w[11] as Field) +
+    (w[12] as Field) + (w[13] as Field) + (w[14] as Field) + (w[15] as Field);
+  assert(lead == (0 as Field), "be hint: leading bytes must be zero");
+  const acc: Field =
+    (w[16] as Field) * 1329227995784915872903807060280344576 +
+    (w[17] as Field) * 5192296858534827628530496329220096 +
+    (w[18] as Field) * 20282409603651670423947251286016 +
+    (w[19] as Field) * 79228162514264337593543950336 +
+    (w[20] as Field) * 309485009821345068724781056 +
+    (w[21] as Field) * 1208925819614629174706176 +
+    (w[22] as Field) * 4722366482869645213696 +
+    (w[23] as Field) * 18446744073709551616 +
+    (w[24] as Field) * 72057594037927936 + (w[25] as Field) * 281474976710656 +
+    (w[26] as Field) * 1099511627776 + (w[27] as Field) * 4294967296 +
+    (w[28] as Field) * 16777216 + (w[29] as Field) * 65536 +
+    (w[30] as Field) * 256 + (w[31] as Field);
+  assert(acc == (value as Field), "be hint: recomposition must equal the value");
+  return w;
+}
+
+circuit beWord8W2(value: Uint<8>): Bytes<32> {
+  const b = beHint1From8(value);
+  assert((b[0] as Field) == (value as Field), "be hint: recomposition must equal the value");
+  return slice<32>([...pad(31, ""), ...b], 0) as Bytes<32>;
+}
+
+circuit beWord64W2(value: Uint<64>): Bytes<32> {
+  const b = beHint8From64(value);
+  const acc: Field =
+    (b[0] as Field) * 72057594037927936 + (b[1] as Field) * 281474976710656 +
+    (b[2] as Field) * 1099511627776 + (b[3] as Field) * 4294967296 +
+    (b[4] as Field) * 16777216 + (b[5] as Field) * 65536 +
+    (b[6] as Field) * 256 + (b[7] as Field);
+  assert(acc == (value as Field), "be hint: recomposition must equal the value");
+  return slice<32>([...pad(24, ""), ...b], 0) as Bytes<32>;
+}
+
+circuit beWord128W2(value: Uint<128>): Bytes<32> {
+  const b = beHint16From128(value);
+  const acc: Field =
+    (b[0] as Field) * 1329227995784915872903807060280344576 +
+    (b[1] as Field) * 5192296858534827628530496329220096 +
+    (b[2] as Field) * 20282409603651670423947251286016 +
+    (b[3] as Field) * 79228162514264337593543950336 +
+    (b[4] as Field) * 309485009821345068724781056 +
+    (b[5] as Field) * 1208925819614629174706176 +
+    (b[6] as Field) * 4722366482869645213696 +
+    (b[7] as Field) * 18446744073709551616 +
+    (b[8] as Field) * 72057594037927936 + (b[9] as Field) * 281474976710656 +
+    (b[10] as Field) * 1099511627776 + (b[11] as Field) * 4294967296 +
+    (b[12] as Field) * 16777216 + (b[13] as Field) * 65536 +
+    (b[14] as Field) * 256 + (b[15] as Field);
+  assert(acc == (value as Field), "be hint: recomposition must equal the value");
+  return slice<32>([...pad(16, ""), ...b], 0) as Bytes<32>;
+}
+
+export circuit e_w1_u8(v: Uint<8>): Boolean { return probeSet.member(disclose(beWord8W1(v))); }
+export circuit e_w1_u64(v: Uint<64>): Boolean { return probeSet.member(disclose(beWord64W1(v))); }
+export circuit e_w1_u128(v: Uint<128>): Boolean { return probeSet.member(disclose(beWord128W1(v))); }
+export circuit e_w2_u8(v: Uint<8>): Boolean { return probeSet.member(disclose(beWord8W2(v))); }
+export circuit e_w2_u64(v: Uint<64>): Boolean { return probeSet.member(disclose(beWord64W2(v))); }
+export circuit e_w2_u128(v: Uint<128>): Boolean { return probeSet.member(disclose(beWord128W2(v))); }
+
+// --- (E) IN-SITU: the encoder inside a keccak preimage --------------------------------------------
+//
+// Every product call site is `...uintNWord(x)` inside a preimage array. These probes reproduce that
+// shape at a fixed 64-byte width, so the marginal cost of the encoding is measured the way the
+// product actually pays it. The control splices an already-available `Bytes<32>` in the same slot.
+// `e_pre_e_*` is the DIRECT-SPLICE form: no `Bytes<32>` intermediate at all.
+
+export circuit e_pre_ctl_u8(a: Bytes<32>, b: Bytes<32>, v: Uint<8>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...b], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+export circuit e_pre_old_u8(a: Bytes<32>, b: Bytes<32>, v: Uint<8>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...uint8Word(v)], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+export circuit e_pre_a_u8(a: Bytes<32>, b: Bytes<32>, v: Uint<8>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...beWord8A(v)], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+export circuit e_pre_e_u8(a: Bytes<32>, b: Bytes<32>, v: Uint<8>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...pad(31, ""), ...(v as Bytes<1>)], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+
+export circuit e_pre_c_u8(a: Bytes<32>, b: Bytes<32>, v: Uint<8>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...beWord8C(v)], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+
+export circuit e_pre_ctl_u64(a: Bytes<32>, b: Bytes<32>, v: Uint<64>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...b], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+export circuit e_pre_old_u64(a: Bytes<32>, b: Bytes<32>, v: Uint<64>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...uint64Word(v)], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+export circuit e_pre_a_u64(a: Bytes<32>, b: Bytes<32>, v: Uint<64>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...beWord64A(v)], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+export circuit e_pre_e_u64(a: Bytes<32>, b: Bytes<32>, v: Uint<64>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...pad(24, ""), ...reverseBytes8(v as Bytes<8>)], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+
+export circuit e_pre_c_u64(a: Bytes<32>, b: Bytes<32>, v: Uint<64>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...beWord64C(v)], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+
+export circuit e_pre_ctl_u128(a: Bytes<32>, b: Bytes<32>, v: Uint<128>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...b], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+export circuit e_pre_old_u128(a: Bytes<32>, b: Bytes<32>, v: Uint<128>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...uint128Word(v)], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+export circuit e_pre_a_u128(a: Bytes<32>, b: Bytes<32>, v: Uint<128>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...beWord128A(v)], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+export circuit e_pre_e_u128(a: Bytes<32>, b: Bytes<32>, v: Uint<128>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...pad(16, ""), ...reverseBytes16C(v as Bytes<16>)], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}
+
+export circuit e_pre_c_u128(a: Bytes<32>, b: Bytes<32>, v: Uint<128>): Boolean {
+  const pre: Bytes<64> = slice<64>([...a, ...beWord128C(v)], 0) as Bytes<64>;
+  return probeSet.member(disclose(keccak256<Bytes<64>>(pre)));
+}

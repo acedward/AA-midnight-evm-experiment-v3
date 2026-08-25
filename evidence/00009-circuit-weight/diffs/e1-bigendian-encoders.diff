@@ -1,0 +1,72 @@
+--- contracts/manager.compact	2026-08-24 13:16:56
++++ contracts/variants/e1-bigendian-encoders.compact	2026-08-24 15:59:29
+@@ -1,5 +1,36 @@
+ // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
++// 00009 MEASUREMENT-ONLY OPTIMIZATION ARM `e1-bigendian-encoders` — SEMANTICS-PRESERVING — NOT A SHIPPING CONTRACT.
++//
++// Phase 5 (owner Q4 Option A). The ONLY change is the implementation of the three endianness
++// encoders `uint8Word` / `uint64Word` / `uint128Word`. Every one of their 32 static call sites,
++// every preimage, every keccak width and the nine-circuit provable surface are untouched, and the
++// emitted BYTES ARE IDENTICAL — this arm is semantics-preserving or it is invalid.
++//
++// The product encoders are `reverseBytes32(value as Bytes<32>)`: cast the integer to a full
++// little-endian 32-byte word, then permute all 32 bytes. Phase 4 priced that at 9,423 rows each in
++// isolation (the cast alone is 113) and 272,847 rows in situ across the 32 sites — 28.00% of
++// `execute`. But 24, 16 or 31 of those bytes are KNOWN ZERO, and the pinned backend charges only
++// for VARIABLE bytes. So each encoder here casts the integer to its OWN byte width and places the
++// significant bytes big-endian-first behind a constant zero prefix. `reverseBytes32` itself is
++// left in place, byte-for-byte, because `bytes32LexicographicLt` and nothing else still uses its
++// 16-byte sibling; only the three `uintNWord` wrappers change.
++//
++// Encoders chosen on the Phase 5 probe measurements (`probe-encoders`, 40 circuits):
++//   uint8Word   -> candidate C (the product's own `addressWord` pad+slice idiom): 9,003 rows in
++//                  situ vs 22,976, and the cheapest measured form at this width.
++//   uint64Word  -> candidate A (narrow cast + literal-zero-prefixed `Bytes[...]`): 16,052 vs 22,990.
++//   uint128Word -> candidate A: 18,304 vs 23,006.
++//
++// BYTE-IDENTITY ARGUMENT (checked by the 29-test keyless parity suite, not just by reading):
++// `v as Bytes<N>` is little-endian — the reference states the first byte of the vector is the
++// least-significant byte of the integer. So for a Uint<64> with little-endian bytes b0..b7,
++// `v as Bytes<32>` is [b0..b7, 0*24] and `reverseBytes32` of it is [0*24, b7, b6, .., b0], which is
++// exactly what `uint64Word` below constructs. The same argument holds at widths 1 and 16.
++//
++// Measured with `compactc --skip-zk` + `zkir-v3 mock-compile`. Never proved, never deployed,
++// never promoted into contracts/manager.compact.
+ //
++//
+ // ================================================================================================
+ // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+ // ================================================================================================
+@@ -316,10 +347,29 @@
+   return leftHigh < rightHigh || (leftHigh == rightHigh && leftLow < rightLow);
+ }
+ 
+-circuit uint64Word(value: Uint<64>): Bytes<32> { return reverseBytes32(value as Bytes<32>); }
+-circuit uint128Word(value: Uint<128>): Bytes<32> { return reverseBytes32(value as Bytes<32>); }
+-circuit uint8Word(value: Uint<8>): Bytes<32> { return reverseBytes32(value as Bytes<32>); }
++// 00009 e1: big-endian-native encoders. Byte-identical output to
++// `reverseBytes32(value as Bytes<32>)`; only the significant bytes are ever decomposed, and the
++// leading zero bytes are compile-time constants (which the backend splices for free).
++circuit uint64Word(value: Uint<64>): Bytes<32> {
++  const b = value as Bytes<8>;
++  return Bytes[0, 0, 0, 0, 0, 0, 0, 0,
++               0, 0, 0, 0, 0, 0, 0, 0,
++               0, 0, 0, 0, 0, 0, 0, 0,
++               b[7], b[6], b[5], b[4], b[3], b[2], b[1], b[0]];
++}
+ 
++circuit uint128Word(value: Uint<128>): Bytes<32> {
++  const b = value as Bytes<16>;
++  return Bytes[0, 0, 0, 0, 0, 0, 0, 0,
++               0, 0, 0, 0, 0, 0, 0, 0,
++               b[15], b[14], b[13], b[12], b[11], b[10], b[9], b[8],
++               b[7],  b[6],  b[5],  b[4],  b[3],  b[2],  b[1], b[0]];
++}
++
++circuit uint8Word(value: Uint<8>): Bytes<32> {
++  return slice<32>([...pad(31, ""), ...(value as Bytes<1>)], 0) as Bytes<32>;
++}
++
+ circuit addressWord(value: Bytes<20>): Bytes<32> {
+   return slice<32>([...pad(12, ""), ...value], 0) as Bytes<32>;
+ }

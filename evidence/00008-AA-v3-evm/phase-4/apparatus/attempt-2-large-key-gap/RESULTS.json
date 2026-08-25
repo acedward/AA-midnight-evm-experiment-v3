@@ -1,0 +1,106 @@
+{
+  "phase": 4,
+  "lane": "whole rc5 ZKIR-v3, final K=20 Manager",
+  "startedAt": "2026-08-24T15:55:49.599Z",
+  "pins": {
+    "managerIndexSha256": "8b3073068c7b9ebaae991db7140dbf5d3f8493c4ec34089833866dbcba28607d",
+    "proofImage": "midnightntwrk/proof-server@sha256:4f02ca2734649eb238d13924df299b1c82bd5546ec928c5d67bdd0ce86dd0bd1",
+    "nodeImage": "midnightntwrk/midnight-node@sha256:caf93d6f9fb3630c906ef3e714c151655377f3d28f907d17545de1870514da2e",
+    "indexerImage": "midnightntwrk/indexer-standalone@sha256:6c01bb4301ffea9372cf9da90000259327c43b8281ffb42c141838993fc2045a",
+    "managerArtifact": "/work/harness/generated-zk/manager",
+    "minterArtifact": "/work/harness/generated-zk/minter"
+  },
+  "registrations": [],
+  "deposits": [],
+  "positives": [],
+  "negatives": [],
+  "concurrency": {},
+  "proofRecords": [
+    {
+      "label": "unlabelled",
+      "rawBytes": 18289,
+      "rawSha256": "af93dfe59c30d6aa20c55944a3231f23622cfe2f16c4164f23f0e755b8ef279b",
+      "routes": [],
+      "durationMs": 1,
+      "outcome": "PROVED",
+      "provenBytes": 18280,
+      "provenSha256": "0a87e2c8e20b5cd4194baa67464de4ed4fc1e6cbfc90079806f98fc3eb17d0f6"
+    },
+    {
+      "label": "register-native-1",
+      "rawBytes": 1727,
+      "rawSha256": "474cf9fda0bbfe9cb2d89674a46a51532509f5d125af5f4baf4d07b6b66b0495",
+      "routes": [
+        {
+          "sequence": 1,
+          "operation": "check",
+          "keyLocation": "contract:4d116c78e180722ee018a31876bd4b501abfc6c229a8bbadce50afbd69ef353c/execute?vk=a119a3c2d65f5741e72055f9f976f22ca3963b87f5b5b01b3701680914cf4117",
+          "preimageBytes": 886,
+          "preimageSha256": "059873cfe6e4a82084d982059dd7601f5e67607d85ffd2a44774b97520736119"
+        }
+      ],
+      "durationMs": 1,
+      "outcome": "FAILED",
+      "error": "Error: 'check' returned an error: RangeError [ERR_FS_FILE_TOO_LARGE]: File size (2282126073) is greater than 2 GiB"
+    }
+  ],
+  "deployment": {
+    "address": "4d116c78e180722ee018a31876bd4b501abfc6c229a8bbadce50afbd69ef353c",
+    "txId": "006b3fea158c9cc655da22b8c82cb357fddc861af85ea8b91601dbb61400430fed",
+    "public": {
+      "tx": {
+        "__wbg_ptr": 5077696
+      },
+      "status": "SucceedEntirely",
+      "txId": "006b3fea158c9cc655da22b8c82cb357fddc861af85ea8b91601dbb61400430fed",
+      "txHash": "2bdce2b6df70970b5939d6d2170a275f6376c8f858435d5571229ab20224114c",
+      "identifiers": [
+        "000619ea82347999a4922d2778ff84db17636690d2f1b4e4b2c7245b715115cadd",
+        "006b3fea158c9cc655da22b8c82cb357fddc861af85ea8b91601dbb61400430fed"
+      ],
+      "blockHeight": 120,
+      "blockHash": "dafd4d3b3a482159e27050f01344f5ab016f941205a1468fbf3a79dc1ff6839d",
+      "unshielded": {
+        "created": [],
+        "spent": []
+      },
+      "blockTimestamp": 1787587656002,
+      "blockAuthor": "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
+      "indexerId": 34,
+      "protocolVersion": 2000000,
+      "fees": {
+        "paidFees": "4737256340218930",
+        "estimatedFees": "4737256340218930"
+      },
+      "contractAddress": "4d116c78e180722ee018a31876bd4b501abfc6c229a8bbadce50afbd69ef353c",
+      "initialContractState": {
+        "__wbg_ptr": 1450784
+      }
+    },
+    "cost": {
+      "readTime": "3655000000",
+      "computeTime": "5777661095",
+      "blockUsage": "21478",
+      "bytesWritten": "21840",
+      "bytesChurned": "15432"
+    },
+    "receipt": {
+      "address": "4d116c78e180722ee018a31876bd4b501abfc6c229a8bbadce50afbd69ef353c",
+      "transaction": {
+        "id": 34,
+        "hash": "2bdce2b6df70970b5939d6d2170a275f6376c8f858435d5571229ab20224114c",
+        "block": {
+          "height": 120,
+          "hash": "dafd4d3b3a482159e27050f01344f5ab016f941205a1468fbf3a79dc1ff6839d",
+          "timestamp": 1787587656002
+        }
+      }
+    },
+    "domain": "45919e538d56acdbe1eba28cb612788adfd820cc6a62d358b1388bf023990bbc"
+  },
+  "fatal": {
+    "at": "2026-08-24T16:07:50.632Z",
+    "error": "Error: 'check' returned an error: RangeError [ERR_FS_FILE_TOO_LARGE]: File size (2282126073) is greater than 2 GiB",
+    "stack": "Error: 'check' returned an error: RangeError [ERR_FS_FILE_TOO_LARGE]: File size (2282126073) is greater than 2 GiB\n    at __wbg_Error_e17e777aac105295 (file:///work/harness/node_modules/.pnpm/@midnightntwrk+ledger-v9@1.0.0-rc.3/node_modules/@midnightntwrk/ledger-v9/midnight_ledger_wasm_v9_bg.js:10092:17)\n    at wasm://wasm/02760daa:wasm-function[15716]:0x63705f\n    at wasm://wasm/02760daa:wasm-function[5908]:0x45646a\n    at wasm://wasm/02760daa:wasm-function[277]:0x830a3\n    at wasm://wasm/02760daa:wasm-function[2541]:0x32f2be\n    at wasm://wasm/02760daa:wasm-function[14821]:0x626b99\n    at wasm://wasm/02760daa:wasm-function[16425]:0x63f434\n    at __wbg_adapter_20 (file:///work/harness/node_modules/.pnpm/@midnightntwrk+ledger-v9@1.0.0-rc.3/node_modules/@midnightntwrk/ledger-v9/midnight_ledger_wasm_v9_bg.js:1454:10)\n    at real (file:///work/harness/node_modules/.pnpm/@midnightntwrk+ledger-v9@1.0.0-rc.3/node_modules/@midnightntwrk/ledger-v9/midnight_ledger_wasm_v9_bg.js:219:20)\n    at node:internal/process/task_queues:151:7"
+  }
+}

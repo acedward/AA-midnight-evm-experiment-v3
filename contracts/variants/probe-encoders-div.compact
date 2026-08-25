@@ -1,0 +1,34 @@
+// 00009 MEASUREMENT-ONLY PROBE `probe-encoders-div` — EXPECTED TO FAIL TO COMPILE.
+//
+// Phase 5 task 5.1 candidate (a): "arithmetic byte extraction emitting bytes directly in
+// big-endian order (div/mod by powers of 256, never materialising the little-endian word)".
+//
+// This file exists ONLY to obtain the pinned compiler's verbatim verdict on that candidate, so the
+// verdict is a recorded measurement rather than an assertion from the language reference. It is
+// never compiled successfully, never measured, never shipped, never promoted.
+
+pragma language_version >= 0.25.0;
+
+import CompactStandardLibrary;
+
+export ledger probeSet: Set<Bytes<32>>;
+
+/// Candidate (a): extract the big-endian bytes of a Uint<64> arithmetically, without ever
+/// materialising the little-endian `value as Bytes<32>` word.
+circuit beWord64Div(value: Uint<64>): Bytes<32> {
+  const b7 = (value / 72057594037927936) % 256;
+  const b6 = (value / 281474976710656) % 256;
+  const b5 = (value / 1099511627776) % 256;
+  const b4 = (value / 4294967296) % 256;
+  const b3 = (value / 16777216) % 256;
+  const b2 = (value / 65536) % 256;
+  const b1 = (value / 256) % 256;
+  const b0 = value % 256;
+  return Bytes[0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0,
+               b7 as Uint<8>, b6 as Uint<8>, b5 as Uint<8>, b4 as Uint<8>,
+               b3 as Uint<8>, b2 as Uint<8>, b1 as Uint<8>, b0 as Uint<8>];
+}
+
+export circuit e_div_u64(v: Uint<64>): Boolean { return probeSet.member(disclose(beWord64Div(v))); }

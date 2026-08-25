@@ -1,0 +1,34 @@
+--- contracts/manager.compact	2026-08-24 13:16:56
++++ contracts/variants/w9-action-openswap-noop.compact	2026-08-24 13:32:14
+@@ -1,4 +1,13 @@
+ // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
++// 00009 MEASUREMENT-ONLY ABLATION ARM `w9-action-openswap-noop` — NOT A SHIPPING CONTRACT.
++//
++// This source is DELIBERATELY BROKEN. It exists only so that
++//   weight(component) = rows(w0-baseline) - rows(this arm)
++// can be measured with `compactc --skip-zk` + `zkir-v3 mock-compile`.
++// Ablated component: only the `openSwapShielded` custody leg (selector 6)
++// It must never ship, never be promoted into contracts/manager.compact, never be
++// proved, and never be deployed.
++//
+ //
+ // ================================================================================================
+ // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+@@ -1286,14 +1295,9 @@
+     } else if (p.selector == 5) {
+       transferInternalUnshielded(account, p.toAccount, p.primaryColor, p.primaryAmount);
+     } else {
+-      openSwapShielded(
+-        account,
+-        p.primaryColor,
+-        p.primaryAmount,
+-        swapRecipient(p.recipientKind, p.recipient),
+-        ShieldedCoinInfo{ nonce: p.wantNonce, color: p.wantColor, value: p.wantAmount },
+-        p.creditAccount
+-      );
++      // 00009 w9 ABLATION: this custody leg is removed; the branch body is empty.
++      // Every other leg, and the dispatch structure itself, is untouched, so
++      // baseline - this arm is THIS leg's weight.
+     }
+   }
+ 

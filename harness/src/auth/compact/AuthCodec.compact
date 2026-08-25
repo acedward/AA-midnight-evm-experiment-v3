@@ -1,0 +1,268 @@
+// AUTH-EIP712-AA-V3-V1 — byte oracle for F-CODEC.
+//
+// This contract has pure exports only: compactc emits JavaScript simulator bindings and no
+// verifier keys. It independently assembles every EIP-712 struct from typed Compact values.
+
+pragma language_version >= 0.25.0;
+
+import CompactStandardLibrary;
+
+constructor() {}
+
+circuit reverseBytes32(value: Bytes<32>): Bytes<32> {
+  return Bytes[value[31], value[30], value[29], value[28], value[27], value[26], value[25], value[24],
+               value[23], value[22], value[21], value[20], value[19], value[18], value[17], value[16],
+               value[15], value[14], value[13], value[12], value[11], value[10], value[9],  value[8],
+               value[7],  value[6],  value[5],  value[4],  value[3],  value[2],  value[1],  value[0]];
+}
+
+circuit uint64Word(value: Uint<64>): Bytes<32> {
+  return reverseBytes32(value as Bytes<32>);
+}
+
+circuit uint128Word(value: Uint<128>): Bytes<32> {
+  return reverseBytes32(value as Bytes<32>);
+}
+
+circuit uint8Word(value: Uint<8>): Bytes<32> {
+  return reverseBytes32(value as Bytes<32>);
+}
+
+circuit addressWord(value: Bytes<20>): Bytes<32> {
+  return slice<32>([...pad(12, ""), ...value], 0) as Bytes<32>;
+}
+
+circuit accountTag(): Bytes<32> {
+  return Bytes[
+    0x55, 0xbc, 0x94, 0x0f, 0x83, 0x53, 0x37, 0xf1,
+    0x22, 0x4c, 0x18, 0x11, 0x10, 0xb2, 0xb7, 0x7f,
+    0x57, 0xed, 0x69, 0x4c, 0xae, 0x0c, 0x4b, 0xf8,
+    0xff, 0x6b, 0xb3, 0xe0, 0x3b, 0xe6, 0xa9, 0x88
+  ];
+}
+
+circuit domainType(): Bytes<32> {
+  return Bytes[
+    0x36, 0xc2, 0x5d, 0xe3, 0xe5, 0x41, 0xd5, 0xd9,
+    0x70, 0xf6, 0x6e, 0x42, 0x10, 0xd7, 0x28, 0x72,
+    0x12, 0x20, 0xff, 0xf5, 0xc0, 0x77, 0xcc, 0x6c,
+    0xd0, 0x08, 0xb3, 0xa0, 0xc6, 0x2a, 0xda, 0xb7
+  ];
+}
+
+circuit domainName(): Bytes<32> {
+  return Bytes[
+    0xb2, 0xa1, 0x61, 0xc1, 0xe1, 0xfe, 0x09, 0xf6,
+    0x31, 0x58, 0x5b, 0x3b, 0xda, 0x0e, 0x4a, 0x22,
+    0xf3, 0x17, 0xd7, 0xc6, 0x63, 0xc5, 0x82, 0xa0,
+    0x7c, 0x1d, 0x68, 0x3e, 0x61, 0xfd, 0xcd, 0xb1
+  ];
+}
+
+circuit domainVersion(): Bytes<32> {
+  return Bytes[
+    0xc8, 0x9e, 0xfd, 0xaa, 0x54, 0xc0, 0xf2, 0x0c,
+    0x7a, 0xdf, 0x61, 0x28, 0x82, 0xdf, 0x09, 0x50,
+    0xf5, 0xa9, 0x51, 0x63, 0x7e, 0x03, 0x07, 0xcd,
+    0xcb, 0x4c, 0x67, 0x2f, 0x29, 0x8b, 0x8b, 0xc6
+  ];
+}
+
+circuit registerType(): Bytes<32> {
+  return Bytes[
+    0xe6, 0xac, 0xe6, 0xc7, 0x0a, 0x9d, 0x92, 0xef,
+    0x85, 0x1c, 0x2e, 0x2a, 0x67, 0xb2, 0x30, 0x90,
+    0x17, 0xb0, 0x51, 0xd3, 0x9e, 0x05, 0x54, 0xc7,
+    0x46, 0x27, 0x4a, 0x17, 0x69, 0x59, 0xac, 0x4f
+  ];
+}
+
+circuit withdrawShieldedType(): Bytes<32> {
+  return Bytes[
+    0x71, 0x7e, 0x1e, 0x74, 0x12, 0x98, 0x52, 0xbd,
+    0x43, 0x67, 0x44, 0xa5, 0xa1, 0x10, 0x8f, 0x0d,
+    0xb9, 0x02, 0x92, 0x70, 0x31, 0xf5, 0xe7, 0x79,
+    0x96, 0x18, 0xec, 0x12, 0x93, 0x66, 0xd6, 0x1e
+  ];
+}
+
+circuit withdrawUnshieldedType(): Bytes<32> {
+  return Bytes[
+    0xb6, 0x01, 0x29, 0xea, 0x6c, 0xa4, 0xc1, 0xb5,
+    0x1d, 0x86, 0x60, 0x77, 0xd1, 0x1c, 0xdb, 0x02,
+    0x30, 0xe6, 0x06, 0x58, 0x76, 0xa5, 0x42, 0x06,
+    0xfe, 0xce, 0x04, 0x41, 0x3e, 0xda, 0xba, 0x9d
+  ];
+}
+
+circuit transferShieldedType(): Bytes<32> {
+  return Bytes[
+    0x06, 0xbe, 0xb8, 0x3e, 0xc8, 0xde, 0xd3, 0xa8,
+    0x08, 0x0b, 0xfa, 0xb5, 0x91, 0xd8, 0x9a, 0x1b,
+    0x86, 0xed, 0x9e, 0x3f, 0x8d, 0xf6, 0xc1, 0x0e,
+    0xd3, 0x67, 0x74, 0x16, 0xd0, 0xa5, 0x60, 0x64
+  ];
+}
+
+circuit transferUnshieldedType(): Bytes<32> {
+  return Bytes[
+    0x46, 0xe9, 0x6f, 0x44, 0x96, 0xc1, 0x82, 0xe9,
+    0x83, 0x95, 0xb6, 0x89, 0x70, 0x1a, 0x94, 0x5c,
+    0xbd, 0xb4, 0x75, 0x43, 0x57, 0x42, 0x42, 0xcc,
+    0x17, 0xf9, 0xb6, 0x44, 0x8c, 0x04, 0x9a, 0x07
+  ];
+}
+
+circuit openSwapType(): Bytes<32> {
+  return Bytes[
+    0xf7, 0x87, 0xd7, 0xf9, 0x63, 0xe8, 0x9e, 0xfc,
+    0xda, 0x8e, 0x6a, 0x54, 0x6b, 0xaf, 0xff, 0x33,
+    0x38, 0x8c, 0xbd, 0xf4, 0x4b, 0x81, 0xf6, 0xf5,
+    0x95, 0x0c, 0x4b, 0xd3, 0xb0, 0x66, 0x58, 0x48
+  ];
+}
+
+export circuit frozenTypeHash(selector: Uint<8>): Bytes<32> {
+  if (selector == 1) { return registerType(); }
+  if (selector == 2) { return withdrawShieldedType(); }
+  if (selector == 3) { return withdrawUnshieldedType(); }
+  if (selector == 4) { return transferShieldedType(); }
+  if (selector == 5) { return transferUnshieldedType(); }
+  assert(selector == 6, "AuthCodec: selector must be 1..6");
+  return openSwapType();
+}
+
+export circuit managerAlias(manager: Bytes<32>): Bytes<20> {
+  return disclose(slice<20>(keccak256<Bytes<32>>(manager), 12));
+}
+
+export circuit accountId(
+  manager: Bytes<32>,
+  owner: Bytes<20>,
+  accountSalt: Bytes<32>
+): Bytes<32> {
+  const preimage: Bytes<128> = slice<128>([
+    ...accountTag(), ...manager, ...addressWord(owner), ...accountSalt
+  ], 0) as Bytes<128>;
+  return disclose(keccak256<Bytes<128>>(preimage));
+}
+
+export circuit domainSeparator(
+  alias: Bytes<20>,
+  deploymentDomain: Bytes<32>
+): Bytes<32> {
+  const preimage: Bytes<160> = slice<160>([
+    ...domainType(), ...domainName(), ...domainVersion(), ...addressWord(alias), ...deploymentDomain
+  ], 0) as Bytes<160>;
+  return disclose(keccak256<Bytes<160>>(preimage));
+}
+
+export circuit registerStructHash(
+  manager: Bytes<32>,
+  account: Bytes<32>,
+  owner: Bytes<20>,
+  accountSalt: Bytes<32>,
+  validUntil: Uint<64>
+): Bytes<32> {
+  const preimage: Bytes<192> = slice<192>([
+    ...registerType(), ...manager, ...account, ...addressWord(owner), ...accountSalt,
+    ...uint64Word(validUntil)
+  ], 0) as Bytes<192>;
+  return disclose(keccak256<Bytes<192>>(preimage));
+}
+
+export circuit withdrawShieldedStructHash(
+  manager: Bytes<32>, account: Bytes<32>, owner: Bytes<20>, nonce: Uint<64>,
+  validUntil: Uint<64>, color: Bytes<32>, amount: Uint<128>,
+  recipientKind: Uint<8>, recipient: Bytes<32>
+): Bytes<32> {
+  const preimage: Bytes<320> = slice<320>([
+    ...withdrawShieldedType(), ...manager, ...account, ...addressWord(owner),
+    ...uint64Word(nonce), ...uint64Word(validUntil), ...color, ...uint128Word(amount),
+    ...uint8Word(recipientKind), ...recipient
+  ], 0) as Bytes<320>;
+  return disclose(keccak256<Bytes<320>>(preimage));
+}
+
+export circuit withdrawUnshieldedStructHash(
+  manager: Bytes<32>, account: Bytes<32>, owner: Bytes<20>, nonce: Uint<64>,
+  validUntil: Uint<64>, color: Bytes<32>, amount: Uint<128>,
+  recipientKind: Uint<8>, recipient: Bytes<32>
+): Bytes<32> {
+  const preimage: Bytes<320> = slice<320>([
+    ...withdrawUnshieldedType(), ...manager, ...account, ...addressWord(owner),
+    ...uint64Word(nonce), ...uint64Word(validUntil), ...color, ...uint128Word(amount),
+    ...uint8Word(recipientKind), ...recipient
+  ], 0) as Bytes<320>;
+  return disclose(keccak256<Bytes<320>>(preimage));
+}
+
+export circuit transferShieldedStructHash(
+  manager: Bytes<32>, account: Bytes<32>, owner: Bytes<20>, nonce: Uint<64>,
+  validUntil: Uint<64>, toAccount: Bytes<32>, color: Bytes<32>, amount: Uint<128>
+): Bytes<32> {
+  const preimage: Bytes<288> = slice<288>([
+    ...transferShieldedType(), ...manager, ...account, ...addressWord(owner),
+    ...uint64Word(nonce), ...uint64Word(validUntil), ...toAccount, ...color, ...uint128Word(amount)
+  ], 0) as Bytes<288>;
+  return disclose(keccak256<Bytes<288>>(preimage));
+}
+
+export circuit transferUnshieldedStructHash(
+  manager: Bytes<32>, account: Bytes<32>, owner: Bytes<20>, nonce: Uint<64>,
+  validUntil: Uint<64>, toAccount: Bytes<32>, color: Bytes<32>, amount: Uint<128>
+): Bytes<32> {
+  const preimage: Bytes<288> = slice<288>([
+    ...transferUnshieldedType(), ...manager, ...account, ...addressWord(owner),
+    ...uint64Word(nonce), ...uint64Word(validUntil), ...toAccount, ...color, ...uint128Word(amount)
+  ], 0) as Bytes<288>;
+  return disclose(keccak256<Bytes<288>>(preimage));
+}
+
+export circuit openSwapStructHash(
+  manager: Bytes<32>, account: Bytes<32>, owner: Bytes<20>, nonce: Uint<64>,
+  validUntil: Uint<64>, giveColor: Bytes<32>, giveAmount: Uint<128>,
+  recipientKind: Uint<8>, recipient: Bytes<32>, wantNonce: Bytes<32>,
+  wantColor: Bytes<32>, wantAmount: Uint<128>, creditAccount: Bytes<32>
+): Bytes<32> {
+  const preimage: Bytes<448> = slice<448>([
+    ...openSwapType(), ...manager, ...account, ...addressWord(owner),
+    ...uint64Word(nonce), ...uint64Word(validUntil), ...giveColor, ...uint128Word(giveAmount),
+    ...uint8Word(recipientKind), ...recipient, ...wantNonce, ...wantColor,
+    ...uint128Word(wantAmount), ...creditAccount
+  ], 0) as Bytes<448>;
+  return disclose(keccak256<Bytes<448>>(preimage));
+}
+
+export circuit eip712Digest(
+  domain: Bytes<32>,
+  structHash: Bytes<32>
+): Bytes<32> {
+  const eipPrefix: Bytes<2> = Bytes[0x19, 0x01];
+  const preimage: Bytes<66> = slice<66>([...eipPrefix, ...domain, ...structHash], 0) as Bytes<66>;
+  return disclose(keccak256<Bytes<66>>(preimage));
+}
+
+export circuit semanticCommitment(preimage: Bytes<1024>): Bytes<32> {
+  return disclose(keccak256<Bytes<1024>>(preimage));
+}
+
+export circuit signerAddress(pk: Secp256k1Point): Bytes<20> {
+  return disclose(secp256k1EthereumAddress(pk));
+}
+
+export circuit verifySignature(
+  digest: Bytes<32>,
+  signature: Secp256k1EcdsaSignature,
+  pk: Secp256k1Point
+): Boolean {
+  return disclose(secp256k1EcdsaVerify(digest, signature, pk));
+}
+
+export circuit pointXBigEndian(pk: Secp256k1Point): Bytes<32> {
+  return disclose(reverseBytes32(secp256k1PointX(pk) as Bytes<32>));
+}
+
+export circuit pointYBigEndian(pk: Secp256k1Point): Bytes<32> {
+  return disclose(reverseBytes32(secp256k1PointY(pk) as Bytes<32>));
+}

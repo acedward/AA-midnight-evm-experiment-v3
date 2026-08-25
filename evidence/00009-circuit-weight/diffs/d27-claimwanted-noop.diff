@@ -1,0 +1,41 @@
+--- contracts/manager.compact	2026-08-24 13:16:56
++++ contracts/variants/d27-claimwanted-noop.compact	2026-08-24 14:49:41
+@@ -1,5 +1,14 @@
+ // Manager v4 — 00006-unbalanced-zswap (EXPERIMENTAL_LANE / LANE-DEV-1)
++// 00009 MEASUREMENT-ONLY NESTED ABLATION ARM `d27-claimwanted-noop` — NOT A SHIPPING CONTRACT.
+ //
++// This source is DELIBERATELY BROKEN. It exists only so that
++//   weight(sub-component) = rows(w0-baseline) - rows(this arm)
++// can be measured with `compactc --skip-zk` + `zkir-v3 mock-compile`.
++// Ablated sub-component: `claimWantedColour` — the swap's WANT leg (`receiveShielded`, pool merge-or-create, and the credited balance write)
++// It must never ship, never be promoted into contracts/manager.compact, never be
++// proved, and never be deployed.
++//
++//
+ // ================================================================================================
+ // WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
+ // ================================================================================================
+@@ -828,21 +837,8 @@
+ /// deficit `depositShielded` creates, which is why spike S1 could prove the taker mechanics against
+ /// v3 before v4 existed.
+ circuit claimWantedColour(coinB: ShieldedCoinInfo, credit: Bytes<32>): [] {
+-  // Must precede insertCoin: this is what allocates the Merkle-tree index.
+-  receiveShielded(coinB);
+-  if (pools.member(coinB.color)) {
+-    pools.insertCoin(
+-      coinB.color,
+-      mergeCoinImmediate(pools.lookup(coinB.color), coinB),
+-      right<ZswapCoinPublicKey, ContractAddress>(kernel.self())
+-    );
+-  } else {
+-    pools.insertCoin(coinB.color, coinB, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+-  }
+-  shieldedBalances.insert(
+-    shieldedKey(credit, coinB.color),
+-    (shieldedBalanceOf(credit, coinB.color) + coinB.value) as Uint<128>
+-  );
++  // 00009 d27 ABLATION: drop the entire WANT leg; the GIVE leg and every guard are untouched.
++
+ }
+ 
+ /// Write back what is left of colour `col`'s pool after a debit, or drop the colour entirely.
