@@ -218,6 +218,53 @@ is *present in the live path*; 0a, 3a and 3b are present at lines 1053, 1071 and
 and 0a is present a second time at 924. Recorded here so the gap is on the record rather than
 discovered later.
 
+### 4.4 CLOSED — the coverage note of §4.3 was acted on (third follow-up, 2026-08-25)
+
+The owner authorized porting the three flagged guards into the keyless suite as dedicated negative
+cases. Outcome, guard by guard — **test-only change; `contracts/manager.compact` is byte-unchanged
+at `535b1669…`**, and the suite ran against the same `k19-q3` artifact (`index.js` `9076c2a1…`) and
+the same k=20 oracle (`1a6cf20d…`) as the `af573f1` run:
+
+| Guard | Verdict | What now exists |
+|---|---|---|
+| **0a** `"swap must give a positive amount"` | **REACHABLE — real dedicated negative added** | A zero-give swap from a fully authorized, fully funded maker, run A/B, refusing with that exact text; plus the ported ordering probe (a zero-give from an UNREGISTERED witness still reports 0a, not the choke point) and a control showing the same witness with a valid give *does* die at the choke point. `execute` runs `assertActionEnvelope` before `gatewayAccount`, so line **845** is what fires; **1023** carries the same text, so the refusal set and its text are identical either way. |
+| **3a** `"no pooled coin for this colour"` | **UNREACHABLE BY REFUSAL — documented, no fake test** | An ordering probe that puts 3a's own predicate in the FAILING state (a colour with no pool entry at all) and shows guard 2's message — never 3a's — is what comes back, and that the refusal creates neither a pool entry nor a cell. |
+| **3b** `"pooled colour balance too low"` | **UNREACHABLE BY REFUSAL — documented, no fake test** | The NC-306 probe ported from `harness/src/test/swap.test.ts:379` and `g5-variants.test.ts:99`: the maker holds 2 of a colour while a second account holds 100 more, so the pool holds **102** and BOTH pool predicates would pass at `val = 5` — yet guard 2 refuses first, and the other account's funds and the pool are untouched. |
+
+**Why 3a/3b are unreachable is now asserted, not merely argued.** A fourth test pins the invariant
+that shadows them: for the shielded family, `pools.lookup(C).value == Σ shieldedBalances cells of
+colour C` (and `pools.member(C) ⟺ that sum > 0`) after every shielded action — deposit, selector 2
+withdraw, selector 4 internal transfer, selector 6 swap — on **both** builds, with the cell sum shown
+to be exhaustive (no shielded cell outside the accounted grid). Every write that raises a colour's
+cell total is paired with a `pools.insertCoin` of the same colour and value (`depositShielded`
+655–667; the swap want leg 1111–1131), every debit is paired with `repoolOrRemove` (1094 with
+773–780), and `transferInternalShielded` moves value between two cells of one colour without touching
+the pool. Guard 2 (`debitBalance >= val`, `val > 0`) therefore implies `Σ cells of C >= val > 0`,
+which implies BOTH `pools.member(C)` and `pooled.value >= val`. Only selectors 2 and 6 consult the
+pool (`needsPool`) and both debit the shielded family, so the invariant covers every path that can
+reach 1041/1043 at all. **An edit that broke the pairing would make the guards reachable — and would
+fail this test, which is the point of writing it instead of a contrived refusal.**
+
+**Not a regression against the older suites.** They never reached 3a/3b either:
+`harness/src/test/swap.test.ts:435` states the same conclusion verbatim (*"Reaching the pool guard at
+all requires an account cell that covers the request while the pool does not — which the per-colour
+invariant makes impossible through ordinary deposits"*) and asserts the guard ORDER instead;
+`harness/src/test/g5-variants.test.ts:99–110` asserts `not.toContain('pooled colour balance')` /
+`not.toContain('no pooled coin')`. There was no mechanism to port, because none ever existed.
+
+**Suite: 45 → 49 tests, 6 files, all green**, keyless under the pinned Node image
+(`node@sha256:752ea8a2…`), frozen lockfile, zero `.prover`/`.verifier` files asserted inside the
+container, Docker torn down (`residual_volumes=0`). Log: `raw/parity-k19-q3-swapguards.log`.
+
+**One apparatus change, recorded rather than buried.** The four new tests pushed four PRE-EXISTING
+tests in `k20-parity.test.ts` over vitest's 5 s default timeout on the first run
+(`raw/parity-k19-q3-swapguards-timeout-attempt.log`: 45 passed, 4 timed out — all four *new* tests
+passed). Nothing about either contract changed: the heaviest pre-existing case already sat at
+**4,248 ms of the 5,000 ms budget** in the `af573f1` run, i.e. 85% — a latent flake. Fixed by pinning
+an explicit `PARITY_TIMEOUT_MS = 120_000` on the eleven tests **in this file only**, so the other five
+suites keep the exact bound their recorded results were produced under. A timeout is apparatus, not a
+property under test; no assertion was weakened, removed or relaxed.
+
 ## 5. Verdict
 
 | Item | Mapped to a live line? |

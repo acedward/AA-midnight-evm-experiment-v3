@@ -59,14 +59,32 @@ import {
 const K19: ManagerBuild = { Contract: K19Contract, ledger: k19Ledger };
 const K20: ManagerBuild = { Contract: K20Contract, ledger: k20Ledger };
 
+/**
+ * Explicit per-test timeout for THIS file only.
+ *
+ * Every test here drives TWO compiled Manager artifacts in one CPU-bounded container
+ * (`scripts/00010/parity-suite.sh` runs with `--cpus 2`), so vitest's 5 s default was never a
+ * meaningful bound: the heaviest case already sat at ~4.2 s of it — 85% of budget — before the
+ * 00010-Q3 coverage follow-up added four more tests to the file, at which point four PRE-EXISTING
+ * tests began timing out purely on scheduling contention. A timeout is apparatus, not a property
+ * under test: raising it weakens no assertion, and pinning it explicitly removes a latent flake
+ * that had nothing to do with either contract. Scoped to this file so the other five suites keep
+ * the exact bound their recorded results were produced under.
+ */
+const PARITY_TIMEOUT_MS = 120_000;
+
 const NOW = 1_800_000_000;
 const DEADLINE = BigInt(NOW + 600);
 const EVM_KEY = "0x4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318" as Hex32;
 const EVM_OWNER = addressForPrivateKey(EVM_KEY);
 const NATIVE = secretOf("K20ParityNative");
 const NATIVE_B = secretOf("K20ParityNativeB");
+/** A witness that is NEVER registered — drives the choke-point ordering probe below. */
+const NATIVE_STRANGER = secretOf("K20ParityNativeStranger");
 const COLOR_A = `0x${"11".repeat(32)}` as Hex32;
 const COLOR_B = `0x${"22".repeat(32)}` as Hex32;
+/** A colour that is NEVER deposited, so no pool entry for it ever exists. */
+const COLOR_DORMANT = `0x${"33".repeat(32)}` as Hex32;
 const RECIPIENT = `0x${"aa".repeat(32)}` as Hex32;
 const SALT = `0x${"c1".repeat(32)}` as Hex32;
 
@@ -142,7 +160,7 @@ describe("k20 parity — the pure byte surface is identical", () => {
     }
     // Every EVM selector is exercised.
     expect([...selectors].map(Number).sort()).toEqual([1, 2, 3, 4, 5, 6]);
-  });
+  }, PARITY_TIMEOUT_MS);
 
   it("agrees on the semantic commitment oracle for every fixture selector and shape — accepting AND refusing identically", () => {
     // The fixture set deliberately includes envelopes `assertActionEnvelope` refuses (e.g. a zero
@@ -193,7 +211,7 @@ describe("k20 parity — the pure byte surface is identical", () => {
     // Both halves are actually exercised — this is not an all-refused vacuous pass.
     expect(accepted, "accepted fixture cases").toBeGreaterThan(40);
     expect(refused, "refused fixture cases").toBeGreaterThan(0);
-  });
+  }, PARITY_TIMEOUT_MS);
 
   it("agrees on the native selector-0 shape, which no EVM fixture covers", () => {
     const manager = bytes(KAT_ACTION.manager);
@@ -225,7 +243,7 @@ describe("k20 parity — the pure byte surface is identical", () => {
         authResult,
       ).commitment,
     );
-  });
+  }, PARITY_TIMEOUT_MS);
 
   it("agrees on the shielded/unshielded key domains and the zswap transcriptions", () => {
     const account = bytes(`0x${"3c".repeat(32)}` as Hex32);
@@ -249,7 +267,7 @@ describe("k20 parity — the pure byte surface is identical", () => {
     expect(bytesToHex((k19Pure as any).zswapCommitmentOf(c, recipient))).toBe(
       bytesToHex((k20Pure as any).zswapCommitmentOf(c, recipient)),
     );
-  });
+  }, PARITY_TIMEOUT_MS);
 });
 
 // ================================================================================================
@@ -423,7 +441,7 @@ describe("k20 parity — custody effects are identical, action by action", () =>
       const emitted = extractLegacySemanticCommitment(right.logEvents as readonly LogEvent[]);
       expect(emitted, `${item.label} k20 emitted commitment`).toBe(recomputed);
     }
-  });
+  }, PARITY_TIMEOUT_MS);
 
   it("refuses identically on the negative set, state-neutrally on both builds", async () => {
     const { k19, k20 } = await pair();
@@ -616,7 +634,7 @@ describe("k20 parity — custody effects are identical, action by action", () =>
       );
     }
     expect(negatives.length).toBe(13);
-  });
+  }, PARITY_TIMEOUT_MS);
 
   it("agrees on the EVM-authorized path: signature, deadline, nonce-after-custody, refusals", async () => {
     const { k19, k20 } = await pair();
@@ -697,7 +715,7 @@ describe("k20 parity — custody effects are identical, action by action", () =>
     ).toBe(
       await k20.expectRejectAt(NOW, "execute", wrongDomain.payload, wrongDomain.signature, wrongDomain.point),
     );
-  });
+  }, PARITY_TIMEOUT_MS);
 });
 
 /**
@@ -724,3 +742,422 @@ function extractLegacySemanticCommitment(events: readonly LogEvent[]): string | 
   }
   return undefined;
 }
+
+// ================================================================================================
+// 00010-Q3 COVERAGE FOLLOW-UP — the three swap guards that had no DEDICATED negative case
+// ================================================================================================
+//
+// The Q3 wiring verification (`evidence/00010-manager-k19/Q3-WIRING-VERIFICATION.md` §4.3) recorded,
+// honestly and on the record, that three of `custodyDispatch`'s swap guards were exercised only in
+// the PASSING direction by the three selector-6 parity cases above, with no dedicated negative:
+//
+//   0a  "swap must give a positive amount"   — `custodyDispatch` line 1023, `assertActionEnvelope` 845
+//   3a  "no pooled coin for this colour"     — `custodyDispatch` line 1041
+//   3b  "pooled colour balance too low"      — `custodyDispatch` line 1043
+//
+// This block closes that gap. Everything here follows the same A/B contract as the 13-case negative
+// set above: every refusal runs against BOTH the k=19 build and the k=20 reference oracle, the
+// message text must be IDENTICAL, and the whole ledger must be byte-identical before and after on
+// each build and across builds.
+//
+// ------------------------------------------------------------------------------------------------
+// THE VERDICT ON EACH GUARD, stated up front so no reader has to infer it from the test names:
+// ------------------------------------------------------------------------------------------------
+//
+//   0a — REACHABLE. A zero-give swap is refused, with that exact message. `execute` runs
+//        `assertActionEnvelope` before the witness choke point, so line 845 is what fires; line 1023
+//        carries the same text, so the refusal SET and its text are identical either way. A real,
+//        dedicated negative case now exists for it (first test below), in both the registered and
+//        the unregistered-witness form.
+//
+//   3a / 3b — **UNREACHABLE BY REFUSAL, and that is a defence-in-depth FACT, not a bug.** They can
+//        never be the FIRST failing guard on any constructible input, because guard 2 — the
+//        per-(account, colour) guard at line 1037 — refuses first in every case. This is the
+//        intended FR-204 ordering, and it is *structural*, not incidental:
+//
+//          For the shielded family the contract maintains, at every write site,
+//              pools.lookup(C).value  ==  Σ shieldedBalances cells of colour C
+//          and therefore
+//              pools.member(C)        <=> that sum > 0
+//
+//        Every write that RAISES a colour's cell total is paired with a `pools.insertCoin` of the
+//        same colour and value (`depositShielded` 655-667; the swap want leg 1111-1131); every debit
+//        is paired with `repoolOrRemove` (1094 with 773-780); and `transferInternalShielded` moves
+//        value between two cells of one colour without touching the pool at all. So guard 2
+//        (`debitBalance >= val`, with `val > 0` already forced by guard 0a) implies
+//        `Σ cells of C >= val > 0`, which implies BOTH `pools.member(C)` and `pooled.value >= val`.
+//        Only selectors 2 and 6 consult the pool (`needsPool`), and both debit the shielded family,
+//        so the invariant covers every path that can reach lines 1041/1043 at all.
+//
+//        NO FAKE TEST IS WRITTEN FOR 3a/3b. What is written instead is stronger than a contrived
+//        refusal would be: two ordering probes that put each pool guard's own predicate into a known
+//        state and show that guard 2's message — never the pool guard's — is what comes back, plus a
+//        fourth test that asserts the pool-total invariant itself, executed, on both builds. The
+//        invariant is the *reason* the guards are shadowed, so pinning it is what would actually
+//        catch a future edit that made them reachable.
+//
+//        This is NOT a coverage regression against the older suites. `harness/src/test/swap.test.ts`
+//        (v3/v4 surface) never reached them either — its case at :435 says so verbatim, and asserts
+//        the guard ORDER instead — and `harness/src/test/g5-variants.test.ts` :99-110 asserts
+//        `not.toContain('pooled colour balance')` / `not.toContain('no pooled coin')` for the same
+//        reason. There was no mechanism to port, because none ever existed.
+
+/** Read one (account, colour) shielded cell straight out of a build's ledger; missing reads 0. */
+function shieldedCell(pure: any, ledger: any, account: Uint8Array, colour: Hex32): bigint {
+  const key = pure.shieldedKey(account, bytes(colour));
+  return ledger.shieldedBalances.member(key) ? BigInt(ledger.shieldedBalances.lookup(key)) : 0n;
+}
+
+const poolHas = (ledger: any, colour: Hex32): boolean => ledger.pools.member(bytes(colour));
+const poolAmount = (ledger: any, colour: Hex32): bigint =>
+  ledger.pools.member(bytes(colour)) ? BigInt(ledger.pools.lookup(bytes(colour)).value) : 0n;
+
+/**
+ * Drive one refused `execute` on BOTH builds and return the (identical) message.
+ *
+ * Same contract as the 13-case negative set: identical text, state-neutral on each build, and the
+ * two builds' states still equal afterwards. `expectReject` itself already fails if state moved;
+ * the explicit snapshots pin the bytes.
+ */
+async function expectSameRefusal(
+  label: string,
+  k19: ManagerSim,
+  k20: ManagerSim,
+  payload: ManagerExecutePayload,
+): Promise<string> {
+  const before19 = JSON.stringify(snapshotLedger(k19.ledger));
+  const before20 = JSON.stringify(snapshotLedger(k20.ledger));
+  const left = await k19.expectReject("execute", payload, inert.signature, inert.point);
+  const right = await k20.expectReject("execute", payload, inert.signature, inert.point);
+  expect(left, `${label} refusal message`).toBe(right);
+  expect(JSON.stringify(snapshotLedger(k19.ledger)), `${label} k19 neutrality`).toBe(before19);
+  expect(JSON.stringify(snapshotLedger(k20.ledger)), `${label} k20 neutrality`).toBe(before20);
+  expect(snapshotLedger(k19.ledger), `${label} cross-build state`).toEqual(
+    snapshotLedger(k20.ledger),
+  );
+  return left;
+}
+
+/** Both builds, both accounts registered, nothing deposited yet. */
+async function registeredPair(): Promise<{
+  k19: ManagerSim;
+  k20: ManagerSim;
+  account: Uint8Array;
+  destination: Uint8Array;
+}> {
+  const { k19, k20 } = await pair();
+  const account = await k19.ownerCommitmentFor(NATIVE);
+  const destination = await k19.ownerCommitmentFor(NATIVE_B);
+  await k20.ownerCommitmentFor(NATIVE);
+  await k20.ownerCommitmentFor(NATIVE_B);
+  for (const sim of [k19, k20]) {
+    await sim.call("registerAccount", account);
+    await sim.call("registerAccount", destination);
+  }
+  expect(snapshotLedger(k19.ledger)).toEqual(snapshotLedger(k20.ledger));
+  return { k19, k20, account, destination };
+}
+
+describe("k20 parity — the three swap guards flagged by 00010-Q3", () => {
+  it("guard 0a — refuses a swap that gives ZERO, and parameter sanity still precedes the witness choke point", async () => {
+    const { k19, k20, account, destination } = await registeredPair();
+    for (const sim of [k19, k20]) {
+      await sim.call("depositShielded", coin(COLOR_A, 10n, 1), account);
+    }
+
+    const base = emptyExecutePayload();
+    const zeroGive: ManagerExecutePayload = {
+      ...base,
+      selector: 6n,
+      account,
+      primaryColor: bytes(COLOR_A),
+      primaryAmount: 0n,
+      recipientKind: 0n,
+      wantNonce: new Uint8Array(32).fill(0x51),
+      wantColor: bytes(COLOR_B),
+      wantAmount: 1n,
+      creditAccount: destination,
+    };
+
+    // The dedicated negative for guard 0a, with a fully authorized, fully funded maker: the ONLY
+    // thing wrong with this action is the zero give.
+    const refusal = await expectSameRefusal("NC — swap giving zero", k19, k20, zeroGive);
+    expect(refusal, "guard 0a message").toContain("swap must give a positive amount");
+    // It must NOT be mistaken for any neighbouring guard.
+    expect(refusal).not.toContain("swap must want a positive amount");
+    expect(refusal).not.toContain("account colour balance too low");
+    // Everything else about this maker was fine — so the refusal is attributable to 0a alone.
+    expect(shieldedCell(k19Pure, k19.ledger, account, COLOR_A)).toBe(10n);
+    expect(poolAmount(k19.ledger, COLOR_A)).toBe(10n);
+
+    // ORDERING PROBE, ported from `harness/src/test/swap.test.ts:479` ("parameter sanity precedes
+    // the choke point"). `execute` runs `assertActionEnvelope` BEFORE `gatewayAccount`, so a
+    // zero-give from an UNREGISTERED witness reports the zero, not the authorization. That order is
+    // deliberate: guard 0a is pure arithmetic on the caller's own arguments, reads no state, and can
+    // therefore leak nothing about registration or balances. Pinned here so a future edit cannot
+    // silently move a state-reading guard ahead of the witness choke point.
+    k19.actAs(NATIVE_STRANGER);
+    k20.actAs(NATIVE_STRANGER);
+    const stranger = await expectSameRefusal(
+      "NC — swap giving zero from an unregistered witness",
+      k19,
+      k20,
+      zeroGive,
+    );
+    expect(stranger, "guard 0a still precedes the choke point").toContain(
+      "swap must give a positive amount",
+    );
+    expect(stranger).not.toContain("owner witness matches no registered account");
+
+    // Control, so the probe above is not vacuous: the SAME unregistered witness with a valid give
+    // really does die at the choke point. Guard 0a is what moved the answer, not the witness.
+    const validGive: ManagerExecutePayload = { ...zeroGive, primaryAmount: 1n };
+    const chokePoint = await expectSameRefusal(
+      "NC — control: unregistered witness with a valid give",
+      k19,
+      k20,
+      validGive,
+    );
+    expect(chokePoint).toContain("caller's owner witness matches no registered account");
+  }, PARITY_TIMEOUT_MS);
+
+  it("guard 3a is UNREACHABLE by refusal — a swap in a colour with NO pool dies at the account guard instead", async () => {
+    // COLOR_DORMANT was never deposited, so `pools.member(COLOR_DORMANT)` is FALSE: guard 3a's own
+    // predicate is in the failing state. Its message must still never appear, because guard 2 reads
+    // the missing (account, COLOR_DORMANT) cell as 0 and refuses first (FR-204 / FR-206).
+    const { k19, k20, account, destination } = await registeredPair();
+    for (const sim of [k19, k20]) {
+      await sim.call("depositShielded", coin(COLOR_A, 10n, 2), account);
+    }
+    for (const sim of [k19, k20]) {
+      expect(poolHas(sim.ledger, COLOR_DORMANT), "3a predicate is in the FAILING state").toBe(false);
+    }
+
+    const refusal = await expectSameRefusal("NC — swap giving a colour with no pool", k19, k20, {
+      ...emptyExecutePayload(),
+      selector: 6n,
+      account,
+      primaryColor: bytes(COLOR_DORMANT),
+      primaryAmount: 1n,
+      recipientKind: 0n,
+      wantNonce: new Uint8Array(32).fill(0x52),
+      wantColor: bytes(COLOR_B),
+      wantAmount: 1n,
+      creditAccount: destination,
+    });
+
+    expect(refusal, "guard 2 refuses first").toContain("account colour balance too low");
+    expect(refusal, "guard 3a is shadowed").not.toContain("no pooled coin for this colour");
+    expect(refusal).not.toContain("pooled colour balance too low");
+
+    // ...and the refusal CREATED nothing — no lazily materialised pool entry, no empty cell.
+    for (const [sim, pure] of [
+      [k19, k19Pure],
+      [k20, k20Pure],
+    ] as const) {
+      expect(poolHas(sim.ledger, COLOR_DORMANT)).toBe(false);
+      const key = (pure as any).shieldedKey(account, bytes(COLOR_DORMANT));
+      expect(sim.ledger.shieldedBalances.member(key)).toBe(false);
+    }
+  }, PARITY_TIMEOUT_MS);
+
+  it("guard 3b is UNREACHABLE by refusal — a RICH pool cannot rescue a short account cell, and never reports itself", async () => {
+    // Ported from `harness/src/test/swap.test.ts:379` (NC-306) and
+    // `harness/src/test/g5-variants.test.ts:99`, onto the v5 `execute` surface.
+    //
+    // The maker holds 2 of COLOR_A; a second account holds 100 more of the SAME colour, so the pool
+    // holds 102 — comfortably more than the 5 the maker asks to give. BOTH pool guards would
+    // therefore PASS if they were reached. Only the per-(account, colour) guard can refuse this, and
+    // it must, before either pool guard is consulted.
+    const { k19, k20, account, destination } = await registeredPair();
+    for (const sim of [k19, k20]) {
+      await sim.call("depositShielded", coin(COLOR_A, 100n, 3), account);
+      await sim.call("depositShielded", coin(COLOR_A, 2n, 4), destination);
+    }
+
+    for (const [sim, pure] of [
+      [k19, k19Pure],
+      [k20, k20Pure],
+    ] as const) {
+      // Guard 3a's predicate: PASSES. Guard 3b's predicate at val=5: PASSES.
+      expect(poolHas(sim.ledger, COLOR_A), "3a predicate would PASS").toBe(true);
+      expect(poolAmount(sim.ledger, COLOR_A), "3b predicate would PASS").toBe(102n);
+      // Guard 2's predicate: FAILS. This is the only thing wrong with the action.
+      expect(shieldedCell(pure, sim.ledger, destination, COLOR_A)).toBe(2n);
+    }
+
+    k19.actAs(NATIVE_B);
+    k20.actAs(NATIVE_B);
+    const refusal = await expectSameRefusal(
+      "NC — swap from a short cell while the pool is rich",
+      k19,
+      k20,
+      {
+        ...emptyExecutePayload(),
+        selector: 6n,
+        account: destination,
+        primaryColor: bytes(COLOR_A),
+        primaryAmount: 5n,
+        recipientKind: 0n,
+        wantNonce: new Uint8Array(32).fill(0x53),
+        wantColor: bytes(COLOR_B),
+        wantAmount: 1n,
+        creditAccount: account,
+      },
+    );
+
+    expect(refusal, "guard 2 refuses first").toContain("account colour balance too low");
+    expect(refusal, "guard 3b is shadowed").not.toContain("pooled colour balance too low");
+    expect(refusal).not.toContain("no pooled coin for this colour");
+
+    // The other account's funds are untouched, and the pool is still rich — the refusal came from
+    // the maker's OWN cell, which is the FR-204 property this probe exists to pin.
+    for (const [sim, pure] of [
+      [k19, k19Pure],
+      [k20, k20Pure],
+    ] as const) {
+      expect(poolAmount(sim.ledger, COLOR_A)).toBe(102n);
+      expect(shieldedCell(pure, sim.ledger, account, COLOR_A)).toBe(100n);
+    }
+  }, PARITY_TIMEOUT_MS);
+
+  it("the pool-total invariant that SHADOWS guards 3a/3b holds through every shielded action, on both builds", async () => {
+    // This is the load-bearing test behind the two "unreachable" verdicts above. The guards are
+    // unreachable because `pools.lookup(C).value == Σ shieldedBalances cells of colour C` for every
+    // colour, at all times — which makes guard 2 strictly stronger than both of them. Asserting the
+    // invariant, executed, is what would catch a future edit that broke the pairing and made 3a/3b
+    // reachable (at which point they would need real negatives, and this test would say so by
+    // failing).
+    const { k19, k20, account, destination } = await registeredPair();
+
+    const holders = [account, destination];
+    const colours: Hex32[] = [COLOR_A, COLOR_B];
+
+    const checkInvariant = (label: string): void => {
+      for (const [sim, pure] of [
+        [k19, k19Pure],
+        [k20, k20Pure],
+      ] as const) {
+        for (const colour of colours) {
+          const cellSum = holders.reduce(
+            (total, holder) => total + shieldedCell(pure, sim.ledger, holder, colour),
+            0n,
+          );
+          expect(poolAmount(sim.ledger, colour), `${label} pool==Σcells for ${colour}`).toBe(
+            cellSum,
+          );
+          expect(poolHas(sim.ledger, colour), `${label} member(C) <=> Σcells>0 for ${colour}`).toBe(
+            cellSum > 0n,
+          );
+        }
+      }
+      // The sum is EXHAUSTIVE: no shielded cell exists outside the (holder, colour) grid above, so
+      // "Σ over the holders we know" is genuinely "Σ over the colour". The two builds agree on
+      // `shieldedKey` — asserted by "agrees on the shielded/unshielded key domains" earlier in this
+      // file — so one build's key set is the right yardstick for both ledgers.
+      const known = new Set<string>();
+      for (const holder of holders) {
+        for (const colour of colours) {
+          known.add(bytesToHex((k19Pure as any).shieldedKey(holder, bytes(colour))));
+        }
+      }
+      for (const sim of [k19, k20]) {
+        for (const [key] of sim.ledger.shieldedBalances) {
+          expect(known.has(bytesToHex(key)), `${label} unaccounted shielded cell`).toBe(true);
+        }
+      }
+      expect(snapshotLedger(k19.ledger), `${label} cross-build state`).toEqual(
+        snapshotLedger(k20.ledger),
+      );
+    };
+
+    checkInvariant("empty");
+
+    for (const sim of [k19, k20]) {
+      await sim.call("depositShielded", coin(COLOR_A, 100n, 5), account);
+      await sim.call("depositShielded", coin(COLOR_B, 100n, 6), account);
+    }
+    checkInvariant("after deposits");
+
+    const base = emptyExecutePayload();
+    const steps: { label: string; payload: ManagerExecutePayload }[] = [
+      {
+        // Debit + `repoolOrRemove`: the pool falls by exactly what the cell falls by.
+        label: "after selector 2 (withdrawShielded)",
+        payload: {
+          ...base,
+          selector: 2n,
+          account,
+          primaryColor: bytes(COLOR_A),
+          primaryAmount: 3n,
+          recipientKind: 0n,
+          recipient: bytes(RECIPIENT),
+        },
+      },
+      {
+        // Cell-to-cell inside one colour: the pool must NOT move.
+        label: "after selector 4 (transferInternalShielded)",
+        payload: {
+          ...base,
+          selector: 4n,
+          account,
+          primaryColor: bytes(COLOR_A),
+          primaryAmount: 6n,
+          toAccount: destination,
+        },
+      },
+      {
+        // Both legs at once: give leg drops COLOR_A's pool and cell by 8; want leg raises COLOR_B's
+        // pool and the credited cell by 9.
+        label: "after selector 6 (openSwapShielded, OPEN)",
+        payload: {
+          ...base,
+          selector: 6n,
+          account,
+          primaryColor: bytes(COLOR_A),
+          primaryAmount: 8n,
+          recipientKind: 0n,
+          wantNonce: new Uint8Array(32).fill(0x54),
+          wantColor: bytes(COLOR_B),
+          wantAmount: 9n,
+          creditAccount: destination,
+        },
+      },
+    ];
+
+    for (const step of steps) {
+      const left = await k19.callDetailed("execute", step.payload, inert.signature, inert.point);
+      const right = await k20.callDetailed("execute", step.payload, inert.signature, inert.point);
+      expectSameEffects(step.label, left, right, k19, k20);
+      checkInvariant(step.label);
+    }
+
+    // The arithmetic, spelled out, so a silent change of the sequence cannot leave the invariant
+    // trivially true: COLOR_A 100 − 3 − 8 = 89 pooled, split 83 / 6 between the two cells;
+    // COLOR_B 100 + 9 = 109 pooled, split 100 / 9.
+    expect(poolAmount(k19.ledger, COLOR_A)).toBe(89n);
+    expect(shieldedCell(k19Pure, k19.ledger, account, COLOR_A)).toBe(83n);
+    expect(shieldedCell(k19Pure, k19.ledger, destination, COLOR_A)).toBe(6n);
+    expect(poolAmount(k19.ledger, COLOR_B)).toBe(109n);
+    expect(shieldedCell(k19Pure, k19.ledger, account, COLOR_B)).toBe(100n);
+    expect(shieldedCell(k19Pure, k19.ledger, destination, COLOR_B)).toBe(9n);
+
+    // With the invariant holding, guard 2 (`cell >= val`, `val > 0`) implies BOTH pool predicates:
+    // `Σ cells of C >= val > 0` gives `pools.member(C)` and `pooled.value >= val`. That is the whole
+    // reason lines 1041 and 1043 can never be the first failing guard.
+    for (const colour of colours) {
+      for (const holder of holders) {
+        const cell = shieldedCell(k19Pure, k19.ledger, holder, colour);
+        if (cell > 0n) {
+          expect(poolHas(k19.ledger, colour), "guard 3a's predicate is implied by guard 2").toBe(
+            true,
+          );
+          expect(
+            poolAmount(k19.ledger, colour) >= cell,
+            "guard 3b's predicate is implied by guard 2",
+          ).toBe(true);
+        }
+      }
+    }
+  }, PARITY_TIMEOUT_MS);
+});

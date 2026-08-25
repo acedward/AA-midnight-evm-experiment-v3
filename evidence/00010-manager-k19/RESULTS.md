@@ -531,3 +531,120 @@ torn down (`residual_volumes=0`) and the machine's unrelated baseline (15 contai
 `aa00006-compactc@sha256:f57ca2d8…` throughout, never re-pinned; the container ran `--network none`.
 No push, no deploy, no proving, no keygen re-run. The 00008/00009 clones were not touched, and the
 frozen 00009 measurement variants under `contracts/variants/` were not edited.
+
+---
+
+## 11. Follow-up: porting the three flagged swap guards into the keyless suite (2026-08-25)
+
+Third follow-up, authorized by the owner. **Test-only.** Project state stays **COMPLETED**. Clone
+`/Users/edwardalvarado/todo/AA/experiments/00010-manager-k19`, branch `00010-manager-k19`, one
+focused commit on top of `af573f1` (local-only, never pushed; the hash is recorded in the organizer's
+plan, questions file and `project-summary.md`).
+
+`contracts/manager.compact` is **byte-unchanged**: SHA-256
+`535b16695edbfd7b06994b3546253fefc2863996b8a66cd94397dd9f207f3d50` before and after. No compile, no
+measurement, no keygen, no proving. The suite ran against the same compiled artifacts as the
+`af573f1` run — arm `k19-q3`, `contract/index.js` `9076c2a1…`, `index.d.ts` `92c251d3…`, k=20 oracle
+`1a6cf20d…` — so nothing about the k=19 build or the reference build moved.
+
+### 11.1 What was flagged, and what each guard got
+
+§4.3 of `Q3-WIRING-VERIFICATION.md` recorded that three of `custodyDispatch`'s swap guards had no
+*dedicated* negative case in the 45-test suite. All three were present in the live path and exercised
+in the passing direction; the note was a coverage observation, not a wiring gap. It is now closed:
+
+| Guard | Live line | Verdict | Result |
+|---|---|---|---|
+| **0a** `"swap must give a positive amount"` | mux **1023**, envelope **845** | **REACHABLE** | **Real dedicated negative added**, plus a ported ordering probe and its control |
+| **3a** `"no pooled coin for this colour"` | mux **1041** | **UNREACHABLE BY REFUSAL** | Documented verdict + ordering probe with 3a's predicate in the FAILING state |
+| **3b** `"pooled colour balance too low"` | mux **1043** | **UNREACHABLE BY REFUSAL** | Documented verdict + NC-306 probe with BOTH pool predicates in the PASSING state |
+
+**No fake test was written for 3a/3b.** An unreachable-by-refusal guard that sits behind a strictly
+stronger preceding guard is a defence-in-depth fact worth recording, not a bug — and it is the
+*intended* FR-204 ordering. The full argument, with the write-site pairing that makes it structural
+rather than incidental, is in `Q3-WIRING-VERIFICATION.md` §4.4 and in the file comment heading the
+new tests.
+
+### 11.2 The four new tests (`harness/src/auth/test/k20-parity.test.ts`)
+
+Every one follows the established A/B contract of the existing 13-case negative set: run against
+**both** the k=19 build and the k=20 reference oracle, **identical refusal message text**, whole-ledger
+byte-identity before and after on each build, and cross-build state equality afterwards.
+
+1. **`guard 0a — refuses a swap that gives ZERO, and parameter sanity still precedes the witness
+   choke point`.** A zero-give swap from a fully authorized, fully funded maker — the only thing wrong
+   with the action is the zero. Asserts the exact text, asserts it is not the neighbouring 0b or
+   guard-2 message, and asserts the maker's cell and pool were both fine (so the refusal is
+   attributable to 0a alone). Then the probe ported from `harness/src/test/swap.test.ts:479`: the same
+   payload from an UNREGISTERED witness still reports 0a, **not** the choke point — `execute` runs
+   `assertActionEnvelope` before `gatewayAccount`, deliberately, because guard 0a is pure arithmetic
+   on the caller's own arguments and can leak nothing about registration or balances. A control with
+   the same unregistered witness and a valid give **does** die at the choke point, so the probe is not
+   vacuous.
+2. **`guard 3a is UNREACHABLE by refusal`.** A colour that was never deposited, so
+   `pools.member(C)` is **false** — 3a's own predicate is in the failing state — yet guard 2 reads the
+   missing cell as 0 and refuses first (FR-204 / FR-206). Asserts the message is guard 2's and is
+   neither pool message, and that the refusal created neither a pool entry nor an empty cell.
+3. **`guard 3b is UNREACHABLE by refusal`.** NC-306, ported from `harness/src/test/swap.test.ts:379`
+   and `g5-variants.test.ts:99` onto the v5 `execute` surface: the maker holds **2** of the colour, a
+   second account holds **100** more, so the pool holds **102** and at `val = 5` **both** pool
+   predicates would pass. Only guard 2 can refuse this, and it must. Asserts both pool predicates are
+   in the passing state *before* the call, then that the message is guard 2's, then that the other
+   account's 100 and the pool's 102 are untouched.
+4. **`the pool-total invariant that SHADOWS guards 3a/3b`.** The load-bearing test behind the two
+   unreachable verdicts. Asserts, on both builds, after each of deposit → selector 2 → selector 4 →
+   selector 6, that `pools.lookup(C).value == Σ shieldedBalances cells of colour C` and
+   `pools.member(C) ⟺ Σ > 0`, with the cell sum shown **exhaustive** (no shielded cell outside the
+   accounted grid). Ends by spelling out the arithmetic (COLOR_A 100−3−8 = 89 pooled, split 83/6;
+   COLOR_B 100+9 = 109 pooled, split 100/9) so a silent change of the sequence cannot leave the
+   invariant trivially true, and then asserts the implication itself: every positive cell has a pool
+   member whose value covers it. An edit that broke the write-site pairing would make 3a/3b reachable
+   **and would fail this test** — which is why this is stronger than a contrived refusal would have
+   been.
+
+### 11.3 Result — 45 → **49/49**, six files, keyless
+
+```
+Test Files  6 passed (6)
+     Tests  49 passed (49)
+  Duration  48.87s
+```
+
+`ARM=k19-q3`, `CONTRACT_SHA256=9076c2a1…`, `REFERENCE_CONTRACT_SHA256=1a6cf20d…`. Pinned Node image
+`node@sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e`, `pnpm@11.5.1`
+`--frozen-lockfile`, `--cpus 2 --memory 8g --memory-swap 8g`, the runner's in-container
+`test -z "$(find generated -name "*.prover" -o -name "*.verifier")"` assertion passing, volume torn
+down (`residual_volumes=0`). Log: `raw/parity-k19-q3-swapguards.log`. The four new tests took
+991 / 841 / 1354 / 2386 ms.
+
+### 11.4 The one apparatus change, recorded rather than buried
+
+The first run (`raw/parity-k19-q3-swapguards-timeout-attempt.log`) came back **45 passed, 4 failed** —
+and the four failures were **pre-existing** tests, all four with `Test timed out in 5000ms`. All four
+NEW tests passed. Nothing about either contract changed between the runs.
+
+The cause is that vitest's 5 s default was never a meaningful bound for this file: it drives **two**
+compiled Manager artifacts per test inside a `--cpus 2` container, and the heaviest pre-existing case
+already sat at **4,248 ms of 5,000 ms — 85% of budget — in the recorded `af573f1` run**. Adding four
+tests to the file raised scheduling contention just enough to cross it. This was a latent flake in the
+recorded 45/45 result, not something the new tests introduced, and it is worth stating plainly.
+
+Fix: an explicit `PARITY_TIMEOUT_MS = 120_000` pinned on the eleven tests **in `k20-parity.test.ts`
+only** — the other five suites keep the exact bound their recorded results were produced under. A
+timeout is apparatus, not a property under test: **no assertion was weakened, relaxed or removed**,
+and the re-run passed with every test comfortably inside the old 5 s bound anyway (heaviest: 2,584 ms)
+once contention settled.
+
+### 11.5 Integrity
+
+| Check | Result |
+|---|---|
+| `contracts/manager.compact` | **UNCHANGED** — `535b1669…` before and after |
+| Files touched | `harness/src/auth/test/k20-parity.test.ts` + evidence docs only |
+| Compile / measure / keygen / proving / deploy | **none** — same artifacts as `af573f1` |
+| Suite | **49/49**, six files, keyless; zero key files asserted in-container |
+| Docker residue (`aa00010*`) | **0 / 0 / 0 / 0**; parity volume torn down (`residual_volumes=0`) |
+| Machine Docker state vs baseline | 15 containers / 37 volumes / 6 networks — unchanged |
+| Push to any remote | **NONE** — both push URLs still the sentinel `NO_PUSH_FORBIDDEN_00010`; branch has no upstream |
+| 00008 / 00009 clones | **untouched** |
+| Frozen 00009 variants under `contracts/variants/` | **not edited** |
