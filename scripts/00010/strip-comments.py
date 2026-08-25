@@ -6,7 +6,7 @@ comments) removed, every blank line removed, and the remaining whitespace normal
 (leading/trailing whitespace stripped, internal runs of whitespace collapsed to one space).
 
 String literals are respected: a `//` inside a double-quoted string is NOT a comment, so
-frozen domain-separator bytes such as "aa00005:manager:owner" can never be mangled by the
+frozen domain-separator bytes such as "aa:manager:owner:v1.0" can never be mangled by the
 stripper. Compact has no block comments and this source contains none (asserted below).
 
 usage: strip-comments.py <file.compact>

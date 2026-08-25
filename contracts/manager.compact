@@ -98,14 +98,24 @@
 //
 // --- FROZEN BYTES -------------------------------------------------------------------------------
 //
-// The tag strings "aa00005:manager:owner", "aa00005:manager:shielded" and
-// "aa00005:manager:unshielded", the zswap separators "midnight:zswap-cc[v1]" and
+// The tag strings "aa:manager:owner:v1.0", "aa:manager:shielded:v1" and
+// "aa:manager:unshielded:v1", the zswap separators "midnight:zswap-cc[v1]" and
 // "midnight:zswap-cn[v1]", and every hex byte constant in this file (EIP-712 type hashes, the
 // semantic-commitment tags) are FROZEN DOMAIN SEPARATORS. Their exact bytes are consensus-critical:
 // they determine account ids, storage keys, the digests wallets sign and the values off-chain
-// verifiers recompute — change one byte and every value derived from it changes silently. The
-// `aa00005` prefix is HISTORICAL and names nothing meaningful today; that is not a reason to tidy
-// it. It must never change.
+// verifiers recompute — change one byte and every value derived from it changes silently. They must
+// never change.
+//
+// Two of them carry a hard constraint a reader cannot see from the string alone. The owner tag is
+// the type parameter of `persistentCommit<Bytes<21>>`, so it must be EXACTLY 21 bytes — a rename of
+// any other length will not compile. The two family tags sit inside `pad(32, …)`, so any length up
+// to 32 bytes works, but they must stay DISTINCT from each other or the two custody families would
+// alias. The `:v1` / `:v1.0` suffixes exist so a future scheme change gets a new separator rather
+// than a silent reinterpretation of existing state.
+//
+// The zswap separators are the one group NOT chosen by this contract: they reproduce the standard
+// library's own coin-commitment and nullifier preimages byte for byte. Renaming them would not
+// "version" anything — it would make this contract's coins unrecognisable to the ledger.
 
 pragma language_version >= 0.25.0;
 
@@ -207,7 +217,7 @@ witness localOwnerSecret(): Bytes<32>;
 /// Account identity = a commitment to the owner's secret. Registering an account publishes only the
 /// commitment; spending requires the witness that opens it.
 circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
-  return persistentCommit<Bytes<21>>("aa00005:manager:owner", disclose(sk));
+  return persistentCommit<Bytes<21>>("aa:manager:owner:v1.0", disclose(sk));
 }
 
 /// Assert the witness-derived account selected by `execute` is a registered NATIVE record.
@@ -231,11 +241,11 @@ circuit authenticatedNativeAccount(acct: Bytes<32>): Bytes<32> {
 // auditor happened to think of.
 
 circuit shieldedFamilyTag(): Bytes<32> {
-  return pad(32, "aa00005:manager:shielded");
+  return pad(32, "aa:manager:shielded:v1");
 }
 
 circuit unshieldedFamilyTag(): Bytes<32> {
-  return pad(32, "aa00005:manager:unshielded");
+  return pad(32, "aa:manager:unshielded:v1");
 }
 
 export circuit shieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
