@@ -1,26 +1,30 @@
-// 00010 Phase 5 — read the generated k=19 prover key through the EXACT pinned Node loader path
-// that threw at k=20.
+// loader-verify.mjs — read the generated prover key through the EXACT pinned Node loader path.
 //
-// The blocker (00008-Q2) is precise, so this verification is precise too. The k=20 `execute.prover`
-// is 2,282,126,073 bytes and the pinned loader refused it with:
+// WHY THIS EXISTS. Node's `fs.readFile` cannot return more than 2 GiB in one Buffer. The pinned
+// midnight-js loader reads a prover key that way, so a key over the ceiling is unloadable:
 //
 //     RangeError [ERR_FS_FILE_TOO_LARGE]: File size (2282126073) is greater than 2 GiB
 //
-// The named package path, from the 00008-Q2 evidence:
-//   - `@midnight-ntwrk/midnight-js-node-zk-config-provider@5.0.0-beta.6`
+// 2,282,126,073 bytes is what the k=20 Manager's `execute.prover` weighed, and that refusal is the
+// reason `execute` was driven down to k=19 — where the same key is 1,141,041,759 bytes and loads.
+// This script proves the current key set actually loads, through the named path rather than by
+// arguing from its size:
+//
+//   - `@midnight-ntwrk/midnight-js-node-zk-config-provider`
 //     `NodeZkConfigProvider.readFile` -> `fs/promises.readFile(target)` as ONE Buffer;
 //     `getProverKey` awaits that complete buffer and wraps it as one prover key.
-//   - `@midnight-ntwrk/midnight-js-types@5.0.0-beta.6`
-//     `ZKConfigRegistry.buildConfig` -> `Promise.all` over prover key, verifier key and ZKIR,
-//     returning the in-memory config.
+//   - `@midnight-ntwrk/midnight-js-types`
+//     `ZKConfigRegistry.buildConfig` -> `Promise.all` over prover key, verifier key and ZKIR.
 //
-// This script drives BOTH, on the real generated artifact. It is LOCAL ONLY: no network, no proof,
-// no submission, no deployment. It only reads files and assembles an in-memory config.
+// It is LOCAL ONLY: no network, no proof, no submission, no deployment. It only reads files and
+// assembles an in-memory config.
 //
 // It also runs a CONTROL: the same `fs/promises.readFile` is pointed at a sparse file of exactly
-// the k=20 key's size. If that control does NOT throw ERR_FS_FILE_TOO_LARGE, then the ceiling has
-// moved for some unrelated reason and a "success" on the real key would prove nothing about the
-// mechanism. The control makes the result attributable to the KEY SIZE.
+// the k=20 key's size. If that control does NOT throw ERR_FS_FILE_TOO_LARGE then the ceiling has
+// moved for some unrelated reason, and a "success" on the real key would prove nothing about the
+// mechanism. The control is what makes the result attributable to the KEY SIZE.
+//
+// usage: node scripts/loader-verify.mjs <keygen-output-dir> [circuitId]
 
 import { readFile } from "node:fs/promises";
 import { stat, open, unlink } from "node:fs/promises";
@@ -32,12 +36,12 @@ import { NodeZkConfigProvider } from "@midnight-ntwrk/midnight-js-node-zk-config
 import { ZKConfigRegistry } from "@midnight-ntwrk/midnight-js-types";
 
 const TWO_GIB = 2_147_483_648;
-const K20_PROVER_BYTES = 2_282_126_073; // the exact size recorded in the 00008-Q2 evidence
+const K20_PROVER_BYTES = 2_282_126_073; // the exact size of the k=20 key the loader refused
 
 const artifactDir = process.argv[2];
 const circuitId = process.argv[3] ?? "execute";
 if (!artifactDir) {
-  console.error("usage: node loader-verify.mjs <compactc-output-dir> [circuitId]");
+  console.error("usage: node scripts/loader-verify.mjs <keygen-output-dir> [circuitId]");
   process.exit(64);
 }
 
@@ -49,7 +53,7 @@ line("NODE_VERSION", process.version);
 line("ARTIFACT_DIR", artifactDir);
 line("CIRCUIT_ID", circuitId);
 line("TWO_GIB_CEILING_BYTES", TWO_GIB);
-line("K20_PROVER_BYTES_FROM_00008_Q2", K20_PROVER_BYTES);
+line("K20_PROVER_BYTES_REFERENCE", K20_PROVER_BYTES);
 
 // ------------------------------------------------------------------------------------------------
 // 0. The artifact under test
@@ -72,7 +76,7 @@ line("PROVER_VS_K20_RATIO", (proverStat.size / K20_PROVER_BYTES).toFixed(4));
 // allocating, so this reproduces the refusal without writing 2.28 GB.
 // Written to the OS temp dir, never next to the artifacts: the key output stays untouched and can
 // stay mounted read-only.
-const controlPath = path.join(tmpdir(), "aa00010-loader-ceiling-control.bin");
+const controlPath = path.join(tmpdir(), "aa-loader-ceiling-control.bin");
 let controlVerdict = "NOT_RUN";
 try {
   const handle = await open(controlPath, "w");
@@ -138,7 +142,7 @@ try {
 line("PROVIDER_GET_VERDICT", providerGetVerdict);
 
 // ------------------------------------------------------------------------------------------------
-// 4. ZKConfigRegistry.buildConfig — the Promise.all in-memory assembly named by 00008-Q2
+// 4. ZKConfigRegistry.buildConfig — the Promise.all in-memory assembly
 // ------------------------------------------------------------------------------------------------
 const registry = new ZKConfigRegistry([provider]);
 let buildConfigVerdict;

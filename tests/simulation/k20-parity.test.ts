@@ -78,9 +78,9 @@ const K20: ManagerBuild = { Contract: K20Contract, ledger: k20Ledger };
  * Explicit per-test timeout for THIS file only.
  *
  * Every test here drives TWO compiled Manager artifacts in one CPU-bounded container
- * (`scripts/00010/parity-suite.sh` runs with `--cpus 2`), so vitest's 5 s default was never a
- * meaningful bound: the heaviest case already sat at ~4.2 s of it — 85% of budget — before the
- * 00010-Q3 coverage follow-up added four more tests to the file, at which point four PRE-EXISTING
+ * (`scripts/test-sim.sh` runs with `--cpus 2`), so vitest's 5 s default was never a
+ * meaningful bound: the heaviest case already sat at ~4.2 s of it — 85% of budget — before a later
+ * coverage follow-up added four more tests to the file, at which point four PRE-EXISTING
  * tests began timing out purely on scheduling contention. A timeout is apparatus, not a property
  * under test: raising it weakens no assertion, and pinning it explicitly removes a latent flake
  * that had nothing to do with either contract. Scoped to this file so the other five suites keep
@@ -1073,10 +1073,10 @@ function extractLegacySemanticCommitment(events: readonly LogEvent[]): string | 
 }
 
 // ================================================================================================
-// 00010-Q3 COVERAGE FOLLOW-UP — the three swap guards that had no DEDICATED negative case
+// COVERAGE FOLLOW-UP — the three swap guards that had no DEDICATED negative case
 // ================================================================================================
 //
-// The Q3 wiring verification (`evidence/00010-manager-k19/Q3-WIRING-VERIFICATION.md` §4.3) recorded,
+// The wiring verification done when the two orphaned swap helpers were deleted recorded,
 // honestly and on the record, that three of `custodyDispatch`'s swap guards were exercised only in
 // the PASSING direction by the three selector-6 parity cases above, with no dedicated negative:
 //
@@ -1177,7 +1177,7 @@ async function expectSameRefusal(
 /** Both builds, both accounts registered, nothing deposited yet. */
 const registeredPair = (): Promise<Pair> => fundedPair(async () => {});
 
-describe("k20 parity — the three swap guards flagged by 00010-Q3", () => {
+describe("k20 parity — the three swap guards with no dedicated negative case", () => {
   it("guard 0a — refuses a swap that gives ZERO, and parameter sanity still precedes the witness choke point", async () => {
     const p = await fundedPair(async (sim, ids) => {
       await sim.call("depositShielded", coin(COLOR_A, 10n, 1), ids.account);
@@ -1372,7 +1372,8 @@ describe("k20 parity — the three swap guards flagged by 00010-Q3", () => {
         }
       }
       // The sum is EXHAUSTIVE: no shielded cell exists outside the (holder, colour) grid above, so
-      // "Σ over the holders we know" is genuinely "Σ over the colour". Under 00010-Q4 the two builds
+      // "Σ over the holders we know" is genuinely "Σ over the colour". After the domain-separator
+      // rename the two builds
       // derive DIFFERENT keys from the same (holder, colour), so each ledger is checked against ITS
       // OWN build's key set — one build's keys are no longer a valid yardstick for the other's.
       for (const [sim, pure, ids] of [
