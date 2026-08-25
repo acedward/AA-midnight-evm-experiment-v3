@@ -1,7 +1,0 @@
-calibration: DIVERGENT (65/70 agree)
-   disagree: manager/named-taker@2 — offline FALLIBLE, live GUARANTEED
-   disagree: v4-slim/named-taker@2 — offline FALLIBLE, live GUARANTEED
-   disagree: arm-a-dedupe/named-taker@4 — offline FALLIBLE, live GUARANTEED
-   disagree: arm-a-dedupe/floating-surplus@4 — offline FALLIBLE, live GUARANTEED
-   disagree: arm-b-nested/floating-surplus@1 — offline GUARANTEED, live FALLIBLE
-wrote /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g5-mitigation/CALIBRATION.md

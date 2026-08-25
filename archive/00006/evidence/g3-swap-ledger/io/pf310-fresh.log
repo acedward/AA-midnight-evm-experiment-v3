@@ -1,7 +1,0 @@
-[2026-08-20T12:32:35.663Z] maker[floating-surplus]: building openSwapShielded(give 2 of 586d312ace6d…, want 3 of eb6596b6fc84…)
-[2026-08-20T12:32:35.861Z] maker[floating-surplus]: proving — the LAST thing the maker does (no balance, no dust, no submit)
-[2026-08-20T12:32:42.307Z] maker[P-F310-fresh-colour]: REFUSED (fr302-placement-fail-closed) — FR-302 VIOLATED for floating-surplus offer (openSwapShielded, give 2 586d312ace6d… / want 3 eb6596b6fc84…): segments present: [0,8558] intent segments: [8558] fallible-offer segments: [8558] expected 0: {"shielded:586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31":"2","shielded:eb6596b6fc8481fceeebf0cb7af9610d6241f13cd48d2ade0c7e9ee18b0562ea":"-3"} observed 0: {} segment-0 exact: false other segments carrying deltas: 8558: {"shielded:586d312ace6d4a995a37b7bd1495c2a3f467e4192dbc8b76bf52b4180c7a9d31":"2","shielded:eb6596b6fc8481fceeebf0cb7af9610d6241f13cd48d2ade0c7e9ee18b0562ea":"-3"} A leg outside the guaranteed section is UNSETTLEABLE by an independent taker (balancing is per (token, segment) and a taker can only reach segment 0). This is lane issue 0003 in its designed-against form — retain this output as evidence.
-
---- stderr ---
-2026-08-20 08:32:35        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
-2026-08-20 08:32:35        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure

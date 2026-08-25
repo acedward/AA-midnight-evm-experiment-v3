@@ -1,6 +1,0 @@
-[2026-08-20T12:31:07.174Z] taker[row-10a]: REFUSED at the envelope — offer content address mismatch: terms declare sha256 dde0ba1517179aae815ec60bf334d7d10bb050d50ac4772ed18e2a1daaffcf5c, payload hashes to c6620547b72a63ba052a35fa18ad933c08422e5bf57662273cf6ae75842addca
-[2026-08-20T12:31:07.175Z] taker[row-10a]: REFUSED at envelope
-
---- stderr ---
-2026-08-20 08:31:07        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
-2026-08-20 08:31:07        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure

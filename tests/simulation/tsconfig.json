@@ -1,0 +1,19 @@
+{
+  "//": [
+    "Type-check configuration for the simulation tier. Adds vitest's globals to the base config and",
+    "pulls in the committed AuthCodec `.d.ts` (the only generated declaration that is tracked).",
+    "The Manager/Minter declarations under `../generated/` are produced by scripts/compile.sh and are",
+    "imported with `@ts-ignore` in the suites, exactly as they were before the reorganization."
+  ],
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "vitest/globals"]
+  },
+  "include": [
+    "./**/*.ts",
+    "../lib/**/*.ts",
+    "../fixtures/**/*.ts",
+    "../lib/compact/generated/contract/index.d.ts"
+  ],
+  "exclude": []
+}

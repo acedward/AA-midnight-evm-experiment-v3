@@ -1,7 +1,0 @@
-# Disposable Phase 4R Docker workspace policy. This file is copied into the test volume; the
-# canonical harness package/lock remain unchanged. These are exactly the pinned transitive packages
-# whose install scripts the frozen lock requires for the simulator toolchain.
-allowBuilds:
-  classic-level: true
-  esbuild: true
-  msgpackr-extract: true

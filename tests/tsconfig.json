@@ -1,0 +1,30 @@
+{
+  "//": [
+    "Type-check configuration for the test runtime (shared library, fixtures and both test tiers).",
+    "`tsx` transpiles WITHOUT checking, so this is the only thing in the repo that checks types.",
+    "",
+    "`generated/` is excluded: it holds compiler output (the Manager, the k=20 reference oracle and",
+    "the two test-support Minters), which is produced by scripts/compile.sh and never committed.",
+    "The one generated `.d.ts` the tests DO need is pulled in explicitly by simulation/tsconfig.json.",
+    "",
+    "`noUncheckedIndexedAccess` was tried and turned off again: it produced 63 findings, every one of",
+    "them array destructuring or a Record lookup that is provably present, and zero bugs."
+  ],
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "checkJs": false,
+    "forceConsistentCasingInFileNames": true,
+    "exactOptionalPropertyTypes": false
+  },
+  "include": ["lib/**/*.ts", "fixtures/**/*.ts", "simulation/**/*.ts", "integration/**/*.ts"],
+  "exclude": ["node_modules", "generated"]
+}

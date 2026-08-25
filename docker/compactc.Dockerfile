@@ -1,28 +1,27 @@
-# Compact compiler toolchain image — 00005-open-colour-custody (EXPERIMENTAL_LANE)
+# The pinned Compact toolchain: compiler 0.33.0, language 0.25.0.
 #
-# REUSED VERBATIM from 00003 (@ a8ebff9) through 00004 (@ f066a09); the archive pin is asserted
-# unchanged at both commits by scripts/lib/lane-pins.sh.
+# THIS IS THE PROVENANCE RECORD FOR EVERY ARTIFACT IN THE REPOSITORY. The Manager's nine ZKIRs, its
+# measured k=19, and the proving keys generated from it are all outputs of this exact compiler. It
+# is pinned twice over: the release archive by SHA-256 below (checked by `sha256sum -c` during the
+# build, so the build cannot silently drift), and the resulting image by digest in scripts/*.sh.
 #
-# LANE-DEV-1 (owner-approved 2026-08-17) — AND AS OF 2026-08-20 IT IS PROVEN RATHER THAN ARGUED.
+# TRANSPORT MOVED ONCE, IDENTITY DID NOT. Upstream relocated from `midnightntwrk/compact` to
+# `LFDT-Minokawa/compact` and the old release URL now 404s — which is the only reason the URL below
+# changed. The relocated release is tagged `compactc-v0.33.0-rc.2` and its asset hashes to exactly
+# the SHA-256 already recorded here, so the archive is byte-identical to the one every earlier
+# artifact was built with. Nothing was re-pinned.
 #
-# The spec pins `compactc-v0.33.0-rc.2`. When 00003 set this up that tag had NO PUBLISHED BINARY
-# (`evidence/g1-lane/LANE.md` finding L-4), so the released `compactc-v0.33.0` was substituted and
-# verified empirically — that substitution is what LANE-DEV-1 names.
+# ARCHITECTURE. The pinned asset is `aarch64-unknown-linux-musl`, so THIS FILE BUILDS AN arm64
+# IMAGE and the resulting binary runs on arm64 only. Upstream publishes an `x86_64` asset from the
+# same release; building for x86_64 means switching both the URL and the SHA-256, which is a
+# deliberate re-pin and would need its own verification that the outputs are identical. Until that
+# is done, the toolchain is arm64.
 #
-# The upstream repository has since MOVED to `LFDT-Minokawa/compact`, and the old
-# `midnightntwrk/compact` release URL now 404s (00006 finding F-316 — which is why this URL changed).
-# The relocated release is tagged **`compactc-v0.33.0-rc.2`** — the tag the spec pins — and its asset
-# hashes to `3aa23812…dc46`: BYTE-IDENTICAL to the `COMPACTC_SHA256` below, the digest 00003 recorded
-# for the substituted v0.33.0 binary and every project since has re-asserted.
-#
-# So the deleted `v0.33.0` release was `rc.2` promoted unchanged, and every artifact this series has
-# ever built was built with EXACTLY the pinned compiler. The deviation was never a deviation in
-# substance, and that is now provable by digest instead of by reasoning.
-#
-# THIS IS NOT A RE-PIN. Identity is unchanged — same SHA-256, asserted by the same `sha256sum -c`
-# below; only TRANSPORT moved. Owner decision Q2 -> A ("inherited lane, never re-pinned") is intact.
-#
-# The archive is pinned by SHA-256, so this build is reproducible and cannot silently drift.
+# HOW TO GET IT WITHOUT BUILDING. The published image is
+#   ghcr.io/acedward/aa-compactc:0.33.0
+# pinned by digest in scripts/compile.sh, and that is what CI pulls. Building this Dockerfile
+# yourself should produce an equivalent toolchain; the digest-pinned image is what the recorded
+# results were produced with.
 
 FROM alpine:3.22
 

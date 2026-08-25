@@ -1,8 +1,0 @@
--- tsc output
-    src/wallet.ts(66,5): error TS2322: Type '{ txHistoryStorage: InMemoryTransactionHistoryStorage<{ readonly hash: string; readonly identifiers: readonly string[]; readonly protocolVersion?: number | undefined; readonly status?: "SUCCESS" | "FAILURE" | "PARTIAL_SUCCESS" | undefined; ... 5 more ...; readonly dust?: { ...; } | undefined; }, { ...; }>; ... 4 mor...' is not assignable to type 'never'.
-
--- classifying 1 error line(s)
-    INHERITED (tolerated): src/wallet.ts(66,5)
-
-inherited-baseline errors matched: 1 of 1 expected
-typecheck: PASS — every error is a known inherited one; 00006's own code is clean.

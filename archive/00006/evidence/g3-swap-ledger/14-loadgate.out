@@ -1,2 +1,0 @@
-load gate: 1-min load 5, 16 cores (ceiling 16)
-load gate: PASSED — 1-min load 5 <= 16 cores after 0s

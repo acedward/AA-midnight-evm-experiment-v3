@@ -1,12 +1,13 @@
-# 00006-unbalanced-zswap — isolated rc4 stack (EXPERIMENTAL_LANE)
+# The local Midnight stack for the integration test tier: node + indexer + proof server.
 #
-# REUSED VERBATIM from 00003 (@ a8ebff9) through 00004 (@ f066a09) and 00005 (@ e9701e9): every digest
-# below is asserted unchanged at EVERY hop of that chain by scripts/lib/lane-pins.sh. This project
-# verifies the lane; it does not re-pin it.
+# Brought up, waited on and torn down by scripts/test-integration.sh — do not run it by hand
+# unless you know what you are doing, because the ports come from docker/.env, which that script
+# writes with random, confirmed-free ports above 10000, all bound to 127.0.0.1 only. This file is
+# NOT used by CI or by the simulation tier; those need no stack at all.
 #
-# Every image is pinned by immutable digest (see evidence/g1-lane/LANE.md).
-# Host ports come from docker/.env, produced by scripts/g1/probe-ports.sh, which verifies each
-# port is free before writing it. All ports are bound to 127.0.0.1 only.
+# Every image is pinned by immutable digest, and the digests have been carried unchanged since the
+# toolchain lane was first pinned. Treat them as frozen: re-pinning is a deliberate act, not a
+# maintenance chore.
 #
 # Fresh volumes only. Teardown is `docker compose ... down -v --remove-orphans`.
 
@@ -21,10 +22,10 @@ services:
     environment:
       RUST_BACKTRACE: "full"
       EXTRA_ARGS: "-v"
-    # NOTE (G1 finding L-5): this image is distroless — no `sh`, no `curl` — so the upstream
+    # NOTE: this image is distroless — no `sh`, no `curl` — so the upstream
     # `CMD curl -f http://localhost:6300/version` healthcheck can never pass and reports a
     # permanently "unhealthy" container even though the service is fine. Health is therefore
-    # asserted from the HOST over the published port by scripts/lib/stack.sh (called from every gate wrapper).
+    # asserted from the HOST over the published port by scripts/test-integration.sh.
 
   node:
     # midnightntwrk/midnight-node:2.0.0-rc.4
@@ -70,9 +71,9 @@ services:
       APP__INFRA__SECRET: "${APP_INFRA_SECRET}"
       APP__INFRA__SPO_NODE__URL: "ws://node:9944"
       APP__INFRA__SPO_NODE__BLOCKFROST_ID: "local-dev-dummy-not-using-spo"
-    # NOTE (G1 finding L-5): same as proof-server — no shell/curl in the image, so the upstream
+    # NOTE: same as proof-server — no shell/curl in the image, so the upstream
     # `/ready` healthcheck never reports healthy. Readiness is asserted from the HOST
-    # (`GET /ready` -> 200 and a GraphQL block query) by scripts/lib/stack.sh (called from every gate wrapper).
+    # (`GET /ready` -> 200) by scripts/test-integration.sh.
 
 volumes:
   node-data:
