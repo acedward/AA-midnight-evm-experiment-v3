@@ -14,7 +14,11 @@ import {
   KAT_PRIVATE_KEY,
   KAT_SIGNATURE,
 } from "../fixtures/generate.js";
-import { extractManagerSemanticEvents } from "../manager-events.js";
+import {
+  assertManagerEmitsNoEvents,
+  recomputeSemanticCommitment,
+  type SemanticTranscript,
+} from "../manager-events.js";
 import {
   emptyExecutePayload,
   executePayloadForAction,
@@ -90,21 +94,74 @@ async function registerEvm(
   return { action, prepared, detail };
 }
 
+/**
+ * Tier-3 replacement for the old event assertion.
+ *
+ * The k=20 Manager emitted the FR-031 commitment and this helper compared the emitted value. The
+ * k=19 Manager emits nothing, so the helper now asserts the two properties that actually carry the
+ * security argument:
+ *
+ *   1. THE CALL EMITTED NO EVENTS — there is no commitment to trust by mistake, and a reintroduced
+ *      event surface fails here rather than silently becoming trustable again.
+ *   2. THE COMMITMENT IS RECOMPUTABLE FROM THE PROVED TRANSCRIPT, two independent ways that agree:
+ *      the contract's exported PURE oracle `semanticCommitmentFor`, and the independent TypeScript
+ *      recipe `semanticCommitmentForExecute`. Every input comes from the transcript or from the
+ *      caller's own derivation — never from contract output.
+ */
 function expectSemantic(
   sim: ManagerSim,
   detail: CallDetail<unknown>,
   payload: ManagerExecutePayload,
   accountId: Hex32,
   authResult: Hex32,
-): void {
+): Hex32 {
+  assertManagerEmitsNoEvents(detail.logEvents as readonly LogEvent[]);
   const manager = managerAddressHex(sim.address);
   const domain = bytesToHex(sim.deploymentDomain) as Hex32;
-  const expected = semanticCommitmentForExecute(manager, domain, payload, accountId, authResult);
-  const events = extractManagerSemanticEvents(detail.logEvents as readonly LogEvent[]);
-  expect(events, `selector ${payload.selector} semantic events`).toHaveLength(1);
-  expect(events[0]).toMatchObject({
-    commitment: expected.commitment,
-  });
+  const transcript: SemanticTranscript = {
+    manager,
+    deploymentDomain: domain,
+    payload,
+    accountId,
+    authResult,
+  };
+  const commitment = recomputeSemanticCommitment(
+    transcript,
+    (managerBytes, domainBytes, transcriptPayload, account, auth) =>
+      (managerContractPure as any).semanticCommitmentFor(
+        managerBytes,
+        domainBytes,
+        transcriptPayload,
+        account,
+        auth,
+      ),
+    (input) =>
+      semanticCommitmentForExecute(
+        input.manager,
+        input.deploymentDomain,
+        input.payload as ManagerExecutePayload,
+        input.accountId,
+        input.authResult,
+      ).commitment,
+  );
+  // The recomputation is only meaningful if it is actually sensitive to the transcript, so pin it
+  // against a third evaluation with one transcript field perturbed. The deployment domain is used
+  // because it is the one word the recipe accepts unvalidated in BOTH auth modes (a perturbed
+  // `authResult` is rejected outright in native mode by the canonicality check — which is itself
+  // the desired behaviour, just not a usable perturbation probe).
+  const perturbedDomain = (`0x${"5a".repeat(32)}`) as Hex32;
+  expect(perturbedDomain).not.toBe(domain);
+  const perturbed = semanticCommitmentForExecute(
+    manager,
+    perturbedDomain,
+    payload,
+    accountId,
+    authResult,
+  ).commitment;
+  expect(commitment, `selector ${payload.selector} commitment must bind the domain`).not.toBe(
+    perturbed,
+  );
+  return commitment;
 }
 
 async function executeEvm(
@@ -303,9 +360,11 @@ describe("Manager v5 dual-authority transport independence", () => {
     expect(leftDetail.inputs).toEqual(rightDetail.inputs);
     expect(leftDetail.outputs).toEqual(rightDetail.outputs);
     expect(leftDetail.effects).toEqual(rightDetail.effects);
-    expect(extractManagerSemanticEvents(leftDetail.logEvents as readonly LogEvent[])).toEqual(
-      extractManagerSemanticEvents(rightDetail.logEvents as readonly LogEvent[]),
-    );
+    // Tier-3: neither transport emits anything, and the commitment recomputed from each proved
+    // transcript is the same — transport independence now holds on the transcript, not on an event.
+    expect(
+      expectSemantic(left, leftDetail, prepared.payload, leftSource, prepared.digest),
+    ).toBe(expectSemantic(right, rightDetail, prepared.payload, rightSource, prepared.digest));
     expect(left.ledger.evmNonces.lookup(bytes(leftSource))).toBe(1n);
     expect(right.ledger.evmNonces.lookup(bytes(rightSource))).toBe(1n);
   });
@@ -358,8 +417,25 @@ describe("Manager v5 dual-authority transport independence", () => {
     expect(leftDetail.inputs).toEqual(rightDetail.inputs);
     expect(leftDetail.outputs).toEqual(rightDetail.outputs);
     expect(leftDetail.effects).toEqual(rightDetail.effects);
-    expect(extractManagerSemanticEvents(leftDetail.logEvents as readonly LogEvent[])).toEqual(
-      extractManagerSemanticEvents(rightDetail.logEvents as readonly LogEvent[]),
+    // Tier-3: as above, on the native-authorized path — no events either side, and both proved
+    // transcripts recompute to the same commitment.
+    const nativeSourceHex = bytesToHex(left.source) as Hex32;
+    expect(
+      expectSemantic(
+        left.sim,
+        leftDetail,
+        payload,
+        nativeSourceHex,
+        nativeAuthResult(nativeSourceHex),
+      ),
+    ).toBe(
+      expectSemantic(
+        right.sim,
+        rightDetail,
+        payload,
+        nativeSourceHex,
+        nativeAuthResult(nativeSourceHex),
+      ),
     );
     expect(left.sim.ledger.evmNonces.size()).toBe(0n);
     expect(right.sim.ledger.evmNonces.size()).toBe(0n);

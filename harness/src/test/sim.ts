@@ -235,10 +235,25 @@ export class MinterCollideSim {
 
 // --- Manager v3 -----------------------------------------------------------------------------------
 
+/**
+ * A compiled Manager build the simulator can drive. Defaults to the one in `generated/manager`.
+ *
+ * 00010 adds this seam for ONE purpose: running the k=20 Manager and the k=19 Manager side by side
+ * on identical inputs, so "custody behaviour is byte-identical" is an executed comparison against
+ * the real k=20 artifact rather than a claim about the source. See `k20-parity.test.ts`.
+ */
+export type ManagerBuild = { Contract: any; ledger: (state: any) => any };
+
+export const DEFAULT_MANAGER_BUILD: ManagerBuild = {
+  Contract: ManagerContract,
+  ledger: managerLedger,
+};
+
 export class ManagerSim {
   readonly address: ReturnType<typeof sampleContractAddress>;
   readonly deploymentDomain: Uint8Array;
   private contract: any;
+  private readonly ledgerOf: (state: any) => any;
   /** The contract's charged ledger state. Updated from the query context after every call. */
   private state: any;
   private privateState: ManagerPS;
@@ -250,23 +265,26 @@ export class ManagerSim {
     privateState: ManagerPS,
     deploymentDomain: Uint8Array,
     address: ReturnType<typeof sampleContractAddress>,
+    ledgerOf: (state: any) => any = managerLedger,
   ) {
     this.contract = contract;
     this.state = state;
     this.privateState = privateState;
     this.deploymentDomain = Uint8Array.from(deploymentDomain);
     this.address = address;
+    this.ledgerOf = ledgerOf;
   }
 
   static async create(
     initialSecret: Uint8Array,
     deploymentDomain: Uint8Array = DEPLOYMENT_DOMAIN,
     address: ReturnType<typeof sampleContractAddress> = sampleContractAddress(),
+    build: ManagerBuild = DEFAULT_MANAGER_BUILD,
   ): Promise<ManagerSim> {
     const witnesses = {
       localOwnerSecret: (ctx: any): [ManagerPS, Uint8Array] => [ctx.privateState, ctx.privateState.ownerSecret],
     };
-    const contract = new ManagerContract(witnesses);
+    const contract = new build.Contract(witnesses);
     const ps: ManagerPS = { ownerSecret: initialSecret };
     const res = await contract.initialState(createConstructorContext(ps, COIN_PK), deploymentDomain);
     return new ManagerSim(
@@ -275,6 +293,7 @@ export class ManagerSim {
       res.currentPrivateState ?? ps,
       deploymentDomain,
       address,
+      build.ledger,
     );
   }
 
@@ -284,7 +303,7 @@ export class ManagerSim {
   }
 
   get ledger() {
-    return managerLedger(this.state);
+    return this.ledgerOf(this.state);
   }
 
   private ctx(circuitId: string, time?: number): CircuitContext<ManagerPS> {
