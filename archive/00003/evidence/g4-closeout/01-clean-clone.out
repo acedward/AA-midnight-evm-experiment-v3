@@ -1,6 +1,0 @@
-temporary clone parent: /var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00003-g4-jiGFq5
-Cloning into '/var/folders/_l/btc7vkzx59j_4tmlx2h02c600000gn/T//aa00003-g4-jiGFq5/clone'...
-done.
-cloned commit: 6e43a6fe3717ae4d0c02067c72f3d8ff92f34dbb
-source commit: 6e43a6fe3717ae4d0c02067c72f3d8ff92f34dbb
-clone is clean: no generated artifacts, no docker/.env, no node_modules

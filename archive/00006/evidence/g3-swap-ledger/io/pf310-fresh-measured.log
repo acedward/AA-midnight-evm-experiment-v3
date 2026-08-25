@@ -1,8 +1,0 @@
-[2026-08-20T12:32:45.026Z] maker[floating-surplus]: building openSwapShielded(give 2 of 586d312ace6d…, want 3 of eb6596b6fc84…)
-[2026-08-20T12:32:45.204Z] maker[floating-surplus]: proving — the LAST thing the maker does (no balance, no dust, no submit)
-[2026-08-20T12:32:50.259Z] maker[floating-surplus]: offer proven in 5051 ms; 16394 bytes, sha256 6b581c8107a0f37a…; imbalances(0) = {}
-[2026-08-20T12:32:50.260Z] maker[P-F310-fresh-colour-measured]: DONE — placement ok=false
-
---- stderr ---
-2026-08-20 08:32:44        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
-2026-08-20 08:32:44        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure

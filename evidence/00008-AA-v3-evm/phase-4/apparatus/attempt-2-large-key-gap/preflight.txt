@@ -1,9 +1,0 @@
-project=aa00008_phase4_20260824_155524_32437
-ports=11879,30534,16422,35077
-manager_index_sha256=8b3073068c7b9ebaae991db7140dbf5d3f8493c4ec34089833866dbcba28607d
-manager_dts_sha256=92c251d34d3f875b80f238acee3244919d255a630531b0a47da50850ba2f8fc5
-source_head=ed3da8c2ed72bb40434beb7148c96ef717d9a52c
-preflight_port_11879=0
-preflight_port_30534=0
-preflight_port_16422=0
-preflight_port_35077=0

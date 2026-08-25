@@ -1,9 +1,0 @@
-[2026-08-20T12:41:48.231Z] maker[floating-surplus]: building openSwapShielded(give 2 of b4044b0c0bcf…, want 3 of bf3656a8eb2d…)
-[2026-08-20T12:41:48.447Z] maker[floating-surplus]: proving — the LAST thing the maker does (no balance, no dust, no submit)
-[2026-08-20T12:41:55.152Z] maker[floating-surplus]: offer proven in 6701 ms; 16346 bytes, sha256 0fa8a7e463c27185…; imbalances(0) = {"shielded:b4044b0c0bcf51955c683a8854c07243d1fbd6f6a900293f8ec8c8ef38f96532":"2","shielded:bf3656a8eb2d34b5250209000249d89c5fe634ed9ec4dee47b7b830c650fcfa2":"-3"}
-[2026-08-20T12:41:55.153Z] maker[OFFER-2]: published /Users/edwardalvarado/todo/AA/experiments/00006-unbalanced-zswap/evidence/g3-swap-ledger/offers/offer-2-open.offer
-[2026-08-20T12:41:55.153Z] maker[OFFER-2]: DONE — placement ok=true
-
---- stderr ---
-2026-08-20 08:41:48        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
-2026-08-20 08:41:48        RPC-CORE: subscribeRuntimeVersion(): RuntimeVersion:: disconnected from ws://127.0.0.1:10186/: 1000:: Normal Closure
