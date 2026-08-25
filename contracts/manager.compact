@@ -1,195 +1,111 @@
-// Manager v5 (k=19) — 00010-manager-k19 (EXPERIMENTAL_LANE / LANE-DEV-1)
-//
 // ================================================================================================
-// WHAT v5 CHANGES vs THE k=20 MANAGER, AND WHY
+// MANAGER — an account-abstraction custody contract for Midnight
 // ================================================================================================
 //
-// v5 = v4 with THREE measured levers applied to `execute`, and nothing else. Its purpose is a
-// single number: bring `execute` from k=20 / 974,572 rows under the k=19 ceiling of 2^19 = 524,288,
-// because a k=20 prover key is 2,282,126,073 bytes and the pinned Node loader
-// (`@midnight-ntwrk/midnight-js-node-zk-config-provider@5.0.0-beta.6`, `fs/promises.readFile`)
-// refuses any file over 2,147,483,648 bytes with `ERR_FS_FILE_TOO_LARGE`. That is blocker
-// 00008-Q2. Project 00009 measured the whole circuit to find out which levers exist; this file is
-// the owner-selected combination of them (spec `spec/00010-manager-k19.md`, route decision in
-// `plans/00009-circuit-weight-optimization-questions.md` — FINAL ROUTE RESOLUTION).
+// Holds value on behalf of registered ACCOUNTS and attributes every unit of it to exactly one
+// (account, colour) pair. Deliberately OPEN: no token registry, no admin circuit, no colour list
+// anywhere in this file. It deploys knowing zero colours and custodies whatever arrives, including
+// a colour minted long after deployment.
 //
-//   LEVER e1 — big-endian-native integer encoders.        measured standalone −267,216 rows
-//       `uint8Word` / `uint64Word` / `uint128Word` no longer cast to a full 32-byte little-endian
-//       word and permute all 32 bytes. SAME BYTES OUT. See the encoder block below.
+//   * CUSTODY IS FAMILY-SEPARATED. Shielded value (zswap coins pooled inside the contract) and
+//     unshielded value (the contract's own kernel balance) live in separate maps under distinct key
+//     domains, so the two can never alias. See FAMILY-SCOPED STORAGE.
 //
-//   LEVER o2 — the custody mux.                           measured standalone −100,929 rows
-//       The five-way per-selector custody dispatch becomes ONE debit leg, ONE credit leg and shared
-//       sends with the family/recipient/account/colour muxed as arguments. FR-204 guard order, the
-//       refusal set and every assert message are preserved. See `custodyDispatch`.
+//   * AUTHORIZATION IS DUAL-MODE. An account is either NATIVE (mode 0 — authorized by a Midnight
+//     witness secret whose commitment IS the account id) or EVM (mode 1 — authorized by an Ethereum
+//     EOA signing an EIP-712 payload). The mode is fixed at registration, and explicit asserts on
+//     every authorized path keep the two isolated.
 //
-//   LEVER Tier-3 — the FR-031 semantic commitment moves off-circuit.  ablation −366,831 rows
-//       THIS ONE IS A SPEC AMENDMENT, and it is the only externally visible change in this file.
-//       `execute` no longer computes the commitment and no longer emits the `Misc` semantic event;
-//       the contract emits no events at all. The recipe is unchanged and stays normative as the
-//       EXPORTED PURE circuit `semanticCommitmentFor` (pure circuits emit no proving key, so the
-//       definition is free). The PROVED CALL TRANSCRIPT is the authority. See the FR-031 section.
+//   * THERE IS EXACTLY ONE WRITE GATEWAY: `execute`, taking a FIXED-WIDTH action envelope
+//     (`ExecutePayload`) plus an ECDSA signature, whose `selector` chooses the action:
 //
-//       SECURITY RULE, load-bearing: NO CONSUMER MAY TRUST A SEMANTIC COMMITMENT IT DID NOT
-//       RECOMPUTE FROM THE PROVED TRANSCRIPT. There is no emitted commitment to trust any more, so
-//       the "trusted the event without parsing the transcript" failure mode is removed by
-//       construction rather than by discipline.
+//         0  register a native account          4  internal transfer, shielded
+//         1  register an EVM account            5  internal transfer, unshielded
+//         2  withdraw shielded                  6  open a swap-maker offer
+//         3  withdraw unshielded
 //
-// WHAT DELIBERATELY DID NOT MOVE — and is proven not to have moved by executed byte-equality, not
-// by reading this comment:
+//     Every field a selector does not use is constrained to its canonical zero form before any
+//     authentication or custody logic runs. Deposits are the separate entry points
+//     `depositShielded` / `depositUnshielded`: they only ever credit, so they need no gateway.
+//     Selector 6 fuses a swap's give and want legs into one proved call, so a maker's offer settles
+//     ATOMICALLY and cannot half-execute — see THE SWAP MAKER, above `custodyDispatch`.
 //
-//   * The EIP-712 wallet-signed surface: domain separator, per-action type hashes, struct hashes
-//     and the final digest are BYTE-IDENTICAL to the k=20 Manager. (Optimization o4 — one unified
-//     EIP-712 struct type — was measured and NOT adopted; it would have demoted per-action
-//     separation from hash-level to field-level and degraded what a wallet displays.)
-//   * The semantic commitment RECIPE: tags, preimage layout, the call-transcript sub-hash and the
-//     two-slot imbalance encoding are byte-identical, and it stays keccak-only so an EVM-side
-//     verifier can still recompute it with the `keccak256` opcode. (o5 / o6 were rejected for
-//     losing exactly that.)
-//   * The witness choke point, FR-204 guard order, the refusal set, custody state effects, the
-//     nonce-after-custody ordering, account-mode isolation, and the nine provable circuits.
+//   * `execute` FITS IN A k=19 CIRCUIT (2^19 = 524,288 rows) and THE CONTRACT EMITS NO EVENTS.
+//     Those two facts are connected; see THE SEMANTIC COMMITMENT near the end of the file.
 //
-// Owner criterion for this project (2026-08-24): NO retrocompatibility of any kind is required —
-// no historical signature, fixture, wallet, reader or ABI shape is preserved for its own sake. The
-// only criteria are SECURITY and the measured size goal.
+// THE `export` BLOCK BELOW IS THE COMPLETE PUBLIC SURFACE. Nine exported circuits read ledger state
+// and are therefore PROVABLE — each gets a proving and verifier key: `execute`, `depositShielded`,
+// `depositUnshielded`, `isRegistered`, `accountRecord`, `shieldedAccountBalance`,
+// `unshieldedAccountBalance`, `poolValue`, `poolHasColour`. Every other exported circuit is PURE: it
+// reads no ledger state, emits no key, and costs nothing on chain. PURE EXPORTS ARE FREE ORACLES —
+// off-chain code runs the compiled artifact to get the contract's OWN answer for a key derivation,
+// an EIP-712 digest, a zswap commitment or the semantic commitment, instead of reimplementing the
+// scheme and hoping the two agree. The exported ledger names are read handles.
 //
-// ================================================================================================
-// WHAT v4 ADDS TO v3, AND WHAT IT DELIBERATELY DOES NOT TOUCH
-// ================================================================================================
+// --- THE SAFETY STORY: read this before changing anything below ---------------------------------
 //
-// v4 = v3 + ONE SWAP-MAKER circuit. Every v3 circuit, guard, key domain and map layout below is
-// BYTE-IDENTICAL to 00005's gate-green Manager v3 (`archive/00005/…`, base commit `e9701e9`), so
-// 00005's whole negative suite still applies unchanged. Nothing was weakened, renamed or reordered.
+//   1. THE WITNESS CHOKE POINT. The DEBITED account is DERIVED, never taken on trust: in native
+//      mode `ownerCommitment(localOwnerSecret())`, a commitment to the caller's own witness secret;
+//      in EVM mode a record whose stored owner must equal the address recovered from the signature.
+//      Never the account id the caller wrote into the envelope. Every debiting path funnels through
+//      that one derivation.
 //
-// NOTE FOR v5 READERS: this section describes v4's design as v4 shipped it. In v5 the circuit named
-// below, `openSwapShielded`, NO LONGER EXISTS as a separate circuit — the o2 custody mux absorbed it
-// into `custodyDispatch` (selector 6) and the empty shell was deleted under 00010-Q1 option B. The
-// SHAPE described here is unchanged and still live; only its location moved.
+//   2. THE PER-(ACCOUNT, COLOUR) BALANCE GUARD RUNS BEFORE ANY POOL GUARD, and a missing cell reads
+//      as BALANCE 0 — never as an error, never by creating the cell. Security-critical, not
+//      cosmetic: a refused spend leaks nothing about the contract's own holdings and creates no
+//      state. Someone probing with an empty account is refused on their own cell, before the pool
+//      is consulted at all.
 //
-// `openSwapShielded(colourA, valA, recipientA, coinB, creditAccount)` fused a debit leg and a credit
-// leg into ONE circuit, so a swap settles atomically BY CONSTRUCTION rather than by composing two
-// calls, and `recipientA` — a `Maybe` — selects which FR-308 shape the offer takes:
+//   3. GUARD BEFORE WRITE, ALWAYS. Every assert precedes its circuit's first write, so A REFUSAL IS
+//      STATE-NEUTRAL: no balance cell, no pool entry, no map growth, no nonce movement. That is
+//      what makes it safe to drive these circuits from untrusted input.
 //
-//   recipientA = some(key)   FR-308 v1 (named taker) and v2(b) (bearer key).
-//       `sendShielded` pays `valA` of `colourA` to that key and re-pools the change, so the A leg is
-//       INTERNALLY BALANCED and the offer's only imbalance is the −B deficit a taker must fund. For
-//       v2(b) the key is a throwaway whose secret ships in the offer envelope, so any holder can
-//       settle and then sweep — that shape needs no contract support beyond this branch.
+//   4. CUSTODY STATE IS CREATED LAZILY, ON FIRST CREDIT ONLY. A shielded deposit creates the
+//      colour's pool and the (account, colour) cell; an unshielded deposit creates the cell; the
+//      credit side of a transfer or swap creates the destination's cell. Registration creates NO
+//      balance cell, and nothing else creates anything — so a colour never credited is absent from
+//      every map and reads 0 everywhere.
 //
-//   recipientA = none        FR-308 v2(a), the OPEN offer.
-//       `valA` is released with NO OUTPUT AT ALL: the pooled coin is consumed as a zswap input, only
-//       the change is written back, and the released value stands as a genuine POSITIVE imbalance at
-//       the guaranteed segment, addressed to nobody. Any taker's stock balancer sweeps it, which is
-//       what makes the offer usable by a holder whose keys the maker never knew (owner Q1, 2026-08-19).
+//   Opening ADMISSION does not open SPENDING: `deposit*` may credit any REGISTERED account, so a
+//   third party can fund an account they do not control, while every DEBIT still passes 1 and 2.
+//   Authorization is by witness rather than `kernel.caller()` — sound because this contract is
+//   always invoked in root position, and nothing here reads the caller.
 //
-// WHY ONE CIRCUIT AND NOT TWO — this is a MEASURED lane constraint, finding F-307, not a preference.
-// An earlier v4 carried the two shapes as separate circuits, `openSwapShielded` and
-// `openSwapShieldedSurplus`. It compiled, passed every offline test, and was then REFUSED ON DEPLOY
-// 4/4 by the node with `1010: Invalid Transaction: Transaction would exhaust the block limits`. A
-// deploy's dominant cost dimension is `bytesWritten`, which the contract's verifier keys dominate, and
-// a bracket of probe contracts deployed on one stack located the ceiling exactly:
+// --- FAMILY-SCOPED STORAGE (the maps themselves are declared under LEDGER STATE below) ----------
 //
-//     12 keys (v3)      27,791 bytesWritten   55.6% of the 50,000 ceiling   DEPLOYS
-//     13 keys           30,070                60.1%                         DEPLOYS
-//     14 keys           32,356                64.7%                         REFUSED
+//   pools               colour                  -> ONE pooled coin
+//   shieldedBalances    shieldedKey(a, colour)  -> amount        (shielded family)
+//   unshieldedBalances  unshieldedKey(a, colour)-> amount        (unshielded family)
 //
-// So Manager v4's budget is THIRTEEN provable circuits: v3's twelve plus exactly one. The alternative
-// was to delete v3 circuits to make room, which would have weakened the inherited contract — the one
-// thing Plan 02 Phase 1 forbids. Merging is strictly better than that, and it is arguably better than
-// two circuits anyway: the FR-308 shapes become an ARGUMENT rather than duplicated code, and they stay
-// separately reportable because the argument, the resulting zswap structure and the settlement path
-// are all distinct and separately measured.
+// A shielded colour and an unshielded colour may be BYTE-IDENTICAL — nothing prevents it. Two
+// independent defences are in place, either of which would suffice: the families live in separate
+// maps, AND their composite keys are derived under different domain separators, so they could not
+// alias even if the maps were merged. That is also why there is no colour-generic internal
+// transfer: a circuit taking only (to, colour, amount) could not say WHICH family it meant.
 //
-// (The two pure helpers `zswapNullifierOf` / `zswapCommitmentOf` are free: they read no ledger state,
-// so the compiler emits no proving key for them, exactly as for `shieldedKey`.)
+// SHIELDED CUSTODY KEEPS ONE POOLED COIN PER COLOUR — depositing a colour already held MERGES into
+// the existing coin — so `pools` holds at most one entry per colour, a debit is a single coin spend,
+// and per colour c
 //
-// WHY THE SURPLUS CIRCUIT REIMPLEMENTS `coinNullifier` / `coinCommitment`: the pinned standard
-// library keeps both PRIVATE (`standard-library.compact:252` and `:265` are unexported `circuit`s),
-// and `sendShielded` — the only exported path to a zswap input — ALWAYS creates an output for the
-// value it moves. Releasing value with no output therefore requires assembling the input, the
-// nullifier claim and the self-change output directly. The reimplementations are byte-for-byte
-// preimage-identical to the stdlib's and `manager.test.ts` proves the equality against the value the
-// stdlib itself claims for the same coin, rather than trusting the transcription.
+//     poolValue(c)      == sum over accounts of shieldedBalances[shieldedKey(a, c)]
+//     pools.member(c)  <=> that sum > 0
 //
-// FAMILY SCOPE (FR-310, owner Q3 → A): shielded only. The unshielded family gets NO swap circuit —
-// a contract's unshielded payout is a UTXO in the maker's own bound intent, so its recipient cannot
-// be left open, and the pinned wallet SDK's own unshielded swap test is `it.skip` (broken upstream:
-// `FeeCalculation(OutsideTimeToDismiss)`). Unshielded is an EXTENDED GOAL for a follow-up project.
+// with the analogous statement over the kernel's unshielded balance for the other family. Every
+// write site maintains it: a credit is paired with a pool insert of the same colour and value, a
+// debit with a re-pool or removal, and an internal transfer moves value between two cells of one
+// colour without touching the pool. THE INVARIANT IS LOAD-BEARING — it keeps the pool guards in
+// `custodyDispatch` strictly behind the per-(account, colour) guard, so they can never refuse first.
 //
-// ================================================================================================
-// Manager v3 — 00005-open-colour-custody (EXPERIMENTAL_LANE / LANE-DEV-1)
+// --- FROZEN BYTES -------------------------------------------------------------------------------
 //
-// A FULLY OPEN custodian. Owner verdict on 00004's Manager v2, 2026-08-19: "I dont like we have to
-// hard code the tokens. This will not actually work, as we don't know what or how many tokens colors
-// the AA mananger will actually use." So v3 removes the colour list entirely.
-//
-// WHAT WAS REMOVED from v2 — and nothing else was loosened (FR-201):
-//
-//   - `configure(s1, s2, u1, u2)`                     gone. There is no admin circuit of any kind.
-//   - `colourS1/S2/U1/U2`, `configured`               gone. No colour is knowable at deploy time.
-//   - `assertConfiguredShielded/Unshielded(...)`      gone from every deposit, withdrawal and
-//                                                     internal transfer.
-//   - `registerAccount`'s seeding of four zero cells  gone. Registration creates NO balance cell.
-//
-// The Manager therefore deploys with ZERO colour information, and none can ever be registered. It is
-// deployed BEFORE any Minter exists on its chain and custodies whatever arrives.
-//
-// WHAT DID NOT MOVE — the safety story is v2's, verbatim (FR-204, the critical requirement):
-//
-//   1. the witness choke point `authenticatedAccount()`, which derives the debited account from the
-//      WITNESS and never from a caller-supplied parameter, and
-//   2. the PER-(account, colour) guard, checked BEFORE any pool or contract-ledger guard, with a
-//      MISSING CELL READ AS BALANCE 0.
-//
-// Opening admission does not open spending: `deposit*` may credit any REGISTERED account (credit is
-// open — spec step 10 has OwnerM deposit into AA_A — while attribution still requires registration),
-// and every debit still passes both guards above.
-//
-// --- lazy custody (FR-202) ----------------------------------------------------------------------
-//
-// Custody state is created on FIRST CREDIT ONLY: a shielded deposit creates that colour's pool and
-// the (account, colour) cell; an unshielded deposit creates the cell (the kernel maintains the
-// contract's own unshielded balance); the CREDIT SIDE of an internal transfer creates the
-// destination's cell. Nothing else creates anything. Every guard in every circuit is evaluated
-// BEFORE the first write, so a refused operation is provably state-neutral — no cell, no pool, no
-// map growth (NC-2, NC-3). A colour that is never credited is absent from every map and reads 0
-// everywhere (FR-206).
-//
-// --- family-scoped storage (FR-203) -------------------------------------------------------------
-//
-// Shielded and unshielded custody live in STRUCTURALLY SEPARATE maps, and their composite keys are
-// derived under DIFFERENT domain separators:
-//
-//   pools               Map<Bytes<32>, QualifiedShieldedCoinInfo>  colour -> pooled coin
-//   shieldedBalances    Map<Bytes<32>, Uint<128>>   shieldedKey(account, colour)   -> amount
-//   unshieldedBalances  Map<Bytes<32>, Uint<128>>   unshieldedKey(account, colour) -> amount
-//
-// Separate maps alone would already prevent aliasing; the separate key domains mean the two families
-// could not alias even if the maps were ever merged. Probe P-COLL asserts this the hard way, with a
-// MinterCollide deployment whose shielded and unshielded colours are BYTE-IDENTICAL by construction:
-// the same 32 bytes must be tracked independently per family.
-//
-// This is also why v2's single colour-generic `transferInternal` was split per family. With
-// byte-identical colours possible across families, a circuit taking only (to, colour, amount) could
-// not say WHICH family it meant — exactly the ambiguity P-COLL exists to rule out. In v5 the split
-// survives as the family MUX inside `custodyDispatch`: selector 4 is the shielded internal transfer
-// and selector 5 the unshielded one, each keyed through its own domain (`shieldedKey` /
-// `unshieldedKey`), so the two can still never alias. The spec's NC-5 and step 12 both name the
-// shielded form.
-//
-// --- the invariant the harness asserts after every step (FR-205) --------------------------------
-//
-// Per colour c, over the DYNAMICALLY DISCOVERED colour set:
-//     poolValue(c)                  == sum over accounts of shieldedBalances[shieldedKey(a, c)]
-//     kernel unshielded balance (c) == sum over accounts of unshieldedBalances[unshieldedKey(a, c)]
-// plus the EXACT size of all three maps. v2 could assert exactness because registration seeded
-// `accounts x 4` cells; v3 seeds nothing, so exactness is now a statement about lazy creation
-// itself: a map holds a cell if and only if some step credited it.
-//
-// Authorization is by witness. That is sound here because the Manager is always invoked in root
-// position (00003: project 00002's non-root-witness blocker does not apply), and nothing here uses
-// `kernel.caller()`.
-//
-// Derived from the pinned standard library at compactc-v0.33.0-rc.2 and from 00004's Manager v2.
+// The tag strings "aa00005:manager:owner", "aa00005:manager:shielded" and
+// "aa00005:manager:unshielded", the zswap separators "midnight:zswap-cc[v1]" and
+// "midnight:zswap-cn[v1]", and every hex byte constant in this file (EIP-712 type hashes, the
+// semantic-commitment tags) are FROZEN DOMAIN SEPARATORS. Their exact bytes are consensus-critical:
+// they determine account ids, storage keys, the digests wallets sign and the values off-chain
+// verifiers recompute — change one byte and every value derived from it changes silently. The
+// `aa00005` prefix is HISTORICAL and names nothing meaningful today; that is not a reason to tidy
+// it. It must never change.
 
 pragma language_version >= 0.25.0;
 
@@ -225,7 +141,7 @@ export {
   deploymentDomain
 }
 
-/// The single fixed-width v1 action/auth envelope. Every inactive field is constrained to its
+/// The single fixed-width action/auth envelope. Every inactive field is constrained to its
 /// canonical zero representation before authentication or custody logic runs.
 export struct ExecutePayload {
   selector: Uint<8>;
@@ -253,10 +169,10 @@ export struct AccountRecord {
   nextNonce: Uint<64>;
 }
 
-// --- ledger state -------------------------------------------------------------------------------
+// --- LEDGER STATE -------------------------------------------------------------------------------
 //
-// Note what is NOT here: no colour cells, no `configured` flag, no admin key. The whole of this
-// contract's colour knowledge is whatever these maps have accumulated from credits.
+// Note what is NOT here: no colour cells, no `configured` flag, no admin key. This contract's whole
+// colour knowledge is whatever these maps accumulated from credits.
 
 /// Pooled shielded custody, ONE merged coin per shielded colour, created on first credit.
 export ledger pools: Map<Bytes<32>, QualifiedShieldedCoinInfo>;
@@ -264,7 +180,7 @@ export ledger pools: Map<Bytes<32>, QualifiedShieldedCoinInfo>;
 /// Registered accounts. Registration publishes only a commitment to the owner's secret.
 export ledger accounts: Set<Bytes<32>>;
 
-/// Internal ownership attribution, per (account, colour), PER FAMILY (FR-203).
+/// Internal ownership attribution, per (account, colour), PER FAMILY.
 export ledger shieldedBalances: Map<Bytes<32>, Uint<128>>;
 export ledger unshieldedBalances: Map<Bytes<32>, Uint<128>>;
 
@@ -274,7 +190,8 @@ export ledger accountModes: Map<Bytes<32>, Uint<8>>;
 export ledger evmOwners: Map<Bytes<32>, Bytes<20>>;
 export ledger evmNonces: Map<Bytes<32>, Uint<64>>;
 
-/// Fresh-deployment EIP-712 salt. No circuit writes it after construction.
+/// Fresh-deployment EIP-712 salt, fixed at construction and never written again. The domain
+/// separator binds it, so two deployments of this contract cannot replay each other's signatures.
 export ledger deploymentDomain: Bytes<32>;
 
 constructor(deploymentDomain_: Bytes<32>) {
@@ -293,8 +210,9 @@ circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
   return persistentCommit<Bytes<21>>("aa00005:manager:owner", disclose(sk));
 }
 
-/// Assert the witness-derived account selected by `execute` is a registered native record.
-/// THE single authorization choke point for every native debiting action (FR-204).
+/// Assert the witness-derived account selected by `execute` is a registered NATIVE record.
+/// THE single authorization choke point for every native debiting action: the account arrives here
+/// already derived from the witness, so there is nothing caller-supplied to check it against.
 circuit authenticatedNativeAccount(acct: Bytes<32>): Bytes<32> {
   assert(accounts.member(acct), "caller's owner witness matches no registered account");
   assert(accountModes.member(acct), "registered account has no authorization mode");
@@ -305,14 +223,12 @@ circuit authenticatedNativeAccount(acct: Bytes<32>): Bytes<32> {
 // --- family-scoped keys -------------------------------------------------------------------------
 //
 // The two family tags are distinct CONSTANTS, so `shieldedKey(a, c)` and `unshieldedKey(a, c)` are
-// different values for every (a, c) — including the byte-identical colours probe P-COLL mints.
-//
-// EXPORTED deliberately, though nothing on-chain needs them exported: they touch no ledger state, so
-// the compiler emits no proving key for either (same as `myAccount`), and they let the harness
-// derive the key for every cell BY RUNNING THE COMPILED ARTIFACT rather than reimplementing the
-// hashing scheme off-chain. That is what makes the "exact map sizes, zero unaccounted keys"
-// assertion an enumeration of real ledger state rather than a lookup of the cells the harness
-// happened to think of.
+// different values for every (a, c) — including a colour whose 32 bytes exist in both families.
+// Both are EXPORTED although nothing on-chain needs that: they touch no ledger state, so no proving
+// key is emitted, and off-chain code can derive the key for every cell BY RUNNING THE COMPILED
+// ARTIFACT instead of reimplementing the hashing scheme. That turns an "exact map sizes, zero
+// unaccounted keys" audit into an enumeration of real state rather than a lookup of the cells the
+// auditor happened to think of.
 
 circuit shieldedFamilyTag(): Bytes<32> {
   return pad(32, "aa00005:manager:shielded");
@@ -330,8 +246,8 @@ export circuit unshieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
   return persistentHash<Vector<3, Bytes<32>>>([acct, colour, unshieldedFamilyTag()]);
 }
 
-/// A MISSING CELL READS AS 0 — never as an error, and never by creating the cell (FR-204, FR-206).
-/// This is the read the per-account guard uses, so refusing an unbacked spend costs no state.
+/// A MISSING CELL READS AS 0 — never as an error, and never by creating the cell. This is the read
+/// the per-(account, colour) guard uses, so refusing an unbacked spend costs no state.
 circuit shieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
   const k = shieldedKey(acct, colour);
   return shieldedBalances.member(k) ? shieldedBalances.lookup(k) : 0;
@@ -344,7 +260,8 @@ circuit unshieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
 
 // --- setup ------------------------------------------------------------------------------------
 
-/// Shared collision gateway. It seeds no custody cell and never stores a secret/signature/key.
+/// Shared registration gateway for both authorization modes. It seeds no custody cell and never
+/// stores a secret, a signature or a key — only the account id and its mode.
 circuit registerAccount(acct: Bytes<32>, mode: Uint<8>): [] {
   assert(acct != default<Bytes<32>>, "account id must be nonzero");
   assert(!accounts.member(acct), "account already registered");
@@ -353,7 +270,24 @@ circuit registerAccount(acct: Bytes<32>, mode: Uint<8>): [] {
   accountModes.insert(acct, mode);
 }
 
-// --- AUTH-EIP712-AA-V3-V1 byte codec -----------------------------------------------------------
+// --- the EIP-712 byte codec ---------------------------------------------------------------------
+//
+// EVM-mode authorization is an ordinary EIP-712 signature, reproduced byte for byte so that what a
+// wallet displays and signs is exactly what this circuit verifies:
+//
+//     digest = keccak256(0x19 || 0x01 || domainSeparator || structHash)
+//
+// THE DOMAIN SEPARATOR BINDS TWO DEPLOYMENT-SPECIFIC THINGS (`evmDomainSeparatorFor`): the CONTRACT
+// ADDRESS ALIAS — the low 20 bytes of keccak256 of this contract's 32-byte Midnight address, which
+// is what gives a Midnight contract an EVM-shaped `verifyingContract` — and the DEPLOYMENT SALT in
+// `deploymentDomain`. A signature is therefore useless against another contract or another
+// deployment of this one. THE STRUCT HASH IS PER-ACTION (`evmStructHashFor`): each selector has its
+// OWN frozen type hash and field list, so a signature authorizing a withdrawal cannot be
+// reinterpreted as a transfer or a swap. That separation is at the HASH level, not merely the field
+// level, which is also what lets a wallet show a distinct, meaningful action name.
+//
+// Byte order: `v as Bytes<N>` is LITTLE-endian here, while EVM hashing wants BIG-endian 32-byte
+// words, so every integer goes through one of the `*Word` encoders below.
 
 circuit reverseBytes32(value: Bytes<32>): Bytes<32> {
   return Bytes[value[31], value[30], value[29], value[28], value[27], value[26], value[25], value[24],
@@ -367,6 +301,8 @@ circuit reverseBytes16(value: Bytes<16>): Bytes<16> {
                value[7], value[6], value[5], value[4], value[3], value[2], value[1], value[0]];
 }
 
+/// Big-endian comparison of two 32-byte colours, used to put an open swap's two imbalance slots in
+/// a canonical order so the semantic commitment does not depend on which leg was written first.
 circuit bytes32LexicographicLt(leftValue: Bytes<32>, rightValue: Bytes<32>): Boolean {
   const leftHigh = reverseBytes16(slice<16>(leftValue, 0)) as Uint<128>;
   const rightHigh = reverseBytes16(slice<16>(rightValue, 0)) as Uint<128>;
@@ -375,26 +311,17 @@ circuit bytes32LexicographicLt(leftValue: Bytes<32>, rightValue: Bytes<32>): Boo
   return leftHigh < rightHigh || (leftHigh == rightHigh && leftLow < rightLow);
 }
 
-// --- LEVER e1: big-endian-native integer encoders (00010, from 00009 arm `e1-bigendian-encoders`)
+// --- big-endian integer encoders ----------------------------------------------------------------
 //
-// These emit the SAME BYTES as the previous `reverseBytes32(value as Bytes<32>)` form and are
-// swapped in purely for circuit weight: −267,216 rows on `execute` (−27.42% of the k=20 baseline),
-// measured, with keyless byte-equality parity 29/29 and no frozen byte moved.
-//
-// WHY IT IS CHEAPER: this backend holds a `Bytes<32>` PACKED and charges only for VARIABLE bytes.
-// The old form cast every integer to a full 32-byte LITTLE-endian word and permuted all 32 bytes,
-// paying for 32 variable bytes even though 24 / 16 / 31 of them are known zero. Casting to the
-// integer's OWN width and placing the significant bytes behind a COMPILE-TIME-CONSTANT zero prefix
-// pays for 8 / 16 / 1 bytes instead, and additionally makes the downstream preimage splice cheaper.
-//
-// WHY THE BYTES ARE IDENTICAL: `v as Bytes<N>` is little-endian — the first byte of the vector is
-// the least-significant byte of the integer. So for a `Uint<64>` with little-endian bytes b0..b7,
-// `v as Bytes<32>` is [b0..b7, 0*24] and `reverseBytes32` of that is [0*24, b7, b6, …, b0] — exactly
-// what `uint64Word` constructs below. The same argument holds at widths 1 and 16. This is asserted
-// by executed byte-equality (the EIP-712 KATs and the semantic oracle), never by reading alone.
-//
-// `reverseBytes32` itself stays in the file byte-for-byte: `bytes32LexicographicLt` still uses its
-// 16-byte sibling, and keeping it makes the diff against the k=20 product legible.
+// Each of these CONSTRUCTS the EVM big-endian 32-byte word directly, placing the integer's
+// significant bytes behind a compile-time-constant zero prefix, instead of casting to a full
+// little-endian `Bytes<32>` and reversing it. Same bytes out; the reason for the direct form is
+// COST. This backend holds a `Bytes<32>` packed and charges only for VARIABLE bytes, so reversing a
+// packed 32-byte word pays for all 32 — roughly 8,500 rows per call — even though 24 / 16 / 31 of
+// them are known zero. Every EIP-712 and semantic-commitment preimage here is assembled from these
+// encoders, so that cost would recur at every site; the direct form pays for 8 / 16 / 1 variable
+// bytes instead, and makes the downstream preimage splice cheaper too.
+
 circuit uint64Word(value: Uint<64>): Bytes<32> {
   const b = value as Bytes<8>;
   return Bytes[0, 0, 0, 0, 0, 0, 0, 0,
@@ -415,9 +342,17 @@ circuit uint8Word(value: Uint<8>): Bytes<32> {
   return slice<32>([...pad(31, ""), ...(value as Bytes<1>)], 0) as Bytes<32>;
 }
 
+/// A 20-byte EVM address in a 32-byte word: 12 zero bytes, then the address. Same layout Solidity's
+/// ABI encoder produces for an `address`.
 circuit addressWord(value: Bytes<20>): Bytes<32> {
   return slice<32>([...pad(12, ""), ...value], 0) as Bytes<32>;
 }
+
+// --- frozen EIP-712 constants -------------------------------------------------------------------
+//
+// These are keccak256 hashes of the EIP-712 type strings and of the domain's name and version.
+// FROZEN: changing any one of them changes what every wallet signs and what every off-chain
+// verifier recomputes.
 
 circuit accountTag(): Bytes<32> {
   return Bytes[0x55, 0xbc, 0x94, 0x0f, 0x83, 0x53, 0x37, 0xf1,
@@ -489,6 +424,7 @@ circuit openSwapType(): Bytes<32> {
                0x95, 0x0c, 0x4b, 0xd3, 0xb0, 0x66, 0x58, 0x48];
 }
 
+/// Selector -> frozen type hash. Selector 0 (native registration) signs nothing, hence the zero.
 circuit frozenTypeHash(selector: Uint<8>): Bytes<32> {
   if (selector == 1) { return registerType(); }
   if (selector == 2) { return withdrawShieldedType(); }
@@ -499,6 +435,9 @@ circuit frozenTypeHash(selector: Uint<8>): Bytes<32> {
   return default<Bytes<32>>;
 }
 
+/// An EVM account's id is a hash of (tag, this contract, the owning EOA, a caller-chosen salt), so
+/// one EOA can hold several independent accounts here and neither the id nor the salt is guessable
+/// from the address alone.
 export circuit evmAccountIdFor(manager: Bytes<32>, owner: Bytes<20>, salt: Bytes<32>): Bytes<32> {
   const preimage: Bytes<128> = slice<128>([
     ...accountTag(), ...manager, ...addressWord(owner), ...salt
@@ -506,6 +445,8 @@ export circuit evmAccountIdFor(manager: Bytes<32>, owner: Bytes<20>, salt: Bytes
   return disclose(keccak256<Bytes<128>>(preimage));
 }
 
+/// The EIP-712 domain separator. `alias` is this contract's EVM-shaped `verifyingContract`: the low
+/// 20 bytes of keccak256 over its 32-byte Midnight address. `domain` is the deployment salt.
 export circuit evmDomainSeparatorFor(manager: Bytes<32>, domain: Bytes<32>): Bytes<32> {
   const alias = slice<20>(keccak256<Bytes<32>>(manager), 12);
   const preimage: Bytes<160> = slice<160>([
@@ -514,6 +455,8 @@ export circuit evmDomainSeparatorFor(manager: Bytes<32>, domain: Bytes<32>): Byt
   return disclose(keccak256<Bytes<160>>(preimage));
 }
 
+/// The per-action struct hash. One branch per action shape, each opening with its own frozen type
+/// hash, so no signature can be replayed as a different action.
 export circuit evmStructHashFor(manager: Bytes<32>, payload: ExecutePayload): Bytes<32> {
   const p = payload;
   if (p.selector == 1) {
@@ -555,6 +498,8 @@ circuit eip712Digest(domain: Bytes<32>, structHash: Bytes<32>): Bytes<32> {
   return keccak256<Bytes<66>>(preimage);
 }
 
+/// The value an EVM owner's wallet signs. Exported and pure, so a signer, a relayer or a verifier
+/// can obtain it from the contract itself instead of reimplementing the codec.
 export circuit evmDigestFor(
   manager: Bytes<32>, domain: Bytes<32>, payload: ExecutePayload
 ): Bytes<32> {
@@ -576,8 +521,10 @@ export circuit isRegistered(owner: Bytes<32>): Boolean {
   return accounts.member(disclose(owner));
 }
 
-/// One browser-facing policy query. Native records return zero owner/nonce without creating EVM
-/// map entries; unknown accounts return the all-zero inactive record.
+/// One policy query covering registration, mode, EVM owner and next nonce. Native records return a
+/// zero owner and nonce WITHOUT creating EVM map entries; unknown accounts return the all-zero
+/// inactive record. The asserts state the mode invariant: a native record carries no EVM state; an
+/// EVM record carries both halves of it.
 export circuit accountRecord(account: Bytes<32>): AccountRecord {
   const acct = disclose(account);
   if (!accounts.member(acct)) {
@@ -608,14 +555,14 @@ export circuit accountRecord(account: Bytes<32>): AccountRecord {
   };
 }
 
-/// One cell of the dynamic table, shielded family. Returns 0 for a colour this Manager has never
-/// seen — that is the observable form of "missing cell reads 0" (FR-206).
+/// One cell of the dynamic table, shielded family. Returns 0 for a colour this contract has never
+/// seen — the observable form of "a missing cell reads 0".
 export circuit shieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
   return shieldedBalanceOf(disclose(owner), disclose(colour));
 }
 
-/// The same cell in the OTHER family. For a P-COLL colour these two reads take the same 32-byte
-/// `colour` argument and must still answer independently.
+/// The same cell in the OTHER family. For a colour whose bytes exist in both families these two
+/// reads take the same 32-byte `colour` argument and must still answer independently.
 export circuit unshieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
   return unshieldedBalanceOf(disclose(owner), disclose(colour));
 }
@@ -631,21 +578,18 @@ export circuit poolHasColour(colour: Bytes<32>): Boolean {
 
 // --- shielded custody ---------------------------------------------------------------------------
 
-/// Claim an incoming shielded coin and credit it to `account` under the coin's OWN colour.
-///
-/// THE OPEN PATH (FR-202, FR-205): there is no colour check. Whatever colour the coin carries is
-/// custodied, including a colour minted after this Manager was deployed. The pool for that colour and
-/// the (account, colour) cell are created HERE if they do not exist, and only here.
-///
-/// The stdlib only auto-receives when the recipient is this contract itself, so a transfer into the
-/// Manager commits only if THIS circuit runs in the same transaction as the sender's operation.
+/// Claim an incoming shielded coin and credit it to `account` under the coin's OWN colour. THE OPEN
+/// PATH: no colour check — whatever colour the coin carries is custodied, including one minted after
+/// this contract was deployed, and that colour's pool and the (account, colour) cell are created
+/// HERE if absent, and only here. The stdlib auto-receives only when the recipient is this contract
+/// itself, so a transfer in commits only if THIS circuit runs in the sender's own transaction.
 export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
   // The deposited coin and target account are public facts of this transfer: the pooled coin and
   // the credited balance both land in ledger state, so they are disclosed once, up front.
   const c = disclose(coin);
   const acct = disclose(account);
 
-  // Every guard precedes every write, so a refusal creates nothing (FR-202).
+  // Every guard precedes every write, so a refusal creates nothing.
   assert(c.value > 0, "deposit must be positive");
   assert(accounts.member(acct), "credit account is not registered");
 
@@ -674,10 +618,9 @@ export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
 
 /// Credit `amount` of `colour` to `account`, unshielded family.
 ///
-/// No colour check, by design (FR-201). The LEDGER is what enforces honesty here: `receiveUnshielded`
-/// only increments this contract's declared unshielded inputs, so a transaction that names a colour
-/// it is not actually carrying fails to BALANCE and is refused by the node. The spec records that as
-/// an assumption to be ASSERTED by G3 evidence, not assumed.
+/// No colour check, by design. The LEDGER is what enforces honesty here: `receiveUnshielded` only
+/// increments this contract's declared unshielded inputs, so a transaction that names a colour it is
+/// not actually carrying fails to BALANCE and is refused by the node.
 export circuit depositUnshielded(colour: Bytes<32>, amount: Uint<128>, account: Bytes<32>): [] {
   const col = disclose(colour);
   const amt = disclose(amount);
@@ -693,29 +636,22 @@ export circuit depositUnshielded(colour: Bytes<32>, amount: Uint<128>, account: 
   );
 }
 
-// ================================================================================================
-// v4 (00006-unbalanced-zswap) — THE SWAP MAKER
-// ================================================================================================
-//
-// Everything above this line is Manager v3, unchanged. Everything below is additive.
-
 // --- zswap primitives the pinned standard library keeps private ---------------------------------
 //
-// `coinCommitment` and `coinNullifier` are unexported circuits in the pinned standard library
-// (`standard-library.compact:252` / `:265`). `sendShielded` is the only exported route to a zswap
-// INPUT and it always creates an output for the value it moves — so an offer that releases value with
-// NO output cannot be built out of exported pieces alone. These two circuits are transcriptions of the
-// stdlib's, preimage-identical field for field: same struct shape (`Bytes<21>` separator, then the
-// coin, then the recipient discriminant, then 32 bytes of recipient), same domain separators, same
-// `persistentHash`. `persistentHash` digests the ALIGNED ENCODING of the fields, so the struct's NAME
-// is irrelevant and only the field types and order matter.
+// `coinCommitment` and `coinNullifier` are unexported circuits in the pinned standard library, and
+// `sendShielded` — the only exported route to a zswap INPUT — always creates an output for the value
+// it moves. An open swap offer, which releases value with NO output, therefore cannot be built out
+// of exported pieces alone. These two circuits are transcriptions of the stdlib's, preimage-
+// identical field for field: same struct shape (a 21-byte separator, then the coin, then the
+// recipient discriminant, then 32 bytes of recipient), same domain separators, same
+// `persistentHash` — which digests the ALIGNED ENCODING of the fields, so the struct's NAME is
+// irrelevant and only the field types and their order matter.
 //
-// This is transcription, which is exactly the kind of code that is silently wrong, so the equality is
-// PROVEN rather than asserted in a comment: `zswapNullifierOf` / `zswapCommitmentOf` below expose
-// these values, and the unit suite compares them against the nullifier and commitment the STDLIB
-// itself claims for the same coin inside the shielded payout leg of `custodyDispatch` (selector 2;
-// this was v3's `withdrawShielded` before the o2 mux absorbed it). If a separator or a field order
-// were wrong, that test fails.
+// Transcription is exactly the kind of code that is silently wrong, so the equality is PROVEN rather
+// than asserted in a comment: `zswapNullifierOf` / `zswapCommitmentOf` below expose these values,
+// and the unit suite compares them against the nullifier and commitment THE STDLIB ITSELF claims for
+// the same coin inside the shielded payout leg of `custodyDispatch`. A wrong separator or a
+// reordered field fails that test.
 
 struct SwapCoinPreimage {
   // `midnight:zswap-cc[v1]` / `midnight:zswap-cn[v1]` — 21 bytes each, exactly as the stdlib.
@@ -756,8 +692,8 @@ circuit dropMerkleIndex(coin: QualifiedShieldedCoinInfo): ShieldedCoinInfo {
 }
 
 /// EXPORTED so the equality above can be TESTED rather than believed. Pure: it reads no ledger state,
-/// so the compiler emits no proving key for it (same as `shieldedKey`), and it discloses nothing — a
-/// coin commitment and a coin nullifier are public objects that live in the transaction anyway.
+/// so the compiler emits no proving key for it, and it discloses nothing — a coin commitment and a
+/// coin nullifier are public objects that live in the transaction anyway.
 export circuit zswapNullifierOf(coin: ShieldedCoinInfo, addr: ContractAddress): Bytes<32> {
   return zswapCoinNullifier(coin, addr);
 }
@@ -769,7 +705,8 @@ export circuit zswapCommitmentOf(
   return zswapCoinCommitment(coin, recipient);
 }
 
-/// Write back what is left of colour `col`'s pool after a debit, or drop the colour entirely.
+/// Write back what is left of colour `col`'s pool after a debit, or drop the colour entirely. This
+/// is the debit half of the one-coin-per-colour invariant.
 circuit repoolOrRemove(col: Bytes<32>, change: Maybe<ShieldedCoinInfo>): [] {
   if (change.is_some) {
     pools.insertCoin(col, change.value, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
@@ -780,9 +717,24 @@ circuit repoolOrRemove(col: Bytes<32>, change: Maybe<ShieldedCoinInfo>): [] {
 }
 
 // ================================================================================================
-// Manager v5 candidate — one dual-authorization registration/debit gateway
+// THE GATEWAY — envelope validation, deadline, authentication
 // ================================================================================================
 
+/// CANONICAL-ZERO ENVELOPE VALIDATION, and the first thing `execute` runs.
+///
+/// `ExecutePayload` is one fixed-width struct shared by all seven actions, so most of its fields are
+/// INACTIVE for any given selector, and this circuit constrains every inactive field to its
+/// canonical zero. SECURITY-CRITICAL, not hygiene: it is what keeps the actions separated. Without
+/// it a payload could carry a live swap target or transfer destination while presenting as a
+/// withdrawal, so the meaning of a signed or witnessed action would depend on which fields the
+/// reader happened to look at. With it, ONE selector implies ONE field set, the EIP-712 struct hash
+/// covers exactly that set, and anything else is refused before authentication.
+///
+/// It also fixes the mode pairing (selector 0 native-only, selector 1 EVM-only), the replay fields
+/// (native actions carry no nonce or deadline; EVM actions must carry a deadline), and per-action
+/// parameter sanity — amounts positive, recipient kinds in range, a swap's colours distinct. That
+/// sanity is pure arithmetic on the caller's own arguments: it reads no state and leaks nothing,
+/// which is why it may run before the witness choke point.
 circuit assertActionEnvelope(p: ExecutePayload): [] {
   assert(p.selector <= 6, "unknown execute selector");
   assert(p.authMode <= 1, "unknown authorization mode");
@@ -855,6 +807,9 @@ circuit assertActionEnvelope(p: ExecutePayload): [] {
   assert(p.creditAccount != default<Bytes<32>>, "swap credit account must be supplied");
 }
 
+/// An EVM signature is valid only inside a bounded window ending at `validUntil`. The lower bound
+/// exists because a circuit can prove only block-time INEQUALITIES: without it, a signature merely
+/// "not yet expired" could be proved against an arbitrarily old block. 3,600 seconds keeps it tight.
 circuit assertLiveDeadline(validUntil: Uint<64>): [] {
   assert(validUntil > 3600, "EVM authorization deadline cannot satisfy the horizon");
   const earliest = (validUntil - 3600) as Uint<64>;
@@ -862,6 +817,14 @@ circuit assertLiveDeadline(validUntil: Uint<64>): [] {
   assert(blockTimeLt(validUntil), "EVM authorization has expired");
 }
 
+/// Resolve the acting account for a non-registration action, per mode.
+///
+/// NATIVE: start from the WITNESS-DERIVED account, require it to be a registered native record, and
+/// only THEN check it equals the account named in the envelope — the envelope field is a declaration
+/// to be matched, never the source of authority. EVM: the envelope's account must be a registered
+/// EVM record whose stored owner equals the signed owner and whose stored nonce equals the signed
+/// nonce; `execute` checks the signature over the digest, and together those bind the action to the
+/// EOA that controls the record.
 circuit authenticatedActionAccount(
   p: ExecutePayload,
   nativeAccount: Bytes<32>
@@ -884,6 +847,8 @@ circuit authenticatedActionAccount(
   return p.account;
 }
 
+/// Registration selects the account being CREATED (witness-derived, or derived from owner+salt);
+/// every other selector goes through the authentication above.
 circuit gatewayAccount(
   p: ExecutePayload,
   nativeAccount: Bytes<32>,
@@ -898,58 +863,74 @@ circuit gatewayAccount(
   return authenticatedActionAccount(p, nativeAccount);
 }
 
-// --- LEVER o2: the custody mux — ONE debit leg, ONE credit leg, muxed arguments ----------------
-// (00010, from 00009 arm `o2-custody-mux`; measured −100,929 rows on `execute`, −10.36% of the
-//  k=20 baseline, keyless byte-equality parity 29/29, no frozen byte moved.)
+// ================================================================================================
+// CUSTODY DISPATCH — the file's ONLY debit path
+// ================================================================================================
 //
-// Compact compiles every branch of every `if`, so the previous five-way custody dispatch emitted a
-// full copy of each helper per branch: 21 `persistentHash` key derivations, two `sendShielded`
-// sites and duplicated pool guards. This form muxes the ARGUMENTS and calls each expensive
-// operation exactly once (2 key derivations, one shielded send, one unshielded send, one
-// want-claim). `custodyDispatch` is the ONLY live custody path for selectors 2..6.
+// `custodyDispatch` implements selectors 2..6 as ONE debit leg, ONE credit leg and shared sends,
+// with the family, recipient, account and colour muxed in as ARGUMENTS. There is no per-selector
+// custody circuit anywhere in this file, so "which code debits an account" is answerable by
+// inspection: this one. The mux is not only a readability choice — Compact compiles EVERY branch of
+// every `if`, so a per-selector dispatch would emit a full copy of each helper per branch, whereas
+// muxing calls each expensive operation exactly once (two key derivations, one shielded send, one
+// unshielded send, one want-claim).
 //
-// WHAT IS PRESERVED, and why this is SEMANTICS-PRESERVING:
+// --- THE GUARD ORDER: what this circuit's assert sequence encodes --------------------------------
 //
-//   * FR-204 order, for EVERY selector: the per-(account, colour) guard is evaluated BEFORE any
-//     pool or contract-holdings guard, and every guard precedes every write. The assert sequence
-//     below is a TOPOLOGICAL SUPERSET of all five per-selector orders — swap sanity, then transfer
-//     destination checks, then the per-(account, colour) guard, then the pool guard, then the swap
-//     credit target — so no selector's relative assert order changes.
-//   * The refusal set and every assert MESSAGE are unchanged.
-//   * A missing balance cell still reads 0 and creates nothing.
-//   * The nine-circuit provable surface is unchanged; no circuit is added.
+//   0. PARAMETER SANITY — the three `!isSwap || …` lines opening the body; every selector's sanity
+//      also lives in `assertActionEnvelope`, which `execute` runs first. Pure arithmetic on the
+//      caller's own arguments: reads nothing, leaks nothing.
+//   1. THE WITNESS CHOKE POINT — already passed. The debited account was DERIVED by `gatewayAccount`
+//      / `authenticatedActionAccount` and arrives as the `account` parameter, so this circuit has no
+//      option of trusting a supplied account.
+//   2. THE PER-(ACCOUNT, COLOUR) GUARD, BEFORE ANY POOL GUARD, MISSING CELL READS 0 — the single
+//      `assert(debitBalance >= val, …)`, shared by all five selectors. `debitKey` is derived once
+//      with the family tag muxed (for a shielded selector it is exactly `shieldedKey(account,
+//      col)`'s body) and read through `shieldedBalanceAt` / `unshieldedBalanceAt`, the `*BalanceOf`
+//      bodies with the key supplied — read-as-0 preserved, not re-implemented.
+//   3. THE POOL GUARDS — only now does the contract's own holding matter. A pool rich in the colour
+//      cannot rescue a maker whose own cell is short: that already refused at step 2.
+//   4. THE CREDIT TARGET — a swap's wanted colour must be attributed to a registered account.
 //
-// The only asserts not carried over are the three recipient-kind asserts that lived in the former
-// `shieldedRecipient` / `unshieldedRecipient` / `swapRecipient` helpers (deleted, see below).
-// Those were already UNREACHABLE:
-// `assertActionEnvelope` constrains `recipientKind <= 1` for selectors 2/3 and `<= 2` for
-// selector 6 before dispatch is reached, so no payload could arrive at them. Dropping unreachable
-// asserts leaves the refusal set identical.
+// The sequence is a TOPOLOGICAL SUPERSET of the five actions' individual orders, so muxing them
+// together changed no action's relative ordering. Every guard precedes every write: the first write
+// is the give leg, after all of steps 0-4, so a refused action is provably state-neutral.
 //
-// DELETED, NOT RETAINED (owner resolution 00010-Q1 -> option B, 2026-08-25): the five per-selector
-// leg circuits this mux replaced (`withdrawShielded`, `withdrawUnshielded`,
-// `transferInternalShielded`, `transferInternalUnshielded`, `openSwapShielded`) and the three
-// `*Recipient` helpers have been REMOVED from this file. They were private and uncalled, so the
-// compiler emitted no constraints and no key for them; their removal is provably zero-row and was
-// VERIFIED so — the nine generated ZKIRs are byte-identical (SHA-256) before and after the
-// deletion, which is why the measured `k=19 / 382,770 rows`, the 45/45 keyless suite and the
-// generated proving keys all carry over unchanged, with no re-measurement.
+// Guard 0's colour-distinctness assert is not decoration. Two same-colour shielded credits cannot be
+// assembled in one transaction at these pins — the second needs the first coin's Merkle index, only
+// allocated once the first is really inserted on chain — so a swap whose legs shared a colour would
+// surface as an opaque `invalid index into sparse merkle tree` from inside the proving path.
+// Refusing it here (and in `assertActionEnvelope`) fails CLOSED with a readable reason instead.
 //
-// ALSO DELETED (owner resolution 00010-Q3, 2026-08-25): `assertSwapPreconditions` and
-// `claimWantedColour`, the two swap helpers whose only caller was `openSwapShielded`. The owner's
-// condition was that they be unused because THIS mux reimplemented them, not because a wiring step
-// was forgotten, so before deleting them all ten of their guards and effects were mapped to live
-// lines in this circuit and cross-referenced against the executed k=20 A/B parity evidence —
-// 10 of 10 mapped, no gap. The mapping is `evidence/00010-manager-k19/Q3-WIRING-VERIFICATION.md`;
-// the guard order they documented is rehomed onto `custodyDispatch` immediately below.
+// --- THE SWAP MAKER (selector 6) ----------------------------------------------------------------
 //
-// `custodyDispatch` below is now the file's ONLY custody implementation — "which code debits an
-// account" is answerable by inspection, and the old legs are recoverable from git history
-// (commit `56faa51` is the last one that carries them; `0c4bd1f` is the last one carrying the two
-// swap helpers).
+// One proved call fuses a GIVE leg (debit `primaryAmount` of `primaryColor` from the maker) and a
+// WANT leg (receive `wantAmount` of `wantColor` into custody, attributed to `creditAccount`), so a
+// swap settles atomically BY CONSTRUCTION rather than by composing two calls that could diverge.
+// The want leg receives value this transaction does not fund, leaving the call UNBALANCED by a
+// deficit of `wantAmount` of `wantColor` — the same deficit shape `depositShielded` creates. THAT
+// DEFICIT IS THE OFFER, and a taker balances it. `recipientKind` picks which of TWO SHAPES the offer
+// takes, and they are genuinely different mechanisms rather than a cosmetic flag:
+//
+//   NAMED RECIPIENT (recipientKind 1 = a user key, 2 = a contract address) — `sendShielded` pays the
+//       given value to that recipient and re-pools the change, so the give leg is INTERNALLY
+//       BALANCED and the call's only imbalance is the want-side deficit. Naming a throwaway key
+//       whose secret ships alongside the offer turns this into a bearer offer: any holder of that
+//       secret can settle and then sweep the payout, with no contract support beyond this branch.
+//
+//   NO RECIPIENT (recipientKind 0), THE OPEN OFFER — the given value is released with NO OUTPUT AT
+//       ALL: the pooled coin is consumed as a zswap input, its nullifier claimed, and the only
+//       output created is the change back to this contract. The released value stands as a POSITIVE
+//       IMBALANCE at the guaranteed segment, addressed to nobody, which ANY taker's stock balancer
+//       will sweep — that is what makes the offer usable by a holder whose keys the maker never
+//       knew, and why this file reimplements the zswap commitment and nullifier (see
+//       `zswapCoinCommitment` above).
+//
+// SHIELDED ONLY. There is no unshielded swap: a contract's unshielded payout is a UTXO in the
+// maker's own bound intent, so its recipient cannot be left open.
 
-/// Balance at an ALREADY-DERIVED key. A missing cell reads 0 (FR-204, FR-206), exactly as
-/// `shieldedBalanceOf` does — the only difference is that the key is computed by the caller, once.
+/// Balance at an ALREADY-DERIVED key. A missing cell reads 0, exactly as `shieldedBalanceOf` does —
+/// the only difference is that the key is computed by the caller, once.
 circuit shieldedBalanceAt(k: Bytes<32>): Uint<128> {
   return shieldedBalances.member(k) ? shieldedBalances.lookup(k) : 0;
 }
@@ -957,46 +938,6 @@ circuit shieldedBalanceAt(k: Bytes<32>): Uint<128> {
 circuit unshieldedBalanceAt(k: Bytes<32>): Uint<128> {
   return unshieldedBalances.member(k) ? unshieldedBalances.lookup(k) : 0;
 }
-
-// --- THE GUARD ORDER (FR-204, FR-305) — the owner-critical property, stated where it now lives ---
-//
-// (Rehomed here on 2026-08-25 from the deleted `assertSwapPreconditions` block, per the owner's
-//  resolution of 00010-Q3. The order below is the one carried verbatim from v3's `withdrawShielded`;
-//  what changed is only that ONE muxed circuit now enforces it for all five custody selectors
-//  instead of five per-selector copies. Line references are to this file.)
-//
-//   0. parameter sanity      — pure arithmetic on the caller's own arguments; reads nothing, leaks
-//                              nothing, and cannot be confused with an authorization outcome. The
-//                              swap sanity asserts are the three `!isSwap || …` lines that open the
-//                              body; every other selector's sanity lives in `assertActionEnvelope`,
-//                              which runs first, in `execute`.
-//   1. THE WITNESS CHOKE POINT — the debited account is DERIVED from the witness, never supplied
-//                              (NC-305: an unregistered witness dies there, before any balance is
-//                              read). It is derived by `gatewayAccount` / `authenticatedActionAccount`
-//                              in `execute` and arrives here as the `account` parameter, so this
-//                              circuit never has the option of trusting a supplied account.
-//   2. THE PER-(ACCOUNT, COLOUR) GUARD, BEFORE any pool guard, with a MISSING CELL READ AS 0
-//                              (NC-306: a pool rich in A but a maker cell that is empty or short dies
-//                              here — it never reaches the pool guard). This is the single
-//                              `assert(debitBalance >= val, …)` below, shared by all five selectors:
-//                              `debitKey` is derived ONCE with the family tag muxed, and for a
-//                              shielded selector it is exactly `shieldedKey(account, col)`'s body,
-//                              read through `shieldedBalanceAt`, which is `shieldedBalanceOf`'s body
-//                              with the key supplied — so the read-as-0 property is preserved, not
-//                              re-implemented.
-//   3. the pool guards       — only now does the contract's own holding matter (`if (needsPool)`).
-//   4. the credit target     — the account a swap's wanted colour is attributed to must be registered.
-//
-// Every guard precedes every write, so a refused action is provably state-neutral: no cell, no pool,
-// no map growth (FR-202 discipline, FR-305). The first write in this circuit is the give leg, which
-// sits after all of steps 0-4.
-//
-// Guard 0's colour-distinctness assert is NOT decoration, it is finding F-305 made explicit. Two
-// same-colour shielded credits cannot be assembled in one transaction at these pins: the second needs
-// the first coin's Merkle index, which is only allocated when the first is really inserted on chain.
-// A swap whose two legs were the same colour would hit that as an opaque
-// `invalid index into sparse merkle tree` from inside the proving path; refusing it here (and in
-// `assertActionEnvelope`) fails CLOSED with a readable reason instead.
 
 /// The whole custody dispatch for selectors 2..6, with one copy of every expensive operation.
 circuit custodyDispatch(p: ExecutePayload, account: Bytes<32>): [] {
@@ -1024,12 +965,12 @@ circuit custodyDispatch(p: ExecutePayload, account: Bytes<32>): [] {
   assert(!isSwap || p.wantAmount > 0,   "swap must want a positive amount");
   assert(!isSwap || col != p.wantColor, "swap legs must be different colours");
 
-  // --- 1. internal-transfer destination checks (selectors 4/5), in their product order ---
+  // --- 1. internal-transfer destination checks (selectors 4/5) ---
   assert(!isTransfer || accounts.member(p.toAccount), "destination account is not registered");
   assert(!isTransfer || account != p.toAccount,       "internal transfer to the same account");
   assert(!isTransfer || val > 0,                      "internal transfer must be positive");
 
-  // --- 2. THE PER-(ACCOUNT, COLOUR) GUARD, before any pool guard, missing cell reads 0 (FR-204) ---
+  // --- 2. THE PER-(ACCOUNT, COLOUR) GUARD, before any pool guard, missing cell reads 0 ---
   //     ONE key derivation for all five selectors; the family tag is the muxed argument.
   const debitKey = persistentHash<Vector<3, Bytes<32>>>(
     [account, col, debitShielded ? shieldedFamilyTag() : unshieldedFamilyTag()]);
@@ -1042,7 +983,7 @@ circuit custodyDispatch(p: ExecutePayload, account: Bytes<32>): [] {
     const pooled = pools.lookup(col);
     assert(pooled.value >= val, "pooled colour balance too low");
 
-    // --- 4. the swap credit target, at its product position: after the pool guard ---
+    // --- 4. the swap credit target, after the pool guard ---
     assert(!isSwap || accounts.member(p.creditAccount), "credit account is not registered");
 
     if (isWithdrawShielded || p.recipientKind != 0) {
@@ -1056,8 +997,9 @@ circuit custodyDispatch(p: ExecutePayload, account: Bytes<32>): [] {
       const result = sendShielded(pooled, rcpt, val);
       repoolOrRemove(col, result.change);
     } else {
-      // The FR-308 v2(a) OPEN shape: the pooled coin is consumed as a zswap input and its
-      // nullifier claimed, but the only output created is the change back to this contract.
+      // THE OPEN OFFER: the pooled coin is consumed as a zswap input and its nullifier claimed, but
+      // the only output created is the change back to this contract. The given value is released
+      // with no output at all and stands as a positive imbalance any taker's balancer can sweep.
       const selfAddr = kernel.self();
       createZswapInput(pooled);
       kernel.claimZswapNullifier(zswapCoinNullifier(dropMerkleIndex(pooled), selfAddr));
@@ -1088,7 +1030,7 @@ circuit custodyDispatch(p: ExecutePayload, account: Bytes<32>): [] {
       : right<ContractAddress, UserAddress>(UserAddress{ bytes: p.recipient }));
   }
 
-  // --- ONE debit write, into the muxed family, at the same point in the order as the product ---
+  // --- ONE debit write, into the muxed family ---
   const newDebit = (debitBalance - val) as Uint<128>;
   if (debitShielded) {
     shieldedBalances.insert(debitKey, newDebit);
@@ -1099,10 +1041,10 @@ circuit custodyDispatch(p: ExecutePayload, account: Bytes<32>): [] {
   // --- the swap WANT leg: claim `wantCoin` into custody ---
   //
   // `receiveShielded` creates an output the transaction does not fund, so this is what makes the
-  // offer UNBALANCED — a deficit of `p.wantAmount` of `p.wantColor` at the guaranteed segment. It is
-  // the same deficit `depositShielded` creates, which is why spike S1 could prove the taker
-  // mechanics against v3 before v4 existed. It MUST precede `insertCoin`: receiving is what
-  // allocates the coin's Merkle-tree index.
+  // offer UNBALANCED — a deficit of `p.wantAmount` of `p.wantColor` at the guaranteed segment, the
+  // same deficit shape `depositShielded` creates. It MUST precede `insertCoin`: receiving is what
+  // allocates the coin's Merkle-tree index. The pool then merges or creates, keeping one coin per
+  // colour.
   if (isSwap) {
     const wantCoin = ShieldedCoinInfo{
       nonce: p.wantNonce, color: p.wantColor, value: p.wantAmount
@@ -1134,43 +1076,41 @@ circuit custodyDispatch(p: ExecutePayload, account: Bytes<32>): [] {
   }
 }
 
-// --- FR-031 semantic commitment — DEFINED HERE, COMPUTED OFF-CIRCUIT (LEVER Tier-3) ------------
+// ================================================================================================
+// THE SEMANTIC COMMITMENT — defined here, computed OFF-CIRCUIT. AND: WHY THERE ARE NO EVENTS
+// ================================================================================================
 //
-// (00010 spec amendment, owner route decision 2026-08-24. See `spec/00010-manager-k19.md`.)
+// The semantic commitment is a single 32-byte keccak digest summarising what an `execute` call
+// meant: which contract and deployment, which action, which account, how it was authorized, every
+// action parameter, and the call's zswap imbalances in a canonical order. It is the one comparable
+// handle an off-chain reader — indexer, relayer, EVM-side verifier — has on a call.
 //
-// The commitment recipe below is UNCHANGED byte-for-byte. What changed is WHERE it is evaluated:
-// `execute` no longer computes it and no longer emits it as a `Misc` event. The recipe stays
-// normative and stays reachable as the EXPORTED PURE circuit `semanticCommitmentFor`, which reads
-// no ledger state and therefore emits no ZKIR and no proving key — keeping the definition costs
-// zero rows. Tooling evaluates it by running the compiled artifact, exactly as it already does for
-// `shieldedKey` / `zswapNullifierOf` / `evmDigestFor`.
+// THE CONTRACT DOES NOT COMPUTE OR EMIT IT, AND EMITS NO EVENTS AT ALL. Events are disabled because
+// computing and emitting the commitment in-circuit cost about 367,000 rows — roughly 38% of
+// `execute`. That cost is NOT the hashing: it is SERIALIZING the 1,024-byte commitment envelope
+// (plus the transcript and action-union sub-preimages) into keccak preimages, byte by byte, inside
+// the circuit. Paying 38% of a proof for it is not worth it, because it proved nothing new:
 //
-// WHY THIS IS SOUND — the proved transcript is the authority:
-//   Every field the commitment covers is already a constrained and disclosed part of the proved
-//   `execute` call transcript: the selector, auth mode, account id, owner, deadline, nonce, colours,
-//   amounts, recipient and credit account all enter `assertActionEnvelope` and the custody dispatch
-//   as constrained values, and `authResult` is either the in-circuit EIP-712 digest (EVM mode) or
-//   `nativeAuthResult(account)` (native mode). The in-circuit keccak chain therefore proved nothing
-//   the transcript did not already bind; it re-hashed already-bound values and published the digest.
-//   It was the single heaviest component of `execute` (366,831 rows, 37.6%) for that redundancy.
+//   THE PROVED CALL TRANSCRIPT IS THE AUTHORITY. Every field the commitment covers is already a
+//   CONSTRAINED PUBLIC FACT of the proved `execute` transcript — selector, auth mode, account id,
+//   owner, deadline, nonce, colours, amounts, recipient and credit account all enter
+//   `assertActionEnvelope` and `custodyDispatch` as constrained values, and the authorization result
+//   is either the in-circuit EIP-712 digest or `nativeAuthResult(account)`. The keccak chain merely
+//   re-hashed already-bound values and republished them.
 //
-// SECURITY RULE (load-bearing, and the reason the event was REMOVED rather than kept alongside):
+//   THE RECIPE STAYS NORMATIVE AND AVAILABLE, as the EXPORTED PURE circuit `semanticCommitmentFor`.
+//   Pure circuits emit no proving key, so keeping the definition costs zero rows and zero keys, and
+//   ANY READER CAN RECOMPUTE THE COMMITMENT OFF-CIRCUIT — by running that circuit on the compiled
+//   artifact, or by reimplementing the recipe, which is keccak-only and flat-byte-concatenated
+//   precisely so an EVM-side verifier can do it with the `keccak256` opcode.
 //
-//     NO CONSUMER MAY TRUST A SEMANTIC COMMITMENT IT DID NOT RECOMPUTE FROM THE PROVED TRANSCRIPT.
+//   SECURITY RULE, load-bearing:
 //
-//   With no emitted commitment there is nothing to trust by mistake, so the failure mode "a reader
-//   accepted the event value without parsing the transcript that justifies it" is removed BY
-//   CONSTRUCTION rather than by discipline. A consumer that wants the commitment recovers the
-//   transcript fields from the proved call, recomputes via this recipe (off-circuit, or by calling
-//   the pure oracle), and compares against whatever it was going to trust. The recipe is keccak-only
-//   and flat-byte-concatenated, so an EVM-side verifier can recompute it with the `keccak256`
-//   opcode — that property is deliberately preserved (options o5/o6 were rejected for losing it).
+//       NO CONSUMER MAY TRUST A SEMANTIC COMMITMENT IT DID NOT RECOMPUTE FROM THE PROVED TRANSCRIPT.
 //
-// WHAT IS GONE: `emitSemanticCommitment`, the `Misc` event it emitted, and `semanticEventName`.
-// There is no semantic event on this contract. `execute` emits no events at all.
-// WHAT IS NOT GONE: the tags, the preimage layout, the call-transcript sub-hash, the two-slot
-// imbalance encoding, and the exported pure oracle — all byte-identical to the k=20 product, which
-// the keyless oracle-equality suite proves by execution rather than by inspection.
+//   With nothing emitted there is nothing to trust by mistake, so the failure mode "a reader
+//   accepted an event's value without parsing the transcript that justifies it" is removed BY
+//   CONSTRUCTION rather than by discipline.
 
 circuit semanticTag(): Bytes<32> {
   return Bytes[0xe2, 0x11, 0x48, 0x48, 0x81, 0xf2, 0x54, 0x57,
@@ -1200,20 +1140,16 @@ circuit entrypointHash(): Bytes<32> {
                0xac, 0x67, 0xc7, 0xea, 0x2e, 0xbb, 0x1c, 0x44];
 }
 
-// Tier-3: `semanticEventName` is DELETED with the event it named. `execute` emits no `Misc` event,
-// so there is no event name to match on. Any reader still filtering for
-// `0x535c1031f585e2d7a795d0e332a97418cd8eddde40eefa214fb78a2e18812c1a` is filtering for something
-// this contract can no longer produce, and must be updated to recompute from the transcript.
-
-/// The native-mode `authResult` slot of the commitment: keccak(nativeAuthTag || account).
-/// Tier-3: no longer called from `execute` (nothing in-circuit consumes it any more). It is kept
-/// as the NORMATIVE in-contract definition of the native-mode slot, so an off-circuit recomputer
-/// has a single authoritative source for it; being private and uncalled it emits no constraints.
+/// The native-mode authorization slot: keccak(nativeAuthTag || account). Nothing in this contract
+/// calls it; it is kept as the NORMATIVE in-contract definition of that slot, so an off-circuit
+/// recomputer has one authoritative source. Private and uncalled, it emits no constraints.
 circuit nativeAuthResult(account: Bytes<32>): Bytes<32> {
   const preimage: Bytes<64> = slice<64>([...nativeAuthTag(), ...account], 0) as Bytes<64>;
   return keccak256<Bytes<64>>(preimage);
 }
 
+/// Every action parameter of the envelope in one fixed-width hash; fields inactive for the call's
+/// selector are zero, which is what `assertActionEnvelope` guarantees.
 circuit actionUnionHash(p: ExecutePayload): Bytes<32> {
   const preimage: Bytes<384> = slice<384>([
     ...addressWord(p.owner), ...uint64Word(p.validUntil), ...p.accountSalt,
@@ -1224,6 +1160,8 @@ circuit actionUnionHash(p: ExecutePayload): Bytes<32> {
   return keccak256<Bytes<384>>(preimage);
 }
 
+/// WHO called WHAT, and how it was authorized: contract, entrypoint, selector, the selector's frozen
+/// EIP-712 type hash, the acting account, the authorization result, and the action parameters.
 circuit semanticCallTranscriptHash(
   manager: Bytes<32>, p: ExecutePayload, account: Bytes<32>, authResult: Bytes<32>
 ): Bytes<32> {
@@ -1234,6 +1172,10 @@ circuit semanticCallTranscriptHash(
   return keccak256<Bytes<256>>(preimage);
 }
 
+/// The commitment envelope: a flat 1,024-byte preimage of every semantic field, the call-transcript
+/// sub-hash, and TWO imbalance slots — two because an open swap moves value in both directions (a
+/// positive release and a negative want) while every other action moves at most one; unused slots
+/// are zero. Flat and keccak-only so an EVM verifier can rebuild it directly.
 circuit semanticCommitmentFromSlots(
   manager: Bytes<32>, domain: Bytes<32>, p: ExecutePayload, account: Bytes<32>,
   authResult: Bytes<32>, imbalanceCount: Uint<8>,
@@ -1256,9 +1198,9 @@ circuit semanticCommitmentFromSlots(
   return keccak256<Bytes<1024>>(preimage);
 }
 
-/// Private slot-selection core. Tier-3: its ONLY caller is now the exported pure oracle
-/// `semanticCommitmentFor` — `execute` no longer calls it, which is where the 366,831 rows went.
-/// Muxing values into one call keeps every frozen byte while avoiding branch-duplicated Keccak.
+/// Slot selection. Non-swaps have no imbalance; a named swap has one (the want-side deficit); an
+/// open swap has two, ORDERED BY COLOUR so the commitment does not depend on which leg was written
+/// first. Muxing the values into one call avoids branch-duplicated keccak.
 circuit semanticCommitmentCore(
   manager: Bytes<32>, domain: Bytes<32>, payload: ExecutePayload,
   account: Bytes<32>, authResult: Bytes<32>
@@ -1287,14 +1229,15 @@ circuit semanticCommitmentCore(
   );
 }
 
-/// THE normative definition of the FR-031 semantic commitment, and after Tier-3 the only place it
-/// is computed inside this contract. PURE — it reads no ledger state, so the compiler emits no ZKIR
-/// and no proving key for it, and evaluating it costs the caller nothing on-chain. Consumers call
-/// it on the compiled artifact (or reimplement the recipe off-circuit) with fields they recovered
-/// from the proved `execute` transcript; see the security rule at the head of this section.
+/// THE normative definition of the semantic commitment, and the only place this contract computes
+/// it. PURE — it reads no ledger state, so the compiler emits no proving key for it and evaluating
+/// it costs nothing on chain. Consumers call it on the compiled artifact (or reimplement the recipe
+/// off-circuit) with fields they recovered from the proved `execute` transcript.
 ///
-/// `authResult` is the caller's own recomputation: the EIP-712 digest (`evmDigestFor`, exported and
-/// pure) for `authMode == 1`, or `nativeAuthResult(account)` for `authMode == 0`.
+/// `authResult` is the caller's OWN recomputation: the EIP-712 digest (`evmDigestFor`, exported and
+/// pure) when `authMode == 1`, or `nativeAuthResult(account)` when `authMode == 0`. It is an
+/// argument rather than an internal derivation precisely so the caller has to reconstruct it — see
+/// the security rule at the head of this section.
 export circuit semanticCommitmentFor(
   manager: Bytes<32>, domain: Bytes<32>, payload: ExecutePayload,
   account: Bytes<32>, authResult: Bytes<32>
@@ -1304,13 +1247,15 @@ export circuit semanticCommitmentFor(
   return disclose(semanticCommitmentCore(manager, domain, p, account, authResult));
 }
 
-// Tier-3: `emitSemanticCommitment` is DELETED. It computed `semanticCommitmentCore` in-circuit and
-// emitted it as a `Misc` event; both are gone. That single call was 366,831 of `execute`'s 974,572
-// rows — the largest component of the circuit — and it re-hashed values the proved transcript
-// already binds. Nothing else in `execute` changed to accommodate the removal.
-
-/// The only externally callable registration/debit gateway. ECDSA/address operations stay
-/// straight-line because the pinned ZKIR-v3 backend cannot lower guarded secp operations.
+/// THE ONLY externally callable registration/debit gateway. Order of business: validate the
+/// envelope, compute the EIP-712 digest, run the ECDSA check, resolve the acting account through the
+/// choke point, enforce the deadline, bind the signature to the owner, then register OR dispatch
+/// custody, then write the nonce.
+///
+/// The ECDSA and address operations are STRAIGHT-LINE — computed unconditionally and consumed by
+/// `!isEvm… || …` asserts rather than placed inside an `if` — because the pinned proving backend
+/// cannot lower guarded secp256k1 operations. Native calls therefore verify a signature over a zero
+/// digest whose result nothing consumes: deliberate, and it costs rows rather than safety.
 export circuit execute(
   payload: ExecutePayload,
   sig: Secp256k1EcdsaSignature,
@@ -1350,12 +1295,13 @@ export circuit execute(
   }
 
   if (!isRegistration) {
-    // LEVER o2: one muxed dispatch replaces the five-way branch. See `custodyDispatch`.
     custodyDispatch(p, account);
   }
 
-  // The sole checked nonce write is deliberately after custody dispatch: every guard/effect must
-  // succeed first. EVM registration selects zero; native records never enter this write.
+  // The sole checked nonce write is deliberately AFTER the custody dispatch: every guard and effect
+  // must succeed first, so a refused action leaves the nonce where it was and the same authorization
+  // can simply be retried. EVM registration stores zero (the record's first usable nonce); native
+  // records never enter this write at all.
   const incrementedNonce = (p.nonce + 1) as Uint<64>;
   assert(!isEvmAction || incrementedNonce > p.nonce, "EVM nonce overflow");
   const storedNonce = (isEvmRegistration ? 0 : incrementedNonce) as Uint<64>;
@@ -1363,19 +1309,9 @@ export circuit execute(
     evmNonces.insert(account, storedNonce);
   }
 
-  // LEVER Tier-3: the FR-031 semantic commitment is NO LONGER computed or emitted here. This
-  // circuit's last two statements used to be
-  //
-  //     const authResult = isEvmAuthorized ? digest : nativeAuthResult(account);
-  //     emitSemanticCommitment(manager, p, account, authResult);
-  //
-  // and they are gone. `execute` now emits NO EVENTS. The proved call transcript is the authority:
-  // a consumer recovers the transcript fields, recomputes `authResult` itself (the EIP-712 digest
-  // via the pure `evmDigestFor`, or `nativeAuthResult(account)`), and evaluates the pure oracle
-  // `semanticCommitmentFor`. See the security rule at the head of the FR-031 section: no consumer
-  // may trust a commitment it did not recompute from the proved transcript.
-  //
-  // Nothing else in this circuit moved. `digest` is still computed and is still what the ECDSA
-  // check binds; the guard order, the custody dispatch, and the nonce-after-custody write are
-  // unchanged.
+  // This circuit emits NO EVENTS, and neither does any other in this file. The semantic commitment
+  // is not computed here: the proved transcript of this call is the authority, and readers recompute
+  // the commitment off-circuit via the exported pure `semanticCommitmentFor`. See THE SEMANTIC
+  // COMMITMENT above for the cost that motivated it, and for the rule that no consumer may trust a
+  // commitment it did not recompute.
 }
