@@ -105,10 +105,36 @@ watchdog_pid=$!
 ) &
 sampler_pid=$!
 
+# SRS / public parameters.
+#
+# Key generation — unlike `--skip-zk` compilation and `mock-compile` measurement — needs the
+# universal KZG structured reference string `bls_midnight_2p<k>` for each distinct circuit `k`.
+# From a cold cache `zkir` fetches it from `$MIDNIGHT_PARAM_SOURCE` (default
+# `https://srs.midnight.network/`), so a `--network none` container CANNOT generate keys: attempt 1
+# of this project failed in 78 s for exactly that reason (recorded in the plan, question 00010-Q2).
+#
+# The parameters are therefore PRE-FETCHED once into a hash-recorded directory and mounted here, and
+# THIS CONTAINER KEEPS `--network none`. `MIDNIGHT_PP` points the tool's data provider at that
+# directory. The tool verifies each artifact against its own built-in expected hash, so a corrupted
+# or substituted parameter file is rejected by the compiler itself, not merely by our records.
+params_dir="$repo_root/harness/generated-00010/zk-params"
+params_mount=()
+if [ -d "$params_dir" ]; then
+  params_mount=(-v "$params_dir:/params" -e MIDNIGHT_PP=/params)
+  echo "MIDNIGHT_PP=/params (pre-fetched, network stays none)"
+  echo "SRS_INVENTORY:"
+  for f in "$params_dir"/bls_midnight_2p*; do
+    printf '  %-22s %12s  %s\n' "$(basename "$f")" "$(wc -c < "$f" | tr -d ' ')" "$(shasum -a 256 "$f" | cut -d ' ' -f 1)"
+  done
+else
+  echo "MIDNIGHT_PP=<absent> — no pre-fetched parameters; a cold cache CANNOT work under network:none"
+fi
+
 set +e
 /usr/bin/time -p docker run --rm --network none \
   --name "$container" --cpus "$cpus" --memory "$memory" --memory-swap "$memory" \
   -e AA00010_PORT="$marker_port" \
+  ${params_mount[@]+"${params_mount[@]}"} \
   -v "$repo_root/contracts:/work/contracts:ro" \
   -v "$out_dir:/out" \
   -w /work \
