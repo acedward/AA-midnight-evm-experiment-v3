@@ -52,6 +52,48 @@ The image **cannot be rebuilt** (finding F-316 — the upstream archive was remo
 lost, recover it with `docker save` / `docker load` from a sibling tag; never re-pin to a different
 digest, because every K/rows number in this project is only comparable within one compiler.
 
+## SRS (KZG structured reference string) pin — **STANDING WORKSPACE BASELINE**
+
+**Owner resolution 00010-Q2 → option B, ratified 2026-08-25.** Proving-key generation needs the
+public Kate/KZG universal parameters (`bls_midnight_2p<k>`), which `compactc`/`zkir` otherwise
+fetches over the network at runtime — the one input to keygen that was neither pinned by digest nor
+frozen by lockfile. It is now pinned here **alongside the compiler image digest**, on the same
+footing.
+
+**The rule, for this project and every future one in this workspace: fetched once, hash-pinned,
+reused; never silently re-fetched.** The fetch is confined to one isolated, hash-recorded container;
+**the keygen container itself keeps `--network none`** together with every other bound.
+
+| SRS artifact | Bytes | SHA-256 |
+|---|---:|---|
+| `bls_midnight_2p8` | 49,540 | `909b707551eaaea79828e883cde6fc46ab15986c3b1d791bed462c9e2805c933` |
+| `bls_midnight_2p9` | 98,692 | `b9009f1098bcefffec3c461ab3a5e3a17f7e5599f0f08c70fcdc55a89227bcbd` |
+| `bls_midnight_2p13` | 1,573,252 | `d3324910969c4cc54143b8045b649e5c3a4bd5fb7b8f85fe1b770f640ce1c803` |
+| `bls_midnight_2p16` | 12,583,300 | `09c877216d6589b370263e18af40a030a901b41a7a7c37ef58c9901db41f05c6` |
+| `bls_midnight_2p19` | 100,663,684 | `8e8dc15c4362f05c912f1e770559a3945db3e58a374def416ed5d3e65ad5b10e` |
+
+Total 114,968,468 B (109.6 MiB). Those are exactly the `k` values this contract's nine circuits
+need (8, 9, 13, 16, 19).
+
+| Item | Value |
+|---|---|
+| Retained at (this clone, **gitignored**) | `harness/generated-00010/zk-params/` |
+| Absolute path | `/Users/edwardalvarado/todo/AA/experiments/00010-manager-k19/harness/generated-00010/zk-params/` |
+| Mounted into keygen as | `MIDNIGHT_PP` directory; keygen container runs `--network none` |
+| Source | `https://srs.midnight.network/bls_midnight_2p<k>` |
+| Fetched with | the **pinned compiler image's own `curl`** — no new image was introduced |
+| Tracked in git | **no** (`.gitignore:39` `harness/generated-00010/`); hashes are the durable record |
+
+**Verification is not merely these records.** `zkir` checks each parameter file against its own
+built-in expected hash, so a corrupted or substituted file is rejected by the compiler itself. The
+hashes above are the workspace's *reuse* baseline: a future project copies this directory and
+confirms these hashes before use, rather than re-fetching.
+
+**Owner FYI, recorded 2026-08-25:** the owner independently fetched
+`https://srs.midnight.network/bls_midnight_2p9` and confirms it succeeds — an independent
+confirmation of the parameter source for k=19-class keys. The hashes recorded here remain the
+verification baseline going forward.
+
 ## Host / Docker VM
 
 | Item | Value |
@@ -134,7 +176,8 @@ Exact measurement invocation (as issued by `measure-arm.sh`):
 | Arm | Source | Role |
 |---|---|---|
 | `product-k20` | `contracts/manager.compact` at base commit | the **reference oracle**: the k=20 product, kept compiled for byte-parity comparison |
-| `k19` | `contracts/manager.compact` after Phase 1 | the composed e1 + o2 + Tier-3 product |
+| `k19` | `contracts/manager.compact` after Phase 1 | the composed e1 + o2 + Tier-3 product — **retained as the PRE-DELETION baseline** for the Q1-B byte-identity check |
+| `k19-q1b` | `contracts/manager.compact` after the Q1-B dead-code deletion (2026-08-25) | the shipping source; its nine ZKIRs are **byte-identical** to `k19`'s |
 | `aux-minter`, `aux-minter-collide` | `contracts/minter*.compact` | unchanged auxiliaries the simulator loads |
 
 ## Phase 0 gate results

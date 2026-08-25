@@ -322,9 +322,78 @@ Docker residue is reported as a **delta** because this is a shared machine carry
 
 | # | Question | Status |
 |---|---|---|
-| 00010-Q1 | After the o2 mux, five leg circuits and three recipient helpers are uncalled dead code. Delete or retain? | UNRESOLVED, **non-blocking**. Retained (what the measured arm compiled); removal is provably zero-row. Recommendation: delete. |
-| 00010-Q2 | Keygen cannot run under `--network none` — it needs the public SRS. How should it obtain it? | UNRESOLVED, **execution proceeded under option B** (isolated hash-recorded pre-fetch; keygen container still network-none). Owner ratification requested. |
+| 00010-Q1 | After the o2 mux, five leg circuits and three recipient helpers are uncalled dead code. Delete or retain? | **RESOLVED (owner 2026-08-25): option B — DELETE.** Implemented and verified; see §9. |
+| 00010-Q2 | Keygen cannot run under `--network none` — it needs the public SRS. How should it obtain it? | **RESOLVED (owner 2026-08-25): option B RATIFIED**, and made the standing workspace practice. SRS now pinned in `PROTOCOL.md`; see §9. |
+| 00010-Q3 | `assertSwapPreconditions` / `claimWantedColour` lost their only caller with `openSwapShielded`. Delete them too? | **UNRESOLVED, non-blocking.** Raised by the Q1-B follow-up; not in the owner's enumerated eight, so left in place. Provably zero-row either way. |
 
-Carry-forward worth adopting regardless: **pin the SRS hashes** alongside the compiler image digest.
-The image is pinned by digest and the dependencies by lockfile; the SRS was the one unpinned input
-to key generation.
+---
+
+## 9. Follow-up: implementing the Q1/Q2 resolutions (2026-08-25)
+
+### 9.1 Q1 → option B: the eight uncalled private circuits are DELETED
+
+Deleted from `contracts/manager.compact`: `withdrawShielded`, `withdrawUnshielded`,
+`transferInternalShielded`, `transferInternalUnshielded`, `openSwapShielded`, `shieldedRecipient`,
+`unshieldedRecipient`, `swapRecipient`, plus the comment blocks that described only them.
+
+**Call-graph verification BEFORE deleting** (mechanical, comments stripped, not eyeballed): each of
+the eight had **zero callers**; every other occurrence of their names was a comment. Reachability
+from the 19 exported roots was **62 of 75** circuits before, and **62 of 67** after — the reachable
+set is unchanged, and the deletion newly orphaned **nothing**.
+
+**Diff:** `contracts/manager.compact` 1,609 → 1,405 lines; **40 insertions, 244 deletions**.
+Source SHA-256 `6bf07eb3…` → `9fb3ae3e6c28bd4d3c3fc923cf21193f95b66f2770d1808b80aa78ca3a83e62f`.
+Every one of the 40 added lines is a **comment or blank** — no new code was introduced; the
+insertions are the corrections to comments that the deletion made factually false (see below).
+Stored as `diffs/manager-k19-q1b-deletion.diff`.
+
+**The predicted cost of option B is now visible and is recorded rather than glossed:** the
+`diffs/manager-k20-to-k19.diff` product diff was regenerated against the shipping source and grew
+from **453 to 757 lines**, exactly the "the k=20-to-v5 diff gets larger and less legible" cons entry
+in the Q1 option table. The old leg bodies are now recoverable only from git history — commit
+`56faa51` is the last one that carries them.
+
+**Comments corrected (not merely deleted), because the deletion made them false:** the "RETAINED BUT
+NOT LIVE" block now records the deletion and its zero-row verification; the o2 rationale's reference
+to the three `*Recipient` helpers is past-tense; the v4 design narrative carries an explicit
+"NOTE FOR v5 READERS" that `openSwapShielded` no longer exists as a separate circuit and the shape
+lives on in `custodyDispatch` selector 6; the `transferInternal` family-split rationale now points at
+the `custodyDispatch` family mux; and the zswap-transcription comment points at the live shielded
+payout leg instead of the deleted `withdrawShielded`. Historical references explicitly framed as
+describing **v3 or v4** were left intact.
+
+**The acceptance gate — ZKIR byte-identity — PASSED 9/9.** Recompiled under the pinned image
+(`--feature-zkir-v3 --skip-zk`, exit `0`, real `1.42` s, `WATCHDOG_TIMEOUT=0`, `KEY_FILES=0`,
+nine ZKIRs, unchanged name set) into a **new** arm `k19-q1b`, leaving the pre-deletion `k19` build
+intact for comparison:
+
+| Artifact | Pre-deletion (`k19`) vs post-deletion (`k19-q1b`) |
+|---|---|
+| All nine `zkir/*.zkir` | **BYTE-IDENTICAL — 9/9**, same SHA-256 (`execute.zkir` = `524c32a2…`, 605,053 B) |
+| `contract/index.d.ts` | **BYTE-IDENTICAL** (`92c251d3…`) — exported surface unchanged |
+| `contract/index.js` | Differs **only** in `manager.compact line N char N` provenance strings inside type-error messages. **Zero** non-provenance changed lines; after normalising those strings the two files are byte-identical (`3654cdd6…`) |
+
+Because the nine ZKIRs are byte-identical, **the measured `k=19 / 382,770 rows`, the 45/45 keyless
+suite results and the nine generated proving/verifier keys all carry over unchanged** — no
+re-measurement and no re-keygen were required, exactly as the owner's resolution anticipated.
+
+**Re-run anyway, because the executed artifact was not byte-identical:** `index.js` did change (line
+numbers only), and the suite executes that file, so the keyless suite was re-run rather than assumed.
+**45/45 pass across the same 6 files** on the post-deletion build, against the same k=20 reference
+oracle (`1a6cf20d…`). Log: `raw/parity-k19-q1b.log`; compile log `raw/compile-k19-q1b.log`.
+
+### 9.2 Q2 → option B ratified: the SRS is pinned as the standing workspace baseline
+
+The five SRS parameter files' sizes and SHA-256 hashes are now recorded in `PROTOCOL.md` **alongside
+the compiler image digest**, under the standing rule *"fetched once, hash-pinned, reused; never
+silently re-fetched."* The files themselves are retained on disk at
+`harness/generated-00010/zk-params/` (gitignored; 114,968,468 B total) and re-verified byte-for-byte
+against the Phase 5 evidence. The owner independently confirmed
+`https://srs.midnight.network/bls_midnight_2p9` fetches successfully.
+
+### 9.3 Integrity
+
+Docker residue `aa00010*` **0/0/0/0**; the machine's unrelated baseline (15 containers / 36 volumes /
+3 custom networks) returned with **byte-identical** container and volume lists. Zero key files
+outside the gitignored path. No push, no deploy, no proving, no keygen re-run. The 00008/00009
+clones were not touched.
