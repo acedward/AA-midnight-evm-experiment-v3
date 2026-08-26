@@ -1067,9 +1067,19 @@ circuit custodyDispatch(p: ExecutePayload, account: Bytes<32>): [] {
   // --- the unshielded give leg (selector 3): account guard above, then contract holdings ---
   if (isWithdrawUnshielded) {
     assert(unshieldedBalanceGte(col, val), "contract unshielded balance too low");
+    // MIND THE OPERAND ORDER — it is the mirror image of the shielded `Either` above.
+    // `sendUnshielded`'s recipient is `Either<ContractAddress, UserAddress>`, so LEFT = contract
+    // and RIGHT = user; the shielded `Either<ZswapCoinPublicKey, ContractAddress>` puts the user
+    // key on the LEFT. The envelope's discriminant is unchanged by that (kind 0 = user key /
+    // 1 = contract, `:789`), so kind 0 must take the RIGHT arm here.
+    // This tag is not cosmetic: it becomes the `PublicAddress` of the
+    // `claimUnshieldedCoinSpend` the library emits, and the ledger's effects check satisfies a
+    // `Contract`-tagged claim ONLY from that contract's own `unshielded_inputs` in the same
+    // transaction — a user recipient tagged `Contract` is unsatisfiable, and the node rejects
+    // the transaction with `Custom error: 214`.
     sendUnshielded(col, val, p.recipientKind == 0
-      ? left<ContractAddress, UserAddress>(ContractAddress{ bytes: p.recipient })
-      : right<ContractAddress, UserAddress>(UserAddress{ bytes: p.recipient }));
+      ? right<ContractAddress, UserAddress>(UserAddress{ bytes: p.recipient })
+      : left<ContractAddress, UserAddress>(ContractAddress{ bytes: p.recipient }));
   }
 
   // --- ONE debit write, into the muxed family ---
