@@ -7,8 +7,8 @@
 //   generated/manager      the k=19 Manager under test (e1 + o2 + Tier-3)
 //   generated/manager-k20  the unmodified k=20 product, compiled from the base commit
 //
-// TWO differences are expected and intended, and BOTH are asserted precisely rather than waved
-// through:
+// THREE differences are expected and intended, and ALL THREE are asserted precisely rather than
+// waved through:
 //
 //   1. The Tier-3 amendment: the k=20 Manager emits the FR-031 semantic `Misc` event and the k=19
 //      Manager emits nothing. The test shows the emitted value is exactly what that build's own
@@ -18,6 +18,16 @@
 //      `aa:manager:*` scheme, so native account ids and (account, colour) storage keys legitimately
 //      differ between the builds. See "THE DOMAIN-SEPARATOR RENAME" below for exactly what changed,
 //      what did NOT, and what replaced the three assertions that used to compare those values.
+//
+//   3. The contract-recipient family, refused: the k=19 Manager's `assertActionEnvelope` refuses
+//      selector 2/3 `recipientKind 1` and selector 6 `recipientKind 2`; the k=20 product admits all
+//      three. This is a deliberate NARROWING, not a regression, and the k=20 build is not the
+//      authority on it — the LEDGER is. A contract-addressed payout is accepted only if the
+//      recipient contract claims receipt in the same transaction, so what the k=20 product admitted
+//      here it could only ever have proved and then had refused by the node (218 shielded, 214
+//      unshielded). Simulation cannot see that, which is exactly why two of the three shapes used
+//      to sit in the SUCCESS set of this very file. The divergence is asserted directly, on both
+//      builds, in "refuses the contract-recipient family, which the k=20 product admitted".
 
 import { describe, expect, it } from "vitest";
 
@@ -298,8 +308,28 @@ describe("k20 parity — the pure byte surface is identical", () => {
         return `REFUSED:${error instanceof Error ? error.message : String(error)}`;
       }
     };
+    // THE THIRD INTENDED DIVERGENCE, at the pure-circuit surface (see this file's header).
+    // `semanticCommitmentFor` runs `assertActionEnvelope`, and the fixture generator sweeps ALL
+    // recipient kinds — so the set necessarily contains contract-recipient envelopes, which the
+    // k=19 build now refuses and the frozen k=20 oracle still commits to. These cases are
+    // identified from the PAYLOAD, never from a hardcoded list of fixture ids, so a regenerated
+    // fixture set cannot slip a new one past this test.
+    //
+    // Note what did NOT change: the EIP-712 type hashes, struct hashes and digests above are still
+    // compared for every case including these. Narrowing the envelope refuses such an action at
+    // EXECUTION; it does not alter the bytes a wallet would sign for it, and that byte surface is
+    // frozen (FR-1003).
+    const paysAContract = (p: ManagerExecutePayload): boolean =>
+      ((p.selector === 2n || p.selector === 3n) && p.recipientKind === 1n) ||
+      (p.selector === 6n && p.recipientKind === 2n);
+    const contractRecipientRefusal = (p: ManagerExecutePayload): string =>
+      p.selector === 6n
+        ? "REFUSED:failed assert: swap to a contract taker is not supported"
+        : "REFUSED:failed assert: withdraw to a contract recipient is not supported";
+
     let accepted = 0;
     let refused = 0;
+    let narrowed = 0;
     for (const item of allFixtureCases()) {
       const payload = executePayloadForAction(item.action);
       const manager = bytes(item.action.manager);
@@ -314,6 +344,16 @@ describe("k20 parity — the pure byte surface is identical", () => {
       const right = evaluate(() =>
         (k20Pure as any).semanticCommitmentFor(manager, domain, payload, account, digest),
       );
+      if (paysAContract(payload)) {
+        narrowed += 1;
+        expect(left, `${item.id} — k19 refuses the contract recipient`).toBe(
+          contractRecipientRefusal(payload),
+        );
+        // And the divergence is real on the other side: the oracle committed to it happily.
+        expect(right.startsWith("REFUSED:"), `${item.id} — the k=20 oracle admitted it`).toBe(false);
+        continue;
+      }
+
       expect(left, `${item.id} semantic commitment`).toBe(right);
 
       if (left.startsWith("REFUSED:")) {
@@ -332,9 +372,16 @@ describe("k20 parity — the pure byte surface is identical", () => {
         ).commitment,
       );
     }
-    // Both halves are actually exercised — this is not an all-refused vacuous pass.
-    expect(accepted, "accepted fixture cases").toBeGreaterThan(40);
+    // Both halves are actually exercised — this is not an all-refused vacuous pass. The bar is the
+    // ORIGINAL one: > 40 fixture cases whose envelope the k=19 build admits *as an envelope*. The
+    // contract-recipient cases are still admitted at that surface — they are refused for what they
+    // ask for, not for being malformed — so they belong on this side of the count. Splitting them
+    // into their own branch above is what makes the two numbers add up rather than one shrink.
+    expect(accepted + narrowed, "fixture cases with a well-formed envelope").toBeGreaterThan(40);
+    expect(accepted, "fixture cases committed identically by both builds").toBeGreaterThan(30);
     expect(refused, "refused fixture cases").toBeGreaterThan(0);
+    // …and the divergence is exercised too, so the branch above cannot rot into dead code unseen.
+    expect(narrowed, "contract-recipient fixture cases").toBeGreaterThan(0);
   }, PARITY_TIMEOUT_MS);
 
   it("agrees on the native selector-0 shape, which no EVM fixture covers", () => {
@@ -592,18 +639,13 @@ describe("k20 parity — custody effects are identical, action by action", () =>
           recipient: bytes(RECIPIENT),
         }),
       },
-      {
-        label: "selector 2 — withdrawShielded, recipientKind 1 (contract)",
-        payload: ({ account }) => ({
-          ...base,
-          selector: 2n,
-          account,
-          primaryColor: bytes(COLOR_A),
-          primaryAmount: 4n,
-          recipientKind: 1n,
-          recipient: bytes(RECIPIENT),
-        }),
-      },
+      // NOTE: selector 2 with `recipientKind 1` (a CONTRACT recipient) is NOT a success case any
+      // more. `assertActionEnvelope` now refuses every contract-addressed payout shape, because the
+      // ledger accepts one only if the recipient contract claims receipt in the same transaction —
+      // so what used to pass HERE was refused by the node out there, with error 218. It moved to
+      // the identical-refusal set below, which is where a fail-closed capability belongs. This is
+      // also why simulation could not have caught it on its own: it never runs the effects check.
+      //
       // NOTE: selector 3 (withdrawUnshielded) is NOT a success case here. The simulator cannot fund
       // the CONTRACT's own kernel unshielded holdings, so the leg always hits "contract unshielded
       // balance too low" — identically on both builds. It is covered as an identical-refusal case
@@ -661,22 +703,10 @@ describe("k20 parity — custody effects are identical, action by action", () =>
           creditAccount: destination,
         }),
       },
-      {
-        label: "selector 6 — openSwapShielded, recipientKind 2 (contract taker)",
-        payload: ({ account, destination }) => ({
-          ...base,
-          selector: 6n,
-          account,
-          primaryColor: bytes(COLOR_A),
-          primaryAmount: 12n,
-          recipientKind: 2n,
-          recipient: bytes(RECIPIENT),
-          wantNonce: new Uint8Array(32).fill(0x33),
-          wantColor: bytes(COLOR_B),
-          wantAmount: 13n,
-          creditAccount: destination,
-        }),
-      },
+      // NOTE: selector 6 with `recipientKind 2` (a CONTRACT taker) is NOT a success case any more,
+      // for the same reason as selector 2 kind 1 above — and with the extra sting that such an
+      // offer is unsettleable by construction: settling it would need the taker contract to claim
+      // the payout commitment inside the MAKER's transaction. Refusal case below.
     ];
 
     const manager = managerAddressHex(k19.address);
@@ -902,6 +932,11 @@ describe("k20 parity — custody effects are identical, action by action", () =>
           recipient: bytes(RECIPIENT),
         },
       },
+      // NOTE: the contract-recipient family (selector 2/3 kind 1, selector 6 kind 2) does NOT
+      // belong in this set, even though the k=19 build refuses all three. This set asserts
+      // IDENTICAL refusal on both builds, and the k=20 oracle is frozen at a commit that still
+      // ADMITS them — that divergence is deliberate and is asserted on its own terms in
+      // "refuses the contract-recipient family, which the k=20 product admitted" below.
       {
         label: "NC — envelope: unknown selector",
         payload: { ...base, selector: 7n, account },
@@ -950,6 +985,132 @@ describe("k20 parity — custody effects are identical, action by action", () =>
       expect(JSON.stringify(snapshotLedger(k20.ledger)), `${label} k20 neutrality`).toBe(before20);
       expectSameState(label, p);
     }
+  }, PARITY_TIMEOUT_MS);
+
+  it("refuses the contract-recipient family, which the k=20 product admitted", async () => {
+    // THE THIRD INTENDED DIVERGENCE (see this file's header), asserted from BOTH sides: the k=19
+    // build refuses each shape at the envelope with a message that says why, and the frozen k=20
+    // oracle demonstrably does not. Asserting only the k=19 half would leave this test silently
+    // vacuous the day someone widens the envelope back without noticing.
+    //
+    // The k=20 column is a record, not an endorsement. Two of these three shapes were SUCCESS cases
+    // in this very file until now, and they were wrong: the authority on a contract-addressed
+    // payout is the ledger's effects check, which simulation does not run. Live, each of them
+    // proves at k=19 and is only then refused by the node — 218 for the shielded pair (`commitments
+    // == claimed_shielded_receives` is an equality nothing satisfies), 214 for the unshielded one
+    // (`PublicAddress::Contract(recipient)` with no matching `unshielded_inputs`).
+    const p = await fundedPair(async (sim, ids) => {
+      await sim.call("depositShielded", coin(COLOR_A, 100n, 1), ids.account);
+      await sim.call("depositShielded", coin(COLOR_B, 100n, 2), ids.account);
+      await sim.call("depositUnshielded", bytes(COLOR_A), 100n, ids.account);
+    });
+    const { k19, k20 } = p;
+
+    const base = emptyExecutePayload();
+    const shapes: {
+      label: string;
+      /** The k=19 envelope's refusal, compared raw — it is part of the frozen refusal surface. */
+      refusal: string;
+      /** What the FROZEN oracle does with the same shape: run it, or die somewhere unrelated. */
+      k20: "admits" | { refusesElsewhereWith: string };
+      payload: (ids: NativeIds) => ManagerExecutePayload;
+    }[] = [
+      {
+        label: "selector 2 — withdrawShielded to a contract recipient (kind 1)",
+        refusal: "withdraw to a contract recipient is not supported",
+        k20: "admits",
+        payload: ({ account }) => ({
+          ...base,
+          selector: 2n,
+          account,
+          primaryColor: bytes(COLOR_A),
+          primaryAmount: 4n,
+          recipientKind: 1n,
+          recipient: bytes(RECIPIENT),
+        }),
+      },
+      {
+        label: "selector 3 — withdrawUnshielded to a contract recipient (kind 1)",
+        refusal: "withdraw to a contract recipient is not supported",
+        // The k=20 envelope admits this shape; the call then dies much deeper, at the guard the
+        // simulator can never satisfy because it cannot fund the CONTRACT's own kernel unshielded
+        // holdings. A different message from a different line — which is precisely the point: on
+        // k=20 nothing ever refused this shape for being contract-addressed.
+        k20: { refusesElsewhereWith: "contract unshielded balance too low" },
+        payload: ({ account }) => ({
+          ...base,
+          selector: 3n,
+          account,
+          primaryColor: bytes(COLOR_A),
+          primaryAmount: 4n,
+          recipientKind: 1n,
+          recipient: bytes(RECIPIENT),
+        }),
+      },
+      {
+        label: "selector 6 — swap named to a contract taker (kind 2)",
+        refusal: "swap to a contract taker is not supported",
+        k20: "admits",
+        payload: ({ account, destination }) => ({
+          ...base,
+          selector: 6n,
+          account,
+          primaryColor: bytes(COLOR_A),
+          primaryAmount: 12n,
+          recipientKind: 2n,
+          recipient: bytes(RECIPIENT),
+          wantNonce: new Uint8Array(32).fill(0x33),
+          wantColor: bytes(COLOR_B),
+          wantAmount: 13n,
+          creditAccount: destination,
+        }),
+      },
+    ];
+
+    for (const shape of shapes) {
+      // k=19: refused, with the reason spelled out, and STATE-NEUTRALLY — `expectReject` already
+      // fails if the whole ledger is not byte-identical afterwards; this pins the bytes as well.
+      // Compared RAW, like the rest of the refusal surface. `failed assert: ` is the compact
+      // runtime's own prefix, not contract text — `refusal` above holds what the contract says.
+      const before19 = JSON.stringify(snapshotLedger(k19.ledger));
+      expect(
+        await k19.expectReject("execute", shape.payload(p.ids.k19), inert.signature, inert.point),
+        `${shape.label} — k19 refusal message`,
+      ).toBe(`failed assert: ${shape.refusal}`);
+      expect(JSON.stringify(snapshotLedger(k19.ledger)), `${shape.label} — k19 neutrality`).toBe(
+        before19,
+      );
+
+      // k=20: the divergence is real, and it is at the ENVELOPE. The oracle either runs the action
+      // to completion or dies for an unrelated, named reason — never with the k=19 refusal.
+      if (shape.k20 === "admits") {
+        const admitted = await k20.callDetailed(
+          "execute",
+          shape.payload(p.ids.k20),
+          inert.signature,
+          inert.point,
+        );
+        expect(admitted, `${shape.label} — k20 ran it to completion`).toBeDefined();
+      } else {
+        const elsewhere = await k20.expectReject(
+          "execute",
+          shape.payload(p.ids.k20),
+          inert.signature,
+          inert.point,
+        );
+        expect(elsewhere, `${shape.label} — k20 refuses, but not for this`).toBe(
+          `failed assert: ${shape.k20.refusesElsewhereWith}`,
+        );
+        expect(elsewhere, `${shape.label} — k20 has no envelope refusal for it`).not.toContain(
+          shape.refusal,
+        );
+      }
+    }
+
+    // Deliberately NO `expectSameState` at the end: the k=20 build applied two payouts the k=19
+    // build refused, so the two ledgers are SUPPOSED to have diverged by here. That divergence is
+    // the finding, not a failure — and it is the reason these shapes cannot live in the
+    // "refuses identically on the negative set" case above.
   }, PARITY_TIMEOUT_MS);
 
   it("agrees on the EVM-authorized path: signature, deadline, nonce-after-custody, refusals", async () => {

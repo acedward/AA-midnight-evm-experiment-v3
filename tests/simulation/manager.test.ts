@@ -265,7 +265,11 @@ describe("Manager v5 owner actions through the one gateway", () => {
     await sim.call("depositUnshielded", bytes(COLOR_A), 20n, bytes(source));
     const common = { manager: managerAddressHex(sim.address), accountId: source, owner: EVM_OWNER_A, validUntil: DEADLINE };
     await executeEvm(sim, EVM_KEY_A, { ...common, primaryType: "WithdrawShielded", nonce: 0n, color: COLOR_A, amount: 1n, recipientKind: 0n, recipient: RECIPIENT });
-    const unshielded = { ...common, primaryType: "WithdrawUnshielded" as const, nonce: 1n, color: COLOR_A, amount: 1n, recipientKind: 1n, recipient: RECIPIENT };
+    // `recipientKind: 0n` — the user-key shape, and now the ONLY one the envelope admits for a
+    // withdrawal (a contract recipient is refused: the ledger would need that contract to claim
+    // receipt in the same transaction). This case is about reaching the kernel-holdings guard,
+    // which is deeper than the envelope, so the kind is incidental to what it asserts.
+    const unshielded = { ...common, primaryType: "WithdrawUnshielded" as const, nonce: 1n, color: COLOR_A, amount: 1n, recipientKind: 0n, recipient: RECIPIENT };
     const unshieldedPrepared = prepareEvmExecute(unshielded, bytesToHex(sim.deploymentDomain) as Hex32, metamaskSign(EVM_KEY_A, unshielded, bytesToHex(sim.deploymentDomain) as Hex32));
     expect(await sim.expectRejectAt(NOW, "execute", unshieldedPrepared.payload, unshieldedPrepared.signature, unshieldedPrepared.point)).toMatch(/contract unshielded balance too low/);
     expect(sim.ledger.evmNonces.lookup(bytes(source))).toBe(1n);
@@ -291,7 +295,9 @@ describe("Manager v5 owner actions through the one gateway", () => {
     const authResult = nativeAuthResult(account);
     const payloads: ManagerExecutePayload[] = [
       { ...emptyExecutePayload(), selector: 2n, account: idA, primaryColor: bytes(COLOR_A), primaryAmount: 1n, recipientKind: 0n, recipient: bytes(RECIPIENT) },
-      { ...emptyExecutePayload(), selector: 3n, account: idA, primaryColor: bytes(COLOR_A), primaryAmount: 1n, recipientKind: 1n, recipient: bytes(RECIPIENT) },
+      // Kind 0 (user key) for the same reason as the EVM case above: the envelope now refuses a
+      // contract recipient, and this row is here to reach the kernel-holdings guard behind it.
+      { ...emptyExecutePayload(), selector: 3n, account: idA, primaryColor: bytes(COLOR_A), primaryAmount: 1n, recipientKind: 0n, recipient: bytes(RECIPIENT) },
       { ...emptyExecutePayload(), selector: 4n, account: idA, primaryColor: bytes(COLOR_A), primaryAmount: 2n, toAccount: idB },
       { ...emptyExecutePayload(), selector: 5n, account: idA, primaryColor: bytes(COLOR_A), primaryAmount: 2n, toAccount: idB },
       { ...emptyExecutePayload(), selector: 6n, account: idA, primaryColor: bytes(COLOR_A), primaryAmount: 3n, recipientKind: 1n, recipient: bytes(RECIPIENT), wantNonce: new Uint8Array(32).fill(0x88), wantColor: bytes(COLOR_B), wantAmount: 4n, creditAccount: idA },
