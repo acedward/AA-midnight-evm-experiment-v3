@@ -393,11 +393,25 @@ export class ManagerSim {
         recipient: recipient.is_left ? recipient.left.bytes : recipient.right.bytes,
       });
     } else if (circuitId === 'withdrawUnshielded') {
+      // MIND THE OPERAND ORDER — it is the MIRROR of `withdrawShielded` just above, and getting it
+      // wrong is invisible rather than loud. The shielded recipient is
+      // `Either<ZswapCoinPublicKey, ContractAddress>` (LEFT = the user key, so `is_left` ⇒ kind 0);
+      // the unshielded one is `Either<ContractAddress, UserAddress>` (LEFT = a CONTRACT, so
+      // `is_left` ⇒ kind 1). Every unshielded caller in these suites passes a USER — the helpers are
+      // literally named `unshieldedUserRecipient` and are built `is_left: false` for exactly this
+      // reason — so they must render as kind 0.
+      //
+      // This mapping used to read `is_left ? 0n : 1n`, copied from the shielded branch. That was
+      // correct only for the pre-fix contract, whose Either arms were themselves inverted; when the
+      // contract was corrected the adapter silently disagreed with it, and nothing caught the
+      // disagreement because selector 3 refuses at the kernel-holdings guard in simulation before
+      // the recipient tag is ever used. It surfaced only once `assertActionEnvelope` began refusing
+      // contract recipients — an assert that runs BEFORE that guard.
       const [color, amount, recipient] = args as [Uint8Array, bigint, any];
       Object.assign(payload, {
         primaryColor: color,
         primaryAmount: amount,
-        recipientKind: recipient.is_left ? 0n : 1n,
+        recipientKind: recipient.is_left ? 1n : 0n,
         recipient: recipient.is_left ? recipient.left.bytes : recipient.right.bytes,
       });
     } else if (circuitId === 'transferInternalShielded' || circuitId === 'transferInternalUnshielded') {
