@@ -1,0 +1,208 @@
+pragma language_version >= 0.25.0;
+
+// @module Eip712
+// @description The EIP-712 codec: the frozen type/domain hashes, the per-selector struct hash, the
+//              domain separator, the EVM account id and the digest an EVM owner's wallet signs.
+//
+// State-free: every circuit here is a function of its arguments alone, which is why the four
+// exported ones are FREE ORACLES on the compiled artifact — a signer, a relayer or an EVM-side
+// verifier obtains the contract's OWN answer instead of reimplementing the codec. `frozenTypeHash`
+// is exported for `SemanticCommitment`, which binds the selector's type hash into the transcript.
+//
+// FROZEN BYTES (see the index in the preset header): `accountTag`, `domainType`, `domainName`,
+// `domainVersion`, and the five per-action type hashes `registerType`, `withdrawShieldedType`,
+// `withdrawUnshieldedType`, `transferShieldedType`, `transferUnshieldedType`, `openSwapType`. They
+// are defined HERE and nowhere else.
+
+module Eip712 {
+  import CompactStandardLibrary;
+  import "./ByteCodec" prefix ByteCodec_;
+  import "./ActionEnvelope";
+
+  export {
+    frozenTypeHash,
+    evmAccountIdFor,
+    evmDomainSeparatorFor,
+    evmStructHashFor,
+    evmDigestFor
+  }
+
+  // --- the EIP-712 byte codec ---------------------------------------------------------------------
+  //
+  // EVM-mode authorization is an ordinary EIP-712 signature, reproduced byte for byte so that what a
+  // wallet displays and signs is exactly what this circuit verifies:
+  //
+  //     digest = keccak256(0x19 || 0x01 || domainSeparator || structHash)
+  //
+  // THE DOMAIN SEPARATOR BINDS TWO DEPLOYMENT-SPECIFIC THINGS (`evmDomainSeparatorFor`): the CONTRACT
+  // ADDRESS ALIAS — the low 20 bytes of keccak256 of this contract's 32-byte Midnight address, which
+  // is what gives a Midnight contract an EVM-shaped `verifyingContract` — and the DEPLOYMENT SALT in
+  // `deploymentDomain`. A signature is therefore useless against another contract or another
+  // deployment of this one. THE STRUCT HASH IS PER-ACTION (`evmStructHashFor`): each selector has its
+  // OWN frozen type hash and field list, so a signature authorizing a withdrawal cannot be
+  // reinterpreted as a transfer or a swap. That separation is at the HASH level, not merely the field
+  // level, which is also what lets a wallet show a distinct, meaningful action name.
+  //
+  // Byte order: `v as Bytes<N>` is LITTLE-endian here, while EVM hashing wants BIG-endian 32-byte
+  // words, so every integer goes through one of the `*Word` encoders below.
+
+  // --- frozen EIP-712 constants -------------------------------------------------------------------
+  //
+  // These are keccak256 hashes of the EIP-712 type strings and of the domain's name and version.
+  // FROZEN: changing any one of them changes what every wallet signs and what every off-chain
+  // verifier recomputes.
+
+  pure circuit accountTag(): Bytes<32> {
+    return Bytes[0x55, 0xbc, 0x94, 0x0f, 0x83, 0x53, 0x37, 0xf1,
+                 0x22, 0x4c, 0x18, 0x11, 0x10, 0xb2, 0xb7, 0x7f,
+                 0x57, 0xed, 0x69, 0x4c, 0xae, 0x0c, 0x4b, 0xf8,
+                 0xff, 0x6b, 0xb3, 0xe0, 0x3b, 0xe6, 0xa9, 0x88];
+  }
+
+  pure circuit domainType(): Bytes<32> {
+    return Bytes[0x36, 0xc2, 0x5d, 0xe3, 0xe5, 0x41, 0xd5, 0xd9,
+                 0x70, 0xf6, 0x6e, 0x42, 0x10, 0xd7, 0x28, 0x72,
+                 0x12, 0x20, 0xff, 0xf5, 0xc0, 0x77, 0xcc, 0x6c,
+                 0xd0, 0x08, 0xb3, 0xa0, 0xc6, 0x2a, 0xda, 0xb7];
+  }
+
+  pure circuit domainName(): Bytes<32> {
+    return Bytes[0xb2, 0xa1, 0x61, 0xc1, 0xe1, 0xfe, 0x09, 0xf6,
+                 0x31, 0x58, 0x5b, 0x3b, 0xda, 0x0e, 0x4a, 0x22,
+                 0xf3, 0x17, 0xd7, 0xc6, 0x63, 0xc5, 0x82, 0xa0,
+                 0x7c, 0x1d, 0x68, 0x3e, 0x61, 0xfd, 0xcd, 0xb1];
+  }
+
+  pure circuit domainVersion(): Bytes<32> {
+    return Bytes[0xc8, 0x9e, 0xfd, 0xaa, 0x54, 0xc0, 0xf2, 0x0c,
+                 0x7a, 0xdf, 0x61, 0x28, 0x82, 0xdf, 0x09, 0x50,
+                 0xf5, 0xa9, 0x51, 0x63, 0x7e, 0x03, 0x07, 0xcd,
+                 0xcb, 0x4c, 0x67, 0x2f, 0x29, 0x8b, 0x8b, 0xc6];
+  }
+
+  pure circuit registerType(): Bytes<32> {
+    return Bytes[0xe6, 0xac, 0xe6, 0xc7, 0x0a, 0x9d, 0x92, 0xef,
+                 0x85, 0x1c, 0x2e, 0x2a, 0x67, 0xb2, 0x30, 0x90,
+                 0x17, 0xb0, 0x51, 0xd3, 0x9e, 0x05, 0x54, 0xc7,
+                 0x46, 0x27, 0x4a, 0x17, 0x69, 0x59, 0xac, 0x4f];
+  }
+
+  pure circuit withdrawShieldedType(): Bytes<32> {
+    return Bytes[0x71, 0x7e, 0x1e, 0x74, 0x12, 0x98, 0x52, 0xbd,
+                 0x43, 0x67, 0x44, 0xa5, 0xa1, 0x10, 0x8f, 0x0d,
+                 0xb9, 0x02, 0x92, 0x70, 0x31, 0xf5, 0xe7, 0x79,
+                 0x96, 0x18, 0xec, 0x12, 0x93, 0x66, 0xd6, 0x1e];
+  }
+
+  pure circuit withdrawUnshieldedType(): Bytes<32> {
+    return Bytes[0xb6, 0x01, 0x29, 0xea, 0x6c, 0xa4, 0xc1, 0xb5,
+                 0x1d, 0x86, 0x60, 0x77, 0xd1, 0x1c, 0xdb, 0x02,
+                 0x30, 0xe6, 0x06, 0x58, 0x76, 0xa5, 0x42, 0x06,
+                 0xfe, 0xce, 0x04, 0x41, 0x3e, 0xda, 0xba, 0x9d];
+  }
+
+  pure circuit transferShieldedType(): Bytes<32> {
+    return Bytes[0x06, 0xbe, 0xb8, 0x3e, 0xc8, 0xde, 0xd3, 0xa8,
+                 0x08, 0x0b, 0xfa, 0xb5, 0x91, 0xd8, 0x9a, 0x1b,
+                 0x86, 0xed, 0x9e, 0x3f, 0x8d, 0xf6, 0xc1, 0x0e,
+                 0xd3, 0x67, 0x74, 0x16, 0xd0, 0xa5, 0x60, 0x64];
+  }
+
+  pure circuit transferUnshieldedType(): Bytes<32> {
+    return Bytes[0x46, 0xe9, 0x6f, 0x44, 0x96, 0xc1, 0x82, 0xe9,
+                 0x83, 0x95, 0xb6, 0x89, 0x70, 0x1a, 0x94, 0x5c,
+                 0xbd, 0xb4, 0x75, 0x43, 0x57, 0x42, 0x42, 0xcc,
+                 0x17, 0xf9, 0xb6, 0x44, 0x8c, 0x04, 0x9a, 0x07];
+  }
+
+  pure circuit openSwapType(): Bytes<32> {
+    return Bytes[0xf7, 0x87, 0xd7, 0xf9, 0x63, 0xe8, 0x9e, 0xfc,
+                 0xda, 0x8e, 0x6a, 0x54, 0x6b, 0xaf, 0xff, 0x33,
+                 0x38, 0x8c, 0xbd, 0xf4, 0x4b, 0x81, 0xf6, 0xf5,
+                 0x95, 0x0c, 0x4b, 0xd3, 0xb0, 0x66, 0x58, 0x48];
+  }
+
+  /// Selector -> frozen type hash. Selector 0 (native registration) signs nothing, hence the zero.
+  export pure circuit frozenTypeHash(selector: Uint<8>): Bytes<32> {
+    if (selector == 1) { return registerType(); }
+    if (selector == 2) { return withdrawShieldedType(); }
+    if (selector == 3) { return withdrawUnshieldedType(); }
+    if (selector == 4) { return transferShieldedType(); }
+    if (selector == 5) { return transferUnshieldedType(); }
+    if (selector == 6) { return openSwapType(); }
+    return default<Bytes<32>>;
+  }
+
+  /// An EVM account's id is a hash of (tag, this contract, the owning EOA, a caller-chosen salt), so
+  /// one EOA can hold several independent accounts here and neither the id nor the salt is guessable
+  /// from the address alone.
+  export pure circuit evmAccountIdFor(manager: Bytes<32>, owner: Bytes<20>, salt: Bytes<32>): Bytes<32> {
+    const preimage: Bytes<128> = slice<128>([
+      ...accountTag(), ...manager, ...ByteCodec_addressWord(owner), ...salt
+    ], 0) as Bytes<128>;
+    return disclose(keccak256<Bytes<128>>(preimage));
+  }
+
+  /// The EIP-712 domain separator. `alias` is this contract's EVM-shaped `verifyingContract`: the low
+  /// 20 bytes of keccak256 over its 32-byte Midnight address. `domain` is the deployment salt.
+  export pure circuit evmDomainSeparatorFor(manager: Bytes<32>, domain: Bytes<32>): Bytes<32> {
+    const alias = slice<20>(keccak256<Bytes<32>>(manager), 12);
+    const preimage: Bytes<160> = slice<160>([
+      ...domainType(), ...domainName(), ...domainVersion(), ...ByteCodec_addressWord(alias), ...domain
+    ], 0) as Bytes<160>;
+    return disclose(keccak256<Bytes<160>>(preimage));
+  }
+
+  /// The per-action struct hash. One branch per action shape, each opening with its own frozen type
+  /// hash, so no signature can be replayed as a different action.
+  export pure circuit evmStructHashFor(manager: Bytes<32>, payload: ExecutePayload): Bytes<32> {
+    const p = payload;
+    if (p.selector == 1) {
+      const preimage: Bytes<192> = slice<192>([
+        ...registerType(), ...manager, ...p.account, ...ByteCodec_addressWord(p.owner), ...p.accountSalt,
+        ...ByteCodec_uint64Word(p.validUntil)
+      ], 0) as Bytes<192>;
+      return disclose(keccak256<Bytes<192>>(preimage));
+    }
+    if (p.selector == 2 || p.selector == 3) {
+      const typeHash = p.selector == 2 ? withdrawShieldedType() : withdrawUnshieldedType();
+      const preimage: Bytes<320> = slice<320>([
+        ...typeHash, ...manager, ...p.account, ...ByteCodec_addressWord(p.owner), ...ByteCodec_uint64Word(p.nonce),
+        ...ByteCodec_uint64Word(p.validUntil), ...p.primaryColor, ...ByteCodec_uint128Word(p.primaryAmount),
+        ...ByteCodec_uint8Word(p.recipientKind), ...p.recipient
+      ], 0) as Bytes<320>;
+      return disclose(keccak256<Bytes<320>>(preimage));
+    }
+    if (p.selector == 4 || p.selector == 5) {
+      const typeHash = p.selector == 4 ? transferShieldedType() : transferUnshieldedType();
+      const preimage: Bytes<288> = slice<288>([
+        ...typeHash, ...manager, ...p.account, ...ByteCodec_addressWord(p.owner), ...ByteCodec_uint64Word(p.nonce),
+        ...ByteCodec_uint64Word(p.validUntil), ...p.toAccount, ...p.primaryColor, ...ByteCodec_uint128Word(p.primaryAmount)
+      ], 0) as Bytes<288>;
+      return disclose(keccak256<Bytes<288>>(preimage));
+    }
+    assert(p.selector == 6, "EIP-712 selector must be 1..6");
+    const preimage: Bytes<448> = slice<448>([
+      ...openSwapType(), ...manager, ...p.account, ...ByteCodec_addressWord(p.owner), ...ByteCodec_uint64Word(p.nonce),
+      ...ByteCodec_uint64Word(p.validUntil), ...p.primaryColor, ...ByteCodec_uint128Word(p.primaryAmount),
+      ...ByteCodec_uint8Word(p.recipientKind), ...p.recipient, ...p.wantNonce, ...p.wantColor,
+      ...ByteCodec_uint128Word(p.wantAmount), ...p.creditAccount
+    ], 0) as Bytes<448>;
+    return disclose(keccak256<Bytes<448>>(preimage));
+  }
+
+  pure circuit eip712Digest(domain: Bytes<32>, structHash: Bytes<32>): Bytes<32> {
+    const preimage: Bytes<66> = slice<66>([0x19, 0x01, ...domain, ...structHash], 0) as Bytes<66>;
+    return keccak256<Bytes<66>>(preimage);
+  }
+
+  /// The value an EVM owner's wallet signs. Exported and pure, so a signer, a relayer or a verifier
+  /// can obtain it from the contract itself instead of reimplementing the codec.
+  export pure circuit evmDigestFor(
+    manager: Bytes<32>, domain: Bytes<32>, payload: ExecutePayload
+  ): Bytes<32> {
+    return disclose(eip712Digest(
+      evmDomainSeparatorFor(manager, domain), evmStructHashFor(manager, payload)
+    ));
+  }
+}

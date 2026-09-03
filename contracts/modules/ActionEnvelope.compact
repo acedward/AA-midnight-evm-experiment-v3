@@ -1,0 +1,159 @@
+pragma language_version >= 0.25.0;
+
+// @module ActionEnvelope
+// @description The fixed-width action/auth envelope `ExecutePayload` and the canonical-zero
+//              validation `assertActionEnvelope` runs over it — the first thing `execute` does, and
+//              the first thing `semanticCommitmentFor` does.
+//
+// State-free, and deliberately so: the whole circuit is arithmetic on the caller's own arguments,
+// which is exactly why it may run BEFORE the witness choke point. Keeping it `pure` is what proves
+// that property instead of asserting it.
+//
+// FROZEN BYTES: none. Every constant here is a canonical zero.
+
+module ActionEnvelope {
+  import CompactStandardLibrary;
+
+  export { ExecutePayload, assertActionEnvelope }
+
+  /// The single fixed-width action/auth envelope. Every inactive field is constrained to its
+  /// canonical zero representation before authentication or custody logic runs.
+  export struct ExecutePayload {
+    selector: Uint<8>;
+    authMode: Uint<8>;
+    account: Bytes<32>;
+    owner: Bytes<20>;
+    accountSalt: Bytes<32>;
+    nonce: Uint<64>;
+    validUntil: Uint<64>;
+    primaryColor: Bytes<32>;
+    primaryAmount: Uint<128>;
+    recipientKind: Uint<8>;
+    recipient: Bytes<32>;
+    toAccount: Bytes<32>;
+    wantNonce: Bytes<32>;
+    wantColor: Bytes<32>;
+    wantAmount: Uint<128>;
+    creditAccount: Bytes<32>;
+  }
+
+  /// CANONICAL-ZERO ENVELOPE VALIDATION, and the first thing `execute` runs.
+  ///
+  /// `ExecutePayload` is one fixed-width struct shared by all seven actions, so most of its fields are
+  /// INACTIVE for any given selector, and this circuit constrains every inactive field to its
+  /// canonical zero. SECURITY-CRITICAL, not hygiene: it is what keeps the actions separated. Without
+  /// it a payload could carry a live swap target or transfer destination while presenting as a
+  /// withdrawal, so the meaning of a signed or witnessed action would depend on which fields the
+  /// reader happened to look at. With it, ONE selector implies ONE field set, the EIP-712 struct hash
+  /// covers exactly that set, and anything else is refused before authentication.
+  ///
+  /// It also fixes the mode pairing (selector 0 native-only, selector 1 EVM-only), the replay fields
+  /// (native actions carry no nonce or deadline; EVM actions must carry a deadline), and per-action
+  /// parameter sanity — amounts positive, recipient kinds in range, a swap's colours distinct. That
+  /// sanity is pure arithmetic on the caller's own arguments: it reads no state and leaks nothing,
+  /// which is why it may run before the witness choke point.
+  ///
+  /// NO CONTRACT RECIPIENTS — the three shapes that pay a CONTRACT are refused here, deliberately.
+  /// They are selector 2/3 `recipientKind 1` and selector 6 `recipientKind 2`. The reason is the
+  /// ledger's effects check, not a limitation of this contract: a contract-addressed payout is
+  /// accepted ONLY if the recipient contract claims receipt in the SAME transaction. Shielded, the
+  /// payout's commitment enters `commitments` tagged with the recipient's address and `commitments ==
+  /// claimed_shielded_receives` is an EQUALITY, so an unclaimed one is rejected with error 218;
+  /// unshielded, the claim is tagged `PublicAddress::Contract(recipient)` and can only be matched by
+  /// that contract's own `unshielded_inputs`, so it is rejected with error 214. Neither `sendShielded`
+  /// nor `sendUnshielded` auto-receives for anybody but the SENDER, no receiving contract exists
+  /// anywhere in this repo, and simulation never runs the effects check — so before this assert a
+  /// caller could sign such an action, spend minutes proving it at k=19, and learn only from an opaque
+  /// node error that it was never satisfiable.
+  ///
+  /// AND THE ONE VARIANT THE NODE ACCEPTS IS WORSE THAN A REFUSAL: name the Manager's OWN address and
+  /// the auto-receive fires, so the effects check passes — but `repoolOrRemove` re-pools only the
+  /// CHANGE, so the payout lands outside `pools`, which is the only holdings any debit path can spend,
+  /// while the account's cell has already been debited. No account holds the value and the contract
+  /// cannot spend it; it is burnt, silently, on a transaction that looks successful.
+  ///
+  /// The give legs keep their contract arms intact (they are simply unreachable while these asserts
+  /// stand), so restoring the capability the day a receiving contract exists is a change to these two
+  /// asserts and nothing else. Refusing costs one extra assert per site and, unlike the node's error,
+  /// says what is wrong before anything is proved — the same fail-CLOSED preference the swap's
+  /// colour-distinctness guard is argued from below.
+  export pure circuit assertActionEnvelope(p: ExecutePayload): [] {
+    assert(p.selector <= 6, "unknown execute selector");
+    assert(p.authMode <= 1, "unknown authorization mode");
+
+    if (p.selector == 0) {
+      assert(p.authMode == 0, "native registration requires native authorization");
+      assert(p.account == default<Bytes<32>>, "native registration account is derived");
+      assert(p.owner == default<Bytes<20>> && p.accountSalt == default<Bytes<32>>, "native registration EVM fields must be inactive");
+      assert(p.nonce == 0 && p.validUntil == 0, "native registration replay fields must be inactive");
+      assert(p.primaryColor == default<Bytes<32>> && p.primaryAmount == 0, "native registration action fields must be inactive");
+      assert(p.recipientKind == 0 && p.recipient == default<Bytes<32>>, "native registration recipient must be inactive");
+      assert(p.toAccount == default<Bytes<32>> && p.wantNonce == default<Bytes<32>>, "native registration targets must be inactive");
+      assert(p.wantColor == default<Bytes<32>> && p.wantAmount == 0 && p.creditAccount == default<Bytes<32>>, "native registration swap fields must be inactive");
+      return;
+    }
+
+    if (p.selector == 1) {
+      assert(p.authMode == 1, "EVM registration requires EVM authorization");
+      assert(p.account != default<Bytes<32>>, "EVM registration account must be supplied");
+      assert(p.owner != default<Bytes<20>>, "EVM registration owner must be nonzero");
+      assert(p.accountSalt != default<Bytes<32>>, "EVM registration salt must be nonzero");
+      assert(p.nonce == 0 && p.validUntil > 0, "EVM registration replay fields are noncanonical");
+      assert(p.primaryColor == default<Bytes<32>> && p.primaryAmount == 0, "EVM registration action fields must be inactive");
+      assert(p.recipientKind == 0 && p.recipient == default<Bytes<32>>, "EVM registration recipient must be inactive");
+      assert(p.toAccount == default<Bytes<32>> && p.wantNonce == default<Bytes<32>>, "EVM registration targets must be inactive");
+      assert(p.wantColor == default<Bytes<32>> && p.wantAmount == 0 && p.creditAccount == default<Bytes<32>>, "EVM registration swap fields must be inactive");
+      return;
+    }
+
+    assert(p.account != default<Bytes<32>>, "action account must be supplied");
+    assert(p.accountSalt == default<Bytes<32>>, "action account salt must be inactive");
+    if (p.authMode == 0) {
+      assert(p.owner == default<Bytes<20>>, "native action owner must be inactive");
+      assert(p.nonce == 0 && p.validUntil == 0, "native action replay fields must be inactive");
+    } else {
+      assert(p.owner != default<Bytes<20>>, "EVM action owner must be nonzero");
+      assert(p.validUntil > 0, "EVM action deadline must be nonzero");
+    }
+
+    if (p.selector == 2 || p.selector == 3) {
+      assert(p.primaryAmount > 0, "withdraw amount must be positive");
+      assert(p.recipientKind <= 1, "withdraw recipient kind is invalid");
+      // Kind 1 is the CONTRACT recipient — refused, see this circuit's header. The range check above
+      // is kept ahead of it so an out-of-range kind still reports itself as out of range, and so this
+      // assert reads as what it is: a capability that is switched off, not a malformed field.
+      assert(p.recipientKind == 0, "withdraw to a contract recipient is not supported");
+      assert(p.recipient != default<Bytes<32>>, "withdraw recipient must be nonzero");
+      assert(p.toAccount == default<Bytes<32>>, "withdraw transfer target must be inactive");
+      assert(p.wantNonce == default<Bytes<32>> && p.wantColor == default<Bytes<32>>, "withdraw swap fields must be inactive");
+      assert(p.wantAmount == 0 && p.creditAccount == default<Bytes<32>>, "withdraw swap target must be inactive");
+      return;
+    }
+
+    if (p.selector == 4 || p.selector == 5) {
+      assert(p.primaryAmount > 0, "internal transfer must be positive");
+      assert(p.recipientKind == 0 && p.recipient == default<Bytes<32>>, "internal transfer recipient must be inactive");
+      assert(p.toAccount != default<Bytes<32>>, "internal transfer target must be supplied");
+      assert(p.wantNonce == default<Bytes<32>> && p.wantColor == default<Bytes<32>>, "internal transfer swap fields must be inactive");
+      assert(p.wantAmount == 0 && p.creditAccount == default<Bytes<32>>, "internal transfer swap target must be inactive");
+      return;
+    }
+
+    assert(p.selector == 6, "unknown execute selector");
+    assert(p.primaryAmount > 0, "swap must give a positive amount");
+    assert(p.recipientKind <= 2, "swap recipient kind is invalid");
+    // Kind 2 is the CONTRACT taker — refused, see this circuit's header. Kind 0 (the open offer) and
+    // kind 1 (named to a user key) are untouched: neither addresses a contract, so neither needs a
+    // counterparty contract inside the maker's own transaction.
+    assert(p.recipientKind <= 1, "swap to a contract taker is not supported");
+    if (p.recipientKind == 0) {
+      assert(p.recipient == default<Bytes<32>>, "open swap recipient must be zero");
+    } else {
+      assert(p.recipient != default<Bytes<32>>, "named swap recipient must be nonzero");
+    }
+    assert(p.toAccount == default<Bytes<32>>, "swap transfer target must be inactive");
+    assert(p.wantAmount > 0, "swap must want a positive amount");
+    assert(p.primaryColor != p.wantColor, "swap legs must be different colours");
+    assert(p.creditAccount != default<Bytes<32>>, "swap credit account must be supplied");
+  }
+}

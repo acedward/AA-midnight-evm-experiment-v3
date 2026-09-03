@@ -1,0 +1,193 @@
+pragma language_version >= 0.25.0;
+
+// @module SemanticCommitment
+// @description THE normative definition of the semantic commitment — the single 32-byte digest
+//              summarising what an `execute` call meant — and the tags, sub-hashes and slot
+//              selection it is built from.
+//
+// State-free, and the section header below explains why that matters: the contract does not COMPUTE
+// the commitment (it cost ~38% of `execute`'s rows) and emits no events, so this module is the
+// recipe, exported as a pure oracle, and every consumer recomputes from the proved transcript.
+//
+// FROZEN BYTES (see the index in the preset header): `semanticTag`, `callTranscriptTag`,
+// `nativeAuthTag`, `entrypointHash`. They are defined HERE and nowhere else.
+
+module SemanticCommitment {
+  import CompactStandardLibrary;
+  import "./ByteCodec" prefix ByteCodec_;
+  import "./ActionEnvelope";
+  import "./Eip712";
+
+  export { semanticCommitmentFor }
+
+  // ================================================================================================
+  // THE SEMANTIC COMMITMENT — defined here, computed OFF-CIRCUIT. AND: WHY THERE ARE NO EVENTS
+  // ================================================================================================
+  //
+  // The semantic commitment is a single 32-byte keccak digest summarising what an `execute` call
+  // meant: which contract and deployment, which action, which account, how it was authorized, every
+  // action parameter, and the call's zswap imbalances in a canonical order. It is the one comparable
+  // handle an off-chain reader — indexer, relayer, EVM-side verifier — has on a call.
+  //
+  // THE CONTRACT DOES NOT COMPUTE OR EMIT IT, AND EMITS NO EVENTS AT ALL. Events are disabled because
+  // computing and emitting the commitment in-circuit cost about 367,000 rows — roughly 38% of
+  // `execute`. That cost is NOT the hashing: it is SERIALIZING the 1,024-byte commitment envelope
+  // (plus the transcript and action-union sub-preimages) into keccak preimages, byte by byte, inside
+  // the circuit. Paying 38% of a proof for it is not worth it, because it proved nothing new:
+  //
+  //   THE PROVED CALL TRANSCRIPT IS THE AUTHORITY. Every field the commitment covers is already a
+  //   CONSTRAINED PUBLIC FACT of the proved `execute` transcript — selector, auth mode, account id,
+  //   owner, deadline, nonce, colours, amounts, recipient and credit account all enter
+  //   `assertActionEnvelope` and `custodyDispatch` as constrained values, and the authorization result
+  //   is either the in-circuit EIP-712 digest or `nativeAuthResult(account)`. The keccak chain merely
+  //   re-hashed already-bound values and republished them.
+  //
+  //   THE RECIPE STAYS NORMATIVE AND AVAILABLE, as the EXPORTED PURE circuit `semanticCommitmentFor`.
+  //   Pure circuits emit no proving key, so keeping the definition costs zero rows and zero keys, and
+  //   ANY READER CAN RECOMPUTE THE COMMITMENT OFF-CIRCUIT — by running that circuit on the compiled
+  //   artifact, or by reimplementing the recipe, which is keccak-only and flat-byte-concatenated
+  //   precisely so an EVM-side verifier can do it with the `keccak256` opcode.
+  //
+  //   SECURITY RULE, load-bearing:
+  //
+  //       NO CONSUMER MAY TRUST A SEMANTIC COMMITMENT IT DID NOT RECOMPUTE FROM THE PROVED TRANSCRIPT.
+  //
+  //   With nothing emitted there is nothing to trust by mistake, so the failure mode "a reader
+  //   accepted an event's value without parsing the transcript that justifies it" is removed BY
+  //   CONSTRUCTION rather than by discipline.
+
+  pure circuit semanticTag(): Bytes<32> {
+    return Bytes[0xe2, 0x11, 0x48, 0x48, 0x81, 0xf2, 0x54, 0x57,
+                 0xd3, 0x38, 0xef, 0xff, 0x10, 0x5e, 0x35, 0x53,
+                 0x31, 0x43, 0x51, 0x33, 0x8b, 0x55, 0xee, 0x21,
+                 0x55, 0x39, 0x10, 0x6f, 0xf5, 0xee, 0x9c, 0x6e];
+  }
+
+  pure circuit callTranscriptTag(): Bytes<32> {
+    return Bytes[0x6b, 0x26, 0xfd, 0x1f, 0x96, 0x66, 0x83, 0x29,
+                 0x9a, 0xae, 0x5e, 0x9e, 0x5e, 0xcd, 0x2c, 0x57,
+                 0x5f, 0x1a, 0x17, 0xe9, 0x16, 0xdb, 0x0a, 0x6f,
+                 0xb2, 0x9d, 0xcd, 0x9e, 0xd8, 0x62, 0xf0, 0xdf];
+  }
+
+  pure circuit nativeAuthTag(): Bytes<32> {
+    return Bytes[0x2a, 0xdb, 0xa8, 0x74, 0x39, 0x0d, 0xb7, 0x25,
+                 0xf4, 0x89, 0x15, 0x21, 0x7d, 0xa7, 0x03, 0xe3,
+                 0xfd, 0x62, 0xec, 0x40, 0x29, 0x6c, 0x2a, 0x2d,
+                 0x02, 0x60, 0x2e, 0x67, 0xa3, 0xb9, 0xe7, 0xf4];
+  }
+
+  pure circuit entrypointHash(): Bytes<32> {
+    return Bytes[0xc6, 0x40, 0x06, 0x0c, 0xdb, 0x34, 0xfc, 0xc2,
+                 0x60, 0xf4, 0x1e, 0xac, 0x74, 0x74, 0xee, 0x1d,
+                 0x7c, 0x80, 0xb7, 0xe3, 0x60, 0x7d, 0xaf, 0xf9,
+                 0xac, 0x67, 0xc7, 0xea, 0x2e, 0xbb, 0x1c, 0x44];
+  }
+
+  /// The native-mode authorization slot: keccak(nativeAuthTag || account). Nothing in this contract
+  /// calls it; it is kept as the NORMATIVE in-contract definition of that slot, so an off-circuit
+  /// recomputer has one authoritative source. Private and uncalled, it emits no constraints.
+  pure circuit nativeAuthResult(account: Bytes<32>): Bytes<32> {
+    const preimage: Bytes<64> = slice<64>([...nativeAuthTag(), ...account], 0) as Bytes<64>;
+    return keccak256<Bytes<64>>(preimage);
+  }
+
+  /// Every action parameter of the envelope in one fixed-width hash; fields inactive for the call's
+  /// selector are zero, which is what `assertActionEnvelope` guarantees.
+  pure circuit actionUnionHash(p: ExecutePayload): Bytes<32> {
+    const preimage: Bytes<384> = slice<384>([
+      ...ByteCodec_addressWord(p.owner), ...ByteCodec_uint64Word(p.validUntil), ...p.accountSalt,
+      ...p.primaryColor, ...ByteCodec_uint128Word(p.primaryAmount), ...ByteCodec_uint8Word(p.recipientKind),
+      ...p.recipient, ...p.toAccount, ...p.wantNonce, ...p.wantColor,
+      ...ByteCodec_uint128Word(p.wantAmount), ...p.creditAccount
+    ], 0) as Bytes<384>;
+    return keccak256<Bytes<384>>(preimage);
+  }
+
+  /// WHO called WHAT, and how it was authorized: contract, entrypoint, selector, the selector's frozen
+  /// EIP-712 type hash, the acting account, the authorization result, and the action parameters.
+  pure circuit semanticCallTranscriptHash(
+    manager: Bytes<32>, p: ExecutePayload, account: Bytes<32>, authResult: Bytes<32>
+  ): Bytes<32> {
+    const preimage: Bytes<256> = slice<256>([
+      ...callTranscriptTag(), ...manager, ...entrypointHash(), ...ByteCodec_uint8Word(p.selector),
+      ...frozenTypeHash(p.selector), ...account, ...authResult, ...actionUnionHash(p)
+    ], 0) as Bytes<256>;
+    return keccak256<Bytes<256>>(preimage);
+  }
+
+  /// The commitment envelope: a flat 1,024-byte preimage of every semantic field, the call-transcript
+  /// sub-hash, and TWO imbalance slots — two because an open swap moves value in both directions (a
+  /// positive release and a negative want) while every other action moves at most one; unused slots
+  /// are zero. Flat and keccak-only so an EVM verifier can rebuild it directly.
+  pure circuit semanticCommitmentFromSlots(
+    manager: Bytes<32>, domain: Bytes<32>, p: ExecutePayload, account: Bytes<32>,
+    authResult: Bytes<32>, imbalanceCount: Uint<8>,
+    family0: Uint<8>, color0: Bytes<32>, direction0: Uint<8>, amount0: Uint<128>,
+    family1: Uint<8>, color1: Bytes<32>, direction1: Uint<8>, amount1: Uint<128>
+  ): Bytes<32> {
+    const semanticNonce = p.authMode == 1 ? p.nonce : (0 as Uint<64>);
+    const callHash = semanticCallTranscriptHash(manager, p, account, authResult);
+    const preimage: Bytes<1024> = slice<1024>([
+      ...semanticTag(), ...manager, ...domain, ...entrypointHash(), ...ByteCodec_uint8Word(p.selector),
+      ...frozenTypeHash(p.selector), ...account, ...ByteCodec_uint8Word(p.authMode), ...authResult,
+      ...ByteCodec_uint64Word(semanticNonce), ...ByteCodec_addressWord(p.owner), ...ByteCodec_uint64Word(p.validUntil),
+      ...p.accountSalt, ...p.primaryColor, ...ByteCodec_uint128Word(p.primaryAmount),
+      ...ByteCodec_uint8Word(p.recipientKind), ...p.recipient, ...p.toAccount, ...p.wantNonce,
+      ...p.wantColor, ...ByteCodec_uint128Word(p.wantAmount), ...p.creditAccount, ...callHash,
+      ...ByteCodec_uint8Word(imbalanceCount),
+      ...ByteCodec_uint8Word(family0), ...color0, ...ByteCodec_uint8Word(direction0), ...ByteCodec_uint128Word(amount0),
+      ...ByteCodec_uint8Word(family1), ...color1, ...ByteCodec_uint8Word(direction1), ...ByteCodec_uint128Word(amount1)
+    ], 0) as Bytes<1024>;
+    return keccak256<Bytes<1024>>(preimage);
+  }
+
+  /// Slot selection. Non-swaps have no imbalance; a named swap has one (the want-side deficit); an
+  /// open swap has two, ORDERED BY COLOUR so the commitment does not depend on which leg was written
+  /// first. Muxing the values into one call avoids branch-duplicated keccak.
+  pure circuit semanticCommitmentCore(
+    manager: Bytes<32>, domain: Bytes<32>, payload: ExecutePayload,
+    account: Bytes<32>, authResult: Bytes<32>
+  ): Bytes<32> {
+    const p = payload;
+    const isSwap = p.selector == 6;
+    const isOpenSwap = isSwap && p.recipientKind == 0;
+    const giveBeforeWant = isOpenSwap && ByteCodec_bytes32LexicographicLt(p.primaryColor, p.wantColor);
+    const imbalanceCount = (isSwap ? (isOpenSwap ? 2 : 1) : 0) as Uint<8>;
+    const family0 = (isSwap ? 1 : 0) as Uint<8>;
+    const color0 = giveBeforeWant
+      ? p.primaryColor
+      : (isSwap ? p.wantColor : default<Bytes<32>>);
+    const direction0 = (giveBeforeWant ? 2 : (isSwap ? 1 : 0)) as Uint<8>;
+    const amount0 = (giveBeforeWant ? p.primaryAmount : (isSwap ? p.wantAmount : 0)) as Uint<128>;
+    const family1 = (isOpenSwap ? 1 : 0) as Uint<8>;
+    const color1 = isOpenSwap
+      ? (giveBeforeWant ? p.wantColor : p.primaryColor)
+      : default<Bytes<32>>;
+    const direction1 = (isOpenSwap ? (giveBeforeWant ? 1 : 2) : 0) as Uint<8>;
+    const amount1 = (isOpenSwap ? (giveBeforeWant ? p.wantAmount : p.primaryAmount) : 0) as Uint<128>;
+    return semanticCommitmentFromSlots(
+      manager, domain, p, account, authResult, imbalanceCount,
+      family0, color0, direction0, amount0,
+      family1, color1, direction1, amount1
+    );
+  }
+
+  /// THE normative definition of the semantic commitment, and the only place this contract computes
+  /// it. PURE — it reads no ledger state, so the compiler emits no proving key for it and evaluating
+  /// it costs nothing on chain. Consumers call it on the compiled artifact (or reimplement the recipe
+  /// off-circuit) with fields they recovered from the proved `execute` transcript.
+  ///
+  /// `authResult` is the caller's OWN recomputation: the EIP-712 digest (`evmDigestFor`, exported and
+  /// pure) when `authMode == 1`, or `nativeAuthResult(account)` when `authMode == 0`. It is an
+  /// argument rather than an internal derivation precisely so the caller has to reconstruct it — see
+  /// the security rule at the head of this section.
+  export pure circuit semanticCommitmentFor(
+    manager: Bytes<32>, domain: Bytes<32>, payload: ExecutePayload,
+    account: Bytes<32>, authResult: Bytes<32>
+  ): Bytes<32> {
+    const p = payload;
+    assertActionEnvelope(p);
+    return disclose(semanticCommitmentCore(manager, domain, p, account, authResult));
+  }
+}
