@@ -14,12 +14,23 @@
 #      imported by four files today and that is safe — #270 is about state, and P0 verdict (f)
 #      measured a pure module imported twice yielding one consistent definition.
 #
-#   2. REGISTRY WRITES LIVE IN ONE FILE. Every `.insert(` / `.remove(` on `accounts`,
-#      `accountModes`, `evmOwners` or `evmNonces` occurs in `contracts/modules/AccountRegistry.*`
-#      and nowhere else — the mechanical form of user story 3 ("`execute` performs no ledger
-#      write"). P3 extends this with the custody families: `pools` / `shieldedBalances` writes only
-#      in `ShieldedCustody`, `unshieldedBalances` writes only in `UnshieldedCustody`, and no
-#      `ledger` declaration in `Custody.compact`.
+#   2. EVERY LEDGER MAP IS WRITTEN IN THE ONE FILE THAT OWNS IT. Every `.insert(` / `.insertCoin(` /
+#      `.remove(` on a map occurs in that map's owning module and nowhere else:
+#
+#        accounts, accountModes, evmOwners, evmNonces   contracts/modules/AccountRegistry.compact
+#        pools, shieldedBalances                        contracts/modules/ShieldedCustody.compact
+#        unshieldedBalances                             contracts/modules/UnshieldedCustody.compact
+#
+#      This is the mechanical form of user stories 1 and 3 ("`execute` performs no ledger write";
+#      "every write to a custody map occurs in the family file that owns that map"). `insertCoin` is
+#      in the pattern because `pools` is written with it and an `insert`-only rule would miss every
+#      pool write there is.
+#
+#   3. THE COMPOSER AND THE PRESET DECLARE (ALMOST) NO STATE. `Custody.compact` declares no `ledger`
+#      field at all — it moves value it does not own, which is what makes "which map did that write
+#      land in" answerable by opening the family file it calls (FR-002). `manager.compact` declares
+#      exactly one, `deploymentDomain`, and contains no `.insert(` / `.insertCoin(` / `.remove(` of
+#      its own (FR-004, SC-005).
 #
 # WHAT IT IS NOT. It is not the artifact gate: rows, k, the circuit list and the generated surface
 # are `scripts/check-artifact.sh`'s job and need the compiler. This script reads text only, needs no
@@ -65,9 +76,15 @@ for module in "$modules_dir"/*.compact; do
   stateful_found=$((stateful_found + 1))
   name="$(basename "$module" .compact)"
   # `import "./modules/Name";` from the preset, `import "./Name";` from a sibling module, and the
-  # selective-renaming form `import { … } from "./Name";` P3's composer uses (F-P0-5).
+  # selective-renaming form `import { … } from "./Name";` P3's composer uses (F-P0-5). That last one
+  # is written across MANY LINES (one imported name per line), so the file is stripped of line
+  # comments and flattened to a single line before matching — a line-based grep sees only the
+  # closing `} from "./Name";` and reports the importer count as zero. The path is anchored at a
+  # `/` boundary (`"([^"]*/)?Name"`, not `"[^"]*/?Name"`) because otherwise `ShieldedCustody` is a
+  # SUFFIX of `UnshieldedCustody` and every importer of one counts as an importer of the other.
   importers="$(partition_files | while read -r f; do
-      if grep -Eq "(^|[[:space:]])import[[:space:]]+(\{[^}]*\}[[:space:]]*from[[:space:]]*)?\"[^\"]*/?${name}\"" "$f"; then
+      if sed 's|//.*||' "$f" | tr '\n' ' ' \
+         | grep -Eq "(^|[[:space:]])import[[:space:]]+(\{[^}]*\}[[:space:]]*from[[:space:]]*)?\"([^\"]*/)?${name}\"" ; then
         echo "$f"
       fi
     done)"
@@ -81,28 +98,82 @@ for module in "$modules_dir"/*.compact; do
 done
 [ "$stateful_found" -eq 0 ] && echo "  (no stateful module in $modules_dir yet)"
 
-echo "--- 2. registry-map writes live only in AccountRegistry"
-registry_maps="accounts accountModes evmOwners evmNonces"
-registry_owner="$modules_dir/AccountRegistry.compact"
-for map in $registry_maps; do
-  offenders="$(partition_files | while read -r f; do
-      [ "$f" = "$registry_owner" ] && continue
-      if grep -Eq "(^|[^A-Za-z_])${map}\.(insert|remove)\(" "$f"; then
-        echo "$f"
-      fi
-    done)"
-  if [ -z "$offenders" ]; then
-    pass "$map: no .insert( / .remove( outside $(basename "$registry_owner")"
-  else
-    fail "$map is written outside $(basename "$registry_owner"):"
-    printf '%s\n' "$offenders" | sed 's/^/          /'
+echo "--- 2. every ledger map is written only in the module that owns it"
+# "<owning module basename>:<space-separated map names>"; `insertCoin` is how `pools` is written.
+map_owners="AccountRegistry:accounts accountModes evmOwners evmNonces
+ShieldedCustody:pools shieldedBalances
+UnshieldedCustody:unshieldedBalances"
+
+printf '%s\n' "$map_owners" | while IFS= read -r _row; do :; done   # keep shellcheck quiet
+while IFS= read -r row; do
+  [ -n "$row" ] || continue
+  owner_name="${row%%:*}"
+  maps="${row#*:}"
+  owner="$modules_dir/$owner_name.compact"
+  if [ ! -e "$owner" ]; then
+    fail "$owner is missing — nothing owns: $maps"
+    continue
   fi
-done
-if [ -e "$registry_owner" ]; then
-  writes="$(grep -Ec "(^|[^A-Za-z_])(accounts|accountModes|evmOwners|evmNonces)\.(insert|remove)\(" "$registry_owner")"
-  pass "$(basename "$registry_owner") holds all $writes registry write site(s)"
+  for map in $maps; do
+    offenders="$(partition_files | while read -r f; do
+        [ "$f" = "$owner" ] && continue
+        if grep -Eq "(^|[^A-Za-z_])${map}\.(insert|insertCoin|remove)\(" "$f"; then
+          echo "$f"
+        fi
+      done)"
+    if [ -z "$offenders" ]; then
+      pass "$map: no .insert( / .insertCoin( / .remove( outside $owner_name.compact"
+    else
+      fail "$map is written outside $owner_name.compact:"
+      printf '%s\n' "$offenders" | sed 's/^/          /'
+    fi
+  done
+  writes="$(grep -Ec "(^|[^A-Za-z_])($(echo "$maps" | tr ' ' '|'))\.(insert|insertCoin|remove)\(" "$owner")"
+  if [ "$writes" -gt 0 ]; then
+    pass "$owner_name.compact holds all $writes write site(s) for: $maps"
+  else
+    fail "$owner_name.compact holds NO write site for any of: $maps — has the state moved?"
+  fi
+done <<EOF
+$map_owners
+EOF
+
+echo "--- 3. the composer declares no state and the preset declares only deploymentDomain"
+ledger_decls() {
+  grep -E '^[[:space:]]*(export[[:space:]]+)?(sealed[[:space:]]+)?ledger[[:space:]]+[A-Za-z_]' "$1" \
+    | sed -E 's/^[[:space:]]*(export[[:space:]]+)?(sealed[[:space:]]+)?ledger[[:space:]]+([A-Za-z_][A-Za-z0-9_]*).*/\3/'
+}
+
+composer="$modules_dir/Custody.compact"
+if [ ! -e "$composer" ]; then
+  fail "$composer is missing"
 else
-  fail "$registry_owner is missing"
+  composer_ledgers="$(ledger_decls "$composer")"
+  if [ -z "$composer_ledgers" ]; then
+    pass "Custody.compact declares no ledger field"
+  else
+    fail "Custody.compact declares ledger field(s) — the composer must own no state:"
+    printf '%s\n' "$composer_ledgers" | sed 's/^/          /'
+  fi
+fi
+
+preset="$contracts_dir/manager.compact"
+if [ ! -e "$preset" ]; then
+  fail "$preset is missing"
+else
+  preset_ledgers="$(ledger_decls "$preset" | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//')"
+  if [ "$preset_ledgers" = "deploymentDomain" ]; then
+    pass "manager.compact declares exactly one ledger field: deploymentDomain"
+  else
+    fail "manager.compact must declare only deploymentDomain, but declares: ${preset_ledgers:-<none>}"
+  fi
+  preset_writes="$(grep -En '\.(insert|insertCoin|remove)\(' "$preset" || true)"
+  if [ -z "$preset_writes" ]; then
+    pass "manager.compact contains no .insert( / .insertCoin( / .remove("
+  else
+    fail "manager.compact writes a ledger map directly — every write belongs in a module:"
+    printf '%s\n' "$preset_writes" | sed 's/^/          /'
+  fi
 fi
 
 echo "---"
