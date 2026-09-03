@@ -79,6 +79,8 @@ module UnshieldedCustody {
 
   /// The same cell in the OTHER family. For a colour whose bytes exist in both families these two
   /// reads take the same 32-byte `colour` argument and must still answer independently.
+  ///
+  /// @circuitInfo k=13, rows=4001
   export circuit unshieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
     return unshieldedBalanceOf(disclose(owner), disclose(colour));
   }

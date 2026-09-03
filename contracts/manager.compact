@@ -173,6 +173,18 @@
 // compile error rather than a silent rename. A name reaches this file's `export { … }` block by
 // exactly ONE route — which is why `ZswapPrimitives` is imported here directly and never
 // re-exported by a custody module.
+//
+// DOC CONVENTIONS, adopted from the OpenZeppelin `compact-contracts` layout (FR-014). Every module
+// opens with `@module` / `@description`. Each of the NINE key-emitting circuits — the only ones the
+// artifact issues a proving key for — carries an `@circuitInfo k=…, rows=…` tag measured by
+// `scripts/measure-k.sh`, and those exact numbers are the ones `scripts/check-artifact.sh` compares
+// against `tests/fixtures/00014-artifact-baseline.json` on every run, so a stale tag is a visible
+// mismatch rather than a comment nobody re-reads. Three of the nine are here (`execute` and the two
+// deposit wrappers); the other six are on their declarations in `AccountRegistry`, `ShieldedCustody`
+// and `UnshieldedCustody`, and `README.md` lists all nine in one table.
+//
+// An `_`-prefixed circuit is an UNGUARDED INTERNAL the layer above has already guarded — also OZ
+// convention. None of them is exported at the top level, so none emits a key.
 
 pragma language_version >= 0.25.0;
 
@@ -271,6 +283,8 @@ constructor(deploymentDomain_: Bytes<32>) {
 /// this contract was deployed, and that colour's pool and the (account, colour) cell are created
 /// there if absent, and only there. The stdlib auto-receives only when the recipient is this contract
 /// itself, so a transfer in commits only if THIS circuit runs in the sender's own transaction.
+///
+/// @circuitInfo k=16, rows=42239
 export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
   _depositShielded(coin, account, isRegistered(account));
 }
@@ -280,6 +294,8 @@ export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
 /// No colour check, by design. The LEDGER is what enforces honesty here: `receiveUnshielded` only
 /// increments this contract's declared unshielded inputs, so a transaction that names a colour it is
 /// not actually carrying fails to BALANCE and is refused by the node.
+///
+/// @circuitInfo k=13, rows=7918
 export circuit depositUnshielded(colour: Bytes<32>, amount: Uint<128>, account: Bytes<32>): [] {
   _depositUnshielded(colour, amount, account, isRegistered(account));
 }
@@ -319,6 +335,8 @@ circuit assertLiveDeadline(validUntil: Uint<64>): [] {
 /// `!isEvm… || …` asserts rather than placed inside an `if` — because the pinned proving backend
 /// cannot lower guarded secp256k1 operations. Native calls therefore verify a signature over a zero
 /// digest whose result nothing consumes: deliberate, and it costs rows rather than safety.
+///
+/// @circuitInfo k=19, rows=382780
 export circuit execute(
   payload: ExecutePayload,
   sig: Secp256k1EcdsaSignature,

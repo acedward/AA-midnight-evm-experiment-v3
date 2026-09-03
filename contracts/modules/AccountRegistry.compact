@@ -117,6 +117,7 @@ module AccountRegistry {
     return ownerCommitment(localOwnerSecret());
   }
 
+  /// @circuitInfo k=8, rows=129
   export circuit isRegistered(owner: Bytes<32>): Boolean {
     return accounts.member(disclose(owner));
   }
@@ -125,6 +126,8 @@ module AccountRegistry {
   /// zero owner and nonce WITHOUT creating EVM map entries; unknown accounts return the all-zero
   /// inactive record. The asserts state the mode invariant: a native record carries no EVM state; an
   /// EVM record carries both halves of it.
+  ///
+  /// @circuitInfo k=9, rows=316
   export circuit accountRecord(account: Bytes<32>): AccountRecord {
     const acct = disclose(account);
     if (!accounts.member(acct)) {

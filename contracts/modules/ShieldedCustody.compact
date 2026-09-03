@@ -111,15 +111,19 @@ module ShieldedCustody {
 
   /// One cell of the dynamic table, shielded family. Returns 0 for a colour this contract has never
   /// seen — the observable form of "a missing cell reads 0".
+  ///
+  /// @circuitInfo k=13, rows=4001
   export circuit shieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
     return shieldedBalanceOf(disclose(owner), disclose(colour));
   }
 
+  /// @circuitInfo k=8, rows=159
   export circuit poolValue(colour: Bytes<32>): Uint<128> {
     const col = disclose(colour);
     return pools.member(col) ? pools.lookup(col).value : 0;
   }
 
+  /// @circuitInfo k=8, rows=129
   export circuit poolHasColour(colour: Bytes<32>): Boolean {
     return pools.member(disclose(colour));
   }
