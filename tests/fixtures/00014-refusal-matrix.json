@@ -1,0 +1,1201 @@
+{
+  "note": "Frozen expectations for tests/simulation/refusal-matrix.test.ts (project 00014, FR-016). Every `expected` is an assert string in contracts/**/*.compact; the runtime reports it as `failed assert: <expected>`. Regenerate with: tsx lib/refusal-matrix.ts --write",
+  "rows": [
+    {
+      "id": "any/native/selector=7",
+      "selector": null,
+      "mode": "native",
+      "expected": "unknown execute selector"
+    },
+    {
+      "id": "any/native/authMode=2",
+      "selector": null,
+      "mode": "native",
+      "expected": "unknown authorization mode"
+    },
+    {
+      "id": "s0/native/authMode=1",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration requires native authorization"
+    },
+    {
+      "id": "s0/native/account",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration account is derived"
+    },
+    {
+      "id": "s0/native/owner",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration EVM fields must be inactive"
+    },
+    {
+      "id": "s0/native/accountSalt",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration EVM fields must be inactive"
+    },
+    {
+      "id": "s0/native/nonce",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration replay fields must be inactive"
+    },
+    {
+      "id": "s0/native/validUntil",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration replay fields must be inactive"
+    },
+    {
+      "id": "s0/native/primaryColor",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration action fields must be inactive"
+    },
+    {
+      "id": "s0/native/primaryAmount",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration action fields must be inactive"
+    },
+    {
+      "id": "s0/native/recipientKind",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration recipient must be inactive"
+    },
+    {
+      "id": "s0/native/recipient",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration recipient must be inactive"
+    },
+    {
+      "id": "s0/native/toAccount",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration targets must be inactive"
+    },
+    {
+      "id": "s0/native/wantNonce",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration targets must be inactive"
+    },
+    {
+      "id": "s0/native/wantColor",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration swap fields must be inactive"
+    },
+    {
+      "id": "s0/native/wantAmount",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration swap fields must be inactive"
+    },
+    {
+      "id": "s0/native/creditAccount",
+      "selector": 0,
+      "mode": "native",
+      "expected": "native registration swap fields must be inactive"
+    },
+    {
+      "id": "s1/evm/authMode=0",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration requires EVM authorization"
+    },
+    {
+      "id": "s1/evm/account=0",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration account must be supplied"
+    },
+    {
+      "id": "s1/evm/owner=0",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration owner must be nonzero"
+    },
+    {
+      "id": "s1/evm/accountSalt=0",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration salt must be nonzero"
+    },
+    {
+      "id": "s1/evm/nonce",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration replay fields are noncanonical"
+    },
+    {
+      "id": "s1/evm/validUntil=0",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration replay fields are noncanonical"
+    },
+    {
+      "id": "s1/evm/primaryColor",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration action fields must be inactive"
+    },
+    {
+      "id": "s1/evm/primaryAmount",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration action fields must be inactive"
+    },
+    {
+      "id": "s1/evm/recipientKind",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration recipient must be inactive"
+    },
+    {
+      "id": "s1/evm/recipient",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration recipient must be inactive"
+    },
+    {
+      "id": "s1/evm/toAccount",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration targets must be inactive"
+    },
+    {
+      "id": "s1/evm/wantNonce",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration targets must be inactive"
+    },
+    {
+      "id": "s1/evm/wantColor",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration swap fields must be inactive"
+    },
+    {
+      "id": "s1/evm/wantAmount",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration swap fields must be inactive"
+    },
+    {
+      "id": "s1/evm/creditAccount",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration swap fields must be inactive"
+    },
+    {
+      "id": "s2/native/account=0",
+      "selector": 2,
+      "mode": "native",
+      "expected": "action account must be supplied"
+    },
+    {
+      "id": "s2/native/accountSalt",
+      "selector": 2,
+      "mode": "native",
+      "expected": "action account salt must be inactive"
+    },
+    {
+      "id": "s2/native/owner",
+      "selector": 2,
+      "mode": "native",
+      "expected": "native action owner must be inactive"
+    },
+    {
+      "id": "s2/native/nonce",
+      "selector": 2,
+      "mode": "native",
+      "expected": "native action replay fields must be inactive"
+    },
+    {
+      "id": "s2/native/validUntil",
+      "selector": 2,
+      "mode": "native",
+      "expected": "native action replay fields must be inactive"
+    },
+    {
+      "id": "s2/native/primaryAmount=0",
+      "selector": 2,
+      "mode": "native",
+      "expected": "withdraw amount must be positive"
+    },
+    {
+      "id": "s2/native/recipientKind=2",
+      "selector": 2,
+      "mode": "native",
+      "expected": "withdraw recipient kind is invalid"
+    },
+    {
+      "id": "s2/native/recipientKind=1",
+      "selector": 2,
+      "mode": "native",
+      "expected": "withdraw to a contract recipient is not supported"
+    },
+    {
+      "id": "s2/native/recipient=0",
+      "selector": 2,
+      "mode": "native",
+      "expected": "withdraw recipient must be nonzero"
+    },
+    {
+      "id": "s2/native/toAccount",
+      "selector": 2,
+      "mode": "native",
+      "expected": "withdraw transfer target must be inactive"
+    },
+    {
+      "id": "s2/native/wantNonce",
+      "selector": 2,
+      "mode": "native",
+      "expected": "withdraw swap fields must be inactive"
+    },
+    {
+      "id": "s2/native/wantColor",
+      "selector": 2,
+      "mode": "native",
+      "expected": "withdraw swap fields must be inactive"
+    },
+    {
+      "id": "s2/native/wantAmount",
+      "selector": 2,
+      "mode": "native",
+      "expected": "withdraw swap target must be inactive"
+    },
+    {
+      "id": "s2/native/creditAccount",
+      "selector": 2,
+      "mode": "native",
+      "expected": "withdraw swap target must be inactive"
+    },
+    {
+      "id": "s2/evm/account=0",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "action account must be supplied"
+    },
+    {
+      "id": "s2/evm/accountSalt",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "action account salt must be inactive"
+    },
+    {
+      "id": "s2/evm/owner=0",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "EVM action owner must be nonzero"
+    },
+    {
+      "id": "s2/evm/validUntil=0",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "EVM action deadline must be nonzero"
+    },
+    {
+      "id": "s2/evm/primaryAmount=0",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "withdraw amount must be positive"
+    },
+    {
+      "id": "s2/evm/recipientKind=2",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "withdraw recipient kind is invalid"
+    },
+    {
+      "id": "s2/evm/recipientKind=1",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "withdraw to a contract recipient is not supported"
+    },
+    {
+      "id": "s2/evm/recipient=0",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "withdraw recipient must be nonzero"
+    },
+    {
+      "id": "s2/evm/toAccount",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "withdraw transfer target must be inactive"
+    },
+    {
+      "id": "s2/evm/wantNonce",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "withdraw swap fields must be inactive"
+    },
+    {
+      "id": "s2/evm/wantColor",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "withdraw swap fields must be inactive"
+    },
+    {
+      "id": "s2/evm/wantAmount",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "withdraw swap target must be inactive"
+    },
+    {
+      "id": "s2/evm/creditAccount",
+      "selector": 2,
+      "mode": "evm",
+      "expected": "withdraw swap target must be inactive"
+    },
+    {
+      "id": "s3/native/account=0",
+      "selector": 3,
+      "mode": "native",
+      "expected": "action account must be supplied"
+    },
+    {
+      "id": "s3/native/accountSalt",
+      "selector": 3,
+      "mode": "native",
+      "expected": "action account salt must be inactive"
+    },
+    {
+      "id": "s3/native/owner",
+      "selector": 3,
+      "mode": "native",
+      "expected": "native action owner must be inactive"
+    },
+    {
+      "id": "s3/native/nonce",
+      "selector": 3,
+      "mode": "native",
+      "expected": "native action replay fields must be inactive"
+    },
+    {
+      "id": "s3/native/validUntil",
+      "selector": 3,
+      "mode": "native",
+      "expected": "native action replay fields must be inactive"
+    },
+    {
+      "id": "s3/native/primaryAmount=0",
+      "selector": 3,
+      "mode": "native",
+      "expected": "withdraw amount must be positive"
+    },
+    {
+      "id": "s3/native/recipientKind=2",
+      "selector": 3,
+      "mode": "native",
+      "expected": "withdraw recipient kind is invalid"
+    },
+    {
+      "id": "s3/native/recipientKind=1",
+      "selector": 3,
+      "mode": "native",
+      "expected": "withdraw to a contract recipient is not supported"
+    },
+    {
+      "id": "s3/native/recipient=0",
+      "selector": 3,
+      "mode": "native",
+      "expected": "withdraw recipient must be nonzero"
+    },
+    {
+      "id": "s3/native/toAccount",
+      "selector": 3,
+      "mode": "native",
+      "expected": "withdraw transfer target must be inactive"
+    },
+    {
+      "id": "s3/native/wantNonce",
+      "selector": 3,
+      "mode": "native",
+      "expected": "withdraw swap fields must be inactive"
+    },
+    {
+      "id": "s3/native/wantColor",
+      "selector": 3,
+      "mode": "native",
+      "expected": "withdraw swap fields must be inactive"
+    },
+    {
+      "id": "s3/native/wantAmount",
+      "selector": 3,
+      "mode": "native",
+      "expected": "withdraw swap target must be inactive"
+    },
+    {
+      "id": "s3/native/creditAccount",
+      "selector": 3,
+      "mode": "native",
+      "expected": "withdraw swap target must be inactive"
+    },
+    {
+      "id": "s3/evm/account=0",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "action account must be supplied"
+    },
+    {
+      "id": "s3/evm/accountSalt",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "action account salt must be inactive"
+    },
+    {
+      "id": "s3/evm/owner=0",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "EVM action owner must be nonzero"
+    },
+    {
+      "id": "s3/evm/validUntil=0",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "EVM action deadline must be nonzero"
+    },
+    {
+      "id": "s3/evm/primaryAmount=0",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "withdraw amount must be positive"
+    },
+    {
+      "id": "s3/evm/recipientKind=2",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "withdraw recipient kind is invalid"
+    },
+    {
+      "id": "s3/evm/recipientKind=1",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "withdraw to a contract recipient is not supported"
+    },
+    {
+      "id": "s3/evm/recipient=0",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "withdraw recipient must be nonzero"
+    },
+    {
+      "id": "s3/evm/toAccount",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "withdraw transfer target must be inactive"
+    },
+    {
+      "id": "s3/evm/wantNonce",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "withdraw swap fields must be inactive"
+    },
+    {
+      "id": "s3/evm/wantColor",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "withdraw swap fields must be inactive"
+    },
+    {
+      "id": "s3/evm/wantAmount",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "withdraw swap target must be inactive"
+    },
+    {
+      "id": "s3/evm/creditAccount",
+      "selector": 3,
+      "mode": "evm",
+      "expected": "withdraw swap target must be inactive"
+    },
+    {
+      "id": "s4/native/account=0",
+      "selector": 4,
+      "mode": "native",
+      "expected": "action account must be supplied"
+    },
+    {
+      "id": "s4/native/accountSalt",
+      "selector": 4,
+      "mode": "native",
+      "expected": "action account salt must be inactive"
+    },
+    {
+      "id": "s4/native/owner",
+      "selector": 4,
+      "mode": "native",
+      "expected": "native action owner must be inactive"
+    },
+    {
+      "id": "s4/native/nonce",
+      "selector": 4,
+      "mode": "native",
+      "expected": "native action replay fields must be inactive"
+    },
+    {
+      "id": "s4/native/validUntil",
+      "selector": 4,
+      "mode": "native",
+      "expected": "native action replay fields must be inactive"
+    },
+    {
+      "id": "s4/native/primaryAmount=0",
+      "selector": 4,
+      "mode": "native",
+      "expected": "internal transfer must be positive"
+    },
+    {
+      "id": "s4/native/recipientKind=1",
+      "selector": 4,
+      "mode": "native",
+      "expected": "internal transfer recipient must be inactive"
+    },
+    {
+      "id": "s4/native/recipient",
+      "selector": 4,
+      "mode": "native",
+      "expected": "internal transfer recipient must be inactive"
+    },
+    {
+      "id": "s4/native/toAccount=0",
+      "selector": 4,
+      "mode": "native",
+      "expected": "internal transfer target must be supplied"
+    },
+    {
+      "id": "s4/native/wantNonce",
+      "selector": 4,
+      "mode": "native",
+      "expected": "internal transfer swap fields must be inactive"
+    },
+    {
+      "id": "s4/native/wantColor",
+      "selector": 4,
+      "mode": "native",
+      "expected": "internal transfer swap fields must be inactive"
+    },
+    {
+      "id": "s4/native/wantAmount",
+      "selector": 4,
+      "mode": "native",
+      "expected": "internal transfer swap target must be inactive"
+    },
+    {
+      "id": "s4/native/creditAccount",
+      "selector": 4,
+      "mode": "native",
+      "expected": "internal transfer swap target must be inactive"
+    },
+    {
+      "id": "s4/evm/account=0",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "action account must be supplied"
+    },
+    {
+      "id": "s4/evm/accountSalt",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "action account salt must be inactive"
+    },
+    {
+      "id": "s4/evm/owner=0",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "EVM action owner must be nonzero"
+    },
+    {
+      "id": "s4/evm/validUntil=0",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "EVM action deadline must be nonzero"
+    },
+    {
+      "id": "s4/evm/primaryAmount=0",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "internal transfer must be positive"
+    },
+    {
+      "id": "s4/evm/recipientKind=1",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "internal transfer recipient must be inactive"
+    },
+    {
+      "id": "s4/evm/recipient",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "internal transfer recipient must be inactive"
+    },
+    {
+      "id": "s4/evm/toAccount=0",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "internal transfer target must be supplied"
+    },
+    {
+      "id": "s4/evm/wantNonce",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "internal transfer swap fields must be inactive"
+    },
+    {
+      "id": "s4/evm/wantColor",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "internal transfer swap fields must be inactive"
+    },
+    {
+      "id": "s4/evm/wantAmount",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "internal transfer swap target must be inactive"
+    },
+    {
+      "id": "s4/evm/creditAccount",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "internal transfer swap target must be inactive"
+    },
+    {
+      "id": "s5/native/account=0",
+      "selector": 5,
+      "mode": "native",
+      "expected": "action account must be supplied"
+    },
+    {
+      "id": "s5/native/accountSalt",
+      "selector": 5,
+      "mode": "native",
+      "expected": "action account salt must be inactive"
+    },
+    {
+      "id": "s5/native/owner",
+      "selector": 5,
+      "mode": "native",
+      "expected": "native action owner must be inactive"
+    },
+    {
+      "id": "s5/native/nonce",
+      "selector": 5,
+      "mode": "native",
+      "expected": "native action replay fields must be inactive"
+    },
+    {
+      "id": "s5/native/validUntil",
+      "selector": 5,
+      "mode": "native",
+      "expected": "native action replay fields must be inactive"
+    },
+    {
+      "id": "s5/native/primaryAmount=0",
+      "selector": 5,
+      "mode": "native",
+      "expected": "internal transfer must be positive"
+    },
+    {
+      "id": "s5/native/recipientKind=1",
+      "selector": 5,
+      "mode": "native",
+      "expected": "internal transfer recipient must be inactive"
+    },
+    {
+      "id": "s5/native/recipient",
+      "selector": 5,
+      "mode": "native",
+      "expected": "internal transfer recipient must be inactive"
+    },
+    {
+      "id": "s5/native/toAccount=0",
+      "selector": 5,
+      "mode": "native",
+      "expected": "internal transfer target must be supplied"
+    },
+    {
+      "id": "s5/native/wantNonce",
+      "selector": 5,
+      "mode": "native",
+      "expected": "internal transfer swap fields must be inactive"
+    },
+    {
+      "id": "s5/native/wantColor",
+      "selector": 5,
+      "mode": "native",
+      "expected": "internal transfer swap fields must be inactive"
+    },
+    {
+      "id": "s5/native/wantAmount",
+      "selector": 5,
+      "mode": "native",
+      "expected": "internal transfer swap target must be inactive"
+    },
+    {
+      "id": "s5/native/creditAccount",
+      "selector": 5,
+      "mode": "native",
+      "expected": "internal transfer swap target must be inactive"
+    },
+    {
+      "id": "s5/evm/account=0",
+      "selector": 5,
+      "mode": "evm",
+      "expected": "action account must be supplied"
+    },
+    {
+      "id": "s5/evm/accountSalt",
+      "selector": 5,
+      "mode": "evm",
+      "expected": "action account salt must be inactive"
+    },
+    {
+      "id": "s5/evm/owner=0",
+      "selector": 5,
+      "mode": "evm",
+      "expected": "EVM action owner must be nonzero"
+    },
+    {
+      "id": "s5/evm/validUntil=0",
+      "selector": 5,
+      "mode": "evm",
+      "expected": "EVM action deadline must be nonzero"
+    },
+    {
+      "id": "s5/evm/primaryAmount=0",
+      "selector": 5,
+      "mode": "evm",
+      "expected": "internal transfer must be positive"
+    },
+    {
+      "id": "s5/evm/recipientKind=1",
+      "selector": 5,
+      "mode": "evm",
+      "expected": "internal transfer recipient must be inactive"
+    },
+    {
+      "id": "s5/evm/recipient",
+      "selector": 5,
+      "mode": "evm",
+      "expected": "internal transfer recipient must be inactive"
+    },
+    {
+      "id": "s5/evm/toAccount=0",
+      "selector": 5,
+      "mode": "evm",
+      "expected": "internal transfer target must be supplied"
+    },
+    {
+      "id": "s5/evm/wantNonce",
+      "selector": 5,
+      "mode": "evm",
+      "expected": "internal transfer swap fields must be inactive"
+    },
+    {
+      "id": "s5/evm/wantColor",
+      "selector": 5,
+      "mode": "evm",
+      "expected": "internal transfer swap fields must be inactive"
+    },
+    {
+      "id": "s5/evm/wantAmount",
+      "selector": 5,
+      "mode": "evm",
+      "expected": "internal transfer swap target must be inactive"
+    },
+    {
+      "id": "s5/evm/creditAccount",
+      "selector": 5,
+      "mode": "evm",
+      "expected": "internal transfer swap target must be inactive"
+    },
+    {
+      "id": "s6/native/account=0",
+      "selector": 6,
+      "mode": "native",
+      "expected": "action account must be supplied"
+    },
+    {
+      "id": "s6/native/accountSalt",
+      "selector": 6,
+      "mode": "native",
+      "expected": "action account salt must be inactive"
+    },
+    {
+      "id": "s6/native/owner",
+      "selector": 6,
+      "mode": "native",
+      "expected": "native action owner must be inactive"
+    },
+    {
+      "id": "s6/native/nonce",
+      "selector": 6,
+      "mode": "native",
+      "expected": "native action replay fields must be inactive"
+    },
+    {
+      "id": "s6/native/validUntil",
+      "selector": 6,
+      "mode": "native",
+      "expected": "native action replay fields must be inactive"
+    },
+    {
+      "id": "s6/native/primaryAmount=0",
+      "selector": 6,
+      "mode": "native",
+      "expected": "swap must give a positive amount"
+    },
+    {
+      "id": "s6/native/recipientKind=3",
+      "selector": 6,
+      "mode": "native",
+      "expected": "swap recipient kind is invalid"
+    },
+    {
+      "id": "s6/native/recipientKind=2",
+      "selector": 6,
+      "mode": "native",
+      "expected": "swap to a contract taker is not supported"
+    },
+    {
+      "id": "s6/native/recipient",
+      "selector": 6,
+      "mode": "native",
+      "expected": "open swap recipient must be zero"
+    },
+    {
+      "id": "s6/native/recipientKind=1+recipient=0",
+      "selector": 6,
+      "mode": "native",
+      "expected": "named swap recipient must be nonzero"
+    },
+    {
+      "id": "s6/native/toAccount",
+      "selector": 6,
+      "mode": "native",
+      "expected": "swap transfer target must be inactive"
+    },
+    {
+      "id": "s6/native/wantAmount=0",
+      "selector": 6,
+      "mode": "native",
+      "expected": "swap must want a positive amount"
+    },
+    {
+      "id": "s6/native/wantColor=primaryColor",
+      "selector": 6,
+      "mode": "native",
+      "expected": "swap legs must be different colours"
+    },
+    {
+      "id": "s6/native/creditAccount=0",
+      "selector": 6,
+      "mode": "native",
+      "expected": "swap credit account must be supplied"
+    },
+    {
+      "id": "s6/evm/account=0",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "action account must be supplied"
+    },
+    {
+      "id": "s6/evm/accountSalt",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "action account salt must be inactive"
+    },
+    {
+      "id": "s6/evm/owner=0",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "EVM action owner must be nonzero"
+    },
+    {
+      "id": "s6/evm/validUntil=0",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "EVM action deadline must be nonzero"
+    },
+    {
+      "id": "s6/evm/primaryAmount=0",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "swap must give a positive amount"
+    },
+    {
+      "id": "s6/evm/recipientKind=3",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "swap recipient kind is invalid"
+    },
+    {
+      "id": "s6/evm/recipientKind=2",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "swap to a contract taker is not supported"
+    },
+    {
+      "id": "s6/evm/recipient",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "open swap recipient must be zero"
+    },
+    {
+      "id": "s6/evm/recipientKind=1+recipient=0",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "named swap recipient must be nonzero"
+    },
+    {
+      "id": "s6/evm/toAccount",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "swap transfer target must be inactive"
+    },
+    {
+      "id": "s6/evm/wantAmount=0",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "swap must want a positive amount"
+    },
+    {
+      "id": "s6/evm/wantColor=primaryColor",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "swap legs must be different colours"
+    },
+    {
+      "id": "s6/evm/creditAccount=0",
+      "selector": 6,
+      "mode": "evm",
+      "expected": "swap credit account must be supplied"
+    },
+    {
+      "id": "constructor/zero-domain",
+      "selector": null,
+      "mode": "constructor",
+      "expected": "deployment domain must be nonzero"
+    },
+    {
+      "id": "pure/evmStructHashFor/selector=0",
+      "selector": 0,
+      "mode": "pure",
+      "expected": "EIP-712 selector must be 1..6"
+    },
+    {
+      "id": "s1/evm/account-id-mismatch",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration account id mismatch"
+    },
+    {
+      "id": "s1/evm/deadline-below-horizon",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM authorization deadline cannot satisfy the horizon"
+    },
+    {
+      "id": "s1/evm/deadline-beyond-horizon",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM authorization deadline exceeds 3600-second horizon"
+    },
+    {
+      "id": "s1/evm/expired",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM authorization has expired"
+    },
+    {
+      "id": "s1/evm/signature-does-not-verify",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration signature does not verify"
+    },
+    {
+      "id": "s1/evm/signer-not-owner",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "EVM registration signer does not match owner"
+    },
+    {
+      "id": "s1/evm/duplicate-registration",
+      "selector": 1,
+      "mode": "evm",
+      "expected": "account already registered"
+    },
+    {
+      "id": "s4/evm/unregistered-gateway-account",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "gateway account is not registered"
+    },
+    {
+      "id": "s4/evm/native-account-in-evm-mode",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "authorization mode does not match account record"
+    },
+    {
+      "id": "s4/evm/wrong-stored-owner",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "signed owner does not match stored owner"
+    },
+    {
+      "id": "s4/evm/stale-nonce",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "EVM nonce mismatch"
+    },
+    {
+      "id": "s4/evm/future-nonce",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "EVM nonce mismatch"
+    },
+    {
+      "id": "s4/evm/signature-does-not-verify",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "EVM signature does not verify"
+    },
+    {
+      "id": "s4/evm/signer-not-owner",
+      "selector": 4,
+      "mode": "evm",
+      "expected": "EVM signer does not control account"
+    },
+    {
+      "id": "s4/native/unregistered-witness",
+      "selector": 4,
+      "mode": "native",
+      "expected": "caller's owner witness matches no registered account"
+    },
+    {
+      "id": "s4/native/witness-transcript-mismatch",
+      "selector": 4,
+      "mode": "native",
+      "expected": "native witness does not match supplied account transcript"
+    },
+    {
+      "id": "s4/native/unregistered-destination",
+      "selector": 4,
+      "mode": "native",
+      "expected": "destination account is not registered"
+    },
+    {
+      "id": "s4/native/self-transfer",
+      "selector": 4,
+      "mode": "native",
+      "expected": "internal transfer to the same account"
+    },
+    {
+      "id": "s4/native/shielded-balance-too-low",
+      "selector": 4,
+      "mode": "native",
+      "expected": "account colour balance too low"
+    },
+    {
+      "id": "s5/native/unshielded-balance-too-low",
+      "selector": 5,
+      "mode": "native",
+      "expected": "account colour balance too low"
+    },
+    {
+      "id": "s3/native/contract-unshielded-short",
+      "selector": 3,
+      "mode": "native",
+      "expected": "contract unshielded balance too low"
+    },
+    {
+      "id": "s6/native/unregistered-swap-credit",
+      "selector": 6,
+      "mode": "native",
+      "expected": "credit account is not registered"
+    },
+    {
+      "id": "deposit/shielded/unregistered",
+      "selector": null,
+      "mode": "deposit",
+      "expected": "credit account is not registered"
+    },
+    {
+      "id": "deposit/unshielded/unregistered",
+      "selector": null,
+      "mode": "deposit",
+      "expected": "credit account is not registered"
+    },
+    {
+      "id": "deposit/shielded/zero-value",
+      "selector": null,
+      "mode": "deposit",
+      "expected": "deposit must be positive"
+    },
+    {
+      "id": "deposit/unshielded/zero-amount",
+      "selector": null,
+      "mode": "deposit",
+      "expected": "deposit must be positive"
+    }
+  ],
+  "allowList": [
+    {
+      "message": "native record carries EVM state",
+      "why": "accountRecord's mode-0 invariant: evmOwners/evmNonces are written only on the mode-1 registration path, so a native record with EVM state cannot be built"
+    },
+    {
+      "message": "EVM record is incomplete",
+      "why": "accountRecord's mode-1 invariant: the two EVM maps are written together in execute, so half an EVM record cannot be built"
+    },
+    {
+      "message": "EVM account record is incomplete",
+      "why": "the same invariant at authenticatedActionAccount's EVM branch"
+    },
+    {
+      "message": "native account carries EVM state",
+      "why": "the same invariant at authenticatedActionAccount's native branch"
+    },
+    {
+      "message": "registered account has no authorization mode",
+      "why": "registerAccount inserts into accounts and accountModes together, so a registered account always has a mode (asserted at two sites, neither reachable)"
+    },
+    {
+      "message": "unknown account authorization mode",
+      "why": "modes are written only as 0 or 1, and both sites are reached only when the mode is not 0"
+    },
+    {
+      "message": "account id must be nonzero",
+      "why": "registerAccount is private: execute reaches it only with ownerCommitment(witness) — a persistentCommit, never the zero word — or with the EVM-derived id the envelope already forced nonzero (NOT in the T0.1.1 task list; added by T0.1, see finding F-T0.1-1)"
+    },
+    {
+      "message": "account mode collision",
+      "why": "accounts and accountModes are only ever written together, so `!accounts.member(a) && accountModes.member(a)` is unconstructible (NOT in the T0.1.1 task list; added by T0.1, see finding F-T0.1-1)"
+    },
+    {
+      "message": "EVM account cannot enter native authorization",
+      "why": "authenticatedNativeAccount only ever sees ownerCommitment(witness); for it to carry mode 1 that commitment would have to collide with an evmAccountIdFor value (NOT in the T0.1.1 task list; added by T0.1, see finding F-T0.1-1)"
+    },
+    {
+      "message": "no pooled coin for this colour",
+      "why": "shadowed by custodyDispatch guard 2 through the pool-total invariant (pools.member(C) <=> sum of colour-C cells > 0); the analysis and its executed ordering probes are in k20-parity.test.ts (NOT in the T0.1.1 task list; added by T0.1, see finding F-T0.1-1)"
+    },
+    {
+      "message": "pooled colour balance too low",
+      "why": "shadowed by custodyDispatch guard 2 by the same invariant; same probes in k20-parity.test.ts (NOT in the T0.1.1 task list; added by T0.1, see finding F-T0.1-1)"
+    },
+    {
+      "message": "EVM nonce overflow",
+      "why": "two independent blocks: p.nonce must equal the stored nonce, which only 2^64-2 committed actions could raise to 2^64-1; and the `as Uint<64>` cast on `p.nonce + 1` (manager.compact:1408) is emitted immediately BEFORE the assert, so even a seeded state would report the cast failure, never this string (task T0.1.1 asked for a legitimate path first; there is none — see finding F-T0.1-2)"
+    }
+  ]
+}

@@ -69,10 +69,23 @@ jobs:
       - name: Compile the contracts
         run: scripts/compile.sh all
 
+      # THE ARTIFACT GATE (project 00014, FR-016). Runs on the artifact the step above just built,
+      # so it recompiles nothing, and measures ALL NINE proof-bearing circuits: `execute` has 27%
+      # headroom under k=19 but `depositUnshielded` sits 274 rows (3.3%) under its k=13 ceiling, so
+      # gating on `execute` alone would miss the likeliest regression. Measured cost of the whole
+      # gate on darwin/arm64: 37 s for compile + nine measurements, a small fraction of this job's
+      # 20-minute budget. `scripts/check-artifact.sh --circuits execute` is the trim if the arm
+      # runner ever makes the full set too slow.
+      - name: Artifact gate (rows, k, generated surface)
+        run: scripts/check-artifact.sh --skip-compile
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
 
+      # The 00014 refusal matrix runs here with the rest of the tier; it needs no wiring of its own.
+      # It does read `contracts/**/*.compact` at test time for its coverage assertion, which the
+      # native runtime finds next to `tests/` (the Docker runtime stages it into the run volume).
       - name: Run the simulation tier
         env:
           AA_TEST_RUNTIME: native
