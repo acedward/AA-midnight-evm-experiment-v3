@@ -1,0 +1,98 @@
+{
+  "note": "Frozen pre-split artifact of contracts/manager.compact (project 00014, FR-016). Compared by scripts/check-artifact.sh; rewrite with scripts/check-artifact.sh --write-baseline after an INTENTIONAL toolchain or surface change, never to make a red gate green.",
+  "recordedAt": "2026-09-03",
+  "provenance": {
+    "compilerVersion": "0.34.0",
+    "languageVersion": "0.26.0",
+    "runtimeVersion": "0.19.0",
+    "toolchainImage": "aa-compactc:0.34.0",
+    "toolchainImageId": "sha256:8f97b90cee942d479bcc7d3f26b9c193be37c71ea5bbb3857c769b7dc6a7d9fa"
+  },
+  "circuits": {
+    "execute": {
+      "k": 19,
+      "rows": 382781
+    },
+    "depositShielded": {
+      "k": 16,
+      "rows": 42239
+    },
+    "depositUnshielded": {
+      "k": 13,
+      "rows": 7918
+    },
+    "isRegistered": {
+      "k": 8,
+      "rows": 129
+    },
+    "accountRecord": {
+      "k": 9,
+      "rows": 316
+    },
+    "shieldedAccountBalance": {
+      "k": 13,
+      "rows": 4001
+    },
+    "unshieldedAccountBalance": {
+      "k": 13,
+      "rows": 4001
+    },
+    "poolValue": {
+      "k": 8,
+      "rows": 159
+    },
+    "poolHasColour": {
+      "k": 8,
+      "rows": 129
+    }
+  },
+  "circuitList": [
+    "accountRecord:false:true",
+    "depositShielded:false:true",
+    "depositUnshielded:false:true",
+    "evmAccountIdFor:true:false",
+    "evmDigestFor:true:false",
+    "evmDomainSeparatorFor:true:false",
+    "evmStructHashFor:true:false",
+    "execute:false:true",
+    "isRegistered:false:true",
+    "myAccount:false:false",
+    "poolHasColour:false:true",
+    "poolValue:false:true",
+    "semanticCommitmentFor:true:false",
+    "shieldedAccountBalance:false:true",
+    "shieldedKey:true:false",
+    "unshieldedAccountBalance:false:true",
+    "unshieldedKey:true:false",
+    "zswapCommitmentOf:true:false",
+    "zswapNullifierOf:true:false"
+  ],
+  "zkirCircuits": [
+    "accountRecord",
+    "depositShielded",
+    "depositUnshielded",
+    "execute",
+    "isRegistered",
+    "poolHasColour",
+    "poolValue",
+    "shieldedAccountBalance",
+    "unshieldedAccountBalance"
+  ],
+  "ledgerFields": [
+    "pools",
+    "accounts",
+    "shieldedBalances",
+    "unshieldedBalances",
+    "accountModes",
+    "evmOwners",
+    "evmNonces",
+    "deploymentDomain"
+  ],
+  "witnesses": [
+    "localOwnerSecret"
+  ],
+  "structs": [
+    "AccountRecord",
+    "ExecutePayload"
+  ]
+}

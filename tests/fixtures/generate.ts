@@ -519,7 +519,7 @@ export function generateFixture(): Record<string, unknown> {
       metamaskEthSigUtil: "8.2.0",
       nobleCurves: "2.2.0",
       nobleHashes: "2.2.0",
-      compactCompiler: "0.33.0 / language 0.25.0 / --feature-zkir-v3",
+      compactCompiler: "0.34.0 / language 0.26.0 / --feature-zkir-v3",
     },
     randomSeed: RANDOM_SEED,
     randomCaseCount: RANDOM_CASES,

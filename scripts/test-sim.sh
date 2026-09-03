@@ -72,12 +72,16 @@ fi
 
 # Stage the test tree (sources + freshly compiled artifacts) into the volume. `node_modules` is
 # excluded so a host-side install can never leak in.
+# `contracts/` rides along read-only: the 00014 refusal matrix reads the assert strings back out of
+# the Compact SOURCES at test time (that is what makes its coverage claim mechanical rather than a
+# hand-maintained list), and the run container only ever sees this volume. Nothing compiles it here.
 docker run --rm --name "${project}-stage" --label com.docker.compose.project="$project" \
   --cpus 2 --memory 8g --memory-swap 8g \
-  -v "$repo_root/tests:/src:ro" -v "$volume:/work" -w /src \
+  -v "$repo_root/tests:/src:ro" -v "$repo_root/contracts:/src-contracts:ro" -v "$volume:/work" -w /src \
   "$node_image" \
-  sh -euc 'rm -rf /work/simulation /work/integration /work/lib /work/fixtures /work/generated; \
-    tar --exclude="./node_modules" -cf - . | tar -xf - -C /work'
+  sh -euc 'rm -rf /work/simulation /work/integration /work/lib /work/fixtures /work/generated /work/contracts; \
+    tar --exclude="./node_modules" -cf - . | tar -xf - -C /work; \
+    mkdir -p /work/contracts; tar -cf - -C /src-contracts . | tar -xf - -C /work/contracts'
 
 if [ "$fresh" -eq 1 ] || ! docker run --rm -v "$volume:/work" "$node_image" test -d /work/node_modules; then
   # Dependency install is the ONLY step that touches the network, and it is frozen-lockfile only.

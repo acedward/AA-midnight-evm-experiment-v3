@@ -1,8 +1,11 @@
 // Minimal in-process simulator for the compiled contracts. This is what makes the simulation tier
 // keyless: it executes circuits directly through the pinned
-// `@midnight-ntwrk/compact-runtime@0.18.0-rc.1` — the same runtime version the compiler stamped
-// into the artifacts and the same one the pinned midnight-js depends on — so no node, no proof
-// server, no proving key and no wallet are involved.
+// `@midnight-ntwrk/compact-runtime@0.19.0` — the same runtime version compactc 0.34.0 stamped into
+// the artifacts, and the one they REFUSE to run without (the generated JS opens with
+// `checkRuntimeVersion('0.19.0')`) — so no node, no proof server, no proving key and no wallet are
+// involved. The pinned midnight-js (5.0.0-beta.6) still depends on 0.18.0-rc.1 and gets its own
+// nested copy; nothing here hands a runtime object across that boundary, and the simulation tier
+// only borrows a log type from it.
 //
 // Three contracts are wrapped:
 //   ManagerSim         the product. One gateway circuit, `execute`, taking a fixed-width action

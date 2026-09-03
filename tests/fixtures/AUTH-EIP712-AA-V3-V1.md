@@ -4,6 +4,17 @@ Status: frozen by F-CODEC Phase 1. Any byte change requires a new version and an
 decision. All hex in fixtures is lowercase and `0x`-prefixed; all integers in wallet JSON are
 base-10 strings.
 
+**Provenance, and the one edit the freeze has taken (2026-09-03, project 00017).** The set was
+produced under **compactc 0.33.0 / language 0.25.0 / `--feature-zkir-v3`**, and that string is what
+`v1.json`'s `packages.compactCompiler` used to read. When the repository moved to compactc 0.34.0 /
+language 0.26.0, the generator reproduced `v1.json` **byte-identically apart from that one field** —
+every digest, every KAT, every boundary and random case came back the same, which is the strongest
+evidence available that the toolchain bump changed nothing this contract depends on. On the owner's
+decision the field was updated to `"0.34.0 / language 0.26.0 / --feature-zkir-v3"` so the JSON names
+the compiler the repository actually pins; the original value is recorded here so the origin is not
+lost. The fixture VERSION did not change (`AUTH-EIP712-AA-V3-V1/FIXTURES-1`) because no byte of the
+byte contract itself moved — only this provenance label.
+
 ## Domain and account identity
 
 The exact domain type is

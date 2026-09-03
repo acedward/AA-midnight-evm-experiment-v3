@@ -1,34 +1,34 @@
 import * as __compactRuntime from '@midnight-ntwrk/compact-runtime';
-__compactRuntime.checkRuntimeVersion('0.18.0-rc.1');
+__compactRuntime.checkRuntimeVersion('0.19.0');
 
 const _descriptor_0 = __compactRuntime.CompactTypeSecp256k1Point;
 
 const _descriptor_1 = new __compactRuntime.CompactTypeBytes(32);
 
-const _descriptor_2 = new __compactRuntime.CompactTypeBytes(20);
-
-const _descriptor_3 = __compactRuntime.CompactTypeSecp256k1Scalar;
+const _descriptor_2 = __compactRuntime.CompactTypeSecp256k1Scalar;
 
 class _Secp256k1EcdsaSignature_0 {
   alignment() {
-    return _descriptor_3.alignment().concat(_descriptor_3.alignment());
+    return _descriptor_2.alignment().concat(_descriptor_2.alignment());
   }
   fromValue(value_0) {
     return {
-      r: _descriptor_3.fromValue(value_0),
-      s: _descriptor_3.fromValue(value_0)
+      r: _descriptor_2.fromValue(value_0),
+      s: _descriptor_2.fromValue(value_0)
     }
   }
   toValue(value_0) {
-    return _descriptor_3.toValue(value_0.r).concat(_descriptor_3.toValue(value_0.s));
+    return _descriptor_2.toValue(value_0.r).concat(_descriptor_2.toValue(value_0.s));
   }
 }
 
-const _descriptor_4 = new _Secp256k1EcdsaSignature_0();
+const _descriptor_3 = new _Secp256k1EcdsaSignature_0();
 
-const _descriptor_5 = __compactRuntime.CompactTypeBoolean;
+const _descriptor_4 = __compactRuntime.CompactTypeBoolean;
 
-const _descriptor_6 = new __compactRuntime.CompactTypeBytes(1024);
+const _descriptor_5 = new __compactRuntime.CompactTypeBytes(1024);
+
+const _descriptor_6 = new __compactRuntime.CompactTypeBytes(20);
 
 const _descriptor_7 = new __compactRuntime.CompactTypeUnsignedInteger(18446744073709551615n, 8);
 
@@ -73,17 +73,17 @@ const _descriptor_19 = new __compactRuntime.CompactTypeBytes(128);
 
 class _Either_0 {
   alignment() {
-    return _descriptor_5.alignment().concat(_descriptor_1.alignment().concat(_descriptor_1.alignment()));
+    return _descriptor_4.alignment().concat(_descriptor_1.alignment().concat(_descriptor_1.alignment()));
   }
   fromValue(value_0) {
     return {
-      is_left: _descriptor_5.fromValue(value_0),
+      is_left: _descriptor_4.fromValue(value_0),
       left: _descriptor_1.fromValue(value_0),
       right: _descriptor_1.fromValue(value_0)
     }
   }
   toValue(value_0) {
-    return _descriptor_5.toValue(value_0.is_left).concat(_descriptor_1.toValue(value_0.left).concat(_descriptor_1.toValue(value_0.right)));
+    return _descriptor_4.toValue(value_0.is_left).concat(_descriptor_1.toValue(value_0.left).concat(_descriptor_1.toValue(value_0.right)));
   }
 }
 
@@ -249,8 +249,8 @@ export class Contract {
     const r_0 = __compact_pattern_tmp1_0.r;
     const s_0 = __compact_pattern_tmp1_0.s;
     const w_0 = this._inv_0(s_0);
-    const u1_0 = this._mul_0(z_0, w_0);
-    const u2_0 = this._mul_0(r_0, w_0);
+    const u1_0 = __compactRuntime.secp256k1ScalarMul(z_0, w_0);
+    const u2_0 = __compactRuntime.secp256k1ScalarMul(r_0, w_0);
     const point_0 = this._ecAdd_0(this._ecMulGenerator_0(u1_0),
                                   this._ecMul_0(pk_0, u2_0));
     return __compactRuntime.convertBytesToField(115792089237316195423570985008687907852837564279074904382605163141518161494336n,
@@ -342,15 +342,11 @@ export class Contract {
     return result_0;
   }
   _keccak256_8(value_0) {
-    const result_0 = __compactRuntime.keccak256(_descriptor_6, value_0);
+    const result_0 = __compactRuntime.keccak256(_descriptor_5, value_0);
     return result_0;
   }
   _keccak256_9(value_0) {
     const result_0 = __compactRuntime.keccak256(_descriptor_12, value_0);
-    return result_0;
-  }
-  _mul_0(x_0, y_0) {
-    const result_0 = __compactRuntime.secp256k1ScalarMul(x_0, y_0);
     return result_0;
   }
   _inv_0(s_0) {
@@ -1705,6 +1701,13 @@ export const pureCircuits = {
       throw new __compactRuntime.CompactError(`signerAddress: expected 1 argument (as invoked from Typescript), received ${args_0.length}`);
     }
     const pk_0 = args_0[0];
+    if (!(typeof(pk_0.x) === 'bigint' && typeof(pk_0.y) === 'bigint' && typeof(pk_0.identity) == 'boolean')) {
+      __compactRuntime.typeError('signerAddress',
+                                 'argument 1',
+                                 'AuthCodec.compact line 250 char 1',
+                                 'Secp256k1Point',
+                                 pk_0)
+    }
     return _dummyContract._signerAddress_0(pk_0);
   },
   verifySignature: (...args_0) => {
@@ -1728,6 +1731,13 @@ export const pureCircuits = {
                                  'struct Secp256k1EcdsaSignature<r: Secp256k1Scalar, s: Secp256k1Scalar>',
                                  signature_0)
     }
+    if (!(typeof(pk_0.x) === 'bigint' && typeof(pk_0.y) === 'bigint' && typeof(pk_0.identity) == 'boolean')) {
+      __compactRuntime.typeError('verifySignature',
+                                 'argument 3',
+                                 'AuthCodec.compact line 254 char 1',
+                                 'Secp256k1Point',
+                                 pk_0)
+    }
     return _dummyContract._verifySignature_0(digest_0, signature_0, pk_0);
   },
   pointXBigEndian: (...args_0) => {
@@ -1735,6 +1745,13 @@ export const pureCircuits = {
       throw new __compactRuntime.CompactError(`pointXBigEndian: expected 1 argument (as invoked from Typescript), received ${args_0.length}`);
     }
     const pk_0 = args_0[0];
+    if (!(typeof(pk_0.x) === 'bigint' && typeof(pk_0.y) === 'bigint' && typeof(pk_0.identity) == 'boolean')) {
+      __compactRuntime.typeError('pointXBigEndian',
+                                 'argument 1',
+                                 'AuthCodec.compact line 262 char 1',
+                                 'Secp256k1Point',
+                                 pk_0)
+    }
     return _dummyContract._pointXBigEndian_0(pk_0);
   },
   pointYBigEndian: (...args_0) => {
@@ -1742,6 +1759,13 @@ export const pureCircuits = {
       throw new __compactRuntime.CompactError(`pointYBigEndian: expected 1 argument (as invoked from Typescript), received ${args_0.length}`);
     }
     const pk_0 = args_0[0];
+    if (!(typeof(pk_0.x) === 'bigint' && typeof(pk_0.y) === 'bigint' && typeof(pk_0.identity) == 'boolean')) {
+      __compactRuntime.typeError('pointYBigEndian',
+                                 'argument 1',
+                                 'AuthCodec.compact line 266 char 1',
+                                 'Secp256k1Point',
+                                 pk_0)
+    }
     return _dummyContract._pointYBigEndian_0(pk_0);
   }
 };
