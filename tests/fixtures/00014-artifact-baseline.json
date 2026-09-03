@@ -12,7 +12,7 @@
   "circuits": {
     "execute": {
       "k": 19,
-      "rows": 382781
+      "rows": 382780
     },
     "depositShielded": {
       "k": 16,

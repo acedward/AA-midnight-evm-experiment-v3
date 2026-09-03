@@ -1,0 +1,243 @@
+pragma language_version >= 0.25.0;
+
+// @module ShieldedCustody
+// @description THE SHIELDED CUSTODY FAMILY: the pooled coin per colour (`pools`), the per-(account,
+//              colour) attribution (`shieldedBalances`), the key domain that addresses it, the
+//              credit that creates a cell, the cell writes, and the two give shapes — a named
+//              `sendShielded` payout and the OPEN OFFER that releases value with no output at all.
+//              EVERY WRITE TO `pools` AND `shieldedBalances` IN THE REPOSITORY IS IN THIS FILE.
+//
+// This is a STATEFUL module and is imported by exactly ONE file, `Custody.compact` (FR-006 /
+// compiler bug LFDT-Minokawa/compact#270). It USES `ZswapPrimitives` — the standard library keeps
+// the coin commitment and nullifier private, and the open offer needs both — and re-exports
+// NOTHING it imported: a name reaches the contract's surface by exactly one route, and the two
+// zswap oracles reach it through the preset's own import (finding F-P0-7). The selective import
+// below makes that mechanical rather than a matter of discipline.
+//
+// THIS IS THE FILE PROJECT 00025 (shielded-token privacy) EDITS. Its internals are named the same
+// as `UnshieldedCustody`'s (`_familyTag`, `_balanceAt`, `_writeCell`, `_credit`) so the two
+// families present the same API; the composer disambiguates the resulting overload set with a
+// SELECTIVE RENAMING import (`_familyTag as _shFamilyTag`, …), finding F-P0-5. The shielded-only
+// primitives (`_pooled`, `_sendNamed`, `_releaseOpen`, `_claimWant`) have no unshielded twin
+// because there is no unshielded swap.
+//
+// UNGUARDED INTERNALS, OZ style (`_`-prefixed): `_writeCell`, `_credit`, `_sendNamed`,
+// `_releaseOpen` and `_claimWant` carry no guard of their own because the composer has already run
+// every guard, in the order and at the positions the single-file contract used. `_pooled` is the
+// exception — it keeps the `no pooled coin for this colour` assert, because that guard IS the
+// lookup's precondition and must not be separable from it.
+//
+// SHIELDED CUSTODY KEEPS ONE POOLED COIN PER COLOUR — depositing a colour already held MERGES into
+// the existing coin — so `pools` holds at most one entry per colour, a debit is a single coin spend,
+// and per colour c
+//
+//     poolValue(c)      == sum over accounts of shieldedBalances[shieldedKey(a, c)]
+//     pools.member(c)  <=> that sum > 0
+//
+// with the analogous statement over the kernel's unshielded balance for the other family. Every
+// write site maintains it: a credit is paired with a pool insert of the same colour and value, a
+// debit with a re-pool or removal, and an internal transfer moves value between two cells of one
+// colour without touching the pool. THE INVARIANT IS LOAD-BEARING — it keeps the pool guards in
+// `custodyDispatch` strictly behind the per-(account, colour) guard, so they can never refuse first.
+//
+// FROZEN BYTES: "aa:manager:shielded:v1" — the family tag inside `pad(32, …)` in `_familyTag`. Any
+// length up to 32 bytes works, but it must stay DISTINCT from the unshielded tag or the two custody
+// families would alias. See the FROZEN BYTES index in the preset header.
+
+module ShieldedCustody {
+  import CompactStandardLibrary;
+  // The three transcriptions only — NEVER the two oracles `zswapNullifierOf` / `zswapCommitmentOf`.
+  // Re-exporting them here would give them a second route to the top level and the compiler would
+  // refuse with `multiple top-level exports` (F-P0-7); the preset imports `ZswapPrimitives` itself.
+  import { zswapCoinCommitment, zswapCoinNullifier, dropMerkleIndex } from "./ZswapPrimitives";
+
+  // Everything `Custody` needs, listed explicitly: an unprefixed or selective import makes a name
+  // VISIBLE but never re-exports it, so an omission here is a clean `unbound identifier` compile
+  // error rather than a silent rename (F-P0-1). `shieldedBalanceOf` and `repoolOrRemove` are
+  // deliberately absent — they are reachable only through the circuits below.
+  export {
+    pools,
+    shieldedBalances,
+    shieldedKey,
+    shieldedAccountBalance,
+    poolValue,
+    poolHasColour,
+    _familyTag,
+    _balanceAt,
+    _writeCell,
+    _credit,
+    _pooled,
+    _sendNamed,
+    _releaseOpen,
+    _claimWant
+  }
+
+  // --- LEDGER STATE (the shielded half) ---------------------------------------------------------
+
+  /// Pooled shielded custody, ONE merged coin per shielded colour, created on first credit.
+  export ledger pools: Map<Bytes<32>, QualifiedShieldedCoinInfo>;
+
+  /// Internal ownership attribution, per (account, colour), PER FAMILY. This is the SHIELDED half;
+  /// its twin `unshieldedBalances` lives in `UnshieldedCustody.compact` under a different key
+  /// domain, so the two can never alias.
+  export ledger shieldedBalances: Map<Bytes<32>, Uint<128>>;
+
+  // --- family-scoped keys -------------------------------------------------------------------------
+  //
+  // The two family tags are distinct CONSTANTS, so `shieldedKey(a, c)` and `unshieldedKey(a, c)` are
+  // different values for every (a, c) — including a colour whose 32 bytes exist in both families.
+  // Both are EXPORTED although nothing on-chain needs that: they touch no ledger state, so no proving
+  // key is emitted, and off-chain code can derive the key for every cell BY RUNNING THE COMPILED
+  // ARTIFACT instead of reimplementing the hashing scheme. That turns an "exact map sizes, zero
+  // unaccounted keys" audit into an enumeration of real state rather than a lookup of the cells the
+  // auditor happened to think of.
+
+  pure circuit _familyTag(): Bytes<32> {
+    return pad(32, "aa:manager:shielded:v1");
+  }
+
+  export pure circuit shieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<3, Bytes<32>>>([acct, colour, _familyTag()]);
+  }
+
+  /// A MISSING CELL READS AS 0 — never as an error, and never by creating the cell. This is the read
+  /// the per-(account, colour) guard uses, so refusing an unbacked spend costs no state.
+  circuit shieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
+    const k = shieldedKey(acct, colour);
+    return shieldedBalances.member(k) ? shieldedBalances.lookup(k) : 0;
+  }
+
+  // --- readers -----------------------------------------------------------------------------------
+
+  /// One cell of the dynamic table, shielded family. Returns 0 for a colour this contract has never
+  /// seen — the observable form of "a missing cell reads 0".
+  export circuit shieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
+    return shieldedBalanceOf(disclose(owner), disclose(colour));
+  }
+
+  export circuit poolValue(colour: Bytes<32>): Uint<128> {
+    const col = disclose(colour);
+    return pools.member(col) ? pools.lookup(col).value : 0;
+  }
+
+  export circuit poolHasColour(colour: Bytes<32>): Boolean {
+    return pools.member(disclose(colour));
+  }
+
+  /// Balance at an ALREADY-DERIVED key. A missing cell reads 0, exactly as `shieldedBalanceOf` does —
+  /// the only difference is that the key is computed by the caller, once.
+  circuit _balanceAt(k: Bytes<32>): Uint<128> {
+    return shieldedBalances.member(k) ? shieldedBalances.lookup(k) : 0;
+  }
+
+  /// The ONLY write to `shieldedBalances` outside `_credit`. Unguarded by design.
+  circuit _writeCell(k: Bytes<32>, v: Uint<128>): [] {
+    shieldedBalances.insert(k, v);
+  }
+
+  /// Write back what is left of colour `col`'s pool after a debit, or drop the colour entirely. This
+  /// is the debit half of the one-coin-per-colour invariant.
+  circuit repoolOrRemove(col: Bytes<32>, change: Maybe<ShieldedCoinInfo>): [] {
+    if (change.is_some) {
+      pools.insertCoin(col, change.value, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+    } else {
+      // Fully spent: the colour leaves the map entirely.
+      pools.remove(col);
+    }
+  }
+
+  // --- the credit half of the deposit entry point ------------------------------------------------
+  //
+  // The guards (`deposit must be positive`, `credit account is not registered`) stay with the entry
+  // circuit in `Custody.compact`, at their original positions and in their original order; what
+  // moved here is everything after them — the receive, the lazy pool creation and the cell.
+
+  circuit _credit(c: ShieldedCoinInfo, acct: Bytes<32>): [] {
+    // Must precede insertCoin: this is what allocates the Merkle-tree index.
+    receiveShielded(c);
+
+    if (pools.member(c.color)) {
+      // Per-colour merge-on-deposit: each colour's pool stays exactly one coin.
+      pools.insertCoin(
+        c.color,
+        mergeCoinImmediate(pools.lookup(c.color), c),
+        right<ZswapCoinPublicKey, ContractAddress>(kernel.self())
+      );
+    } else {
+      // FIRST CREDIT of this colour — the pool is created lazily, right here.
+      pools.insertCoin(c.color, c, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+    }
+
+    shieldedBalances.insert(
+      shieldedKey(acct, c.color),
+      (shieldedBalanceOf(acct, c.color) + c.value) as Uint<128>
+    );
+  }
+
+  // --- the pool guard and the two shielded give shapes (selectors 2 and 6) -----------------------
+  //
+  // The composer keeps the `if (needsPool) { … }` block, the clamp and the guard ORDER; these
+  // circuits are the pieces inside it that touch `pools`.
+
+  /// The pool guard and the lookup it guards, inseparable. The value guard
+  /// (`pooled colour balance too low`) stays at the call site, because it compares against the
+  /// composer's muxed `val`.
+  circuit _pooled(col: Bytes<32>): QualifiedShieldedCoinInfo {
+    assert(pools.member(col), "no pooled coin for this colour");
+    return pools.lookup(col);
+  }
+
+  /// ONE `sendShielded`, shared by the withdrawal and the named-swap shape; the change is re-pooled
+  /// or the colour dropped. The recipient discriminant is muxed by the composer, which is the file
+  /// that knows which selector it is serving.
+  circuit _sendNamed(
+    col: Bytes<32>,
+    pooled: QualifiedShieldedCoinInfo,
+    rcpt: Either<ZswapCoinPublicKey, ContractAddress>,
+    give: Uint<128>
+  ): [] {
+    const result = sendShielded(pooled, rcpt, give);
+    repoolOrRemove(col, result.change);
+  }
+
+  /// THE OPEN OFFER: the pooled coin is consumed as a zswap input and its nullifier claimed, but
+  /// the only output created is the change back to this contract. The given value is released
+  /// with no output at all and stands as a positive imbalance any taker's balancer can sweep.
+  circuit _releaseOpen(col: Bytes<32>, pooled: QualifiedShieldedCoinInfo, give: Uint<128>): [] {
+    const selfAddr = kernel.self();
+    createZswapInput(pooled);
+    kernel.claimZswapNullifier(zswapCoinNullifier(dropMerkleIndex(pooled), selfAddr));
+    const changeValue = (pooled.value - give) as Uint<128>;
+    if (changeValue == 0) {
+      repoolOrRemove(col, none<ShieldedCoinInfo>());
+    } else {
+      const changeCoin = ShieldedCoinInfo{
+        nonce: evolveNonce(2, pooled.nonce),
+        color: col,
+        value: changeValue
+      };
+      const selfRecipient = right<ZswapCoinPublicKey, ContractAddress>(selfAddr);
+      createZswapOutput(changeCoin, selfRecipient);
+      const cm = zswapCoinCommitment(changeCoin, selfRecipient);
+      kernel.claimZswapCoinSpend(cm);
+      kernel.claimZswapCoinReceive(cm);
+      repoolOrRemove(col, some<ShieldedCoinInfo>(changeCoin));
+    }
+  }
+
+  /// The swap WANT leg's custody half: receive the wanted coin, then merge or create its pool.
+  /// `receiveShielded` MUST precede `insertCoin` — receiving is what allocates the coin's
+  /// Merkle-tree index.
+  circuit _claimWant(wantCoin: ShieldedCoinInfo): [] {
+    receiveShielded(wantCoin);
+    if (pools.member(wantCoin.color)) {
+      pools.insertCoin(
+        wantCoin.color,
+        mergeCoinImmediate(pools.lookup(wantCoin.color), wantCoin),
+        right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+    } else {
+      pools.insertCoin(
+        wantCoin.color, wantCoin, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+    }
+  }
+}

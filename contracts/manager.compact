@@ -85,16 +85,9 @@
 // transfer: a circuit taking only (to, colour, amount) could not say WHICH family it meant.
 //
 // SHIELDED CUSTODY KEEPS ONE POOLED COIN PER COLOUR — depositing a colour already held MERGES into
-// the existing coin — so `pools` holds at most one entry per colour, a debit is a single coin spend,
-// and per colour c
-//
-//     poolValue(c)      == sum over accounts of shieldedBalances[shieldedKey(a, c)]
-//     pools.member(c)  <=> that sum > 0
-//
-// with the analogous statement over the kernel's unshielded balance for the other family. Every
-// write site maintains it: a credit is paired with a pool insert of the same colour and value, a
-// debit with a re-pool or removal, and an internal transfer moves value between two cells of one
-// colour without touching the pool. THE INVARIANT IS LOAD-BEARING — it keeps the pool guards in
+// the existing coin — and the invariant that ties `pools` to `shieldedBalances`, with the analogous
+// statement over the kernel's unshielded balance for the other family, is stated in full at the head
+// of `modules/ShieldedCustody.compact`. THE INVARIANT IS LOAD-BEARING — it keeps the pool guards in
 // `custodyDispatch` strictly behind the per-(account, colour) guard, so they can never refuse first.
 //
 // --- FROZEN BYTES -------------------------------------------------------------------------------
@@ -122,8 +115,8 @@
 // map; a constant that appears twice, or in a file not named here, is a bug:
 //
 //   "aa:manager:owner:v1.0"                    modules/AccountRegistry.compact, `ownerCommitment`
-//   "aa:manager:shielded:v1"                   this file, `shieldedFamilyTag`
-//   "aa:manager:unshielded:v1"                 this file, `unshieldedFamilyTag`
+//   "aa:manager:shielded:v1"                   modules/ShieldedCustody.compact, `_familyTag`
+//   "aa:manager:unshielded:v1"                 modules/UnshieldedCustody.compact, `_familyTag`
 //   "midnight:zswap-cc[v1]" / "…-cn[v1]"       modules/ZswapPrimitives.compact
 //   EIP-712 account/domain/type hashes         modules/Eip712.compact
 //     (accountTag, domainType, domainName, domainVersion, and the five per-action type hashes
@@ -132,14 +125,13 @@
 //   semanticTag, callTranscriptTag,
 //   nativeAuthTag, entrypointHash              modules/SemanticCommitment.compact
 //
-// (The two family tags still in this file move to `ShieldedCustody` / `UnshieldedCustody` when the
-// custody phase lands; this index moves with them.)
-//
 // --- THE MODULE MAP -----------------------------------------------------------------------------
 //
-// This file is the PRESET: the deployable contract. It owns the custody ledger state, the
-// constructor, the deadline window, the custody dispatch and `execute`, and it composes the modules
-// under `contracts/modules/`. Nothing is duplicated — a section that moved, moved:
+// This file is the PRESET: the deployable contract. After the split it owns exactly four things —
+// the ledger field `deploymentDomain`, the constructor, the deadline window and `execute` — plus the
+// two deposit wrappers that carry the public signatures. IT PERFORMS NO LEDGER MAP WRITE AT ALL.
+// Everything else is a module under `contracts/modules/`; nothing is duplicated — a section that
+// moved, moved:
 //
 //   ByteCodec.compact           big-endian word encoders, the 32-byte comparison. Imported with
 //                               `prefix ByteCodec_` and re-exported by nobody, so none of its names
@@ -151,12 +143,30 @@
 //                               `dropMerkleIndex`, and the two oracles that make them testable.
 //   ActionEnvelope.compact      `ExecutePayload` and the canonical-zero `assertActionEnvelope`.
 //   SemanticCommitment.compact  the semantic-commitment recipe and WHY THERE ARE NO EVENTS.
-//   AccountRegistry.compact     THE ONLY STATEFUL MODULE SO FAR: `accounts`, `accountModes`,
-//                               `evmOwners`, `evmNonces`, the witness `localOwnerSecret`, the
-//                               commitment that derives a native account id, both authorization
-//                               choke points, the three registry readers, and EVERY WRITE to a
-//                               registry map — `execute` performs none. Imported by this file and
-//                               no other (FR-006, compiler bug #270).
+//   AccountRegistry.compact     STATEFUL: `accounts`, `accountModes`, `evmOwners`, `evmNonces`, the
+//                               witness `localOwnerSecret`, the commitment that derives a native
+//                               account id, both authorization choke points, the three registry
+//                               readers, and EVERY WRITE to a registry map — `execute` performs
+//                               none. Imported by this file and no other (FR-006, compiler bug
+//                               #270).
+//   Custody.compact             THE COMPOSER, and it declares no ledger of its own: `custodyDispatch`
+//                               — the contract's ONLY debit path — and the two deposit entry
+//                               circuits. The only file that calls both families. Imported by this
+//                               file and no other.
+//   ShieldedCustody.compact     STATEFUL: `pools`, `shieldedBalances`, the shielded key domain, the
+//                               deposit credit, the pool guard, the named send and THE OPEN OFFER.
+//                               EVERY WRITE to those two maps is there. Imported by `Custody` alone,
+//                               and it is the file the shielded privacy work (project 00025) edits.
+//   UnshieldedCustody.compact   STATEFUL: `unshieldedBalances`, the unshielded key domain, the
+//                               deposit credit and the give leg. EVERY WRITE to that map is there.
+//                               Imported by `Custody` alone.
+//
+// THE CROSS-STATE SEAM (the OZ rule that a module never resolves caller identity). Custody holds no
+// registry state, so the three membership facts it needs are read HERE — `isRegistered(account)` in
+// each deposit wrapper, `isRegistered(p.toAccount)` and `isRegistered(p.creditAccount)` in `execute`
+// — and passed in as Booleans. `Custody` asserts them at the ORIGINAL guard positions with the
+// ORIGINAL error strings, so guard order and the state-neutrality of a refusal are unchanged
+// (FR-007).
 //
 // Every module lists what it publishes in an explicit `export { … }` block: an unprefixed import
 // makes a name VISIBLE but never re-exports it, so an omission is a clean `unbound identifier`
@@ -184,6 +194,14 @@ import "./modules/SemanticCommitment";
 // `AccountRecord`, `myAccount`, `isRegistered`, `accountRecord` and the witness key
 // `localOwnerSecret` all keep their bare names on the artifact.
 import "./modules/AccountRegistry";
+
+// The custody composer, and through it in two hops the three custody maps and the six custody
+// readers. STATEFUL BY COMPOSITION, and therefore imported by this file and no other;
+// `ShieldedCustody` and `UnshieldedCustody` are imported by `Custody` alone (FR-006, compiler bug
+// #270). Unprefixed, so `pools`, `shieldedBalances`, `unshieldedBalances`, `shieldedKey`,
+// `unshieldedKey`, `shieldedAccountBalance`, `unshieldedAccountBalance`, `poolValue` and
+// `poolHasColour` all keep their bare names on the artifact.
+import "./modules/Custody";
 
 export {
   execute,
@@ -224,15 +242,10 @@ export {
 
 // --- LEDGER STATE -------------------------------------------------------------------------------
 //
-// Note what is NOT here: no colour cells, no `configured` flag, no admin key. This contract's whole
-// colour knowledge is whatever these maps accumulated from credits.
-
-/// Pooled shielded custody, ONE merged coin per shielded colour, created on first credit.
-export ledger pools: Map<Bytes<32>, QualifiedShieldedCoinInfo>;
-
-/// Internal ownership attribution, per (account, colour), PER FAMILY.
-export ledger shieldedBalances: Map<Bytes<32>, Uint<128>>;
-export ledger unshieldedBalances: Map<Bytes<32>, Uint<128>>;
+// ONE FIELD IS LEFT HERE. The four registry maps live in `modules/AccountRegistry.compact` and the
+// three custody maps in the two family modules, each beside the code that writes it. Note what is
+// NOT anywhere: no colour cells, no `configured` flag, no admin key. This contract's whole colour
+// knowledge is whatever the custody maps accumulated from credits.
 
 /// Fresh-deployment EIP-712 salt, fixed at construction and never written again. The domain
 /// separator binds it, so two deployments of this contract cannot replay each other's signatures.
@@ -244,106 +257,23 @@ constructor(deploymentDomain_: Bytes<32>) {
   deploymentDomain = domain;
 }
 
-// --- family-scoped keys -------------------------------------------------------------------------
+// --- the deposit entry points -------------------------------------------------------------------
 //
-// The two family tags are distinct CONSTANTS, so `shieldedKey(a, c)` and `unshieldedKey(a, c)` are
-// different values for every (a, c) — including a colour whose 32 bytes exist in both families.
-// Both are EXPORTED although nothing on-chain needs that: they touch no ledger state, so no proving
-// key is emitted, and off-chain code can derive the key for every cell BY RUNNING THE COMPILED
-// ARTIFACT instead of reimplementing the hashing scheme. That turns an "exact map sizes, zero
-// unaccounted keys" audit into an enumeration of real state rather than a lookup of the cells the
-// auditor happened to think of.
-
-circuit shieldedFamilyTag(): Bytes<32> {
-  return pad(32, "aa:manager:shielded:v1");
-}
-
-circuit unshieldedFamilyTag(): Bytes<32> {
-  return pad(32, "aa:manager:unshielded:v1");
-}
-
-export circuit shieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
-  return persistentHash<Vector<3, Bytes<32>>>([acct, colour, shieldedFamilyTag()]);
-}
-
-export circuit unshieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
-  return persistentHash<Vector<3, Bytes<32>>>([acct, colour, unshieldedFamilyTag()]);
-}
-
-/// A MISSING CELL READS AS 0 — never as an error, and never by creating the cell. This is the read
-/// the per-(account, colour) guard uses, so refusing an unbacked spend costs no state.
-circuit shieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
-  const k = shieldedKey(acct, colour);
-  return shieldedBalances.member(k) ? shieldedBalances.lookup(k) : 0;
-}
-
-circuit unshieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
-  const k = unshieldedKey(acct, colour);
-  return unshieldedBalances.member(k) ? unshieldedBalances.lookup(k) : 0;
-}
-
-// --- readers -----------------------------------------------------------------------------------
-
-/// One cell of the dynamic table, shielded family. Returns 0 for a colour this contract has never
-/// seen — the observable form of "a missing cell reads 0".
-export circuit shieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
-  return shieldedBalanceOf(disclose(owner), disclose(colour));
-}
-
-/// The same cell in the OTHER family. For a colour whose bytes exist in both families these two
-/// reads take the same 32-byte `colour` argument and must still answer independently.
-export circuit unshieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
-  return unshieldedBalanceOf(disclose(owner), disclose(colour));
-}
-
-export circuit poolValue(colour: Bytes<32>): Uint<128> {
-  const col = disclose(colour);
-  return pools.member(col) ? pools.lookup(col).value : 0;
-}
-
-export circuit poolHasColour(colour: Bytes<32>): Boolean {
-  return pools.member(disclose(colour));
-}
-
-// --- shielded custody ---------------------------------------------------------------------------
+// THE PUBLIC SIGNATURES LIVE HERE; the bodies are `Custody._depositShielded` / `_depositUnshielded`
+// (the underscore is forced: two bindings of one name cannot both reach the top level — F-P3-1).
+// The only thing these wrappers add is the registry read: custody holds no registry state, so the
+// membership fact is read here and asserted inside the composer at the position — second, behind
+// `deposit must be positive` — and with the string it has always had. Reading it one step earlier
+// changes no state and no message, so the refusal surface is untouched (FR-007).
 
 /// Claim an incoming shielded coin and credit it to `account` under the coin's OWN colour. THE OPEN
 /// PATH: no colour check — whatever colour the coin carries is custodied, including one minted after
 /// this contract was deployed, and that colour's pool and the (account, colour) cell are created
-/// HERE if absent, and only here. The stdlib auto-receives only when the recipient is this contract
+/// there if absent, and only there. The stdlib auto-receives only when the recipient is this contract
 /// itself, so a transfer in commits only if THIS circuit runs in the sender's own transaction.
 export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
-  // The deposited coin and target account are public facts of this transfer: the pooled coin and
-  // the credited balance both land in ledger state, so they are disclosed once, up front.
-  const c = disclose(coin);
-  const acct = disclose(account);
-
-  // Every guard precedes every write, so a refusal creates nothing.
-  assert(c.value > 0, "deposit must be positive");
-  assert(accounts.member(acct), "credit account is not registered");
-
-  // Must precede insertCoin: this is what allocates the Merkle-tree index.
-  receiveShielded(c);
-
-  if (pools.member(c.color)) {
-    // Per-colour merge-on-deposit: each colour's pool stays exactly one coin.
-    pools.insertCoin(
-      c.color,
-      mergeCoinImmediate(pools.lookup(c.color), c),
-      right<ZswapCoinPublicKey, ContractAddress>(kernel.self())
-    );
-  } else {
-    // FIRST CREDIT of this colour — the pool is created lazily, right here.
-    pools.insertCoin(c.color, c, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
-  }
-
-  shieldedBalances.insert(
-    shieldedKey(acct, c.color),
-    (shieldedBalanceOf(acct, c.color) + c.value) as Uint<128>
-  );
+  _depositShielded(coin, account, isRegistered(account));
 }
-
-// --- unshielded custody -------------------------------------------------------------------------
 
 /// Credit `amount` of `colour` to `account`, unshielded family.
 ///
@@ -351,29 +281,7 @@ export circuit depositShielded(coin: ShieldedCoinInfo, account: Bytes<32>): [] {
 /// increments this contract's declared unshielded inputs, so a transaction that names a colour it is
 /// not actually carrying fails to BALANCE and is refused by the node.
 export circuit depositUnshielded(colour: Bytes<32>, amount: Uint<128>, account: Bytes<32>): [] {
-  const col = disclose(colour);
-  const amt = disclose(amount);
-  const acct = disclose(account);
-
-  assert(amt > 0, "deposit must be positive");
-  assert(accounts.member(acct), "credit account is not registered");
-
-  receiveUnshielded(col, amt);
-  unshieldedBalances.insert(
-    unshieldedKey(acct, col),
-    (unshieldedBalanceOf(acct, col) + amt) as Uint<128>
-  );
-}
-
-/// Write back what is left of colour `col`'s pool after a debit, or drop the colour entirely. This
-/// is the debit half of the one-coin-per-colour invariant.
-circuit repoolOrRemove(col: Bytes<32>, change: Maybe<ShieldedCoinInfo>): [] {
-  if (change.is_some) {
-    pools.insertCoin(col, change.value, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
-  } else {
-    // Fully spent: the colour leaves the map entirely.
-    pools.remove(col);
-  }
+  _depositUnshielded(colour, amount, account, isRegistered(account));
 }
 
 // ================================================================================================
@@ -400,267 +308,6 @@ circuit assertLiveDeadline(validUntil: Uint<64>): [] {
   const earliest = (validUntil - 3600) as Uint<64>;
   assert(blockTimeGte(earliest), "EVM authorization deadline exceeds 3600-second horizon");
   assert(blockTimeLt(validUntil), "EVM authorization has expired");
-}
-
-// ================================================================================================
-// CUSTODY DISPATCH — the file's ONLY debit path
-// ================================================================================================
-//
-// `custodyDispatch` implements selectors 2..6 as ONE debit leg, ONE credit leg and shared sends,
-// with the family, recipient, account and colour muxed in as ARGUMENTS. There is no per-selector
-// custody circuit anywhere in this file, so "which code debits an account" is answerable by
-// inspection: this one. The mux is not only a readability choice — Compact compiles EVERY branch of
-// every `if`, so a per-selector dispatch would emit a full copy of each helper per branch, whereas
-// muxing calls each expensive operation exactly once (two key derivations, one shielded send, one
-// unshielded send, one want-claim).
-//
-// --- THE GUARD ORDER: what this circuit's assert sequence encodes --------------------------------
-//
-//   0. PARAMETER SANITY — the three `!isSwap || …` lines opening the body; every selector's sanity
-//      also lives in `assertActionEnvelope`, which `execute` runs first. Pure arithmetic on the
-//      caller's own arguments: reads nothing, leaks nothing.
-//   1. THE WITNESS CHOKE POINT — already passed. The debited account was DERIVED by `gatewayAccount`
-//      / `authenticatedActionAccount` and arrives as the `account` parameter, so this circuit has no
-//      option of trusting a supplied account.
-//   2. THE PER-(ACCOUNT, COLOUR) GUARD, BEFORE ANY POOL GUARD, MISSING CELL READS 0 — the single
-//      `assert(debitBalance >= val, …)`, shared by all five selectors. `debitKey` is derived once
-//      with the family tag muxed (for a shielded selector it is exactly `shieldedKey(account,
-//      col)`'s body) and read through `shieldedBalanceAt` / `unshieldedBalanceAt`, the `*BalanceOf`
-//      bodies with the key supplied — read-as-0 preserved, not re-implemented.
-//   3. THE POOL GUARDS — only now does the contract's own holding matter. A pool rich in the colour
-//      cannot rescue a maker whose own cell is short: that already refused at step 2.
-//   4. THE CREDIT TARGET — a swap's wanted colour must be attributed to a registered account.
-//
-// The sequence is a TOPOLOGICAL SUPERSET of the five actions' individual orders, so muxing them
-// together changed no action's relative ordering. Every guard precedes every write: the first write
-// is the give leg, after all of steps 0-4, so a refused action is provably state-neutral.
-//
-// Guard 0's colour-distinctness assert is not decoration. Two same-colour shielded credits cannot be
-// assembled in one transaction at these pins — the second needs the first coin's Merkle index, only
-// allocated once the first is really inserted on chain — so a swap whose legs shared a colour would
-// surface as an opaque `invalid index into sparse merkle tree` from inside the proving path.
-// Refusing it here (and in `assertActionEnvelope`) fails CLOSED with a readable reason instead.
-//
-// --- THE SWAP MAKER (selector 6) ----------------------------------------------------------------
-//
-// One proved call fuses a GIVE leg (debit `primaryAmount` of `primaryColor` from the maker) and a
-// WANT leg (receive `wantAmount` of `wantColor` into custody, attributed to `creditAccount`), so a
-// swap settles atomically BY CONSTRUCTION rather than by composing two calls that could diverge.
-// The want leg receives value this transaction does not fund, leaving the call UNBALANCED by a
-// deficit of `wantAmount` of `wantColor` — the same deficit shape `depositShielded` creates. THAT
-// DEFICIT IS THE OFFER, and a taker balances it. `recipientKind` picks which of TWO SHAPES the offer
-// takes, and they are genuinely different mechanisms rather than a cosmetic flag:
-//
-//   NAMED RECIPIENT (recipientKind 1 = a user key; 2 = a contract address, REFUSED by
-//       `assertActionEnvelope` — see its header) — `sendShielded` pays the
-//       given value to that recipient and re-pools the change, so the give leg is INTERNALLY
-//       BALANCED and the call's only imbalance is the want-side deficit. Naming a throwaway key
-//       whose secret ships alongside the offer turns this into a bearer offer: any holder of that
-//       secret can settle and then sweep the payout, with no contract support beyond this branch.
-//       A named CONTRACT taker cannot work at these pins whatever the maker intends: settling would
-//       require the taker contract to claim the payout commitment inside the MAKER's transaction,
-//       which is not something a taker composing its own transaction can do, so the offer would be
-//       unsettleable by construction and the node would refuse it with 218.
-//
-//   NO RECIPIENT (recipientKind 0), THE OPEN OFFER — the given value is released with NO OUTPUT AT
-//       ALL: the pooled coin is consumed as a zswap input, its nullifier claimed, and the only
-//       output created is the change back to this contract. The released value stands as a POSITIVE
-//       IMBALANCE at the guaranteed segment, addressed to nobody, which ANY taker's stock balancer
-//       will sweep — that is what makes the offer usable by a holder whose keys the maker never
-//       knew, and why this file reimplements the zswap commitment and nullifier (see
-//       `zswapCoinCommitment` above).
-//
-// SHIELDED ONLY. There is no unshielded swap: a contract's unshielded payout is a UTXO in the
-// maker's own bound intent, so its recipient cannot be left open.
-
-/// Balance at an ALREADY-DERIVED key. A missing cell reads 0, exactly as `shieldedBalanceOf` does —
-/// the only difference is that the key is computed by the caller, once.
-circuit shieldedBalanceAt(k: Bytes<32>): Uint<128> {
-  return shieldedBalances.member(k) ? shieldedBalances.lookup(k) : 0;
-}
-
-circuit unshieldedBalanceAt(k: Bytes<32>): Uint<128> {
-  return unshieldedBalances.member(k) ? unshieldedBalances.lookup(k) : 0;
-}
-
-/// The whole custody dispatch for selectors 2..6, with one copy of every expensive operation.
-circuit custodyDispatch(p: ExecutePayload, account: Bytes<32>): [] {
-  const isWithdrawShielded   = p.selector == 2;
-  const isWithdrawUnshielded = p.selector == 3;
-  const isTransferShielded   = p.selector == 4;
-  const isTransferUnshielded = p.selector == 5;
-  const isSwap               = p.selector == 6;
-  const isTransfer           = isTransferShielded || isTransferUnshielded;
-
-  // Family muxing: shielded custody is selectors 2, 4, 6; unshielded is 3, 5.
-  const debitShielded  = isWithdrawShielded || isTransferShielded || isSwap;
-  const creditShielded = isTransferShielded || isSwap;
-  const hasCredit      = isTransfer || isSwap;
-  // Only the shielded PAYOUT paths touch the pooled coin; an internal shielded transfer does not.
-  const needsPool      = isWithdrawShielded || isSwap;
-
-  const col = p.primaryColor;
-  const val = p.primaryAmount;
-  const creditAcct   = isSwap ? p.creditAccount : p.toAccount;
-  const creditColour = isSwap ? p.wantColor : col;
-
-  // --- 0. swap parameter sanity (the other selectors' sanity lives in `assertActionEnvelope`) ---
-  assert(!isSwap || val > 0,            "swap must give a positive amount");
-  assert(!isSwap || p.wantAmount > 0,   "swap must want a positive amount");
-  assert(!isSwap || col != p.wantColor, "swap legs must be different colours");
-
-  // --- 1. internal-transfer destination checks (selectors 4/5) ---
-  assert(!isTransfer || accounts.member(p.toAccount), "destination account is not registered");
-  assert(!isTransfer || account != p.toAccount,       "internal transfer to the same account");
-  assert(!isTransfer || val > 0,                      "internal transfer must be positive");
-
-  // --- 2. THE PER-(ACCOUNT, COLOUR) GUARD, before any pool guard, missing cell reads 0 ---
-  //     ONE key derivation for all five selectors; the family tag is the muxed argument.
-  const debitKey = persistentHash<Vector<3, Bytes<32>>>(
-    [account, col, debitShielded ? shieldedFamilyTag() : unshieldedFamilyTag()]);
-  const debitBalance = debitShielded ? shieldedBalanceAt(debitKey) : unshieldedBalanceAt(debitKey);
-  assert(debitBalance >= val, "account colour balance too low");
-
-  // --- 3. only now, the pool guard and the shielded give leg (selectors 2 and 6) ---
-  if (needsPool) {
-    assert(pools.member(col), "no pooled coin for this colour");
-    const pooled = pools.lookup(col);
-    assert(pooled.value >= val, "pooled colour balance too low");
-
-    // THE CLAMP THAT KEEPS THE CHANGE COIN IN RANGE. `safeGive == val` on every run that reaches
-    // this line — the assert immediately above forces `pooled.value >= val`, so the comparison is
-    // always true and the clamp is the identity. It exists solely for the runs that DO NOT reach
-    // it: a circuit has no control flow, so `if (needsPool)` suppresses this block's effects and
-    // asserts but NOT its arithmetic. On a call where `needsPool` is false (selectors 3, 4, 5) the
-    // guarded-off `pools.lookup` above reads the type default 0 while `assertActionEnvelope` has
-    // already required `primaryAmount > 0` — so an unclamped `pooled.value - val` would be a
-    // NEGATIVE field element, and both change-coin computations below hash it as a `Uint<128>`.
-    // The witness VM refuses to encode that ("inputs did not match alignment") and the in-circuit
-    // twin range-constrains the same wire to 16 bytes, so those three selectors would have no
-    // provable run at all, whatever the pool holds. With the clamp both subtractions evaluate to
-    // `0 - 0 = 0`, which encodes.
-    //
-    // The condition must be `pooled.value >= val` and NOT `needsPool`: the compiler treats the
-    // guard as known-true inside its own block and folds a `needsPool`-conditioned mux away
-    // entirely, emitting a byte-identical circuit. And BOTH consumers must take `safeGive` — the
-    // `sendShielded` call below subtracts inside the library body, which is the FIRST site the
-    // prover refuses, so clamping only `changeValue` fixes nothing.
-    const safeGive = (pooled.value >= val ? val : 0) as Uint<128>;
-
-    // --- 4. the swap credit target, after the pool guard ---
-    assert(!isSwap || accounts.member(p.creditAccount), "credit account is not registered");
-
-    if (isWithdrawShielded || p.recipientKind != 0) {
-      // ONE `sendShielded`, shared by the withdrawal and the named-swap shape. The recipient
-      // discriminant is the muxed argument: a withdrawal uses kind 0 = user key / 1 = contract,
-      // a named swap uses kind 1 = user key / 2 = contract.
-      //
-      // THE CONTRACT ARM BELOW IS UNREACHABLE TODAY. `assertActionEnvelope` refuses withdraw kind 1
-      // and swap kind 2 (see its header): a contract-addressed zswap output puts `(seg, cm, that
-      // address)` into `commitments`, only that contract's own transcript can claim it, and the
-      // check is an EQUALITY — so the node rejects with 218 unless the recipient contract is called
-      // in the same transaction. It is kept rather than deleted precisely so that restoring the
-      // capability, once a receiving contract exists, is an envelope change and not a rewrite here.
-      const useLeft = isWithdrawShielded ? (p.recipientKind == 0) : (p.recipientKind == 1);
-      const rcpt = useLeft
-        ? left<ZswapCoinPublicKey, ContractAddress>(ZswapCoinPublicKey{ bytes: p.recipient })
-        : right<ZswapCoinPublicKey, ContractAddress>(ContractAddress{ bytes: p.recipient });
-      const result = sendShielded(pooled, rcpt, safeGive);
-      repoolOrRemove(col, result.change);
-    } else {
-      // THE OPEN OFFER: the pooled coin is consumed as a zswap input and its nullifier claimed, but
-      // the only output created is the change back to this contract. The given value is released
-      // with no output at all and stands as a positive imbalance any taker's balancer can sweep.
-      const selfAddr = kernel.self();
-      createZswapInput(pooled);
-      kernel.claimZswapNullifier(zswapCoinNullifier(dropMerkleIndex(pooled), selfAddr));
-      const changeValue = (pooled.value - safeGive) as Uint<128>;
-      if (changeValue == 0) {
-        repoolOrRemove(col, none<ShieldedCoinInfo>());
-      } else {
-        const changeCoin = ShieldedCoinInfo{
-          nonce: evolveNonce(2, pooled.nonce),
-          color: col,
-          value: changeValue
-        };
-        const selfRecipient = right<ZswapCoinPublicKey, ContractAddress>(selfAddr);
-        createZswapOutput(changeCoin, selfRecipient);
-        const cm = zswapCoinCommitment(changeCoin, selfRecipient);
-        kernel.claimZswapCoinSpend(cm);
-        kernel.claimZswapCoinReceive(cm);
-        repoolOrRemove(col, some<ShieldedCoinInfo>(changeCoin));
-      }
-    }
-  }
-
-  // --- the unshielded give leg (selector 3): account guard above, then contract holdings ---
-  if (isWithdrawUnshielded) {
-    assert(unshieldedBalanceGte(col, val), "contract unshielded balance too low");
-    // MIND THE OPERAND ORDER — it is the mirror image of the shielded `Either` above.
-    // `sendUnshielded`'s recipient is `Either<ContractAddress, UserAddress>`, so LEFT = contract
-    // and RIGHT = user; the shielded `Either<ZswapCoinPublicKey, ContractAddress>` puts the user
-    // key on the LEFT. The envelope's discriminant is unchanged by that (kind 0 = user key /
-    // 1 = contract, `:789`), so kind 0 must take the RIGHT arm here.
-    // This tag is not cosmetic: it becomes the `PublicAddress` of the
-    // `claimUnshieldedCoinSpend` the library emits, and the ledger's effects check satisfies a
-    // `Contract`-tagged claim ONLY from that contract's own `unshielded_inputs` in the same
-    // transaction — a user recipient tagged `Contract` is unsatisfiable, and the node rejects
-    // the transaction with `Custom error: 214`.
-    //
-    // AND THE CONTRACT ARM BELOW IS UNREACHABLE TODAY, for the same reason as the shielded leg
-    // above: `assertActionEnvelope` refuses `recipientKind 1` on selectors 2 and 3 (see its
-    // header). A genuine `Contract`-tagged claim is just as unsatisfiable as the mistaken one this
-    // fix removed, unless the named contract calls `receiveUnshielded` in the same transaction —
-    // the 214 above, in its CORRECT form. Kept, not deleted, for the same restore-later reason.
-    sendUnshielded(col, val, p.recipientKind == 0
-      ? right<ContractAddress, UserAddress>(UserAddress{ bytes: p.recipient })
-      : left<ContractAddress, UserAddress>(ContractAddress{ bytes: p.recipient }));
-  }
-
-  // --- ONE debit write, into the muxed family ---
-  const newDebit = (debitBalance - val) as Uint<128>;
-  if (debitShielded) {
-    shieldedBalances.insert(debitKey, newDebit);
-  } else {
-    unshieldedBalances.insert(debitKey, newDebit);
-  }
-
-  // --- the swap WANT leg: claim `wantCoin` into custody ---
-  //
-  // `receiveShielded` creates an output the transaction does not fund, so this is what makes the
-  // offer UNBALANCED — a deficit of `p.wantAmount` of `p.wantColor` at the guaranteed segment, the
-  // same deficit shape `depositShielded` creates. It MUST precede `insertCoin`: receiving is what
-  // allocates the coin's Merkle-tree index. The pool then merges or creates, keeping one coin per
-  // colour.
-  if (isSwap) {
-    const wantCoin = ShieldedCoinInfo{
-      nonce: p.wantNonce, color: p.wantColor, value: p.wantAmount
-    };
-    receiveShielded(wantCoin);
-    if (pools.member(p.wantColor)) {
-      pools.insertCoin(
-        p.wantColor,
-        mergeCoinImmediate(pools.lookup(p.wantColor), wantCoin),
-        right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
-    } else {
-      pools.insertCoin(
-        p.wantColor, wantCoin, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
-    }
-  }
-
-  // --- ONE credit write (selectors 4, 5, 6), key derived once with the family muxed ---
-  if (hasCredit) {
-    const creditKey = persistentHash<Vector<3, Bytes<32>>>(
-      [creditAcct, creditColour, creditShielded ? shieldedFamilyTag() : unshieldedFamilyTag()]);
-    const creditValue = (isSwap ? p.wantAmount : val) as Uint<128>;
-    if (creditShielded) {
-      shieldedBalances.insert(
-        creditKey, (shieldedBalanceAt(creditKey) + creditValue) as Uint<128>);
-    } else {
-      unshieldedBalances.insert(
-        creditKey, (unshieldedBalanceAt(creditKey) + creditValue) as Uint<128>);
-    }
-  }
 }
 
 /// THE ONLY externally callable registration/debit gateway. Order of business: validate the
@@ -711,7 +358,7 @@ export circuit execute(
   }
 
   if (!isRegistration) {
-    custodyDispatch(p, account);
+    custodyDispatch(p, account, isRegistered(p.toAccount), isRegistered(p.creditAccount));
   }
 
   // The sole checked nonce write is deliberately AFTER the custody dispatch: every guard and effect
