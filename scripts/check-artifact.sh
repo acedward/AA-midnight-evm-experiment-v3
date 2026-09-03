@@ -26,10 +26,16 @@
 #   Same pin and same override as `scripts/compile.sh`, because it comes from the same place:
 #   `scripts/toolchain.sh`, whose `ensure_image` obtains the compiler and verifies its version,
 #   language version and both binary hashes before anything is measured. Set `COMPACTC_IMAGE=<ref>`
-#   to point at another build. The baseline RECORDS the compiler version, the language version and
-#   the Docker image ID it was produced with, and the compare mode prints both sides when they
-#   differ — a toolchain bump then shows up as a visible provenance note next to numbers that
-#   either did or did not move, instead of as a silent re-baseline.
+#   to point at another build. The baseline RECORDS the compiler version, the language version, the
+#   runtime version, the image REF and the SHA-256 of the two compiler binaries (`compactc.bin`,
+#   `zkir-v3`) it was produced with, and the compare mode prints both sides when they differ — a
+#   toolchain bump then shows up as a visible provenance note next to numbers that either did or did
+#   not move, instead of as a silent re-baseline.
+#   The binaries — not the Docker image ID — are the provenance of record: an image ID is a config
+#   digest that no rebuild reproduces (two byte-identical builds of the same pinned archive get
+#   different IDs), so pinning it made every locally built image report drift for a toolchain that
+#   had not moved. The binary hashes are what actually decide every ZKIR byte, and `toolchain.sh`
+#   already verifies them against the release archive on every run.
 #
 # usage:
 #   scripts/check-artifact.sh                      compile, measure all nine, compare (the gate)
@@ -74,9 +80,12 @@ log() { printf '%s\n' "$*"; }
 log "=== check-artifact ==="
 log "MODE=$mode"
 # Obtain and verify the toolchain up front, so `--skip-compile` (which never reaches compile.sh)
-# still records a real, checked image ID in the provenance block rather than "unknown".
+# still records real, checked provenance rather than "unknown".
 ensure_image
-image_id="$(docker image inspect "$COMPACTC_IMAGE" --format '{{.Id}}' 2>/dev/null || echo 'unknown')"
+# `ensure_image` leaves the OBSERVED hashes of the two compiler binaries here, having already
+# failed hard if either differs from the pin.
+compactc_bin_sha256="${TOOLCHAIN_COMPACTC_BIN_SHA256:-unknown}"
+zkir_v3_sha256="${TOOLCHAIN_ZKIR_V3_SHA256:-unknown}"
 
 if [ "$skip_compile" -eq 0 ]; then
   bash "$repo_root/scripts/compile.sh" manager
@@ -115,7 +124,8 @@ MEASURED_FILE="$work/measured.txt" \
 OUT_DIR="$out_dir" \
 BASELINE_FILE="$baseline_file" \
 IMAGE_REF="$COMPACTC_IMAGE" \
-IMAGE_ID="$image_id" \
+COMPACTC_BIN_SHA256="$compactc_bin_sha256" \
+ZKIR_V3_SHA256="$zkir_v3_sha256" \
 MODE="$mode" \
 PARTIAL="$([ "${#circuits[@]}" -eq "${#ALL_CIRCUITS[@]}" ] && echo 0 || echo 1)" \
 python3 - <<'PY'
@@ -189,7 +199,8 @@ provenance = {
     "languageVersion": info.get("language-version"),
     "runtimeVersion": info.get("runtime-version"),
     "toolchainImage": os.environ["IMAGE_REF"],
-    "toolchainImageId": os.environ["IMAGE_ID"],
+    "compactcBinSha256": os.environ["COMPACTC_BIN_SHA256"],
+    "zkirV3Sha256": os.environ["ZKIR_V3_SHA256"],
 }
 
 if mode == "write":
@@ -218,7 +229,8 @@ baseline = json.load(open(baseline_file))
 base_prov = baseline.get("provenance", {})
 print("--- provenance")
 drift = [k for k in provenance if base_prov.get(k) != provenance[k]]
-for k in ("compilerVersion", "languageVersion", "runtimeVersion", "toolchainImage", "toolchainImageId"):
+for k in ("compilerVersion", "languageVersion", "runtimeVersion", "toolchainImage",
+          "compactcBinSha256", "zkirV3Sha256"):
     mark = "!=" if k in drift else "=="
     print(f"  {k:18} baseline {base_prov.get(k)!r} {mark} observed {provenance[k]!r}")
 if drift:

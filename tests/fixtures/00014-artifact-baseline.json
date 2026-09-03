@@ -6,7 +6,8 @@
     "languageVersion": "0.26.0",
     "runtimeVersion": "0.19.0",
     "toolchainImage": "aa-compactc:0.34.0",
-    "toolchainImageId": "sha256:8f97b90cee942d479bcc7d3f26b9c193be37c71ea5bbb3857c769b7dc6a7d9fa"
+    "compactcBinSha256": "628b343f9b0ebe32e6e6a141b6f73cc66edb19c516a4817b478c3b47f74230d5",
+    "zkirV3Sha256": "6a91308419d24bc0633210897d10c7c1b2193444e8bde09ce763e9556cb8f93a"
   },
   "circuits": {
     "execute": {

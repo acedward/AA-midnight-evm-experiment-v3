@@ -15,6 +15,8 @@
 #   binaries onto this host and then PROVING that is what arrived:
 #     * `compactc --version` and `--language-version` must equal the expected pair, and
 #     * `compactc.bin` and `zkir-v3` must hash to the values recorded here.
+#   `ensure_image` also leaves the two OBSERVED binary hashes in $TOOLCHAIN_COMPACTC_BIN_SHA256 and
+#   $TOOLCHAIN_ZKIR_V3_SHA256 for callers that record toolchain provenance.
 #   The second check is what makes a pulled image as trustworthy as a locally built one: an image
 #   tag is mutable and an image ID is not reproducible across rebuilds, but the compiler binaries
 #   are the artifact that actually decides every ZKIR byte and every key.
@@ -87,6 +89,13 @@ ensure_image() {
     || { echo "pinned toolchain mismatch: compactc.bin $bin_sha, expected $COMPACTC_BIN_SHA256_EXPECTED" >&2; exit 70; }
   [ "$zkir_sha" = "$ZKIR_V3_SHA256_EXPECTED" ] \
     || { echo "pinned toolchain mismatch: zkir-v3 $zkir_sha, expected $ZKIR_V3_SHA256_EXPECTED" >&2; exit 70; }
+
+  # Publish what was OBSERVED in the image (not the constants above) so a caller can record
+  # provenance without re-running `docker`. `scripts/check-artifact.sh` writes these two hashes into
+  # the artifact baseline: unlike an image ID they are reproducible — any host that builds or pulls
+  # the pinned archive gets the same two values, so a rebuilt image produces no spurious drift.
+  TOOLCHAIN_COMPACTC_BIN_SHA256="$bin_sha"
+  TOOLCHAIN_ZKIR_V3_SHA256="$zkir_sha"
 }
 
 # Executed rather than sourced: obtain the toolchain and print what arrived.
