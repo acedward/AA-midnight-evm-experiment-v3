@@ -33,13 +33,14 @@ unshielded value (the contract's own kernel balance) live in separate maps under
 domains, so a shielded and an unshielded colour with byte-identical identifiers can never alias.
 
 Two facts about the compiled contract are load-bearing and connected: **`execute` fits in a k=19
-circuit** (382,781 of 524,288 rows) and **the contract emits no events**. See
+circuit** (382,780 of 524,288 rows) and **the contract emits no events**. See
 [Why k=19 matters](#why-k19-matters).
 
-The authoritative description is the header of
-[`contracts/manager.compact`](contracts/manager.compact) — it documents the safety story guard by
-guard, the storage invariants, and which byte constants are frozen. Read that before changing
-anything.
+The contract is **ten files**: a thin deployable preset and nine modules — see
+[The module split](#the-module-split). The authoritative description is still the header of
+[`contracts/manager.compact`](contracts/manager.compact): it documents the safety story guard by
+guard, the storage invariants, which byte constants are frozen and which file each one now lives
+in, and it carries the module map. Read that before changing anything.
 
 ---
 
@@ -47,7 +48,13 @@ anything.
 
 ```
 contracts/
-  manager.compact          THE PRODUCT — the only contract that gets deployed
+  manager.compact          THE PRESET — the only contract that gets deployed. Owns the ledger field
+                           deploymentDomain, the constructor, execute, the deadline window and the
+                           two deposit signatures; performs no ledger-map write at all
+  modules/                 the nine modules it composes — see "The module split" below. Five are
+                           pure (ByteCodec, Eip712, ZswapPrimitives, ActionEnvelope,
+                           SemanticCommitment); three own ledger state (AccountRegistry,
+                           ShieldedCustody, UnshieldedCustody); Custody is the composer and owns none
   test-support/
     minter.compact         a token source, used only by tests: a per-deployment constructor tag
     minter-collide.compact becomes two contract-scoped colours (minter-collide is the inverse
@@ -75,6 +82,10 @@ scripts/
   compile.sh               compile the contracts with the pinned toolchain
   measure-k.sh             report a circuit's k and constraint-row count
   check-artifact.sh        the artifact gate: rows, k and the generated surface vs the baseline
+  check-partition.sh       the partition gate: text-only, instant — every stateful module imported
+                           once, every ledger map written only in the file that owns it
+  source-hash.sh           the content hash over contracts/modules/*.compact that compile.sh and
+                           keygen.sh log next to SOURCE_SHA256
   keygen.sh                generate proving/verifying keys (expensive — read its header)
   verify-loader.sh         prove the generated key can actually be loaded
   test-sim.sh              run the simulation tier
@@ -86,13 +97,144 @@ docker/
   compose.yml              the local Midnight stack (node + indexer + proof server), pinned by
                            digest, used only by the integration tier
 
-.github/workflows/ci.yml   on every push and PR: verify the toolchain, compile, run the artifact
-                           gate, run the simulation tier
+.github/workflows/ci.yml   on every push and PR: verify the toolchain, run the partition gate,
+                           compile, run the artifact gate, run the simulation tier
 REMOVALS.md                what this repository used to contain, and where it went
 ```
 
 Every script is self-documented: its header says what it does, what it needs, and why it is built
 the way it is. `--help` is not implemented on purpose — read the top of the file.
+
+## The module split
+
+`contracts/manager.compact` was one 1,420-line file. It is now a **preset** of 398 lines — a
+deployable contract that composes modules and writes nothing — plus nine modules under
+`contracts/modules/`, following the layout of the OpenZeppelin `compact-contracts` library: one
+`module` per file, PascalCase file name = module name, imported by relative path, underscore prefix
+on unguarded internals, `@module` / `@description` on every module and `@circuitInfo k=…, rows=…` on
+every circuit that emits a key.
+
+The split is a **pure refactor**: same nine key-emitting circuits, same signatures, same guard
+order, same error strings, same frozen bytes, same public surface. Two things did move and both are
+recorded below — the on-chain **ledger slot order**, and **one row** on `execute`.
+
+| file | lines | owns (ledger) | what it publishes |
+|---|---:|---|---|
+| `manager.compact` | 398 | `deploymentDomain` | the whole public surface: `execute`, `depositShielded`, `depositUnshielded`, the readers, and every pure oracle. Owns the constructor and `assertLiveDeadline` |
+| `modules/ByteCodec.compact` | 88 | — | `reverseBytes32/16`, `bytes32LexicographicLt`, `uint8Word`, `uint64Word`, `uint128Word`, `addressWord`. The only module imported with a `prefix`, and re-exported by nobody, so none of it reaches the artifact |
+| `modules/Eip712.compact` | 208 | — | `frozenTypeHash`, `evmAccountIdFor`, `evmDomainSeparatorFor`, `evmStructHashFor`, `evmDigestFor`. Holds the ten frozen EIP-712 hex constants |
+| `modules/ZswapPrimitives.compact` | 96 | — | `zswapCoinCommitment`, `zswapCoinNullifier`, `dropMerkleIndex` and the two oracles `zswapNullifierOf` / `zswapCommitmentOf`. Holds the two zswap separators |
+| `modules/ActionEnvelope.compact` | 159 | — | `ExecutePayload` and `assertActionEnvelope` — every canonical-zero rule for every selector, in one place |
+| `modules/SemanticCommitment.compact` | 193 | — | `semanticCommitmentFor`. Holds the semantic tags and `entrypointHash`, and the "why there are no events" story |
+| `modules/AccountRegistry.compact` | 225 | `accounts`, `accountModes`, `evmOwners`, `evmNonces` | the witness `localOwnerSecret`, `ownerCommitment`, `registerAccount`, `gatewayAccount`, the readers `myAccount` / `isRegistered` / `accountRecord`, and the internals `_setEvmOwner` / `_setEvmNonce`. **Every registry write is here** |
+| `modules/ShieldedCustody.compact` | 247 | `pools`, `shieldedBalances` | `shieldedKey`, `shieldedAccountBalance`, `poolValue`, `poolHasColour` and the internals `_familyTag`, `_balanceAt`, `_writeCell`, `_credit`, `_pooled`, `_sendNamed`, `_releaseOpen`, `_claimWant`. **Every write to those two maps is here** |
+| `modules/UnshieldedCustody.compact` | 139 | `unshieldedBalances` | `unshieldedKey`, `unshieldedAccountBalance` and the internals `_familyTag`, `_balanceAt`, `_writeCell`, `_credit`, `_give`. **Every write to that map is here** |
+| `modules/Custody.compact` | 354 | **none** | `custodyDispatch` — the contract's ONLY debit path — plus `_depositShielded` / `_depositUnshielded`, and it re-publishes the three custody ledgers and the family readers to the preset. The only file that calls both families |
+
+Reading order for an auditor: *what may be asked for* is `ActionEnvelope`; *who is allowed to ask*
+is `AccountRegistry`; *what happens to the money* is `Custody` and the two family files; *what it
+all meant* is `SemanticCommitment`.
+
+### The import graph
+
+Arrows point from importer to imported. Every import is unprefixed except `ByteCodec`, so exported
+ledger names, struct names, the witness key and the oracle names flow through unchanged and the
+preset's `export { … }` block is the same list of names it always was.
+
+```
+manager ──> ActionEnvelope, Eip712, ZswapPrimitives, SemanticCommitment, AccountRegistry, Custody
+Custody ──> ShieldedCustody, UnshieldedCustody, ActionEnvelope
+ShieldedCustody ──> ZswapPrimitives            (uses the transcriptions; never re-exports them)
+UnshieldedCustody ──> CompactStandardLibrary only
+AccountRegistry ──> ActionEnvelope
+Eip712 ──> ByteCodec, ActionEnvelope
+SemanticCommitment ──> ByteCodec, Eip712, ActionEnvelope
+```
+
+`ActionEnvelope` is imported by **five** files, because `ExecutePayload` is the argument type of
+`evmStructHashFor`, `evmDigestFor`, `gatewayAccount` and `custodyDispatch` alike. That is safe: it
+is a pure module, and the rule below is about state.
+
+Three compiler facts shape the graph, all of them established by compiling probes rather than by
+reading documentation:
+
+- **Names do not propagate implicitly.** An unprefixed import makes a module's exported names
+  visible in the importing scope but does not re-export them, so every module carries an explicit
+  `export { … }` block naming each ledger field, struct, circuit — and the witness — that the next
+  hop needs. An omission is a clean `unbound identifier` compile error, never a silent rename.
+- **A name reaches the top level by exactly ONE route.** `ShieldedCustody` uses
+  `zswapCoinCommitment` and `zswapCoinNullifier` but must not export them: the preset imports
+  `ZswapPrimitives` directly, and a second route fails to compile with `multiple top-level exports`.
+  `ShieldedCustody`'s import of that module is written as a selective import of the three
+  transcriptions only, so the rule is mechanical rather than a matter of discipline.
+- **Two unprefixed modules exporting the same name form an overload set**, and there is no
+  module-qualified call syntax in Compact. The two family modules deliberately share an API
+  (`_familyTag`, `_balanceAt`, `_writeCell`, `_credit`), so the composer disambiguates with a
+  **selective renaming import**:
+
+  ```
+  import { pools, shieldedBalances, _familyTag as _shFamilyTag, _balanceAt as _shBalanceAt, … } from "./ShieldedCustody";
+  import { unshieldedBalances, _familyTag as _unFamilyTag, _balanceAt as _unBalanceAt, … } from "./UnshieldedCustody";
+  ```
+
+  The `_sh*` / `_un*` names exist only inside `Custody.compact`. The ledgers still arrive under
+  their bare names. Keeping the two families symmetric is deliberate: the shielded privacy work
+  edits one file whose API mirrors the other's.
+
+### Every stateful module is imported exactly once
+
+`AccountRegistry` and `Custody` by the preset; `ShieldedCustody` and `UnshieldedCustody` by
+`Custody` alone. This is a design rule, not a preference: compiler bug
+[LFDT-Minokawa/compact#270](https://github.com/LFDT-Minokawa/compact/issues/270) — open since
+2026-03-26 against 0.30.0, no fix version — collapses the ledger slots of a stateful module imported
+by two files, *depending on directory layout*. OpenZeppelin hit it and removed its shared
+`Initializable` import because of it. The shape this repository uses was compiled and run against a
+simulator before any code moved and does not trigger it; the rule keeps it that way, and
+`scripts/check-partition.sh` enforces it on every push. Pure modules are exempt, which is why
+`ActionEnvelope` may be imported five times.
+
+### The registry-to-custody seam
+
+Custody holds no registry state, and a module never resolves caller identity — the OpenZeppelin
+pattern. So the three membership facts custody needs are read in `manager.compact`
+(`isRegistered(account)` in each deposit wrapper, `isRegistered(p.toAccount)` and
+`isRegistered(p.creditAccount)` in `execute`) and passed into `Custody` as Booleans, which asserts
+them at the original guard positions with the original error strings. Guard order and the
+state-neutrality of a refusal are unchanged.
+
+That seam costs **exactly one row**: `execute` measures 382,780 where the single-file contract
+measured 382,781. The row is the seam and not the split — a single-file contract with no module
+anywhere, changed only by hoisting those two membership reads out of `custodyDispatch`, measures the
+same 382,780. `k` is unchanged at 19, the circuit got smaller, and the other eight circuits are
+identical to the row.
+
+One naming consequence: the composer's deposit circuits are `_depositShielded` / `_depositUnshielded`
+because the preset's public wrappers own those names, and two bindings of one name cannot both reach
+the top level. The **artifact** still exposes `depositShielded(coin, account)` and
+`depositUnshielded(colour, amount, account)`, unchanged.
+
+### The ledger slot order changed — a deployed contract needs redeploying
+
+An imported module contributes its ledger fields as ONE CONTIGUOUS BLOCK, before the importer's
+own, whatever the import's textual position. The generated accessors index the state array by
+position, so moving the maps into modules **renumbers the on-chain slots**:
+
+```
+before   pools, accounts, shieldedBalances, unshieldedBalances, accountModes, evmOwners, evmNonces, deploymentDomain
+after    accounts, accountModes, evmOwners, evmNonces, pools, shieldedBalances, unshieldedBalances, deploymentDomain
+```
+
+Field *names* are unchanged, so every off-chain read handle still resolves; the *order* is not part
+of the preserved surface. All nine verifier keys change with it, so **an already-deployed Manager
+must be deployed fresh rather than upgraded in place**. There is no state migration in scope.
+
+### `tests/lib/compact/AuthCodec.compact` stays independent
+
+The test tree's `AuthCodec.compact` is a *second, independent transcription* of the EIP-712 codec,
+used as a differential oracle against the contract's own. Its whole value is that it shares no code
+with `contracts/`. **It must never import `Eip712`** — the day it does, the differential test starts
+comparing a function with itself. It keeps its own `reverseBytes32`, its own word encoders and its
+own type hashes on purpose.
 
 ## Test tiers
 
@@ -106,7 +248,7 @@ the way it is. `--help` is not implemented on purpose — read the top of the fi
 | command | `scripts/test-sim.sh` | `scripts/test-integration.sh` |
 
 ```sh
-scripts/test-sim.sh            # compiles, then runs 359 tests across 13 files
+scripts/test-sim.sh            # compiles, then runs 384 tests across 14 files
 scripts/test-sim.sh --skip-compile
 scripts/test-sim.sh --reinstall   # after a lockfile change: rebuild the scratch volume's deps
 ```
@@ -121,12 +263,14 @@ The simulation tier asserts its own keylessness: it fails if any `*.prover` or `
 exists in the test tree, both on the host before it starts and inside the container before vitest
 runs. (The scan skips `node_modules`, because one pinned dependency ships key fixtures of its own.)
 
-**Two gates run beside the tier**, and both are in CI:
+**Three gates run beside the tier**, and all of them are in CI:
 
 | gate | command | what it proves |
 |---|---|---|
-| refusal matrix | part of the tier (`simulation/refusal-matrix.test.ts`, 207 of the 359 tests) | every `assert` string in the Compact sources is reached by a test and refuses with the exact expected message, leaving the ledger untouched. Its coverage claim is mechanical: it reads the assert strings back out of `contracts/**/*.compact` at test time rather than from a hand-maintained list, which is why the Docker runtime stages `contracts/` read-only into the run volume. |
+| refusal matrix | part of the tier (`simulation/refusal-matrix.test.ts`, 207 of the 384 tests) | every `assert` string in the Compact sources is reached by a test and refuses with the exact expected message, leaving the ledger untouched. Its coverage claim is mechanical: it reads the assert strings back out of `contracts/**/*.compact` at test time rather than from a hand-maintained list, which is why the Docker runtime stages `contracts/` read-only into the run volume. |
 | artifact gate | `scripts/check-artifact.sh` | the compiled Manager is still the same artifact: per-circuit `k` and exact row count for all nine proof-bearing circuits, the sorted `name:pure:proof` circuit list, the set of emitted `.zkir` files, and the generated `Ledger` fields / `Witnesses` keys / exported struct names — all against `tests/fixtures/00014-artifact-baseline.json`. It also records the compiler, language and runtime versions, the image ref and the SHA-256 of the two compiler binaries (`compactc.bin`, `zkir-v3`) — the same hashes `scripts/toolchain.sh` verifies, and reproducible where an image ID is not — so a toolchain change shows up as a visible provenance note next to numbers that either did or did not move, while a rebuilt image of the same pinned archive reports none. `--write-baseline` re-records it after an intentional change; it never runs by accident. |
+| partition gate | `scripts/check-partition.sh` | the module split still holds its own rules — every stateful module imported by exactly one file (the `#270` rule), every `.insert(` / `.insertCoin(` / `.remove(` on a ledger map inside the one module that owns that map, no `ledger` declaration in `Custody.compact` and exactly one (`deploymentDomain`) in `manager.compact`. Text only: no Docker, no toolchain, instant — which is why CI runs it BEFORE the compile step. |
+| golden vectors | part of the tier (`simulation/golden-vectors.test.ts`, 25 tests) | the pure oracles return byte-identical values to the ones recorded from the pre-split artifact: `evmAccountIdFor`, `evmDomainSeparatorFor`, `evmStructHashFor`, `evmDigestFor` for every selector, `zswapNullifierOf`, `zswapCommitmentOf`, `shieldedKey`, `unshieldedKey` and `semanticCommitmentFor`, against the frozen `tests/fixtures/00014-golden-vectors.json`. |
 
 **The k=20 reference oracle.** Twenty of these tests are differential: they load the current
 Manager *and* the last pre-v5 Manager in one process, and require byte-equal EIP-712 output, ledger
@@ -189,6 +333,24 @@ Transport moved once and identity did not: upstream relocated from `midnightntwr
 Dockerfile changed during the 0.33.0 era. Everything since is served from the LFDT-Minokawa release
 pages.
 
+**What was compiled, not just what compiled it.** Each compile logs `SOURCE_SHA256` for the file
+named on the command line and `MODULES_TREE_SHA256` / `MODULES_TREE_FILES` for the modules beside
+it, so provenance covers every byte the compiler read rather than just the preset:
+
+```
+--- manager
+SOURCE=manager.compact
+SOURCE_SHA256=8e063ccfafbcda3cfaed572c00cce9c9436a958f1a7b5de23a3d7e37976a69b5
+MODULES_TREE_SHA256=fa60c9411fe8d7983057c0f0f3cfc2aa6dff32ab8906361c48681d77fc1666bd
+MODULES_TREE_FILES=9
+```
+
+The tree hash is one SHA-256 over the repo-relative path and then the bytes of each
+`contracts/modules/*.compact`, C-locale sorted — so renaming a module moves it even if no code
+changes. The recipe, and the one-liner that reproduces it by hand, is in
+[`scripts/source-hash.sh`](scripts/source-hash.sh); `keygen.sh` logs the same pair. A single-file
+target (either minter, the k=20 oracle) logs `none` / `0`, which is the honest answer.
+
 ### History: compiler 0.33.0 (superseded 2026-09-03)
 
 The repository was pinned to **compiler 0.33.0 / language 0.25.0 / runtime 0.18.0-rc.1** from
@@ -225,10 +387,10 @@ RangeError [ERR_FS_FILE_TOO_LARGE]: File size (2282126073) is greater than 2 GiB
 
 ```sh
 scripts/compile.sh manager
-scripts/measure-k.sh execute        # -> Mock compiling circuit "execute.zkir" (k=19, rows=382781)
+scripts/measure-k.sh execute        # -> Mock compiling circuit "execute.zkir" (k=19, rows=382780)
 ```
 
-382,781 rows is 141,507 (27.0%) under the 2^19 = 524,288 ceiling. `measure-k.sh` runs
+382,780 rows is 141,508 (27.0%) under the 2^19 = 524,288 ceiling. `measure-k.sh` runs
 `zkir-v3 mock-compile`: it reports (k, rows) and writes a throwaway `.bzkir`, and it never
 generates a key.
 
@@ -241,7 +403,7 @@ every one of them, because `execute`'s 27% of headroom says nothing about the th
 
 | circuit | k | rows | headroom under 2^k |
 |---|---|---|---|
-| `execute` | 19 | 382,781 | 141,507 (27.0%) |
+| `execute` | 19 | 382,780 | 141,508 (27.0%) |
 | `depositShielded` | 16 | 42,239 | 23,297 (35.6%) |
 | `depositUnshielded` | 13 | 7,918 | **274 (3.3%)** |
 | `shieldedAccountBalance` | 13 | 4,001 | 4,191 (51.2%) |
@@ -251,9 +413,13 @@ every one of them, because `execute`'s 27% of headroom says nothing about the th
 | `isRegistered` | 8 | 129 | 127 (49.6%) |
 | `poolHasColour` | 8 | 129 | 127 (49.6%) |
 
-Total 441,673 rows. These numbers are **identical on compilers 0.33.0 and 0.34.0** — the nine ZKIRs
-came out byte-identical across the bump — and they are the numbers
-`tests/fixtures/00014-artifact-baseline.json` pins.
+Total 441,672 rows. They are the numbers `tests/fixtures/00014-artifact-baseline.json` pins and the
+artifact gate compares, and the same nine pairs appear as `@circuitInfo k=…, rows=…` tags on the
+circuits themselves. Every one of them was **identical on compilers 0.33.0 and 0.34.0** — the nine
+ZKIRs came out byte-identical across the bump — and eight of the nine are also identical to the
+single-file contract before the modular split. The ninth is `execute`, one row lower at 382,780
+because of the [registry-to-custody seam](#the-registry-to-custody-seam), which is a source change
+the split made deliberately and not a compiler effect.
 
 **This is also why the contract emits no events.** Computing and emitting a semantic commitment for
 each action inside the circuit cost roughly 367,000 rows — about 38% of `execute` — dominated not
@@ -271,9 +437,12 @@ scripts/keygen.sh          # ~155 s at ~2.1 GiB peak on 4 CPU / 20 GiB; writes ~
 scripts/verify-loader.sh   # confirms the prover key reads through the pinned Node loader
 ```
 
-Regenerate whenever a change to `contracts/manager.compact` changes any `.zkir`. Comment-only edits
-do not; changing a domain-separator string does. A compiler bump *may*: the 0.33.0 → 0.34.0 move did
-not, because it left all nine ZKIRs byte-identical.
+Regenerate whenever a change to a compiled source changes any `.zkir` — that means
+`contracts/manager.compact` **or any `contracts/modules/*.compact`**, which is why `keygen.sh` and
+`compile.sh` log `MODULES_TREE_SHA256` next to `SOURCE_SHA256`; record a key set against both.
+Comment-only edits do not invalidate keys (measured: a documentation pass across four contract files
+left all nine ZKIRs byte-identical); changing a domain-separator string does. A compiler bump *may*:
+the 0.33.0 → 0.34.0 move did not, because it left all nine ZKIRs byte-identical.
 
 **The SRS is the one thing that needs the network.** Unlike compilation and measurement, key
 generation needs the universal KZG structured reference string `bls_midnight_2p<k>` for every
@@ -299,10 +468,12 @@ Keys and SRS files are gitignored and are never committed.
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and pull request:
 
 1. obtain and verify the pinned toolchain with `scripts/toolchain.sh` — the same code a laptop runs,
-2. compile the contracts,
-3. run the **artifact gate** (`scripts/check-artifact.sh --skip-compile`: all nine circuits' rows
+2. run the **partition gate** (`scripts/check-partition.sh`) — text only, so a partition mistake is
+   reported in seconds rather than after the build,
+3. compile the contracts,
+4. run the **artifact gate** (`scripts/check-artifact.sh --skip-compile`: all nine circuits' rows
    and `k`, plus the generated surface), and
-4. run the **simulation tier**, refusal matrix included.
+5. run the **simulation tier**, refusal matrix and golden vectors included.
 
 No node stack, no proof server, no keys, no SRS, and **no secrets**: with nothing published, the
 toolchain is built from the SHA-256-pinned release archive, and the GHCR login step only runs if
