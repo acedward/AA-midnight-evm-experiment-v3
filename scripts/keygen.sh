@@ -14,7 +14,12 @@
 # WHEN YOU MUST REGENERATE
 #   Whenever `contracts/manager.compact` changes in a way that changes any `.zkir`. A key set is
 #   bound to the exact circuit it was generated from. Note that comment-only edits do NOT change
-#   the ZKIRs, so they do not invalidate keys; changing a domain-separator string DOES.
+#   the ZKIRs, so they do not invalidate keys; changing a domain-separator string DOES. A COMPILER
+#   BUMP DOES TOO: the 0.33.0 -> 0.34.0 upgrade changes ZKIR bytes, so every key generated before
+#   it is invalid and a deployed contract must be re-keyed and redeployed.
+#
+# TOOLCHAIN
+#   Compiler 0.34.0 / language 0.26.0, obtained and verified by scripts/toolchain.sh.
 #
 # THE SRS — THE ONE THING THAT NEEDS THE NETWORK
 #   Unlike `--skip-zk` compilation and `mock-compile` measurement, key generation needs the
@@ -38,7 +43,9 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-COMPACTC_IMAGE="${COMPACTC_IMAGE:-aa00006-compactc@sha256:f57ca2d88cec1c66f377eb8bb2d616779202dd1ccb99517a4f7ddfffa9d0d86b}"
+# The pinned toolchain (compiler 0.34.0, language 0.26.0) and `ensure_image`.
+# shellcheck source=scripts/toolchain.sh
+. "$repo_root/scripts/toolchain.sh"
 out_dir="$repo_root/tests/generated/manager-keys"
 params_dir="$repo_root/tests/generated/zk-params"
 container="aa-keygen-$$"
@@ -95,7 +102,7 @@ echo "SOURCE_SHA256=$(shasum -a 256 "$repo_root/contracts/manager.compact" | cut
 echo "GIT_HEAD=$(git -C "$repo_root" rev-parse HEAD)"
 echo "GIT_DIRTY_FILES=$(git -C "$repo_root" status --porcelain | wc -l | tr -d ' ')"
 echo "BOUNDS=cpus:$cpus,memory:$memory,wall-seconds:$timeout_seconds,network:${net[*]:-default}"
-echo "IMAGE=$COMPACTC_IMAGE"
+ensure_image
 
 ( sleep "$timeout_seconds"; docker inspect "$container" >/dev/null 2>&1 && docker kill "$container" >/dev/null 2>&1 ) >/dev/null 2>&1 &
 watchdog=$!

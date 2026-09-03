@@ -25,9 +25,11 @@
 #   `git fetch --unshallow` (in CI: `actions/checkout` with `fetch-depth: 0`).
 #
 # TOOLCHAIN PROVENANCE
-#   The image is pinned BY DIGEST. It is arm64/linux and cannot be rebuilt from
-#   docker/compactc.Dockerfile on other architectures. See README, "Toolchain provenance".
-#   Override with COMPACTC_IMAGE=<ref> to pull it from a registry (CI does exactly that).
+#   Compiler 0.34.0 / language 0.26.0, pinned by the release-archive SHA-256 in
+#   docker/compactc.Dockerfile and obtained by scripts/toolchain.sh, which is where the pins and
+#   the `ensure_image` used below live. The toolchain is arm64/linux and cannot be built or run on
+#   other architectures. See README, "Toolchain provenance". Override with COMPACTC_IMAGE=<ref> to
+#   compile with a different build (that override is how a second toolchain is driven).
 #
 # usage: scripts/compile.sh [target ...]
 set -euo pipefail
@@ -35,10 +37,9 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 out_root="$repo_root/tests/generated"
 
-# The pinned toolchain: Compact compiler 0.33.0, language 0.25.0.
-COMPACTC_IMAGE="${COMPACTC_IMAGE:-aa00006-compactc@sha256:f57ca2d88cec1c66f377eb8bb2d616779202dd1ccb99517a4f7ddfffa9d0d86b}"
-COMPACTC_VERSION_EXPECTED="0.33.0"
-COMPACTC_LANGUAGE_EXPECTED="0.25.0"
+# The pinned toolchain (compiler 0.34.0, language 0.26.0) and `ensure_image`.
+# shellcheck source=scripts/toolchain.sh
+. "$repo_root/scripts/toolchain.sh"
 
 # The frozen k=20 reference oracle, in this repo's own history.
 K20_ORACLE_COMMIT="7b0d03d"
@@ -48,23 +49,6 @@ K20_ORACLE_SHA256="85b538bc8d20be04a39d24f39f153292de6d472bd7dac6188c19eca412e5c
 timeout_seconds="${COMPILE_TIMEOUT_SECONDS:-600}"
 
 log() { printf '%s\n' "$*"; }
-
-ensure_image() {
-  if ! docker image inspect "$COMPACTC_IMAGE" >/dev/null 2>&1; then
-    log "pulling $COMPACTC_IMAGE"
-    docker pull -q "$COMPACTC_IMAGE" >/dev/null
-  fi
-  local ver lang
-  ver="$(docker run --rm --network none "$COMPACTC_IMAGE" compactc --version | tr -d '[:space:]')"
-  lang="$(docker run --rm --network none "$COMPACTC_IMAGE" compactc --language-version | tr -d '[:space:]')"
-  log "IMAGE=$COMPACTC_IMAGE"
-  log "COMPILER_VERSION=$ver"
-  log "LANGUAGE_VERSION=$lang"
-  [ "$ver" = "$COMPACTC_VERSION_EXPECTED" ] \
-    || { echo "pinned toolchain mismatch: compiler $ver, expected $COMPACTC_VERSION_EXPECTED" >&2; exit 70; }
-  [ "$lang" = "$COMPACTC_LANGUAGE_EXPECTED" ] \
-    || { echo "pinned toolchain mismatch: language $lang, expected $COMPACTC_LANGUAGE_EXPECTED" >&2; exit 70; }
-}
 
 # compile_one <target> <host-source-dir> <source-file-name>
 # The source directory is mounted read-only; the compiler only ever sees the one directory.

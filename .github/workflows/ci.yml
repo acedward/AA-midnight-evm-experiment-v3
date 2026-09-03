@@ -29,12 +29,15 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The published pinned toolchain. Pulled by tag and then IDENTITY-CHECKED by image ID below,
-  # which is what actually pins it: unlike a manifest digest, the image ID is the config digest and
-  # survives push/pull unchanged, so it identifies the same bytes regardless of registry.
-  TOOLCHAIN_IMAGE: ghcr.io/acedward/aa-compactc:0.33.0
-  TOOLCHAIN_IMAGE_ID: sha256:f57ca2d88cec1c66f377eb8bb2d616779202dd1ccb99517a4f7ddfffa9d0d86b
-  LOCAL_TAG: aa-compactc:ci
+  # The pinned toolchain: Compact compiler 0.34.0, language 0.26.0 (Midnight ledger 9). The pin of
+  # record is the release-archive SHA-256 in docker/compactc.Dockerfile; scripts/toolchain.sh
+  # obtains the image (published cache first when one is configured, Dockerfile build otherwise)
+  # and then PROVES what arrived by checking the compiler version, the language version and the
+  # SHA-256 of `compactc.bin` and `zkir-v3`. Set COMPACTC_PUBLISHED_IMAGE to a digest-pinned
+  # published image to use it as a cache; empty means "build from the archive", which is a fully
+  # verified path and not a degraded one.
+  COMPACTC_IMAGE: aa-compactc:ci
+  COMPACTC_PUBLISHED_IMAGE: ''
 
 jobs:
   compile-and-simulate:
@@ -49,44 +52,21 @@ jobs:
           fetch-depth: 0
 
       - name: Log in to GHCR
+        if: env.COMPACTC_PUBLISHED_IMAGE != ''
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # One script obtains the toolchain and proves its identity (version, language version, and
+      # the SHA-256 of both compiler binaries), so CI and a developer's laptop cannot diverge. It
+      # is a separate step only so a toolchain failure is legible in the job log; compile.sh would
+      # run exactly the same code.
       - name: Obtain the pinned Compact toolchain
-        run: |
-          set -uo pipefail
-          # PRIMARY PATH: pull the published image and prove it is the pinned one by image ID.
-          if docker pull -q "$TOOLCHAIN_IMAGE"; then
-            got="$(docker image inspect "$TOOLCHAIN_IMAGE" --format '{{.Id}}')"
-            if [ "$got" != "$TOOLCHAIN_IMAGE_ID" ]; then
-              echo "::error::pulled toolchain is not the pinned one: $got != $TOOLCHAIN_IMAGE_ID"
-              exit 1
-            fi
-            echo "toolchain: pulled $TOOLCHAIN_IMAGE (image id verified)"
-            docker tag "$TOOLCHAIN_IMAGE" "$LOCAL_TAG"
-          else
-            # FALLBACK: build it from docker/compactc.Dockerfile, which pins the compiler ARCHIVE by
-            # SHA-256 and verifies it with `sha256sum -c` during the build. That is a stronger
-            # primitive than the image digest — the image is only a wrapper around that archive — so
-            # the compiler binary is identical either way. It is a fallback rather than the plan
-            # because it depends on the upstream release URL staying reachable, which is exactly the
-            # fragility the published image exists to remove.
-            echo "::warning::could not pull $TOOLCHAIN_IMAGE — building the toolchain from docker/compactc.Dockerfile instead (the archive is SHA-256 pinned). Publish the image to make this path unnecessary."
-            docker build -q -f docker/compactc.Dockerfile -t "$LOCAL_TAG" . || exit 1
-          fi
-          # Either way, the compiler must report exactly the pinned versions.
-          ver="$(docker run --rm --network none "$LOCAL_TAG" compactc --version | tr -d '[:space:]')"
-          lang="$(docker run --rm --network none "$LOCAL_TAG" compactc --language-version | tr -d '[:space:]')"
-          echo "compiler=$ver language=$lang"
-          [ "$ver" = "0.33.0" ] && [ "$lang" = "0.25.0" ] || {
-            echo "::error::toolchain version mismatch: compiler=$ver language=$lang"; exit 1; }
+        run: scripts/toolchain.sh
 
       - name: Compile the contracts
-        env:
-          COMPACTC_IMAGE: ${{ env.LOCAL_TAG }}
         run: scripts/compile.sh all
 
       - uses: actions/setup-node@v4

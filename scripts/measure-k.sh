@@ -16,6 +16,11 @@
 #   MEASUREMENT ONLY: it reports (k, rows) and writes a throwaway `.bzkir` beside the input.
 #   It never generates a proving or verifying key, and it needs no SRS and no network.
 #
+# TOOLCHAIN
+#   Compiler 0.34.0 / language 0.26.0, obtained and verified by scripts/toolchain.sh — the same
+#   image that produced the `.zkir` being measured. Measuring one compiler's output with another
+#   compiler's `zkir-v3` is meaningless, so this script goes through the same pin as compile.sh.
+#
 # usage: scripts/measure-k.sh [circuit] [target]
 #        circuit  default `execute`; any name under tests/generated/<target>/zkir/
 #        target   default `manager`
@@ -27,7 +32,9 @@ circuit="${1:-execute}"
 target="${2:-manager}"
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-COMPACTC_IMAGE="${COMPACTC_IMAGE:-aa00006-compactc@sha256:f57ca2d88cec1c66f377eb8bb2d616779202dd1ccb99517a4f7ddfffa9d0d86b}"
+# The pinned toolchain (compiler 0.34.0, language 0.26.0) and `ensure_image`.
+# shellcheck source=scripts/toolchain.sh
+. "$repo_root/scripts/toolchain.sh"
 timeout_seconds="${MEASURE_TIMEOUT_SECONDS:-900}"
 
 zkir_dir="$repo_root/tests/generated/$target/zkir"
@@ -41,9 +48,10 @@ test -f "$input" || {
 }
 rm -f "$zkir_dir/$circuit.bzkir"
 
+ensure_image
+
 echo "TARGET=$target"
 echo "CIRCUIT=$circuit"
-echo "IMAGE=$COMPACTC_IMAGE"
 echo "ZKIR_BYTES=$(wc -c < "$input" | tr -d ' ')"
 echo "ZKIR_SHA256=$(shasum -a 256 "$input" | cut -d ' ' -f 1)"
 echo "BOUNDS=cpus:2,memory:8g,memory-swap:8g,rayon:2,wall-seconds:$timeout_seconds,network:none"
