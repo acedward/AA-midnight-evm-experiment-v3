@@ -121,7 +121,7 @@
 // WHERE EACH ONE LIVES. Every frozen constant is defined in EXACTLY ONE file. This index is the
 // map; a constant that appears twice, or in a file not named here, is a bug:
 //
-//   "aa:manager:owner:v1.0"                    this file, `ownerCommitment`
+//   "aa:manager:owner:v1.0"                    modules/AccountRegistry.compact, `ownerCommitment`
 //   "aa:manager:shielded:v1"                   this file, `shieldedFamilyTag`
 //   "aa:manager:unshielded:v1"                 this file, `unshieldedFamilyTag`
 //   "midnight:zswap-cc[v1]" / "…-cn[v1]"       modules/ZswapPrimitives.compact
@@ -132,14 +132,14 @@
 //   semanticTag, callTranscriptTag,
 //   nativeAuthTag, entrypointHash              modules/SemanticCommitment.compact
 //
-// (The three tags in this file move to `AccountRegistry` / `ShieldedCustody` / `UnshieldedCustody`
-// when the stateful phases land; this index moves with them.)
+// (The two family tags still in this file move to `ShieldedCustody` / `UnshieldedCustody` when the
+// custody phase lands; this index moves with them.)
 //
 // --- THE MODULE MAP -----------------------------------------------------------------------------
 //
-// This file is the PRESET: the deployable contract. It owns the ledger state, the constructor, the
-// authorization choke points, the custody dispatch and `execute`, and it composes the state-free
-// modules under `contracts/modules/`. Nothing is duplicated — a section that moved, moved:
+// This file is the PRESET: the deployable contract. It owns the custody ledger state, the
+// constructor, the deadline window, the custody dispatch and `execute`, and it composes the modules
+// under `contracts/modules/`. Nothing is duplicated — a section that moved, moved:
 //
 //   ByteCodec.compact           big-endian word encoders, the 32-byte comparison. Imported with
 //                               `prefix ByteCodec_` and re-exported by nobody, so none of its names
@@ -151,6 +151,12 @@
 //                               `dropMerkleIndex`, and the two oracles that make them testable.
 //   ActionEnvelope.compact      `ExecutePayload` and the canonical-zero `assertActionEnvelope`.
 //   SemanticCommitment.compact  the semantic-commitment recipe and WHY THERE ARE NO EVENTS.
+//   AccountRegistry.compact     THE ONLY STATEFUL MODULE SO FAR: `accounts`, `accountModes`,
+//                               `evmOwners`, `evmNonces`, the witness `localOwnerSecret`, the
+//                               commitment that derives a native account id, both authorization
+//                               choke points, the three registry readers, and EVERY WRITE to a
+//                               registry map — `execute` performs none. Imported by this file and
+//                               no other (FR-006, compiler bug #270).
 //
 // Every module lists what it publishes in an explicit `export { … }` block: an unprefixed import
 // makes a name VISIBLE but never re-exports it, so an omission is a clean `unbound identifier`
@@ -171,6 +177,13 @@ import "./modules/ActionEnvelope";
 import "./modules/Eip712";
 import "./modules/ZswapPrimitives";
 import "./modules/SemanticCommitment";
+
+// The account registry: the four registry maps, the owner witness, the authorization choke points
+// and EVERY write to a registry map. STATEFUL, and therefore imported by this file and no other
+// (FR-006, compiler bug #270). Unprefixed, so `accounts`, `accountModes`, `evmOwners`, `evmNonces`,
+// `AccountRecord`, `myAccount`, `isRegistered`, `accountRecord` and the witness key
+// `localOwnerSecret` all keep their bare names on the artifact.
+import "./modules/AccountRegistry";
 
 export {
   execute,
@@ -200,20 +213,13 @@ export {
   evmOwners,
   evmNonces,
   deploymentDomain,
-  // `ExecutePayload` moved to `modules/ActionEnvelope.compact`, and a name does NOT propagate
-  // through an unprefixed import implicitly (finding F-P0-1): without this line the generated
-  // `index.d.ts` inlines the struct anonymously at every signature instead of emitting
-  // `export type ExecutePayload`, which every off-chain consumer binds to (FR-008). It is the ONE
-  // line this block gained in the split; `AccountRecord` needs none because it is still declared
-  // `export struct` in this file.
-  ExecutePayload
-}
-
-export struct AccountRecord {
-  registered: Boolean;
-  mode: Uint<8>;
-  owner: Bytes<20>;
-  nextNonce: Uint<64>;
+  // Both structs are now declared `export struct` INSIDE a module, and a name does NOT propagate
+  // through an unprefixed import implicitly (finding F-P0-1): without these two lines the generated
+  // `index.d.ts` inlines the fields anonymously at every signature instead of emitting
+  // `export type ExecutePayload` / `export type AccountRecord`, which every off-chain consumer
+  // binds to (FR-008). They are the only two lines this block has gained in the whole split.
+  ExecutePayload,
+  AccountRecord
 }
 
 // --- LEDGER STATE -------------------------------------------------------------------------------
@@ -224,18 +230,9 @@ export struct AccountRecord {
 /// Pooled shielded custody, ONE merged coin per shielded colour, created on first credit.
 export ledger pools: Map<Bytes<32>, QualifiedShieldedCoinInfo>;
 
-/// Registered accounts. Registration publishes only a commitment to the owner's secret.
-export ledger accounts: Set<Bytes<32>>;
-
 /// Internal ownership attribution, per (account, colour), PER FAMILY.
 export ledger shieldedBalances: Map<Bytes<32>, Uint<128>>;
 export ledger unshieldedBalances: Map<Bytes<32>, Uint<128>>;
-
-/// Authorization policy is mode-separated. Native records have no EVM owner or nonce entries.
-/// 0 = native witness; 1 = EVM EOA.
-export ledger accountModes: Map<Bytes<32>, Uint<8>>;
-export ledger evmOwners: Map<Bytes<32>, Bytes<20>>;
-export ledger evmNonces: Map<Bytes<32>, Uint<64>>;
 
 /// Fresh-deployment EIP-712 salt, fixed at construction and never written again. The domain
 /// separator binds it, so two deployments of this contract cannot replay each other's signatures.
@@ -245,26 +242,6 @@ constructor(deploymentDomain_: Bytes<32>) {
   const domain = disclose(deploymentDomain_);
   assert(domain != default<Bytes<32>>, "deployment domain must be nonzero");
   deploymentDomain = domain;
-}
-
-// --- owner authorization --------------------------------------------------------------------
-
-witness localOwnerSecret(): Bytes<32>;
-
-/// Account identity = a commitment to the owner's secret. Registering an account publishes only the
-/// commitment; spending requires the witness that opens it.
-circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
-  return persistentCommit<Bytes<21>>("aa:manager:owner:v1.0", disclose(sk));
-}
-
-/// Assert the witness-derived account selected by `execute` is a registered NATIVE record.
-/// THE single authorization choke point for every native debiting action: the account arrives here
-/// already derived from the witness, so there is nothing caller-supplied to check it against.
-circuit authenticatedNativeAccount(acct: Bytes<32>): Bytes<32> {
-  assert(accounts.member(acct), "caller's owner witness matches no registered account");
-  assert(accountModes.member(acct), "registered account has no authorization mode");
-  assert(accountModes.lookup(acct) == 0, "EVM account cannot enter native authorization");
-  return acct;
 }
 
 // --- family-scoped keys -------------------------------------------------------------------------
@@ -305,64 +282,7 @@ circuit unshieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
   return unshieldedBalances.member(k) ? unshieldedBalances.lookup(k) : 0;
 }
 
-// --- setup ------------------------------------------------------------------------------------
-
-/// Shared registration gateway for both authorization modes. It seeds no custody cell and never
-/// stores a secret, a signature or a key — only the account id and its mode.
-circuit registerAccount(acct: Bytes<32>, mode: Uint<8>): [] {
-  assert(acct != default<Bytes<32>>, "account id must be nonzero");
-  assert(!accounts.member(acct), "account already registered");
-  assert(!accountModes.member(acct), "account mode collision");
-  accounts.insert(acct);
-  accountModes.insert(acct, mode);
-}
-
 // --- readers -----------------------------------------------------------------------------------
-
-/// The account id (owner commitment) for the witness the caller supplies. Returns only the
-/// commitment — never the secret — so it is safe to expose: the commitment is exactly what
-/// `registerAccount` publishes.
-export circuit myAccount(): Bytes<32> {
-  return ownerCommitment(localOwnerSecret());
-}
-
-export circuit isRegistered(owner: Bytes<32>): Boolean {
-  return accounts.member(disclose(owner));
-}
-
-/// One policy query covering registration, mode, EVM owner and next nonce. Native records return a
-/// zero owner and nonce WITHOUT creating EVM map entries; unknown accounts return the all-zero
-/// inactive record. The asserts state the mode invariant: a native record carries no EVM state; an
-/// EVM record carries both halves of it.
-export circuit accountRecord(account: Bytes<32>): AccountRecord {
-  const acct = disclose(account);
-  if (!accounts.member(acct)) {
-    return AccountRecord{
-      registered: false,
-      mode: 0,
-      owner: default<Bytes<20>>,
-      nextNonce: 0
-    };
-  }
-  const mode = accountModes.lookup(acct);
-  if (mode == 0) {
-    assert(!evmOwners.member(acct) && !evmNonces.member(acct), "native record carries EVM state");
-    return AccountRecord{
-      registered: true,
-      mode: 0,
-      owner: default<Bytes<20>>,
-      nextNonce: 0
-    };
-  }
-  assert(mode == 1, "unknown account authorization mode");
-  assert(evmOwners.member(acct) && evmNonces.member(acct), "EVM record is incomplete");
-  return AccountRecord{
-    registered: true,
-    mode: 1,
-    owner: evmOwners.lookup(acct),
-    nextNonce: evmNonces.lookup(acct)
-  };
-}
 
 /// One cell of the dynamic table, shielded family. Returns 0 for a colour this contract has never
 /// seen — the observable form of "a missing cell reads 0".
@@ -480,52 +400,6 @@ circuit assertLiveDeadline(validUntil: Uint<64>): [] {
   const earliest = (validUntil - 3600) as Uint<64>;
   assert(blockTimeGte(earliest), "EVM authorization deadline exceeds 3600-second horizon");
   assert(blockTimeLt(validUntil), "EVM authorization has expired");
-}
-
-/// Resolve the acting account for a non-registration action, per mode.
-///
-/// NATIVE: start from the WITNESS-DERIVED account, require it to be a registered native record, and
-/// only THEN check it equals the account named in the envelope — the envelope field is a declaration
-/// to be matched, never the source of authority. EVM: the envelope's account must be a registered
-/// EVM record whose stored owner equals the signed owner and whose stored nonce equals the signed
-/// nonce; `execute` checks the signature over the digest, and together those bind the action to the
-/// EOA that controls the record.
-circuit authenticatedActionAccount(
-  p: ExecutePayload,
-  nativeAccount: Bytes<32>
-): Bytes<32> {
-  if (p.authMode == 0) {
-    const acct = authenticatedNativeAccount(nativeAccount);
-    assert(acct == p.account, "native witness does not match supplied account transcript");
-    assert(accountModes.lookup(acct) == p.authMode, "authorization mode does not match account record");
-    assert(!evmOwners.member(acct) && !evmNonces.member(acct), "native account carries EVM state");
-    return acct;
-  }
-
-  assert(p.authMode == 1, "unknown account authorization mode");
-  assert(accounts.member(p.account), "gateway account is not registered");
-  assert(accountModes.member(p.account), "registered account has no authorization mode");
-  assert(accountModes.lookup(p.account) == 1, "authorization mode does not match account record");
-  assert(evmOwners.member(p.account) && evmNonces.member(p.account), "EVM account record is incomplete");
-  assert(p.owner == evmOwners.lookup(p.account), "signed owner does not match stored owner");
-  assert(p.nonce == evmNonces.lookup(p.account), "EVM nonce mismatch");
-  return p.account;
-}
-
-/// Registration selects the account being CREATED (witness-derived, or derived from owner+salt);
-/// every other selector goes through the authentication above.
-circuit gatewayAccount(
-  p: ExecutePayload,
-  nativeAccount: Bytes<32>,
-  evmRegistrationAccount: Bytes<32>
-): Bytes<32> {
-  if (p.selector == 0) {
-    return nativeAccount;
-  }
-  if (p.selector == 1) {
-    return evmRegistrationAccount;
-  }
-  return authenticatedActionAccount(p, nativeAccount);
 }
 
 // ================================================================================================
@@ -833,7 +707,7 @@ export circuit execute(
     registerAccount(account, (isEvmRegistration ? 1 : 0) as Uint<8>);
   }
   if (isEvmRegistration) {
-    evmOwners.insert(account, p.owner);
+    _setEvmOwner(account, p.owner);
   }
 
   if (!isRegistration) {
@@ -848,7 +722,7 @@ export circuit execute(
   assert(!isEvmAction || incrementedNonce > p.nonce, "EVM nonce overflow");
   const storedNonce = (isEvmRegistration ? 0 : incrementedNonce) as Uint<64>;
   if (isEvmAuthorized) {
-    evmNonces.insert(account, storedNonce);
+    _setEvmNonce(account, storedNonce);
   }
 
   // This circuit emits NO EVENTS, and neither does any other in this file. The semantic commitment

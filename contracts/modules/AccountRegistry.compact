@@ -1,0 +1,222 @@
+pragma language_version >= 0.25.0;
+
+// @module AccountRegistry
+// @description The ACCOUNT REGISTRY: who exists, under which authorization mode, and — for EVM
+//              records — which EOA owns them and which nonce comes next. It owns the four registry
+//              maps, the owner witness, and EVERY WRITE to those maps, so "which code can create or
+//              mutate an account record" is answerable by opening one file.
+//
+// This is a STATEFUL module and is imported by exactly ONE file, the preset `manager.compact`
+// (FR-006 / compiler bug LFDT-Minokawa/compact#270). It imports `ActionEnvelope` for the
+// `ExecutePayload` type its two authentication circuits take, and re-exports nothing it imported:
+// `ExecutePayload` reaches the artifact through the preset's own import, by exactly one route
+// (finding F-P0-7).
+//
+// THE WITNESS CHOKE POINT LIVES HERE. `ownerCommitment(localOwnerSecret())` is the only derivation
+// of a native account id, `authenticatedNativeAccount` the only native entry to it, and
+// `authenticatedActionAccount` the single per-mode choke point every non-registration action passes
+// through. Both are PRIVATE to this module: the preset reaches them only through `gatewayAccount`,
+// which is what `execute` calls.
+//
+// MODE ISOLATION IS AN INVARIANT OF THIS FILE. A native record (mode 0) carries no `evmOwners` and
+// no `evmNonces` entry; an EVM record (mode 1) carries both. `registerAccount` writes `accounts` and
+// `accountModes` together, `_setEvmOwner` / `_setEvmNonce` write the EVM halves, and the asserts in
+// `accountRecord` and `authenticatedActionAccount` state the invariant on every read.
+//
+// FROZEN BYTES: "aa:manager:owner:v1.0" — the type parameter of `persistentCommit<Bytes<21>>` in
+// `ownerCommitment`, and therefore EXACTLY 21 bytes. It decides every native account id ever
+// created; see the FROZEN BYTES index in the preset header.
+
+module AccountRegistry {
+  import CompactStandardLibrary;
+  // `ExecutePayload` only — `authenticatedActionAccount` and `gatewayAccount` take the envelope.
+  // Nothing here re-exports it (F-P0-7): the preset imports `ActionEnvelope` itself.
+  import "./ActionEnvelope";
+
+  // Everything the preset needs, listed explicitly: an unprefixed import makes a name VISIBLE but
+  // never re-exports it, so an omission here is a clean `unbound identifier` compile error rather
+  // than a silent rename (F-P0-1). `authenticatedNativeAccount` and `authenticatedActionAccount`
+  // are deliberately absent — they are reachable only through `gatewayAccount`.
+  export {
+    AccountRecord,
+    accounts,
+    accountModes,
+    evmOwners,
+    evmNonces,
+    localOwnerSecret,
+    ownerCommitment,
+    registerAccount,
+    gatewayAccount,
+    myAccount,
+    isRegistered,
+    accountRecord,
+    _setEvmOwner,
+    _setEvmNonce
+  }
+
+  export struct AccountRecord {
+    registered: Boolean;
+    mode: Uint<8>;
+    owner: Bytes<20>;
+    nextNonce: Uint<64>;
+  }
+
+  // --- LEDGER STATE (the registry half) ---------------------------------------------------------
+  //
+  // The custody maps (`pools`, `shieldedBalances`, `unshieldedBalances`) are NOT here and never
+  // will be: nothing in this file reads or writes custody, and nothing in custody writes the
+  // registry. The two halves meet only through membership READS.
+
+  /// Registered accounts. Registration publishes only a commitment to the owner's secret.
+  export ledger accounts: Set<Bytes<32>>;
+
+  /// Authorization policy is mode-separated. Native records have no EVM owner or nonce entries.
+  /// 0 = native witness; 1 = EVM EOA.
+  export ledger accountModes: Map<Bytes<32>, Uint<8>>;
+  export ledger evmOwners: Map<Bytes<32>, Bytes<20>>;
+  export ledger evmNonces: Map<Bytes<32>, Uint<64>>;
+
+  // --- owner authorization --------------------------------------------------------------------
+
+  witness localOwnerSecret(): Bytes<32>;
+
+  /// Account identity = a commitment to the owner's secret. Registering an account publishes only the
+  /// commitment; spending requires the witness that opens it.
+  export circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
+    return persistentCommit<Bytes<21>>("aa:manager:owner:v1.0", disclose(sk));
+  }
+
+  /// Assert the witness-derived account selected by `execute` is a registered NATIVE record.
+  /// THE single authorization choke point for every native debiting action: the account arrives here
+  /// already derived from the witness, so there is nothing caller-supplied to check it against.
+  circuit authenticatedNativeAccount(acct: Bytes<32>): Bytes<32> {
+    assert(accounts.member(acct), "caller's owner witness matches no registered account");
+    assert(accountModes.member(acct), "registered account has no authorization mode");
+    assert(accountModes.lookup(acct) == 0, "EVM account cannot enter native authorization");
+    return acct;
+  }
+
+  // --- setup ------------------------------------------------------------------------------------
+
+  /// Shared registration gateway for both authorization modes. It seeds no custody cell and never
+  /// stores a secret, a signature or a key — only the account id and its mode.
+  export circuit registerAccount(acct: Bytes<32>, mode: Uint<8>): [] {
+    assert(acct != default<Bytes<32>>, "account id must be nonzero");
+    assert(!accounts.member(acct), "account already registered");
+    assert(!accountModes.member(acct), "account mode collision");
+    accounts.insert(acct);
+    accountModes.insert(acct, mode);
+  }
+
+  // --- readers ------------------------------------------------------------------------------
+
+  /// The account id (owner commitment) for the witness the caller supplies. Returns only the
+  /// commitment — never the secret — so it is safe to expose: the commitment is exactly what
+  /// `registerAccount` publishes.
+  export circuit myAccount(): Bytes<32> {
+    return ownerCommitment(localOwnerSecret());
+  }
+
+  export circuit isRegistered(owner: Bytes<32>): Boolean {
+    return accounts.member(disclose(owner));
+  }
+
+  /// One policy query covering registration, mode, EVM owner and next nonce. Native records return a
+  /// zero owner and nonce WITHOUT creating EVM map entries; unknown accounts return the all-zero
+  /// inactive record. The asserts state the mode invariant: a native record carries no EVM state; an
+  /// EVM record carries both halves of it.
+  export circuit accountRecord(account: Bytes<32>): AccountRecord {
+    const acct = disclose(account);
+    if (!accounts.member(acct)) {
+      return AccountRecord{
+        registered: false,
+        mode: 0,
+        owner: default<Bytes<20>>,
+        nextNonce: 0
+      };
+    }
+    const mode = accountModes.lookup(acct);
+    if (mode == 0) {
+      assert(!evmOwners.member(acct) && !evmNonces.member(acct), "native record carries EVM state");
+      return AccountRecord{
+        registered: true,
+        mode: 0,
+        owner: default<Bytes<20>>,
+        nextNonce: 0
+      };
+    }
+    assert(mode == 1, "unknown account authorization mode");
+    assert(evmOwners.member(acct) && evmNonces.member(acct), "EVM record is incomplete");
+    return AccountRecord{
+      registered: true,
+      mode: 1,
+      owner: evmOwners.lookup(acct),
+      nextNonce: evmNonces.lookup(acct)
+    };
+  }
+
+  // --- the authorization choke point (moved from THE GATEWAY) -------------------------------
+
+  /// Resolve the acting account for a non-registration action, per mode.
+  ///
+  /// NATIVE: start from the WITNESS-DERIVED account, require it to be a registered native record, and
+  /// only THEN check it equals the account named in the envelope — the envelope field is a declaration
+  /// to be matched, never the source of authority. EVM: the envelope's account must be a registered
+  /// EVM record whose stored owner equals the signed owner and whose stored nonce equals the signed
+  /// nonce; `execute` checks the signature over the digest, and together those bind the action to the
+  /// EOA that controls the record.
+  circuit authenticatedActionAccount(
+    p: ExecutePayload,
+    nativeAccount: Bytes<32>
+  ): Bytes<32> {
+    if (p.authMode == 0) {
+      const acct = authenticatedNativeAccount(nativeAccount);
+      assert(acct == p.account, "native witness does not match supplied account transcript");
+      assert(accountModes.lookup(acct) == p.authMode, "authorization mode does not match account record");
+      assert(!evmOwners.member(acct) && !evmNonces.member(acct), "native account carries EVM state");
+      return acct;
+    }
+
+    assert(p.authMode == 1, "unknown account authorization mode");
+    assert(accounts.member(p.account), "gateway account is not registered");
+    assert(accountModes.member(p.account), "registered account has no authorization mode");
+    assert(accountModes.lookup(p.account) == 1, "authorization mode does not match account record");
+    assert(evmOwners.member(p.account) && evmNonces.member(p.account), "EVM account record is incomplete");
+    assert(p.owner == evmOwners.lookup(p.account), "signed owner does not match stored owner");
+    assert(p.nonce == evmNonces.lookup(p.account), "EVM nonce mismatch");
+    return p.account;
+  }
+
+  /// Registration selects the account being CREATED (witness-derived, or derived from owner+salt);
+  /// every other selector goes through the authentication above.
+  export circuit gatewayAccount(
+    p: ExecutePayload,
+    nativeAccount: Bytes<32>,
+    evmRegistrationAccount: Bytes<32>
+  ): Bytes<32> {
+    if (p.selector == 0) {
+      return nativeAccount;
+    }
+    if (p.selector == 1) {
+      return evmRegistrationAccount;
+    }
+    return authenticatedActionAccount(p, nativeAccount);
+  }
+
+  // --- the EVM record writes lifted out of `execute` --------------------------------------------
+  //
+  // UNGUARDED INTERNALS, OZ style (`_`-prefixed): they carry no assert of their own because the
+  // caller has already established the right to write. `execute` calls each at exactly the position
+  // its `insert` used to occupy — inside `if (isEvmRegistration)` and `if (isEvmAuthorized)`
+  // respectively — so the write order, and therefore the transcript, is unchanged. They exist so
+  // that `execute` performs NO ledger write at all (FR-004) and every mutation of a registry map is
+  // in this file.
+
+  circuit _setEvmOwner(acct: Bytes<32>, owner: Bytes<20>): [] {
+    evmOwners.insert(acct, owner);
+  }
+
+  circuit _setEvmNonce(acct: Bytes<32>, nonce: Uint<64>): [] {
+    evmNonces.insert(acct, nonce);
+  }
+}
