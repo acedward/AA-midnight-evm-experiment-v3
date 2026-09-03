@@ -7,6 +7,14 @@
 #   writing to `tests/generated/<target>/`. `--skip-zk` means: TypeScript bindings + ZKIR only, and
 #   NO proving or verifier keys (those are `scripts/keygen.sh`, which takes hours and gigabytes).
 #   The script asserts afterwards that no key file was produced.
+
+# WHAT IT LOGS AS PROVENANCE
+#   `SOURCE_SHA256` is the hash of the one file named on the command line. Since the modular split
+#   that file is the PRESET, not the contract, so each compile also logs `MODULES_TREE_SHA256` —
+#   one SHA-256 over the path-and-content of every `contracts/modules/*.compact`, C-locale sorted —
+#   and `MODULES_TREE_FILES`, the number of files that went into it (FR-015). Together they cover
+#   every byte the compiler read. The recipe, and how to reproduce it by hand, is in
+#   scripts/source-hash.sh. Single-file targets log `none` / `0`.
 #
 # TARGETS
 #   manager         contracts/manager.compact                     — the product
@@ -41,6 +49,11 @@ out_root="$repo_root/tests/generated"
 # shellcheck source=scripts/toolchain.sh
 . "$repo_root/scripts/toolchain.sh"
 
+# `modules_tree_sha256` / `modules_tree_files` — the provenance hash over contracts/modules/*.compact
+# that covers the bytes `SOURCE_SHA256` does not (FR-015; the recipe is in that file's header).
+# shellcheck source=scripts/source-hash.sh
+. "$repo_root/scripts/source-hash.sh"
+
 # The frozen k=20 reference oracle, in this repo's own history.
 K20_ORACLE_COMMIT="7b0d03d"
 K20_ORACLE_PATH="contracts/manager.compact"
@@ -64,6 +77,11 @@ compile_one() {
   log "--- $target"
   log "SOURCE=$src_file"
   log "SOURCE_SHA256=$(shasum -a 256 "$src_dir/$src_file" | cut -d ' ' -f 1)"
+  # The preset is one of ten files. Everything under the mounted `modules/` is compiled in too, so
+  # the two hashes together are the provenance of every byte that reached the artifact. `none` / `0`
+  # is the honest answer for a single-file target (the minters, the frozen k=20 oracle).
+  log "MODULES_TREE_SHA256=$(modules_tree_sha256 "$src_dir")"
+  log "MODULES_TREE_FILES=$(modules_tree_files "$src_dir")"
 
   # Hard wall bound. The watchdog must not inherit stdout/stderr: a background writer would hold a
   # consuming pipe open for its whole sleep and stall any caller reading this script's output.

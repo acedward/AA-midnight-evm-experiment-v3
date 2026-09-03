@@ -12,7 +12,10 @@
 #   the runtime's simulator. If all you want is a green build, use scripts/test-sim.sh.
 #
 # WHEN YOU MUST REGENERATE
-#   Whenever `contracts/manager.compact` changes in a way that changes any `.zkir`. A key set is
+#   Whenever any compiled source changes in a way that changes any `.zkir`. Since the modular split
+#   that means the preset `contracts/manager.compact` OR any `contracts/modules/*.compact`, which is
+#   why this script logs `MODULES_TREE_SHA256` next to `SOURCE_SHA256` (FR-015; recipe in
+#   scripts/source-hash.sh) and why a key set should be recorded against BOTH hashes. A key set is
 #   bound to the exact circuit it was generated from. Note that comment-only edits do NOT change
 #   the ZKIRs, so they do not invalidate keys; changing a domain-separator string DOES. A COMPILER
 #   BUMP DOES TOO: the 0.33.0 -> 0.34.0 upgrade changes ZKIR bytes, so every key generated before
@@ -46,6 +49,10 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # The pinned toolchain (compiler 0.34.0, language 0.26.0) and `ensure_image`.
 # shellcheck source=scripts/toolchain.sh
 . "$repo_root/scripts/toolchain.sh"
+# `modules_tree_sha256` / `modules_tree_files` — the provenance hash over contracts/modules/*.compact
+# that covers the bytes `SOURCE_SHA256` does not (FR-015; the recipe is in that file's header).
+# shellcheck source=scripts/source-hash.sh
+. "$repo_root/scripts/source-hash.sh"
 out_dir="$repo_root/tests/generated/manager-keys"
 params_dir="$repo_root/tests/generated/zk-params"
 container="aa-keygen-$$"
@@ -99,6 +106,8 @@ trap cleanup EXIT INT TERM
 echo "KEYGEN_START=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo "SOURCE=contracts/manager.compact"
 echo "SOURCE_SHA256=$(shasum -a 256 "$repo_root/contracts/manager.compact" | cut -d ' ' -f 1)"
+echo "MODULES_TREE_SHA256=$(modules_tree_sha256 "$repo_root/contracts")"
+echo "MODULES_TREE_FILES=$(modules_tree_files "$repo_root/contracts")"
 echo "GIT_HEAD=$(git -C "$repo_root" rev-parse HEAD)"
 echo "GIT_DIRTY_FILES=$(git -C "$repo_root" status --porcelain | wc -l | tr -d ' ')"
 echo "BOUNDS=cpus:$cpus,memory:$memory,wall-seconds:$timeout_seconds,network:${net[*]:-default}"
