@@ -56,8 +56,10 @@ contracts/
                            SemanticCommitment); three own ledger state (AccountRegistry,
                            ShieldedCustody, UnshieldedCustody); Custody is the composer and owns none
   test-support/
-    minter.compact         a token source, used only by tests: a per-deployment constructor tag
-    minter-collide.compact becomes two contract-scoped colours (minter-collide is the inverse
+    minter.compact         an AA test-token source: an internal per-deployment constructor tag
+                           becomes AATEST-S / AATEST-U outward metadata for two contract-scoped
+                           colours; the tag is retained separately and is never a display name
+    minter-collide.compact the inverse
                            fixture — one separator feeding both families, so its two colours are
                            byte-EQUAL, which is how family separation is proven to be real)
 
@@ -101,6 +103,11 @@ docker/
                            compile, run the artifact gate, run the simulation tier
 REMOVALS.md                what this repository used to contain, and where it went
 ```
+
+The short `TOK*` strings in Minter fixtures are internal constructor/deployment ids. `S*` and `U*`
+are mathematical column labels in the frozen custody table. They are not token names; machine-
+readable metadata is defined centrally in `tests/lib/token-metadata.ts` and keeps display name and
+source separate from those raw fixture values.
 
 Every script is self-documented: its header says what it does, what it needs, and why it is built
 the way it is. `--help` is not implemented on purpose — read the top of the file.

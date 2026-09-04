@@ -34,6 +34,7 @@
 //
 // Its frozen input — the spec's 18-row step table, transcribed by hand — now lives at
 // `tests/fixtures/step-ledger-table.ts` (it was `harness/src/g3/expected.ts`).
+// S*/U* in this suite are mathematical fixture-column labels, never outward token names.
 import { describe, expect, it } from 'vitest';
 import {
   ACTIONS,
@@ -334,7 +335,7 @@ describe('the Manager-side walk through the compiled contract', () => {
     expect(msg).not.toMatch(/account colour balance too low/);
     expect(msg).not.toMatch(/matches no registered account/);
 
-    // Row 15 — TOKD is deployed and mints to USER wallets: the Manager must not move.
+    // Row 15 — Minter internal tag TOKD is deployed and mints to USER wallets: Manager must not move.
     const beforeS4 = JSON.stringify(snapshotLedger(sim.ledger));
     expect(JSON.stringify(snapshotLedger(sim.ledger))).toBe(beforeS4);
     expect(mapSizes(sim.ledger)).toEqual(EXPECTED[15]!.sizes);
