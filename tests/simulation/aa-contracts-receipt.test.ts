@@ -113,6 +113,12 @@ describe("versioned aa-contracts receipt", () => {
     expect(() => validateAaContractsReceipt(wrongTag)).toThrow(/does not match minter.tag/);
   });
 
+  it("refuses an Offer Files market name used as an internal Minter tag", () => {
+    const forged: any = deploymentReceipt();
+    forged.minter.tag = " wBtC ";
+    expect(() => validateAaContractsReceipt(forged)).toThrow(/canonical uppercase/);
+  });
+
   it("refuses duplicate colours and absent source-contract entries", () => {
     const duplicate: any = deploymentReceipt();
     duplicate.tokens = [
@@ -183,8 +189,26 @@ describe("sanitized live-run receipt", () => {
     secret.walletSeed = "not-allowed";
     expect(() => validateAaRunReceipt(secret)).toThrow(/secret-bearing/);
 
+    const password: any = runReceipt();
+    password.providerPassword = "not-allowed";
+    expect(() => validateAaRunReceipt(password)).toThrow(/secret-bearing/);
+
     const unknown: any = runReceipt();
     unknown.note = "unversioned extension";
     expect(() => validateAaRunReceipt(unknown)).toThrow(/unknown field/);
+  });
+
+  it("trims canonical transaction ids and refuses blank or duplicate ids", () => {
+    const trimmed: any = runReceipt();
+    trimmed.transactions[0].txId = "  mint-tx  ";
+    expect(validateAaRunReceipt(trimmed).transactions[0]?.txId).toBe("mint-tx");
+
+    const blank: any = runReceipt();
+    blank.transactions[0].txId = " \t ";
+    expect(() => validateAaRunReceipt(blank)).toThrow(/must be nonblank/);
+
+    const duplicate: any = runReceipt();
+    duplicate.transactions[1].txId = "mint-tx";
+    expect(() => validateAaRunReceipt(duplicate)).toThrow(/must be distinct/);
   });
 });

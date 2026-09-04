@@ -24,6 +24,12 @@
 #   So this script checks for suites FIRST and refuses to boot a node for nothing. Drop a
 #   `*.test.ts` into `tests/integration/` and it starts working with no further change.
 #
+# EXTERNAL AA HARNESS
+#   Set AA_FAUCET_LIVE=1 and AA_HARNESS_CONTAINER to an already-running stock
+#   aa-console container. This branch never starts or mutates a stack; it uses
+#   that container's exact image/network/aa-out volume and bind-mounts the
+#   manual non-*.test.ts runner read-only.
+#
 # usage: scripts/test-integration.sh [-- <extra vitest args>]
 set -euo pipefail
 
@@ -35,6 +41,57 @@ volume="${project}_work"
 
 extra=()
 [ "${1:-}" = "--" ] && { shift; extra=("$@"); }
+
+if [ "${AA_FAUCET_LIVE:-0}" = "1" ]; then
+  : "${AA_HARNESS_CONTAINER:?AA_HARNESS_CONTAINER is required for AA_FAUCET_LIVE=1}"
+  docker inspect "$AA_HARNESS_CONTAINER" >/dev/null
+  harness_image="$(docker inspect --format '{{.Config.Image}}' "$AA_HARNESS_CONTAINER")"
+  harness_project="$(docker inspect --format '{{ index .Config.Labels "com.docker.compose.project" }}' "$AA_HARNESS_CONTAINER")"
+
+  required_env=(
+    AA_DEPLOYMENT_PROFILE AA_EXPECTED_COMMIT MIDNIGHT_NETWORK_ID
+    MN_NODE_URL MN_INDEXER_URL MN_INDEXER_WS_URL MN_PROOF_SERVER_URL
+    AA_WALLET_PROOF_SERVER_URL AA_HARNESS_WALLET_SEED AA_MANAGER_ADDRESS
+  )
+  for key in "${required_env[@]}"; do
+    [ -n "${!key:-}" ] || { echo "$key is required for AA_FAUCET_LIVE=1" >&2; exit 64; }
+  done
+  if [ "${OFFER_FILES_FAUCET:-0}" = "1" ] || [ "${OFFER_FILES_FAUCET:-}" = "true" ]; then
+    mode_env=(OFFER_FILES_FAUCET OFFER_FILES_CONTRACT ZSWAP_API)
+  else
+    mode_env=(AA_MINTER_ADDRESS AA_MINTER_TAG AA_MINTER_SHIELDED_COLOR AA_MINTER_UNSHIELDED_COLOR)
+  fi
+  for key in "${mode_env[@]}"; do
+    [ -n "${!key:-}" ] || { echo "$key is required for the selected live funding mode" >&2; exit 64; }
+  done
+
+  forwarded=("${required_env[@]}" "${mode_env[@]}")
+  optional_env=(
+    AA_MANAGER_ARTIFACT_PATH AA_MINTER_ARTIFACT_PATH OFFER_FILES_ARTIFACT_PATH
+    AA_LIVE_RUNTIME_MODULE AA_DEPLOYMENT_RECEIPT_PATH AA_DECORATED_DEPLOYMENT_RECEIPT_PATH
+    AA_RUN_RECEIPT_PATH AA_HARNESS_MINTER_AMOUNT_BASE_UNITS AA_HARNESS_FAUCET_WHOLE_COINS
+    MIDNIGHT_WALLET_SEED
+  )
+  docker_env=()
+  for key in "${forwarded[@]}"; do docker_env+=(--env "$key"); done
+  for key in "${optional_env[@]}"; do
+    [ -n "${!key:-}" ] && docker_env+=(--env "$key")
+  done
+
+  echo "AA_FAUCET_EXTERNAL=1 image=$harness_image container=$AA_HARNESS_CONTAINER"
+  harness_labels=(--label com.effectstream.aa-faucet-harness=1)
+  [ -n "$harness_project" ] && [ "$harness_project" != "<no value>" ] && \
+    harness_labels+=(--label "com.docker.compose.project=$harness_project")
+  docker run --rm "${harness_labels[@]}" \
+    --network "container:$AA_HARNESS_CONTAINER" \
+    --volumes-from "$AA_HARNESS_CONTAINER" \
+    --entrypoint bun \
+    "${docker_env[@]}" \
+    -v "$repo_root/tests:/aa/candidate-tests:ro" \
+    -v "$repo_root/tests/integration/aa-faucet-runtime.ts:/aa/runner/aa-faucet-runtime.ts:ro" \
+    "$harness_image" run /aa/candidate-tests/integration/aa-faucet-runner.ts
+  exit 0
+fi
 
 suites="$(find "$repo_root/tests/integration" -name '*.test.ts' 2>/dev/null | wc -l | tr -d ' ')"
 echo "INTEGRATION_SUITES=$suites"

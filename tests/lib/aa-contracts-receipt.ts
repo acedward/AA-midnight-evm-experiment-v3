@@ -1,6 +1,7 @@
 import {
   canonicalTokenColor,
   offerFilesTokenColor,
+  validateAaDeploymentTag,
   validateTokenMetadata,
   type TokenMetadata,
   type TokenSource,
@@ -69,7 +70,7 @@ function assertNoSecretKeys(value: unknown, path = "receipt"): void {
     return;
   }
   for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
-    if (/(seed|mnemonic|private.?key|secret)/i.test(key)) {
+    if (/(seed|mnemonic|private.?key|secret|password)/i.test(key)) {
       throw new RangeError(`${path}.${key} is secret-bearing and cannot enter a receipt`);
     }
     assertNoSecretKeys(child, `${path}.${key}`);
@@ -138,7 +139,10 @@ export function validateAaContractsReceipt(value: unknown): AaContractsReceipt {
   if (receipt.minter !== undefined) {
     const raw = record(receipt.minter, "minter");
     noUnknownKeys(raw, ["address", "tag"], "minter");
-    minter = { address: address(raw.address, "minter address"), tag: text(raw.tag, "minter tag") };
+    minter = {
+      address: address(raw.address, "minter address"),
+      tag: validateAaDeploymentTag(raw.tag),
+    };
   }
 
   let offerFiles: AaContractsReceipt["offerFiles"];
@@ -221,15 +225,20 @@ export function validateAaRunReceipt(value: unknown): AaRunReceipt {
   });
 
   if (!Array.isArray(receipt.transactions)) throw new RangeError("run receipt transactions must be an array");
+  const transactionIds = new Set<string>();
   const transactions = receipt.transactions.map((entry, index) => {
     const transaction = record(entry, `transactions[${index}]`);
     noUnknownKeys(transaction, ["operation", "txId"], `transactions[${index}]`);
     if (!(["mint", "deposit", "execute", "withdraw"] as const).includes(transaction.operation as never)) {
       throw new RangeError(`transactions[${index}].operation is invalid`);
     }
+    const txId = text(transaction.txId, `transactions[${index}].txId`).trim();
+    if (txId.length === 0) throw new RangeError(`transactions[${index}].txId must be nonblank`);
+    if (transactionIds.has(txId)) throw new RangeError("run receipt transaction ids must be distinct");
+    transactionIds.add(txId);
     return {
       operation: transaction.operation as AaRunReceipt["transactions"][number]["operation"],
-      txId: text(transaction.txId, `transactions[${index}].txId`),
+      txId,
     };
   });
 

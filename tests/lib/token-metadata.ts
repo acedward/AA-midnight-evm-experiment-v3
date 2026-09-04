@@ -3,6 +3,7 @@ import { rawTokenType } from "@midnight-ntwrk/compact-runtime";
 export const AA_MINTER_SHIELDED_NAME = "AATEST-S" as const;
 export const AA_MINTER_UNSHIELDED_NAME = "AATEST-U" as const;
 export const OFFER_FILES_FAUCET_DECIMALS = 6 as const;
+export const UINT64_MAX = (1n << 64n) - 1n;
 
 export type TokenSource = "aa-minter" | "offer-files-faucet";
 export type TokenFamily = "shielded" | "unshielded";
@@ -46,6 +47,19 @@ const RAW_COLOR = /^[0-9a-f]{64}$/;
 const OFFER_FILES_NAME = /^[A-Z][A-Z0-9_-]*$/;
 // These are Offer Files faucet names; the AA Minter must reject them as outward metadata.
 const OFFER_FILES_NAMES_FORBIDDEN_ON_AA = new Set(["WBTC", "WETH", "WUSD"]);
+
+export function validateAaDeploymentTag(value: unknown): string {
+  if (typeof value !== "string" || !/^[A-Z][A-Z0-9_-]*$/.test(value)) {
+    throw new RangeError("AA Minter internal deployment tag must be a canonical uppercase identifier");
+  }
+  if (new TextEncoder().encode(value).length > 32) {
+    throw new RangeError("AA Minter internal deployment tag must fit Bytes<32>");
+  }
+  if (OFFER_FILES_NAMES_FORBIDDEN_ON_AA.has(value)) {
+    throw new RangeError("AA Minter internal deployment tag cannot use a market token name");
+  }
+  return value;
+}
 
 function record(value: unknown, label: string): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -116,31 +130,29 @@ export function validateTokenMetadata(value: unknown): TokenMetadata {
     if (token.name !== expected) {
       throw new RangeError(`AA Minter ${token.family} display name must be ${expected}`);
     }
-    if (typeof token.internalDeploymentTag !== "string" || token.internalDeploymentTag.length === 0) {
-      throw new RangeError("AA Minter metadata requires an internal deployment tag");
-    }
+    const internalDeploymentTag = validateAaDeploymentTag(token.internalDeploymentTag);
     const common = {
       source: "aa-minter" as const,
       color,
-      internalDeploymentTag: token.internalDeploymentTag,
+      internalDeploymentTag,
       ...(decimals === undefined ? {} : { decimals }),
     };
-    return token.family === "shielded"
+    return Object.freeze(token.family === "shielded"
       ? { ...common, name: AA_MINTER_SHIELDED_NAME, family: "shielded" }
-      : { ...common, name: AA_MINTER_UNSHIELDED_NAME, family: "unshielded" };
+      : { ...common, name: AA_MINTER_UNSHIELDED_NAME, family: "unshielded" });
   }
 
   const name = validateOfferFilesName(token.name);
   if (decimals !== OFFER_FILES_FAUCET_DECIMALS) {
     throw new RangeError(`Offer Files faucet metadata decimals must be exactly ${OFFER_FILES_FAUCET_DECIMALS}`);
   }
-  return {
+  return Object.freeze({
     name,
     source: "offer-files-faucet",
     family: token.family,
     color,
     decimals: OFFER_FILES_FAUCET_DECIMALS,
-  };
+  });
 }
 
 export function aaMinterTokenMetadata(input: {
@@ -210,4 +222,25 @@ export function offerFilesTokenColor(name: string, offerFilesAddress: string): s
   return canonicalTokenColor(
     rawTokenType(domainSepFromName(validateOfferFilesName(name)), canonicalTokenColor(offerFilesAddress)),
   );
+}
+
+/** Converts positive whole faucet coins to six-decimal base units exactly once. */
+export function scaleSixDecimalWholeCoins(wholeCoins: bigint): bigint {
+  if (typeof wholeCoins !== "bigint" || wholeCoins <= 0n) {
+    throw new RangeError("whole-coin amount must be a positive bigint");
+  }
+  const scale = 10n ** BigInt(OFFER_FILES_FAUCET_DECIMALS);
+  if (wholeCoins > UINT64_MAX / scale) {
+    throw new RangeError("scaled six-decimal amount exceeds Uint64");
+  }
+  return wholeCoins * scale;
+}
+
+/** Validates an already-scaled positive Compact Uint<64> amount. */
+export function validateUint64Amount(amount: bigint): bigint {
+  if (typeof amount !== "bigint" || amount <= 0n) {
+    throw new RangeError("amount must be a positive bigint");
+  }
+  if (amount > UINT64_MAX) throw new RangeError("amount exceeds Uint64");
+  return amount;
 }
