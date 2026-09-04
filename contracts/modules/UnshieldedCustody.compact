@@ -1,0 +1,139 @@
+pragma language_version >= 0.25.0;
+
+// @module UnshieldedCustody
+// @description THE UNSHIELDED CUSTODY FAMILY: the map `unshieldedBalances`, the key domain that
+//              addresses it, the credit that creates a cell, the cell writes and the give leg that
+//              pays the contract's own kernel balance out. EVERY WRITE TO `unshieldedBalances` IN
+//              THE REPOSITORY IS IN THIS FILE, so "what can move unshielded value" is answerable by
+//              opening one file.
+//
+// This is a STATEFUL module and is imported by exactly ONE file, `Custody.compact` (FR-006 /
+// compiler bug LFDT-Minokawa/compact#270). It imports nothing but the standard library — the
+// unshielded family needs no zswap primitive, which is the whole asymmetry between the two
+// families: unshielded value is the contract's own declared kernel balance, not a pooled coin.
+//
+// THE INTERNALS ARE DELIBERATELY NAMED THE SAME AS `ShieldedCustody`'s (`_familyTag`, `_balanceAt`,
+// `_writeCell`, `_credit`, `_give`). Two unprefixed modules exporting the same name form an
+// OVERLOAD SET and a call is then ambiguous (finding F-P0-5), so the composer disambiguates with a
+// SELECTIVE RENAMING import (`_familyTag as _unFamilyTag`, …). The symmetry is the point: the two
+// families present the same API, so the shielded privacy work of project 00025 edits one file whose
+// interface mirrors this one, and this file does not move.
+//
+// UNGUARDED INTERNALS, OZ style (`_`-prefixed): `_writeCell` and `_credit` carry no guard of their
+// own because the composer has already established the right to write, at the guard positions the
+// single-file contract used. `_give` is the exception — it keeps its own balance guard, because
+// that guard is about THE CONTRACT'S holdings rather than the caller's, and it must stay behind the
+// per-(account, colour) guard the composer runs first.
+//
+// FROZEN BYTES: "aa:manager:unshielded:v1" — the family tag inside `pad(32, …)` in `_familyTag`.
+// Any length up to 32 bytes works, but it must stay DISTINCT from the shielded tag or the two
+// custody families would alias. See the FROZEN BYTES index in the preset header.
+
+module UnshieldedCustody {
+  import CompactStandardLibrary;
+
+  // Everything `Custody` needs, listed explicitly: an unprefixed or selective import makes a name
+  // VISIBLE but never re-exports it, so an omission here is a clean `unbound identifier` compile
+  // error rather than a silent rename (F-P0-1). `unshieldedBalanceOf` is deliberately absent — it
+  // is reachable only through `unshieldedAccountBalance` and `_credit`.
+  export {
+    unshieldedBalances,
+    unshieldedKey,
+    unshieldedAccountBalance,
+    _familyTag,
+    _balanceAt,
+    _writeCell,
+    _credit,
+    _give
+  }
+
+  // --- LEDGER STATE (the unshielded half) -------------------------------------------------------
+
+  /// Internal ownership attribution, per (account, colour), PER FAMILY. This is the UNSHIELDED
+  /// half; its twin `shieldedBalances` lives in `ShieldedCustody.compact` under a different key
+  /// domain, so the two can never alias.
+  export ledger unshieldedBalances: Map<Bytes<32>, Uint<128>>;
+
+  // --- family-scoped keys -----------------------------------------------------------------------
+  //
+  // The two-family argument — why the tags are distinct constants and why both key circuits are
+  // exported although nothing on chain needs them — is stated once, in the `--- family-scoped keys`
+  // block of `ShieldedCustody.compact`. This is its unshielded half.
+
+  pure circuit _familyTag(): Bytes<32> {
+    return pad(32, "aa:manager:unshielded:v1");
+  }
+
+  export pure circuit unshieldedKey(acct: Bytes<32>, colour: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<3, Bytes<32>>>([acct, colour, _familyTag()]);
+  }
+
+  /// A MISSING CELL READS AS 0 — never as an error, and never by creating the cell. This is the read
+  /// the per-(account, colour) guard uses, so refusing an unbacked spend costs no state.
+  circuit unshieldedBalanceOf(acct: Bytes<32>, colour: Bytes<32>): Uint<128> {
+    const k = unshieldedKey(acct, colour);
+    return unshieldedBalances.member(k) ? unshieldedBalances.lookup(k) : 0;
+  }
+
+  // --- readers -----------------------------------------------------------------------------------
+
+  /// The same cell in the OTHER family. For a colour whose bytes exist in both families these two
+  /// reads take the same 32-byte `colour` argument and must still answer independently.
+  ///
+  /// @circuitInfo k=13, rows=4001
+  export circuit unshieldedAccountBalance(owner: Bytes<32>, colour: Bytes<32>): Uint<128> {
+    return unshieldedBalanceOf(disclose(owner), disclose(colour));
+  }
+
+  /// Balance at an ALREADY-DERIVED key. A missing cell reads 0, exactly as `unshieldedBalanceOf`
+  /// does — the only difference is that the key is computed by the caller, once.
+  circuit _balanceAt(k: Bytes<32>): Uint<128> {
+    return unshieldedBalances.member(k) ? unshieldedBalances.lookup(k) : 0;
+  }
+
+  /// The ONLY write to `unshieldedBalances` outside `_credit`. Unguarded by design.
+  circuit _writeCell(k: Bytes<32>, v: Uint<128>): [] {
+    unshieldedBalances.insert(k, v);
+  }
+
+  // --- the credit half of the deposit entry point ------------------------------------------------
+  //
+  // The guards (`deposit must be positive`, `credit account is not registered`) stay with the entry
+  // circuit in `Custody.compact`, at their original positions and in their original order; what
+  // moved here is everything after them.
+
+  circuit _credit(col: Bytes<32>, amt: Uint<128>, acct: Bytes<32>): [] {
+    receiveUnshielded(col, amt);
+    unshieldedBalances.insert(
+      unshieldedKey(acct, col),
+      (unshieldedBalanceOf(acct, col) + amt) as Uint<128>
+    );
+  }
+
+  // --- the unshielded give leg (selector 3) ------------------------------------------------------
+  //
+  // The per-(account, colour) guard has already run in the composer; what is left is the contract's
+  // OWN holdings, which is why that assert is inside this circuit rather than at the call site.
+
+  circuit _give(col: Bytes<32>, val: Uint<128>, rcpt: Either<ContractAddress, UserAddress>): [] {
+    assert(unshieldedBalanceGte(col, val), "contract unshielded balance too low");
+    // MIND THE OPERAND ORDER — it is the mirror image of the shielded `Either` above.
+    // `sendUnshielded`'s recipient is `Either<ContractAddress, UserAddress>`, so LEFT = contract
+    // and RIGHT = user; the shielded `Either<ZswapCoinPublicKey, ContractAddress>` puts the user
+    // key on the LEFT. The envelope's discriminant is unchanged by that (kind 0 = user key /
+    // 1 = contract, `:789`), so kind 0 must take the RIGHT arm here — which is why the composer's
+    // call site, and not this circuit, builds the `Either`.
+    // This tag is not cosmetic: it becomes the `PublicAddress` of the
+    // `claimUnshieldedCoinSpend` the library emits, and the ledger's effects check satisfies a
+    // `Contract`-tagged claim ONLY from that contract's own `unshielded_inputs` in the same
+    // transaction — a user recipient tagged `Contract` is unsatisfiable, and the node rejects
+    // the transaction with `Custom error: 214`.
+    //
+    // AND THE CONTRACT ARM IS UNREACHABLE TODAY, for the same reason as the shielded leg:
+    // `assertActionEnvelope` refuses `recipientKind 1` on selectors 2 and 3 (see its
+    // header). A genuine `Contract`-tagged claim is just as unsatisfiable as the mistaken one this
+    // fix removed, unless the named contract calls `receiveUnshielded` in the same transaction —
+    // the 214 above, in its CORRECT form. Kept, not deleted, for the same restore-later reason.
+    sendUnshielded(col, val, rcpt);
+  }
+}

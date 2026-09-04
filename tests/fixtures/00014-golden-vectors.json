@@ -1,0 +1,121 @@
+{
+  "note": "Frozen outputs of the exported PURE oracles of contracts/manager.compact, recorded from the PRE-SPLIT artifact (project 00014, FR-013 / spec US4). Inputs are the constants in tests/lib/golden-vectors.ts and nothing else. Replayed by tests/simulation/golden-vectors.test.ts against whatever the tree compiles to; a difference is a REAL behaviour change, never something to re-record. Regenerate a deliberate change with: tsx lib/golden-vectors.ts --write",
+  "recordedFrom": "contracts/manager.compact @ 43a0b50 (1,420 lines, pre-split baseline)",
+  "vectors": [
+    {
+      "id": "account-id",
+      "oracle": "evmAccountIdFor",
+      "value": "0x4a573df9354d8090362a980126b111daf4c9b82eddf6985674e253a3aa77661f"
+    },
+    {
+      "id": "domain-separator",
+      "oracle": "evmDomainSeparatorFor",
+      "value": "0xb2ae98535078d40ef64f695d0bcb7f12cc34357b0fc50e7f536248acf82473c7"
+    },
+    {
+      "id": "struct-hash/selector1-register",
+      "oracle": "evmStructHashFor",
+      "value": "0xa95bf212b9fc256b9611916bf158316c23b93000606db5e0ffcfdf2833ca6085"
+    },
+    {
+      "id": "struct-hash/selector2-withdrawShielded",
+      "oracle": "evmStructHashFor",
+      "value": "0xbe6bea6beceb3b95bc49acd1e425a3663fc1f55e3259d065d3e448c521e51157"
+    },
+    {
+      "id": "struct-hash/selector3-withdrawUnshielded",
+      "oracle": "evmStructHashFor",
+      "value": "0x1c34fb648b309312b421710f254d1e09a5ba09890310ad8cc02bc9154804e98c"
+    },
+    {
+      "id": "struct-hash/selector4-transferShielded",
+      "oracle": "evmStructHashFor",
+      "value": "0xf8638b5b92afae05ce7400af956fd5c6173eeef39e0f9561b1d949ea95819f32"
+    },
+    {
+      "id": "struct-hash/selector5-transferUnshielded",
+      "oracle": "evmStructHashFor",
+      "value": "0xaf30c24e8c0ade71008484019d3006c78dade30418c48a0b5f32cd49fe4f261d"
+    },
+    {
+      "id": "struct-hash/selector6-openSwap",
+      "oracle": "evmStructHashFor",
+      "value": "0xc7585e9706a6ecd3e2c73d233b5dc190e273602f21045f97fad058f7019070f2"
+    },
+    {
+      "id": "digest/selector1-register",
+      "oracle": "evmDigestFor",
+      "value": "0xd6b3812fed3edbab3e011541cd54ffd84461ade3b6baa86becb3d34c761a8359"
+    },
+    {
+      "id": "digest/selector2-withdrawShielded",
+      "oracle": "evmDigestFor",
+      "value": "0x966445585575d28f5a7f35d68634d727d826a1a69bc1d2d7babb5addc8e464b9"
+    },
+    {
+      "id": "digest/selector3-withdrawUnshielded",
+      "oracle": "evmDigestFor",
+      "value": "0x6daa35c6aca65311fad8d01485be92173a848de1696b8b85cb3f41c8eb431ef0"
+    },
+    {
+      "id": "digest/selector4-transferShielded",
+      "oracle": "evmDigestFor",
+      "value": "0xc1c291d8128b49a682eda1bd69632014b1dc6eaab6f97cdafc427e7b442051df"
+    },
+    {
+      "id": "digest/selector5-transferUnshielded",
+      "oracle": "evmDigestFor",
+      "value": "0x069940c0474a19d6229effc28812942b614eda63e66a61b673ffa81a8c562767"
+    },
+    {
+      "id": "digest/selector6-openSwap",
+      "oracle": "evmDigestFor",
+      "value": "0x6a1afda0ba1879fe53420c95711adb506a74f2627123174ea82fa0fb76e7204a"
+    },
+    {
+      "id": "zswap/nullifier",
+      "oracle": "zswapNullifierOf",
+      "value": "0x7d833d42beafa6cd957ae49e0641caefd8b2a93f03607ef315916e62126a92e0"
+    },
+    {
+      "id": "zswap/commitment-left",
+      "oracle": "zswapCommitmentOf",
+      "value": "0xaaf6ba58519fde902244087a14967fd37456918bc67bc67ff2a0e8a2ca6aafec"
+    },
+    {
+      "id": "zswap/commitment-right",
+      "oracle": "zswapCommitmentOf",
+      "value": "0x37a124af277db90bdf6ade882e3895f3adfab12a36b35babc5954ca3dca76ede"
+    },
+    {
+      "id": "key/shielded",
+      "oracle": "shieldedKey",
+      "value": "0x29684d338a3f1eef089ae4380501369a432b703ca61f4b6e17badd07ffae46c4"
+    },
+    {
+      "id": "key/unshielded",
+      "oracle": "unshieldedKey",
+      "value": "0x8b6136c86784c97deebcfc4798f9fa99b7d7f8536e9b732cd59a6c114044cf4e"
+    },
+    {
+      "id": "semantic/non-swap-withdrawShielded",
+      "oracle": "semanticCommitmentFor",
+      "value": "0x4c72f4205dabb4b1adddc463ab1b05ed4caf605d13032c7f9d22dec19d17375b"
+    },
+    {
+      "id": "semantic/named-swap",
+      "oracle": "semanticCommitmentFor",
+      "value": "0x32b772bde7e1fdf263ba583efbc8a34a1f0a77ed47b9d05031545a327b1b22e8"
+    },
+    {
+      "id": "semantic/open-swap-give-lt-want",
+      "oracle": "semanticCommitmentFor",
+      "value": "0x38958cf9a0e675a2fb119844c4e87614f1128691c8bca55793a1fada249072f7"
+    },
+    {
+      "id": "semantic/open-swap-give-gt-want",
+      "oracle": "semanticCommitmentFor",
+      "value": "0xb5e3319f3e2f6c9186c5c7a084072103ed5b561dfcc621ba8a0728597d2dce04"
+    }
+  ]
+}

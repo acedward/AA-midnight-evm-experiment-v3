@@ -66,6 +66,13 @@ jobs:
       - name: Obtain the pinned Compact toolchain
         run: scripts/toolchain.sh
 
+      # THE PARTITION GATE (project 00014, SC-005). Text-only, no Docker, instant — so it runs
+      # BEFORE the compile: a stateful module imported twice (compiler bug #270) or a registry write
+      # that escaped its module is reported in seconds rather than after the build. It checks WHERE
+      # code lives, which no compiler error and no test would catch.
+      - name: Partition gate (single-import rule, registry writes)
+        run: scripts/check-partition.sh
+
       - name: Compile the contracts
         run: scripts/compile.sh all
 
