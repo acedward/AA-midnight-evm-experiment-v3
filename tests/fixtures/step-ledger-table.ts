@@ -24,11 +24,15 @@
 //   FINAL_TABLE / END_SIZES  the spec's separately written final table and end-state map sizes,
 //             so the walk is checked AGAINST them rather than deriving them from itself.
 //
+// Naming boundary: TOK* strings below are internal Minter constructor/deployment tags. S* and U*
+// are mathematical table-column labels for shielded and unshielded colours. Neither vocabulary is
+// outward token metadata; the ordinary Minter's outward family names are AATEST-S / AATEST-U.
+//
 // What is new relative to 00004's transcription, and why:
 //   - `sizes`: v3 seeds nothing, so the three map sizes are a statement about LAZY CREATION itself
 //     and are asserted after every row (FR-202, FR-205).
 //   - `colours`: at row 0 NO colour exists anywhere — the Manager is deployed before any Minter.
-//     TOKD's two colours come into existence at row 15, mid-ledger. The colour set is therefore
+//     internal tag TOKD's two colours come into existence at row 15, mid-ledger. The colour set is therefore
 //     part of the transcription rather than a constant.
 //   - U3 is present in every row at 0: it is the DORMANT colour (minted by no one, deposited by no
 //     one), and the harness asserts it stays absent from every map (FR-206, NC-3).
@@ -106,9 +110,9 @@ const sz = (pools: number, shieldedCells: number, unshieldedCells: number): Size
 
 /** No colour exists at row 0: the Manager is deployed before any Minter. */
 const NONE: readonly ColourKey[] = [] as const;
-/** TOKA/TOKB/TOKC's six colours, from row 1. */
+/** The six colours derived from internal tags TOKA/TOKB/TOKC, from row 1. */
 const SIX: readonly ColourKey[] = ['S1', 'S2', 'S3', 'U1', 'U2', 'U3'] as const;
-/** …plus TOKD's two, created MID-LEDGER at row 15. */
+/** …plus internal tag TOKD's two, created MID-LEDGER at row 15. */
 const EIGHT: readonly ColourKey[] = ['S1', 'S2', 'S3', 'S4', 'U1', 'U2', 'U3', 'U4'] as const;
 
 /** Row N of the spec's step ledger: the state that must hold AFTER step N. */
@@ -254,12 +258,12 @@ export const MINTS: Record<number, Array<{ colour: ColourKey; minter: string; to
 
 export const ACTIONS: Record<number, string> = {
   0: 'Manager deployed — NO Minter exists on this chain; AA_A and AA_B registered',
-  1: 'Minters TOKA, TOKB, TOKC deployed; 6 colours read on-chain, pairwise distinct',
-  2: 'mint S1 10 -> OwnerN',
-  3: 'mint U1 10 -> OwnerN',
-  4: 'mint S2 10 -> OwnerM',
-  5: 'mint S3 10 -> OwnerM',
-  6: 'mint U2 10 -> OwnerM',
+  1: 'Minters with internal tags TOKA, TOKB, TOKC deployed; 6 colours read on-chain, pairwise distinct',
+  2: 'mint fixture colour S1 10 -> OwnerN',
+  3: 'mint fixture colour U1 10 -> OwnerN',
+  4: 'mint fixture colour S2 10 -> OwnerM',
+  5: 'mint fixture colour S3 10 -> OwnerM',
+  6: 'mint fixture colour U2 10 -> OwnerM',
   7: 'OwnerN deposits S1 6 -> AA_A (first pool EVER)',
   8: 'OwnerN deposits U1 5 -> AA_A',
   9: 'OwnerM deposits S2 6 -> AA_B',
@@ -268,7 +272,7 @@ export const ACTIONS: Record<number, string> = {
   12: 'internal transfer S1 3: AA_A -> AA_B (credit-side lazy cell; pool UNCHANGED)',
   13: 'AA_B withdraws S2 2 -> OwnerN',
   14: 'AA_A withdraws U1 2 -> OwnerM',
-  15: 'TOKD deployed MID-LEDGER; mint S4 7 -> OwnerN, U4 4 -> OwnerM',
+  15: 'Minter internal tag TOKD deployed MID-LEDGER; mint fixture colours S4 7 -> OwnerN, U4 4 -> OwnerM',
   16: 'OwnerN deposits S4 7 -> AA_A — HEADLINE: custody of a colour that did not exist at deploy',
   17: 'OwnerM deposits U4 4 -> AA_B',
 };

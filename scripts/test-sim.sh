@@ -77,11 +77,15 @@ fi
 # hand-maintained list), and the run container only ever sees this volume. Nothing compiles it here.
 docker run --rm --name "${project}-stage" --label com.docker.compose.project="$project" \
   --cpus 2 --memory 8g --memory-swap 8g \
-  -v "$repo_root/tests:/src:ro" -v "$repo_root/contracts:/src-contracts:ro" -v "$volume:/work" -w /src \
+  -v "$repo_root/tests:/src:ro" -v "$repo_root/contracts:/src-contracts:ro" \
+  -v "$repo_root/scripts/test-integration.sh:/src-test-integration.sh:ro" \
+  -v "$volume:/work" -w /src \
   "$node_image" \
-  sh -euc 'rm -rf /work/simulation /work/integration /work/lib /work/fixtures /work/generated /work/contracts; \
+  sh -euc 'rm -rf /work/simulation /work/integration /work/lib /work/fixtures /work/generated /work/contracts /work/scripts; \
     tar --exclude="./node_modules" -cf - . | tar -xf - -C /work; \
-    mkdir -p /work/contracts; tar -cf - -C /src-contracts . | tar -xf - -C /work/contracts'
+    mkdir -p /work/contracts /work/scripts; \
+    tar -cf - -C /src-contracts . | tar -xf - -C /work/contracts; \
+    cp /src-test-integration.sh /work/scripts/test-integration.sh'
 
 if [ "$fresh" -eq 1 ] || ! docker run --rm -v "$volume:/work" "$node_image" test -d /work/node_modules; then
   # Dependency install is the ONLY step that touches the network, and it is frozen-lockfile only.

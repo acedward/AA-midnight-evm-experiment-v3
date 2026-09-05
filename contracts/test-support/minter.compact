@@ -5,9 +5,13 @@
 // in the constructor the domain sep so we get consistent tokens id when minted (and is a more
 // standard practive)"). 00004 deploys it three times:
 //
-//   Minter1 tag "TOKA" -> colours S1 (shielded) + U1 (unshielded)   — configured in the Manager
-//   Minter2 tag "TOKB" -> colours S2 (shielded) + U2 (unshielded)   — configured in the Manager
-//   Minter3 tag "TOKC" -> two control colours                        — NEVER configured (NC-4)
+//   Minter1 internal tag "TOKA" -> fixture columns S1 (shielded) + U1 (unshielded)
+//   Minter2 internal tag "TOKB" -> fixture columns S2 (shielded) + U2 (unshielded)
+//   Minter3 internal tag "TOKC" -> two control colours               — NEVER configured (NC-4)
+//
+// TOK* values are constructor/deployment ids and S*/U* are mathematical fixture labels. Neither
+// is a display name. Outward metadata names the two families AATEST-S / AATEST-U with source
+// "aa-minter"; the raw tags, separators and colours remain unchanged.
 //
 // Derivation, recorded here as the contract header per Plan 02 Phase 1:
 //

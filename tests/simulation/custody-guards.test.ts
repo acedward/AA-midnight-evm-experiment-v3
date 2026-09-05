@@ -27,6 +27,7 @@ import { describe, expect, it } from 'vitest';
 import { hex, ManagerSim, mapSizes, secretOf, snapshotLedger } from '../lib/sim.js';
 
 // Colours are just 32-byte values to the Manager; it has never been told anything about them.
+// S*/U* below are mathematical fixture labels, never outward token names.
 const S1 = new Uint8Array(32).fill(0x11);
 const S2 = new Uint8Array(32).fill(0x12);
 const S3 = new Uint8Array(32).fill(0x13);

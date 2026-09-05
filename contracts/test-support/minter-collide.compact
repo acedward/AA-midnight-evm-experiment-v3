@@ -13,10 +13,11 @@
 // `tokenType` is a pure function of (domain separator, contract address) — see the pinned standard
 // library, L121 — the two families' colours are the same 32 bytes with probability 1.
 //
-// Contrast with the ordinary Minter, which is reused UNCHANGED for TOKA-TOKE: it derives TWO
-// separators from two distinct family constants precisely so its two colours can never collide. This
+// Contrast with the ordinary Minter, which keeps the internal constructor tags TOKA-TOKE: it derives
+// TWO separators from two distinct family constants precisely so its two colours can never collide. This
 // contract is that safeguard removed on purpose, in a throwaway probe contract, so the Manager's own
 // separation is what is under test rather than the Minter's.
+// TOK* is never outward token metadata; the ordinary Minter families display as AATEST-S/AATEST-U.
 //
 // Nothing here custodies anything: there is no balance state, and any party may request minting. It
 // is a demo fixture, not a product.
