@@ -32,7 +32,7 @@ type AaContractsV1 = {
     address: string; // lower-case, unprefixed 32-byte hex
     domain: string;
   };
-  minter?: {
+  minter: {
     address: string; // lower-case, unprefixed 32-byte hex
     tag: string;     // raw internal constructor/deployment tag, never a display name
   };

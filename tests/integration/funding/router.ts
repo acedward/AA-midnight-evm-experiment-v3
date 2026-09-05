@@ -87,6 +87,9 @@ function url(value: string, key: string, protocols: readonly string[]): string {
   if (!protocols.includes(parsed.protocol)) {
     throw new RangeError(`${key} must use ${protocols.join(" or ")}`);
   }
+  if (parsed.username || parsed.password || parsed.search || parsed.hash) {
+    throw new RangeError(`${key} must not contain credentials, query, or fragment components`);
+  }
   return parsed.toString().replace(/\/$/, "");
 }
 

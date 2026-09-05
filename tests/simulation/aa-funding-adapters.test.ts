@@ -431,6 +431,26 @@ describe("Offer Files two-session funding adapter", () => {
     })).rejects.toThrow(/secret material/);
   });
 
+  it("replaces an Offer Files dependency error containing unrelated credentials with a fixed stage message", async () => {
+    const credential = "DATABASE_PASSWORD=untrusted-password";
+    const sessions = new StatefulSessions();
+    sessions.readError = new Error(credential);
+    let surfaced = "";
+    try {
+      await faucetAdapter(sessions).adapter.fund({
+        mode: "offer-files-faucet",
+        accountId: ACCOUNT,
+        tokenName: "WBTC",
+        wholeCoins: 1n,
+      });
+    } catch (error) {
+      surfaced = error instanceof Error ? `${error.message}\n${error.stack ?? ""}` : String(error);
+    }
+    expect(surfaced).toContain("Offer Files wallet balance read failed");
+    expect(surfaced).not.toContain(credential);
+    expect(surfaced).not.toContain("untrusted-password");
+  });
+
   it.each(["open", "operation", "stop"] as const)("redacts the literal seed from a dependency %s error", async (stage) => {
     const seed = `${stage === "open" ? "a1" : stage === "operation" ? "a2" : "a3"}`.repeat(32);
     const sessions = new StatefulSessions();
@@ -564,13 +584,21 @@ describe("AA-Minter funding adapter", () => {
 
   it("poisons Minter funding across fresh adapters on the port's lifecycle-failure signal", async () => {
     const seed = "94".repeat(32);
-    const firstPort = vi.fn(async () => { throw new WalletSessionStopError("wallet facade stop failed"); });
+    const credential = "PRIVATE_API_KEY=do-not-echo";
+    const firstPort = vi.fn(async () => { throw new WalletSessionStopError(credential); });
     const first = new AaMinterFundingAdapter(minterConfig(seed) as never, {
       funding: { fundShielded: firstPort } as never,
       nonces: nonceSource(),
     });
-    await expect(first.fund({ mode: "aa-minter", accountId: ACCOUNT, amountBaseUnits: 1n }))
-      .rejects.toThrow(/stop failed/);
+    let surfaced = "";
+    try {
+      await first.fund({ mode: "aa-minter", accountId: ACCOUNT, amountBaseUnits: 1n });
+    } catch (error) {
+      surfaced = error instanceof Error ? `${error.message}\n${error.stack ?? ""}` : String(error);
+    }
+    expect(surfaced).toContain("AA-Minter funding dependency lifecycle failed");
+    expect(surfaced).not.toContain(credential);
+    expect(surfaced).not.toContain("do-not-echo");
 
     const replacementPort = vi.fn();
     const replacement = new AaMinterFundingAdapter(minterConfig(seed) as never, {
@@ -580,6 +608,23 @@ describe("AA-Minter funding adapter", () => {
     await expect(replacement.fund({ mode: "aa-minter", accountId: ACCOUNT, amountBaseUnits: 1n }))
       .rejects.toThrow(/poisoned/);
     expect(replacementPort).not.toHaveBeenCalled();
+  });
+
+  it("replaces an AA-Minter dependency error containing unrelated credentials with a fixed stage message", async () => {
+    const credential = "PROVIDER_PASSWORD=external-password";
+    const adapter = new AaMinterFundingAdapter(minterConfig() as never, {
+      funding: { fundShielded: async () => { throw new Error(credential); } },
+      nonces: nonceSource(),
+    });
+    let surfaced = "";
+    try {
+      await adapter.fund({ mode: "aa-minter", accountId: ACCOUNT, amountBaseUnits: 1n });
+    } catch (error) {
+      surfaced = error instanceof Error ? `${error.message}\n${error.stack ?? ""}` : String(error);
+    }
+    expect(surfaced).toContain("AA-Minter funding dependency failed");
+    expect(surfaced).not.toContain(credential);
+    expect(surfaced).not.toContain("external-password");
   });
 
   it.each([

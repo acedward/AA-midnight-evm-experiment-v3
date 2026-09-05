@@ -13,9 +13,9 @@ import { AaMinterFundingAdapter } from "./funding/aa-minter.js";
 import { HttpKnownTokenRegistry } from "./funding/known-token-registry.js";
 import { CryptoNonceSource } from "./funding/nonces.js";
 import { OfferFilesFaucetAdapter } from "./funding/offer-files-faucet.js";
-import { assertNoLiteralSecret, redactSecretError } from "./funding/redact.js";
+import { assertNoLiteralSecret, fixedStageError } from "./funding/redact.js";
 import { SeedFundingCoordinator } from "./funding/seed-coordinator.js";
-import { isWalletSessionLifecycleError, WalletSessionStopError } from "./funding/session-gate.js";
+import { isWalletSessionLifecycleError } from "./funding/session-gate.js";
 import type { FundingConfig } from "./funding/router.js";
 import type { FundingAdapter, FundingResult } from "./funding/types.js";
 import type { AaLiveRuntime } from "./runtime/types.js";
@@ -46,10 +46,7 @@ async function runtimeStage<T>(label: string, operation: () => Promise<T>): Prom
   try {
     return await operation();
   } catch (error) {
-    if (isWalletSessionLifecycleError(error)) {
-      throw new WalletSessionStopError(`${label} lifecycle failed`);
-    }
-    throw new Error(`${label} failed`);
+    throw fixedStageError(error, label);
   }
 }
 
@@ -76,8 +73,7 @@ export async function runAaFaucetHarness(input: {
   readonly fundingAdapter?: FundingAdapter;
 }): Promise<HarnessResult> {
   const coordinator = new SeedFundingCoordinator(input.config.harnessWalletSeed, "harness");
-  try {
-  return await coordinator.run(async () => {
+  return coordinator.run(async () => {
   const clock = input.clock ?? (() => new Date());
   const startedAt = clock().toISOString();
   const funding = input.fundingAdapter ?? adapter(input.config, input.runtime);
@@ -142,19 +138,21 @@ export async function runAaFaucetHarness(input: {
     funded.push(result);
   };
   if (input.config.mode === "aa-minter") {
-    acceptFunding(await funding.fund({
+    const config = input.config;
+    acceptFunding(await runtimeStage("AA-Minter funding", () => funding.fund({
       mode: "aa-minter",
       accountId: firstAccountId,
-      amountBaseUnits: input.config.scenarioAmountBaseUnits,
-    }));
+      amountBaseUnits: config.scenarioAmountBaseUnits,
+    })));
   } else {
+    const config = input.config;
     for (const tokenName of ["WBTC", "WETH"] as const) {
-      acceptFunding(await funding.fund({
+      acceptFunding(await runtimeStage(`Offer Files ${tokenName} funding`, () => funding.fund({
         mode: "offer-files-faucet",
         accountId: firstAccountId,
         tokenName,
-        wholeCoins: input.config.scenarioWholeCoins,
-      }));
+        wholeCoins: config.scenarioWholeCoins,
+      })));
     }
   }
   const primary = funded[0]!;
@@ -225,7 +223,4 @@ export async function runAaFaucetHarness(input: {
   assertNoLiteralSecret(runReceipt, input.config.harnessWalletSeed);
   return { deploymentReceipt, runReceipt };
   }, isWalletSessionLifecycleError);
-  } catch (error) {
-    throw redactSecretError(error, input.config.harnessWalletSeed);
-  }
 }

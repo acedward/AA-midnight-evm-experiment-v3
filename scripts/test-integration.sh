@@ -43,6 +43,17 @@ extra=()
 [ "${1:-}" = "--" ] && { shift; extra=("$@"); }
 
 if [ "${AA_FAUCET_LIVE:-0}" = "1" ]; then
+  case "${OFFER_FILES_FAUCET:-}" in
+    ""|0) faucet_flag=0 ;;
+    1) faucet_flag=1 ;;
+    [fF][aA][lL][sS][eE]) faucet_flag=0 ;;
+    [tT][rR][uU][eE]) faucet_flag=1 ;;
+    *)
+      echo "OFFER_FILES_FAUCET must be absent, false, 0, true, or 1" >&2
+      exit 64
+      ;;
+  esac
+  export OFFER_FILES_FAUCET="$faucet_flag"
   : "${AA_HARNESS_CONTAINER:?AA_HARNESS_CONTAINER is required for AA_FAUCET_LIVE=1}"
   docker inspect "$AA_HARNESS_CONTAINER" >/dev/null
   harness_image="$(docker inspect --format '{{.Config.Image}}' "$AA_HARNESS_CONTAINER")"
@@ -56,10 +67,10 @@ if [ "${AA_FAUCET_LIVE:-0}" = "1" ]; then
   for key in "${required_env[@]}"; do
     [ -n "${!key:-}" ] || { echo "$key is required for AA_FAUCET_LIVE=1" >&2; exit 64; }
   done
-  if [ "${OFFER_FILES_FAUCET:-0}" = "1" ] || [ "${OFFER_FILES_FAUCET:-}" = "true" ]; then
+  if [ "$faucet_flag" = "1" ]; then
     mode_env=(OFFER_FILES_FAUCET OFFER_FILES_CONTRACT ZSWAP_API)
   else
-    mode_env=(AA_MINTER_ADDRESS AA_MINTER_TAG AA_MINTER_SHIELDED_COLOR AA_MINTER_UNSHIELDED_COLOR)
+    mode_env=(OFFER_FILES_FAUCET AA_MINTER_ADDRESS AA_MINTER_TAG AA_MINTER_SHIELDED_COLOR AA_MINTER_UNSHIELDED_COLOR)
   fi
   for key in "${mode_env[@]}"; do
     [ -n "${!key:-}" ] || { echo "$key is required for the selected live funding mode" >&2; exit 64; }

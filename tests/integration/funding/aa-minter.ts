@@ -6,7 +6,7 @@ import {
 import type { AaMinterFundingConfig } from "./router.js";
 import { SeedFundingCoordinator } from "./seed-coordinator.js";
 import { isWalletSessionLifecycleError } from "./session-gate.js";
-import { assertNoLiteralSecret, redactSecretError, withNonEnumerableSecret } from "./redact.js";
+import { assertNoLiteralSecret, fixedStageError, withNonEnumerableSecret } from "./redact.js";
 import type {
   AaMinterFundingPort,
   FundingAdapter,
@@ -32,7 +32,12 @@ export class AaMinterFundingAdapter implements FundingAdapter {
   }
 
   #nonce(label: string): Uint8Array {
-    const nonce = this.#dependencies.nonces.nextBytes32();
+    let nonce: Uint8Array;
+    try {
+      nonce = this.#dependencies.nonces.nextBytes32();
+    } catch (error) {
+      throw fixedStageError(error, `AA-Minter ${label} nonce generation`);
+    }
     if (!(nonce instanceof Uint8Array) || nonce.length !== 32 || nonce.every((byte) => byte === 0)) {
       throw new RangeError(`AA-Minter ${label} nonce must be exactly 32 nonzero bytes`);
     }
@@ -43,8 +48,7 @@ export class AaMinterFundingAdapter implements FundingAdapter {
   }
 
   async fund(request: FundingRequest): Promise<FundingResult> {
-    try {
-      return await this.#coordinator.run(async () => {
+    return this.#coordinator.run(async () => {
     if (request.mode !== this.mode) throw new RangeError("AA-Minter adapter requires an AA-Minter funding request");
     const accountId = canonicalTokenColor(request.accountId);
     const amount = validateUint64Amount(request.amountBaseUnits);
@@ -72,7 +76,12 @@ export class AaMinterFundingAdapter implements FundingAdapter {
       mintNonce,
       depositNonce,
     }, "harnessWalletSeed", this.#config.harnessWalletSeed);
-    const result = await this.#dependencies.funding.fundShielded(fundingInput);
+    let result: Awaited<ReturnType<AaMinterFundingPort["fundShielded"]>>;
+    try {
+      result = await this.#dependencies.funding.fundShielded(fundingInput);
+    } catch (error) {
+      throw fixedStageError(error, "AA-Minter funding dependency");
+    }
     if (
       result.walletBalanceBefore < 0n || result.walletBalanceAfterMint < 0n ||
       result.walletBalanceAfterDeposit < 0n || result.managerBalanceBefore < 0n ||
@@ -117,9 +126,6 @@ export class AaMinterFundingAdapter implements FundingAdapter {
     };
     assertNoLiteralSecret(fundingResult, this.#config.harnessWalletSeed);
     return fundingResult;
-      }, isWalletSessionLifecycleError);
-    } catch (error) {
-      throw redactSecretError(error, this.#config.harnessWalletSeed);
-    }
+    }, isWalletSessionLifecycleError);
   }
 }

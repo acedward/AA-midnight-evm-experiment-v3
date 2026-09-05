@@ -6,12 +6,12 @@ import type { FundingAdapter, FundingRequest, FundingResult } from "../integrati
 import { WalletSessionStopError } from "../integration/funding/session-gate.js";
 import { runAaFaucetHarness } from "../integration/harness.js";
 import type { AaLiveRuntime } from "../integration/runtime/types.js";
-import { aaMinterTokenMetadata, offerFilesTokenMetadata } from "../lib/token-metadata.js";
+import { aaMinterTokenColor, aaMinterTokenMetadata, offerFilesTokenMetadata } from "../lib/token-metadata.js";
 
 const MANAGER = "11".repeat(32);
 const MINTER = "22".repeat(32);
-const SHIELDED = "33".repeat(32);
-const UNSHIELDED = "44".repeat(32);
+const SHIELDED = aaMinterTokenColor("shielded", "TOKA", MINTER);
+const UNSHIELDED = aaMinterTokenColor("unshielded", "TOKA", MINTER);
 const OFFER_FILES = "55".repeat(32);
 const FIRST = "66".repeat(32);
 const SECOND = "77".repeat(32);

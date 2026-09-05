@@ -4,6 +4,7 @@ import {
   AA_MINTER_SHIELDED_NAME,
   AA_MINTER_UNSHIELDED_NAME,
   OFFER_FILES_FAUCET_DECIMALS,
+  aaMinterTokenColor,
   aaMinterTokenMetadata,
   domainSepFromName,
   offerFilesRegistryTokenMetadata,
@@ -32,6 +33,14 @@ const INTERNAL_AA_TAGS = ["TOKA", "TOKB", "TOKC", "TOKD", "TOKE"] as const;
 const OFFER_FILES_FAUCET_NAMES = ["WBTC", "WETH", "USDC", "ZTOKEN", "ATOKEN", "BTOKEN", "WUSD"] as const;
 
 describe("canonical AA test-token metadata", () => {
+  it("independently derives both AA Minter colours from the public tag and deployment address", async () => {
+    const minter = await MinterSim.create(pad32("TOKA"));
+    expect(aaMinterTokenColor("shielded", "TOKA", minter.address))
+      .toBe(hex(await minter.call<Uint8Array>("shieldedColor")));
+    expect(aaMinterTokenColor("unshielded", "TOKA", minter.address))
+      .toBe(hex(await minter.call<Uint8Array>("unshieldedColor")));
+  });
+
   it("uses exact outward names and provenance while retaining the internal constructor tag", () => {
     const shielded = aaMinterTokenMetadata({
       family: "shielded",

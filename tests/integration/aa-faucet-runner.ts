@@ -5,7 +5,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 
 import { readLegacyAaDeploymentReceipt } from "./deployment-receipt.js";
-import { assertNoLiteralSecret, redactSecretError } from "./funding/redact.js";
+import { assertNoLiteralSecret } from "./funding/redact.js";
 import { parseFundingEnvironment, type FundingConfig } from "./funding/router.js";
 import { runAaFaucetHarness } from "./harness.js";
 import { preflightAndLoadFundingArtifacts } from "./runtime/artifacts.js";
@@ -94,12 +94,17 @@ export async function main(environment: NodeJS.ProcessEnv = process.env): Promis
   }));
 }
 
-if (import.meta.main) {
+export async function runManualEntrypoint(
+  operation: () => Promise<void> = () => main(),
+  writeError: (message: string) => void = (message) => console.error(message),
+): Promise<number> {
   try {
-    await main();
-  } catch (error) {
-    const safe = redactSecretError(error, process.env.AA_HARNESS_WALLET_SEED ?? "");
-    console.error(`AA faucet harness failed: ${safe.message}`);
-    process.exitCode = 1;
+    await operation();
+    return 0;
+  } catch {
+    writeError("AA faucet harness failed");
+    return 1;
   }
 }
+
+if (import.meta.main) process.exitCode = await runManualEntrypoint();

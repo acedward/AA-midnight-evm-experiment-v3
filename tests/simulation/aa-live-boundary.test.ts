@@ -22,16 +22,21 @@ import {
   submitShieldedWithdrawPipeline,
   waitForExactBigint,
 } from "../integration/aa-faucet-runtime.js";
-import { preflightReceiptDestinations, writeJsonAtomic } from "../integration/aa-faucet-runner.js";
 import {
+  preflightReceiptDestinations,
+  runManualEntrypoint,
+  writeJsonAtomic,
+} from "../integration/aa-faucet-runner.js";
+import {
+  aaMinterTokenColor,
   aaMinterTokenMetadata,
   offerFilesTokenMetadata,
 } from "../lib/token-metadata.js";
 
 const MANAGER = "11".repeat(32);
 const MINTER = "22".repeat(32);
-const SHIELDED = "33".repeat(32);
-const UNSHIELDED = "44".repeat(32);
+const SHIELDED = aaMinterTokenColor("shielded", "TOKA", MINTER);
+const UNSHIELDED = aaMinterTokenColor("unshielded", "TOKA", MINTER);
 const OFFER_FILES = "55".repeat(32);
 const SEED = "ab".repeat(32);
 const temporary: string[] = [];
@@ -492,6 +497,20 @@ describe("concrete legacy runtime facade coordinator", () => {
 });
 
 describe("manual runner receipt boundary", () => {
+  it("emits only a fixed runner error when an external failure contains credentials or private material", async () => {
+    const secretText = "PASSWORD=non-seed-password API_KEY=non-seed-key PRIVATE_MATERIAL=opaque";
+    const stderr: string[] = [];
+    const code = await runManualEntrypoint(
+      async () => { throw new Error(secretText); },
+      (message) => stderr.push(message),
+    );
+    expect(code).toBe(1);
+    expect(stderr).toEqual(["AA faucet harness failed"]);
+    expect(stderr.join("\n")).not.toContain("non-seed-password");
+    expect(stderr.join("\n")).not.toContain("non-seed-key");
+    expect(stderr.join("\n")).not.toContain("opaque");
+  });
+
   it("preflights distinct existing parents and atomically writes a secret-free receipt", async () => {
     const root = await mkdtemp(join(tmpdir(), "aa-receipts-"));
     temporary.push(root);

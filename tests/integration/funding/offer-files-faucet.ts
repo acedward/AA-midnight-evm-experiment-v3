@@ -9,11 +9,12 @@ import {
 import type { OfferFilesFundingConfig } from "./router.js";
 import { SingleSessionGate } from "./session-gate.js";
 import { SeedFundingCoordinator } from "./seed-coordinator.js";
-import { assertNoLiteralSecret, redactSecretError, withNonEnumerableSecret } from "./redact.js";
+import { assertNoLiteralSecret, fixedStageError, withNonEnumerableSecret } from "./redact.js";
 import type {
   FundingAdapter,
   FundingRequest,
   FundingResult,
+  FundingWalletSession,
   FundingWalletSessionFactory,
   KnownTokenRegistryPort,
   KnownTokenRow,
@@ -78,7 +79,12 @@ export class OfferFilesFaucetAdapter implements FundingAdapter {
   }
 
   #mintNonce(): bigint {
-    const nonce = this.#dependencies.nonces.nextUint128();
+    let nonce: bigint;
+    try {
+      nonce = this.#dependencies.nonces.nextUint128();
+    } catch (error) {
+      throw fixedStageError(error, "Offer Files mint nonce generation");
+    }
     if (typeof nonce !== "bigint" || nonce <= 0n || nonce >= (1n << 128n)) {
       throw new RangeError("mint nonce must be a nonzero Uint128 bigint");
     }
@@ -89,7 +95,12 @@ export class OfferFilesFaucetAdapter implements FundingAdapter {
   }
 
   #depositNonce(): Uint8Array {
-    const nonce = this.#dependencies.nonces.nextBytes32();
+    let nonce: Uint8Array;
+    try {
+      nonce = this.#dependencies.nonces.nextBytes32();
+    } catch (error) {
+      throw fixedStageError(error, "Offer Files deposit nonce generation");
+    }
     if (!(nonce instanceof Uint8Array) || nonce.length !== 32 || nonce.every((byte) => byte === 0)) {
       throw new RangeError("deposit nonce must be exactly 32 nonzero bytes");
     }
@@ -101,7 +112,12 @@ export class OfferFilesFaucetAdapter implements FundingAdapter {
 
   async #loadRegistry(): Promise<ReadonlyMap<OfferFilesFaucetName, OfferFilesTokenMetadata>> {
     this.#registryMetadata ??= (async () => {
-      const rawRows = await this.#dependencies.registry.getKnownTokens();
+      let rawRows: readonly unknown[];
+      try {
+        rawRows = await this.#dependencies.registry.getKnownTokens();
+      } catch (error) {
+        throw fixedStageError(error, "Offer Files registry read");
+      }
       if (!Array.isArray(rawRows)) throw new TypeError("GET /v1/known-tokens must return an array");
       const rows = rawRows.map(row);
       const result = new Map<OfferFilesFaucetName, OfferFilesTokenMetadata>();
@@ -140,8 +156,7 @@ export class OfferFilesFaucetAdapter implements FundingAdapter {
   }
 
   async fund(request: FundingRequest): Promise<FundingResult> {
-    try {
-      return await this.#coordinator.run(async () => {
+    return this.#coordinator.run(async () => {
     if (request.mode !== this.mode) throw new RangeError("Offer Files adapter requires a faucet funding request");
     const accountId = canonicalTokenColor(request.accountId);
     const amount = scaleSixDecimalWholeCoins(request.wholeCoins);
@@ -149,15 +164,25 @@ export class OfferFilesFaucetAdapter implements FundingAdapter {
     if (!token) throw new RangeError(`unsupported Offer Files faucet token ${request.tokenName}`);
 
     const minted = await this.#gate.run(this.#sessionInput(`offer-files-mint-${request.tokenName}`), async (session) => {
-      const walletBalanceBefore = await session.readShieldedWalletBalance(token.color);
+      let walletBalanceBefore: bigint;
+      try {
+        walletBalanceBefore = await session.readShieldedWalletBalance(token.color);
+      } catch (error) {
+        throw fixedStageError(error, "Offer Files wallet balance read");
+      }
       if (walletBalanceBefore < 0n) throw new RangeError("wallet balance cannot be negative");
       const mintNonce = this.#mintNonce();
-      const result = await session.callOfferFilesMintShielded(
-        this.#config.offerFilesAddress,
-        this.#config.offerFilesArtifactPath,
-        this.#config.walletProofServerUrl,
-        [domainSepFromName(token.name), amount, mintNonce],
-      );
+      let result: Awaited<ReturnType<FundingWalletSession["callOfferFilesMintShielded"]>>;
+      try {
+        result = await session.callOfferFilesMintShielded(
+          this.#config.offerFilesAddress,
+          this.#config.offerFilesArtifactPath,
+          this.#config.walletProofServerUrl,
+          [domainSepFromName(token.name), amount, mintNonce],
+        );
+      } catch (error) {
+        throw fixedStageError(error, "Offer Files shielded mint");
+      }
       if (canonicalTokenColor(result.color) !== token.color) throw new RangeError("mint returned the wrong token colour");
       if (result.value !== amount) throw new RangeError("mint returned the wrong token value");
       return { walletBalanceBefore, mintTxId: txId(result.txId, "mint") };
@@ -167,44 +192,69 @@ export class OfferFilesFaucetAdapter implements FundingAdapter {
       this.#sessionInput(`manager-deposit-${request.tokenName}`),
       async (session) => {
         const expectedWalletBalance = minted.walletBalanceBefore + amount;
-        const walletBalanceAfterMint = await session.waitForShieldedWalletBalance(
-          token.color,
-          expectedWalletBalance,
-        );
+        let walletBalanceAfterMint: bigint;
+        try {
+          walletBalanceAfterMint = await session.waitForShieldedWalletBalance(
+            token.color,
+            expectedWalletBalance,
+          );
+        } catch (error) {
+          throw fixedStageError(error, "Offer Files minted wallet balance wait");
+        }
         if (walletBalanceAfterMint - minted.walletBalanceBefore !== amount) {
           throw new RangeError("observed wallet mint delta is not exact");
         }
         if (walletBalanceAfterMint < 0n) throw new RangeError("wallet balance cannot be negative");
-        const managerBalanceBefore = await session.readManagerShieldedBalance(
-          this.#config.managerAddress,
-          this.#config.managerArtifactPath,
-          this.#config.managerProofServerUrl,
-          accountId,
-          token.color,
-        );
+        let managerBalanceBefore: bigint;
+        try {
+          managerBalanceBefore = await session.readManagerShieldedBalance(
+            this.#config.managerAddress,
+            this.#config.managerArtifactPath,
+            this.#config.managerProofServerUrl,
+            accountId,
+            token.color,
+          );
+        } catch (error) {
+          throw fixedStageError(error, "Manager pre-deposit balance read");
+        }
         if (managerBalanceBefore < 0n) throw new RangeError("Manager balance cannot be negative");
         const depositNonce = this.#depositNonce();
-        const deposit = await session.depositShielded(
-          this.#config.managerAddress,
-          this.#config.managerArtifactPath,
-          this.#config.managerProofServerUrl,
-          { accountId, color: token.color, value: amount, nonce: depositNonce },
-        );
-        const managerBalanceAfter = await session.readManagerShieldedBalance(
-          this.#config.managerAddress,
-          this.#config.managerArtifactPath,
-          this.#config.managerProofServerUrl,
-          accountId,
-          token.color,
-        );
+        let deposit: Awaited<ReturnType<FundingWalletSession["depositShielded"]>>;
+        try {
+          deposit = await session.depositShielded(
+            this.#config.managerAddress,
+            this.#config.managerArtifactPath,
+            this.#config.managerProofServerUrl,
+            { accountId, color: token.color, value: amount, nonce: depositNonce },
+          );
+        } catch (error) {
+          throw fixedStageError(error, "Manager shielded deposit");
+        }
+        let managerBalanceAfter: bigint;
+        try {
+          managerBalanceAfter = await session.readManagerShieldedBalance(
+            this.#config.managerAddress,
+            this.#config.managerArtifactPath,
+            this.#config.managerProofServerUrl,
+            accountId,
+            token.color,
+          );
+        } catch (error) {
+          throw fixedStageError(error, "Manager post-deposit balance read");
+        }
         if (managerBalanceAfter - managerBalanceBefore !== amount) {
           throw new RangeError("Manager shielded balance delta is not exact");
         }
         if (managerBalanceAfter < 0n) throw new RangeError("Manager balance cannot be negative");
-        const walletBalanceAfterDeposit = await session.waitForShieldedWalletBalance(
-          token.color,
-          minted.walletBalanceBefore,
-        );
+        let walletBalanceAfterDeposit: bigint;
+        try {
+          walletBalanceAfterDeposit = await session.waitForShieldedWalletBalance(
+            token.color,
+            minted.walletBalanceBefore,
+          );
+        } catch (error) {
+          throw fixedStageError(error, "Offer Files deposited wallet balance wait");
+        }
         if (walletBalanceAfterDeposit !== minted.walletBalanceBefore) {
           throw new RangeError("wallet balance did not return to its pre-mint value after deposit");
         }
@@ -237,9 +287,6 @@ export class OfferFilesFaucetAdapter implements FundingAdapter {
     };
     assertNoLiteralSecret(result, this.#config.harnessWalletSeed);
     return result;
-      }, () => this.#gate.poisoned);
-    } catch (error) {
-      throw redactSecretError(error, this.#config.harnessWalletSeed);
-    }
+    }, () => this.#gate.poisoned);
   }
 }

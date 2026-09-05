@@ -11,6 +11,8 @@ import {
   type AaRunReceipt,
 } from "../lib/aa-contracts-receipt.js";
 import {
+  aaMinterDeploymentTokenMetadata,
+  aaMinterTokenColor,
   aaMinterTokenMetadata,
   offerFilesTokenColor,
   offerFilesTokenMetadata,
@@ -20,9 +22,10 @@ const MANAGER = "aa".repeat(32);
 const MINTER = "bb".repeat(32);
 const OFFER_FILES = "cc".repeat(32);
 const ACCOUNT = "dd".repeat(32);
-const SHIELDED = "12".repeat(32);
-const UNSHIELDED = "34".repeat(32);
+const SHIELDED = aaMinterTokenColor("shielded", "TOKA", MINTER);
+const UNSHIELDED = aaMinterTokenColor("unshielded", "TOKA", MINTER);
 const OFFER_FILES_WBTC = offerFilesTokenColor("WBTC", OFFER_FILES);
+const OFFER_FILES_WETH = offerFilesTokenColor("WETH", OFFER_FILES);
 
 function deploymentReceipt(): AaContractsReceipt {
   return {
@@ -33,10 +36,16 @@ function deploymentReceipt(): AaContractsReceipt {
     minter: { address: MINTER, tag: "TOKA" },
     offerFiles: { address: OFFER_FILES },
     tokens: [
-      aaMinterTokenMetadata({ family: "shielded", color: SHIELDED, internalDeploymentTag: "TOKA" }),
-      aaMinterTokenMetadata({ family: "unshielded", color: UNSHIELDED, internalDeploymentTag: "TOKA" }),
+      aaMinterDeploymentTokenMetadata({ family: "shielded", minterAddress: MINTER, internalDeploymentTag: "TOKA" }),
+      aaMinterDeploymentTokenMetadata({ family: "unshielded", minterAddress: MINTER, internalDeploymentTag: "TOKA" }),
       offerFilesTokenMetadata({
         name: "WBTC",
+        family: "shielded",
+        offerFilesAddress: OFFER_FILES,
+        decimals: 6,
+      }),
+      offerFilesTokenMetadata({
+        name: "WETH",
         family: "shielded",
         offerFilesAddress: OFFER_FILES,
         decimals: 6,
@@ -82,6 +91,7 @@ describe("versioned aa-contracts receipt", () => {
       ["AATEST-S", "aa-minter", SHIELDED],
       ["AATEST-U", "aa-minter", UNSHIELDED],
       ["WBTC", "offer-files-faucet", OFFER_FILES_WBTC],
+      ["WETH", "offer-files-faucet", OFFER_FILES_WETH],
     ]);
     expect(validateAaContractsReceipt(json)).toEqual(receipt);
   });
@@ -105,12 +115,12 @@ describe("versioned aa-contracts receipt", () => {
     expect(() => validateAaContractsReceipt(missingSource)).toThrow(/source/);
 
     const wrongTag: any = deploymentReceipt();
-    wrongTag.tokens = [aaMinterTokenMetadata({
+    wrongTag.tokens[0] = aaMinterTokenMetadata({
       family: "shielded",
       color: SHIELDED,
       internalDeploymentTag: "TOKB",
-    })];
-    expect(() => validateAaContractsReceipt(wrongTag)).toThrow(/does not match minter.tag/);
+    });
+    expect(() => validateAaContractsReceipt(wrongTag)).toThrow(/tokens\[0\]/);
   });
 
   it("refuses an Offer Files market name used as an internal Minter tag", () => {
@@ -119,7 +129,7 @@ describe("versioned aa-contracts receipt", () => {
     expect(() => validateAaContractsReceipt(forged)).toThrow(/canonical uppercase/);
   });
 
-  it("refuses duplicate colours and absent source-contract entries", () => {
+  it("refuses duplicate colours and orphan source-contract entries", () => {
     const duplicate: any = deploymentReceipt();
     duplicate.tokens = [
       aaMinterTokenMetadata({ family: "shielded", color: SHIELDED, internalDeploymentTag: "TOKA" }),
@@ -127,27 +137,89 @@ describe("versioned aa-contracts receipt", () => {
     ];
     expect(() => validateAaContractsReceipt(duplicate)).toThrow(/duplicate receipt token color/);
 
-    const noOfferFiles: any = deploymentReceipt();
-    delete noOfferFiles.offerFiles;
-    noOfferFiles.tokens = [offerFilesTokenMetadata({
-      name: "WETH",
-      family: "shielded",
-      offerFilesAddress: OFFER_FILES,
-      decimals: 6,
-    })];
-    expect(() => validateAaContractsReceipt(noOfferFiles)).toThrow(/requires an offerFiles/);
+    const orphanRows: any = deploymentReceipt();
+    delete orphanRows.offerFiles;
+    expect(() => validateAaContractsReceipt(orphanRows)).toThrow(/without Offer Files/);
+
+    const orphanContract: any = deploymentReceipt();
+    orphanContract.tokens = orphanContract.tokens.slice(0, 2);
+    expect(() => validateAaContractsReceipt(orphanContract)).toThrow(/with Offer Files/);
   });
 
   it("refuses a faucet colour forged for a different name or Offer Files deployment", () => {
     const forged: any = deploymentReceipt();
-    forged.tokens = [{
+    forged.tokens[2] = {
       name: "WBTC",
       source: "offer-files-faucet",
       family: "shielded",
-      color: offerFilesTokenColor("WETH", OFFER_FILES),
+      color: offerFilesTokenColor("WUSD", OFFER_FILES),
       decimals: 6,
-    }];
-    expect(() => validateAaContractsReceipt(forged)).toThrow(/does not match its name and deployment address/);
+    };
+    expect(() => validateAaContractsReceipt(forged)).toThrow(/tokens\[2\]/);
+  });
+
+  it("requires the exact ordered deployment inventory without missing, reversed, or extra rows", () => {
+    const missingMinter: any = deploymentReceipt();
+    delete missingMinter.minter;
+    expect(() => validateAaContractsReceipt(missingMinter)).toThrow(/minter must be an object/);
+
+    const missingAatest: any = deploymentReceipt();
+    missingAatest.tokens.splice(1, 1);
+    expect(() => validateAaContractsReceipt(missingAatest)).toThrow(/tokens\[1\]/);
+
+    const reversedAatest: any = deploymentReceipt();
+    [reversedAatest.tokens[0], reversedAatest.tokens[1]] = [reversedAatest.tokens[1], reversedAatest.tokens[0]];
+    expect(() => validateAaContractsReceipt(reversedAatest)).toThrow(/tokens\[0\]/);
+
+    const reversedFaucet: any = deploymentReceipt();
+    [reversedFaucet.tokens[2], reversedFaucet.tokens[3]] = [reversedFaucet.tokens[3], reversedFaucet.tokens[2]];
+    expect(() => validateAaContractsReceipt(reversedFaucet)).toThrow(/tokens\[2\]/);
+
+    const extra: any = deploymentReceipt();
+    extra.tokens.push({
+      ...extra.tokens[3],
+      name: "WUSD",
+      color: offerFilesTokenColor("WUSD", OFFER_FILES),
+    });
+    expect(() => validateAaContractsReceipt(extra)).toThrow(/exactly AATEST-S/);
+  });
+
+  it("rejects unsupported WUSD, unshielded faucet rows, and forged AA colours", () => {
+    const wusd: any = deploymentReceipt();
+    wusd.tokens[3] = { ...wusd.tokens[3], name: "WUSD", color: offerFilesTokenColor("WUSD", OFFER_FILES) };
+    expect(() => validateAaContractsReceipt(wusd)).toThrow(/tokens\[3\]/);
+
+    const unshieldedFaucet: any = deploymentReceipt();
+    unshieldedFaucet.tokens[2] = { ...unshieldedFaucet.tokens[2], family: "unshielded" };
+    expect(() => validateAaContractsReceipt(unshieldedFaucet)).toThrow(/tokens\[2\]/);
+
+    const forgedShielded: any = deploymentReceipt();
+    forgedShielded.tokens[0] = { ...forgedShielded.tokens[0], color: "12".repeat(32) };
+    expect(() => validateAaContractsReceipt(forgedShielded)).toThrow(/deployment-derived AATEST-S/);
+
+    const forgedUnshielded: any = deploymentReceipt();
+    forgedUnshielded.tokens[1] = { ...forgedUnshielded.tokens[1], color: "34".repeat(32) };
+    expect(() => validateAaContractsReceipt(forgedUnshielded)).toThrow(/deployment-derived AATEST-U/);
+  });
+
+  it.each(["manager", "minter", "offerFiles"] as const)(
+    "rejects prefixed and uppercase %s public addresses",
+    (field) => {
+      const prefixed: any = deploymentReceipt();
+      prefixed[field].address = `0x${prefixed[field].address}`;
+      expect(() => validateAaContractsReceipt(prefixed)).toThrow(/lower-case unprefixed/);
+
+      const uppercase: any = deploymentReceipt();
+      uppercase[field].address = uppercase[field].address.toUpperCase();
+      expect(() => validateAaContractsReceipt(uppercase)).toThrow(/lower-case unprefixed/);
+    },
+  );
+
+  it("allows omission of Offer Files only when the deployment contains exactly its two AA Minter rows", () => {
+    const minterOnly: any = deploymentReceipt();
+    delete minterOnly.offerFiles;
+    minterOnly.tokens = minterOnly.tokens.slice(0, 2);
+    expect(validateAaContractsReceipt(minterOnly).tokens).toHaveLength(2);
   });
 });
 

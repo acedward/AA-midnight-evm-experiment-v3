@@ -1,4 +1,9 @@
-import { rawTokenType } from "@midnight-ntwrk/compact-runtime";
+import {
+  CompactTypeBytes,
+  CompactTypeVector,
+  persistentHash,
+  rawTokenType,
+} from "@midnight-ntwrk/compact-runtime";
 
 export const AA_MINTER_SHIELDED_NAME = "AATEST-S" as const;
 export const AA_MINTER_UNSHIELDED_NAME = "AATEST-U" as const;
@@ -45,6 +50,12 @@ export type TokenMetadata = AaMinterTokenMetadata | OfferFilesTokenMetadata;
 
 const RAW_COLOR = /^[0-9a-f]{64}$/;
 const OFFER_FILES_NAME = /^[A-Z][A-Z0-9_-]*$/;
+const AA_MINTER_FAMILY_TAG = {
+  shielded: "aa00004:minter:shielded",
+  unshielded: "aa00004:minter:unshielded",
+} as const;
+const BYTES_32 = new CompactTypeBytes(32);
+const VECTOR_2_BYTES_32 = new CompactTypeVector(2, BYTES_32);
 // These are Offer Files faucet names; the AA Minter must reject them as outward metadata.
 const OFFER_FILES_NAMES_FORBIDDEN_ON_AA = new Set(["WBTC", "WETH", "WUSD"]);
 
@@ -166,6 +177,40 @@ export function aaMinterTokenMetadata(input: {
     source: "aa-minter",
     ...input,
   }) as AaMinterTokenMetadata;
+}
+
+function padBytes32(value: string): Uint8Array {
+  const encoded = new TextEncoder().encode(value);
+  if (encoded.length > 32) throw new RangeError("AA Minter derivation input must fit Bytes<32>");
+  const padded = new Uint8Array(32);
+  padded.set(encoded);
+  return padded;
+}
+
+/** Independently derives the AA Minter token colour from public deployment identity. */
+export function aaMinterTokenColor(
+  family: TokenFamily,
+  internalDeploymentTag: string,
+  minterAddress: string,
+): string {
+  const tag = validateAaDeploymentTag(internalDeploymentTag);
+  const separator = persistentHash(VECTOR_2_BYTES_32, [
+    padBytes32(tag),
+    padBytes32(AA_MINTER_FAMILY_TAG[family]),
+  ]) as Uint8Array;
+  return canonicalTokenColor(rawTokenType(separator, canonicalTokenColor(minterAddress)));
+}
+
+export function aaMinterDeploymentTokenMetadata(input: {
+  readonly family: TokenFamily;
+  readonly internalDeploymentTag: string;
+  readonly minterAddress: string;
+}): AaMinterTokenMetadata {
+  return aaMinterTokenMetadata({
+    family: input.family,
+    color: aaMinterTokenColor(input.family, input.internalDeploymentTag, input.minterAddress),
+    internalDeploymentTag: input.internalDeploymentTag,
+  });
 }
 
 export function offerFilesTokenMetadata(input: {

@@ -1,9 +1,10 @@
-/** Drops causes/stacks and replaces a literal secret before an error crosses the funding boundary. */
-export function redactSecretError(error: unknown, secret: string): Error {
-  const message = error instanceof Error ? error.message : String(error);
-  const escaped = secret.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const redacted = secret.length === 0 ? message : message.replace(new RegExp(escaped, "gi"), "[REDACTED]");
-  return new Error(redacted || "funding operation failed");
+import { isWalletSessionLifecycleError, WalletSessionStopError } from "./session-gate.js";
+
+/** Drops all untrusted text while preserving the lifecycle poison classification. */
+export function fixedStageError(error: unknown, stage: string): Error {
+  return isWalletSessionLifecycleError(error)
+    ? new WalletSessionStopError(`${stage} lifecycle failed`)
+    : new Error(`${stage} failed`);
 }
 
 export function assertNoLiteralSecret(value: unknown, secret: string): void {

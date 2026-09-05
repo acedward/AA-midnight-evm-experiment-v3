@@ -1,4 +1,7 @@
 import {
+  AA_MINTER_SHIELDED_NAME,
+  AA_MINTER_UNSHIELDED_NAME,
+  aaMinterTokenColor,
   canonicalTokenColor,
   offerFilesTokenColor,
   validateAaDeploymentTag,
@@ -18,7 +21,7 @@ export interface AaContractsReceipt {
     readonly address: string;
     readonly domain: string;
   };
-  readonly minter?: {
+  readonly minter: {
     readonly address: string;
     /** Raw constructor tag; it is not a token display name. */
     readonly tag: string;
@@ -84,7 +87,9 @@ function text(value: unknown, label: string): string {
 
 function address(value: unknown, label: string): string {
   const raw = text(value, label);
-  canonicalTokenColor(raw);
+  if (raw !== canonicalTokenColor(raw)) {
+    throw new RangeError(`${label} must be lower-case unprefixed 32-byte hex`);
+  }
   return raw;
 }
 
@@ -135,15 +140,12 @@ export function validateAaContractsReceipt(value: unknown): AaContractsReceipt {
   const manager = record(receipt.manager, "manager");
   noUnknownKeys(manager, ["address", "domain"], "manager");
 
-  let minter: AaContractsReceipt["minter"];
-  if (receipt.minter !== undefined) {
-    const raw = record(receipt.minter, "minter");
-    noUnknownKeys(raw, ["address", "tag"], "minter");
-    minter = {
-      address: address(raw.address, "minter address"),
-      tag: validateAaDeploymentTag(raw.tag),
-    };
-  }
+  const rawMinter = record(receipt.minter, "minter");
+  noUnknownKeys(rawMinter, ["address", "tag"], "minter");
+  const minter = {
+    address: address(rawMinter.address, "minter address"),
+    tag: validateAaDeploymentTag(rawMinter.tag),
+  };
 
   let offerFiles: AaContractsReceipt["offerFiles"];
   if (receipt.offerFiles !== undefined) {
@@ -153,18 +155,39 @@ export function validateAaContractsReceipt(value: unknown): AaContractsReceipt {
   }
 
   const tokens = tokenArray(receipt.tokens);
-  for (const token of tokens) {
-    if (token.source === "aa-minter") {
-      if (!minter) throw new RangeError("AA Minter token metadata requires a minter receipt entry");
-      if (token.internalDeploymentTag !== minter.tag) {
-        throw new RangeError("AA Minter token internal deployment tag does not match minter.tag");
-      }
-    } else {
-      if (!offerFiles) {
-        throw new RangeError("Offer Files faucet token metadata requires an offerFiles receipt entry");
-      }
-      if (token.color !== offerFilesTokenColor(token.name, offerFiles.address)) {
-        throw new RangeError("Offer Files faucet token colour does not match its name and deployment address");
+  const shielded = tokens[0];
+  const unshielded = tokens[1];
+  if (
+    !shielded || shielded.source !== "aa-minter" || shielded.family !== "shielded" ||
+    shielded.name !== AA_MINTER_SHIELDED_NAME || shielded.internalDeploymentTag !== minter.tag ||
+    shielded.color !== aaMinterTokenColor("shielded", minter.tag, minter.address)
+  ) {
+    throw new RangeError("aa-contracts tokens[0] must be the deployment-derived AATEST-S row");
+  }
+  if (
+    !unshielded || unshielded.source !== "aa-minter" || unshielded.family !== "unshielded" ||
+    unshielded.name !== AA_MINTER_UNSHIELDED_NAME || unshielded.internalDeploymentTag !== minter.tag ||
+    unshielded.color !== aaMinterTokenColor("unshielded", minter.tag, minter.address)
+  ) {
+    throw new RangeError("aa-contracts tokens[1] must be the deployment-derived AATEST-U row");
+  }
+
+  if (offerFiles === undefined) {
+    if (tokens.length !== 2) {
+      throw new RangeError("aa-contracts without Offer Files must contain exactly the two AA Minter rows");
+    }
+  } else {
+    if (tokens.length !== 4) {
+      throw new RangeError("aa-contracts with Offer Files must contain exactly AATEST-S, AATEST-U, WBTC, and WETH");
+    }
+    for (const [index, name] of [[2, "WBTC"], [3, "WETH"]] as const) {
+      const token = tokens[index];
+      if (
+        !token || token.source !== "offer-files-faucet" || token.family !== "shielded" ||
+        token.name !== name || token.decimals !== 6 ||
+        token.color !== offerFilesTokenColor(name, offerFiles.address)
+      ) {
+        throw new RangeError(`aa-contracts tokens[${index}] must be the deployment-derived shielded ${name} row`);
       }
     }
   }
@@ -177,7 +200,7 @@ export function validateAaContractsReceipt(value: unknown): AaContractsReceipt {
       address: address(manager.address, "manager address"),
       domain: text(manager.domain, "manager domain"),
     },
-    ...(minter ? { minter } : {}),
+    minter,
     ...(offerFiles ? { offerFiles } : {}),
     tokens,
     createdAt: timestamp(receipt.createdAt, "createdAt"),

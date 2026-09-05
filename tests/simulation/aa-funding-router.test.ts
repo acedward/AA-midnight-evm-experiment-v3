@@ -90,6 +90,9 @@ describe("strict AA funding mode selection", () => {
 
   it("keeps the plain wallet proof endpoint separate from the experimental Manager endpoint", () => {
     const parsed = parseFundingEnvironment(baseEnv());
+    expect(parsed.nodeUrl).toBe("http://node:9944");
+    expect(parsed.indexerUrl).toBe("http://indexer:8088/api/v4/graphql");
+    expect(parsed.indexerWsUrl).toBe("ws://indexer:8088/api/v4/graphql/ws");
     expect(parsed.managerProofServerUrl).toBe("http://aa-proof-server:6300");
     expect(parsed.walletProofServerUrl).toBe("http://proof-server:6300");
     expect(parsed.managerProofServerUrl).not.toBe(parsed.walletProofServerUrl);
@@ -164,7 +167,24 @@ describe("strict AA funding mode selection", () => {
       OFFER_FILES_FAUCET: "1",
       OFFER_FILES_CONTRACT: "44".repeat(32),
       ZSWAP_API: zswapApi,
-    })).toThrow(/must be an origin URL/);
+    })).toThrow(/must be an origin URL|must not contain credentials, query, or fragment/);
+  });
+
+  it.each([
+    ["MN_NODE_URL", "http://operator:node-password@node:9944/rpc", "node-password"],
+    ["MN_INDEXER_URL", "http://indexer:8088/api/v4/graphql?api_key=INDEXER-KEY", "INDEXER-KEY"],
+    ["MN_INDEXER_WS_URL", "ws://indexer:8088/api/v4/graphql/ws#PRIVATE-MATERIAL", "PRIVATE-MATERIAL"],
+    ["MN_PROOF_SERVER_URL", "http://proof-user:proof-password@aa-proof-server:6300/prove", "proof-password"],
+    ["AA_WALLET_PROOF_SERVER_URL", "http://proof-server:6300/path?password=WALLET-PASSWORD", "WALLET-PASSWORD"],
+  ] as const)("rejects credential-bearing %s without echoing the credential", (key, endpoint, credential) => {
+    let message = "";
+    try {
+      parseFundingEnvironment({ ...baseEnv(), [key]: endpoint });
+    } catch (error) {
+      message = error instanceof Error ? error.message : String(error);
+    }
+    expect(message).toMatch(/must not contain credentials, query, or fragment/);
+    expect(message).not.toContain(credential);
   });
 
   it.each(["WBTC", "WETH", "WUSD"])("rejects market name %s as an AA Minter tag", (tag) => {
