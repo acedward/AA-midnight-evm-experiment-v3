@@ -61,6 +61,41 @@ second run does not replace the first run's evidence. The sidecar copies the sel
 project label and adds `com.effectstream.aa-faucet-harness=1`, making an interrupted run
 discoverable by the stack teardown.
 
+The strict environment table and two runnable mode examples are in
+[`README.md`](../../README.md#test-tokens-aa-minter-vs-offer-files-faucet). In particular, the
+AA-Minter amount is already-scaled raw base units, while the Offer Files amount is whole coins that
+the selected adapter scales by `10^6` exactly once. The common defaults deliberately make
+`1_000_000_000` raw Minter units equal 1,000 six-decimal faucet coins without sharing an ambiguous
+`amount` input.
+
+### Receipt boundary
+
+The selected stock stack still produces the following bounded, unversioned object at
+`/aa/out/aa-contracts.json`:
+
+```text
+network, aaCommit,
+manager.{address,domain}, minter.{address,tag},
+mints.{shielded,unshielded}.{color,tx,recipient},
+deployedAt, tookSeconds
+```
+
+The runner parses that legacy shape only under `legacy-0.18`, checks network, full AA commit,
+Manager identity and independently read Minter address/tag/both colours before any ledger effect,
+and writes a separate `aa-contracts/v1` decoration. That versioned deployment receipt always has
+`manager`, `minter`, and the two `aa-minter` metadata rows `AATEST-S`/`AATEST-U`; faucet mode also
+has `offerFiles` and exactly one six-decimal shielded row for each of WBTC/WETH. The companion
+`aa-faucet-run/v1` receipt remains mode-specific and contains only sanitized token metadata,
+balance deltas, distinct transaction IDs and timestamps.
+
+The authoritative stock producer and consumers live outside this repository. The separate
+downstream work must update `images/aa-contracts/runner/deploy-aa.ts`,
+`images/aa-contracts/runner/aa-console.ts`, `images/aa-contracts/runner/aa-e2e.ts`,
+`scripts/verify-aa.sh`, `scripts/aa-e2e.sh` and `docs/COMPONENTS.md`. The exact field-level handoff
+is [`docs/midnight-2-offers-aa-contracts-handoff.md`](../../docs/midnight-2-offers-aa-contracts-handoff.md).
+This AA change does not claim that FR-005's downstream producer/consumer migration is implemented
+or merged.
+
 ## Historical live apparatus
 
 The live-node runners this repository used to carry — deploy rigs, wallet funding, swap maker/taker

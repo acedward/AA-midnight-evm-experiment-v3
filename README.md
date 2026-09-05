@@ -109,6 +109,95 @@ are mathematical column labels in the frozen custody table. They are not token n
 readable metadata is defined centrally in `tests/lib/token-metadata.ts` and keeps display name and
 source separate from those raw fixture values.
 
+## Test tokens: AA Minter vs offer-files faucet
+
+The test harness has two deliberately separate funding sources. They can both put shielded value
+into the Manager, but their names, token identifiers and amount units are not interchangeable.
+
+| source | outward names | colour derivation | amount passed to the mint circuit |
+|---|---|---|---|
+| AA Minter (`source: "aa-minter"`) | `AATEST-S` and `AATEST-U` | `sep = persistentHash([internalDeploymentTag, familyTag])`, then `tokenType(sep, minterAddress)`; the shielded and unshielded family tags are distinct | already-scaled raw positive `Uint<64>` base units; the harness default is `1_000_000_000` |
+| Offer Files faucet (`source: "offer-files-faucet"`) | the exact registry names `WBTC` and `WETH` | `rawTokenType(domainSepFromName(name), offerFilesAddress)`, where the domain separator is the pinned faucet's `zswap-da-faucet:<name>` derivation | positive whole coins scaled exactly once by `10^6`; the harness default is 1,000 whole coins = `1_000_000_000` base units |
+
+The AA constructor tag (for example `TOKA`) remains `internalDeploymentTag` in metadata. It is not
+a market name and it must never be displayed as `WBTC`, `WETH`, `AATEST-S` or `AATEST-U`. Conversely,
+Offer Files metadata has no internal AA tag. Faucet metadata is deployment-bound: the runner accepts
+exactly one shielded, six-decimal registry row for each of `WBTC` and `WETH`, re-derives both colours
+from the name and Offer Files address, and refuses any mismatch. Registry access is one read-only
+`GET /v1/known-tokens`; the AA repository exposes no registry write path.
+
+Both modes use one dedicated `AA_HARNESS_WALLET_SEED`, which must not equal the stack's generic
+`MIDNIGHT_WALLET_SEED`. Only one facade for that seed may exist at a time. Funding is therefore an
+explicit two-step custody path: a first wallet session mints to itself, stops completely, and a
+second same-seed session deposits the exact colour and amount into the Manager. The runner checks
+the wallet `before -> before + amount -> before` and Manager `before -> before + amount` deltas.
+An open or stop failure poisons that seed for the process rather than risking a second live facade.
+
+A future one-transaction mint-to-Manager path is conditional on the deployed Offer Files typed-
+recipient support. The live validation recorded for this change used the stock legacy kernel
+`4af102536f02f137b696a4734bd8c936eddf3672`, so that optimization test (`T-M1`) was **not run**;
+the verified path remains mint-to-wallet, stop, reopen and deposit. A merged upstream change alone
+does not prove the feature is present in the deployed stack.
+
+### Manual harness configuration
+
+The manual runner is [`tests/integration/aa-faucet-runner.ts`](tests/integration/aa-faucet-runner.ts).
+It is intentionally not a `*.test.ts` file, so default integration discovery remains empty and does
+not start a stack. The shipped live profile is `legacy-0.18`; it uses artifact-matched code from the
+selected stock `aa-console` image and never loads this checkout's current 0.19 generated JavaScript
+against the old deployment.
+
+| variable | required/default | purpose |
+|---|---|---|
+| `AA_FAUCET_LIVE` | set to `1` for the external harness | opts into the already-running stack path |
+| `AA_HARNESS_CONTAINER` | required | unpruned stock `aa-console` container whose image, network and `/aa/out` volume the sidecar reuses |
+| `AA_DEPLOYMENT_PROFILE` | required; live value `legacy-0.18` | binds compiler/runtime/artifact assumptions and rejects mixed profiles |
+| `AA_EXPECTED_COMMIT` | required, full 40-character SHA | exact deployed AA commit expected in the legacy producer receipt |
+| `MIDNIGHT_NETWORK_ID` | required | network id, cross-checked with the deployment receipt |
+| `MN_NODE_URL`, `MN_INDEXER_URL`, `MN_INDEXER_WS_URL` | required | node and indexer endpoints visible inside the selected container's network namespace |
+| `MN_PROOF_SERVER_URL` | required | experimental proof server for Manager and the legacy AA Minter |
+| `AA_WALLET_PROOF_SERVER_URL` | required | plain proof server for the wallet and Offer Files |
+| `AA_HARNESS_WALLET_SEED` | required, nonzero 32-byte hex | dedicated, pre-funded harness wallet; never written to receipts or logs |
+| `AA_MANAGER_ADDRESS` | required | deployed Manager address |
+| `AA_MANAGER_ARTIFACT_PATH` | `/aa/contract-manager/src/managed` | artifact-matched legacy Manager module, manifest, ZKIR and unpruned keys |
+| `AA_MINTER_ARTIFACT_PATH` | `/aa/contract-minter/src/managed` | artifact-matched legacy Minter, also preflighted in faucet mode |
+| `AA_DEPLOYMENT_RECEIPT_PATH` | `/aa/out/aa-contracts.json` | bounded legacy producer input; it is read, cross-checked and decorated, never mistaken for `aa-contracts/v1` |
+| `AA_DECORATED_DEPLOYMENT_RECEIPT_PATH` | `/aa/out/aa-contracts-v1.json` | versioned deployment metadata output; use a distinct path per mode |
+| `AA_RUN_RECEIPT_PATH` | `/aa/out/aa-faucet-run.json` | mode-specific run evidence output; use a distinct path per mode |
+| `AA_LIVE_RUNTIME_MODULE` | `/aa/runner/aa-faucet-runtime.ts` | shipped concrete wallet/contract runtime |
+| `AA_MINTER_ADDRESS`, `AA_MINTER_TAG`, `AA_MINTER_SHIELDED_COLOR`, `AA_MINTER_UNSHIELDED_COLOR` | required in AA-Minter mode | exact deployed Minter identity; tag remains internal and both colours are independently verified |
+| `AA_HARNESS_MINTER_AMOUNT_BASE_UNITS` | `1000000000` | positive raw `Uint64` amount in AA-Minter mode; no decimal scaling is applied |
+| `OFFER_FILES_FAUCET` | unset/`0` for AA Minter; `1` for faucet | funding-mode switch |
+| `OFFER_FILES_CONTRACT`, `ZSWAP_API` | required in faucet mode | exact Offer Files deployment and origin-only registry base URL |
+| `OFFER_FILES_ARTIFACT_PATH` | `/aa/contract-offer-files/src/managed` | artifact-matched legacy Offer Files module, manifest, ZKIR and keys |
+| `AA_HARNESS_FAUCET_WHOLE_COINS` | `1000` | positive whole-coin amount per WBTC/WETH; scaled to six decimals exactly once |
+
+First provision the dedicated seed with the stock stack's `fund-wallet.sh` and confirm its NIGHT
+registration and spendable DUST. Keep the seed and endpoints in a private environment file, then
+run the two modes with different receipt paths:
+
+```sh
+set -a
+. /private/tmp/aa-faucet.env
+set +a
+
+AA_FAUCET_LIVE=1 \
+AA_DECORATED_DEPLOYMENT_RECEIPT_PATH=/aa/out/aa-contracts-v1-minter.json \
+AA_RUN_RECEIPT_PATH=/aa/out/aa-faucet-run-minter.json \
+scripts/test-integration.sh
+
+AA_FAUCET_LIVE=1 OFFER_FILES_FAUCET=1 \
+AA_DECORATED_DEPLOYMENT_RECEIPT_PATH=/aa/out/aa-contracts-v1-offer-files.json \
+AA_RUN_RECEIPT_PATH=/aa/out/aa-faucet-run-offer-files.json \
+scripts/test-integration.sh
+```
+
+The exact stock-stack preparation, receipt shapes and current compatibility boundary are detailed
+in [`tests/integration/README.md`](tests/integration/README.md). The separate downstream producer/
+consumer change is specified in
+[`docs/midnight-2-offers-aa-contracts-handoff.md`](docs/midnight-2-offers-aa-contracts-handoff.md);
+it is not implemented by this AA repository.
+
 Every script is self-documented: its header says what it does, what it needs, and why it is built
 the way it is. `--help` is not implemented on purpose — read the top of the file.
 
