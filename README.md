@@ -116,7 +116,7 @@ into the Manager, but their names, token identifiers and amount units are not in
 
 | source | outward names | colour derivation | amount passed to the mint circuit |
 |---|---|---|---|
-| AA Minter (`source: "aa-minter"`) | `AATEST-S` and `AATEST-U` | `sep = persistentHash([internalDeploymentTag, familyTag])`, then `tokenType(sep, minterAddress)`; the shielded and unshielded family tags are distinct | already-scaled raw positive `Uint<64>` base units; the harness default is `1_000_000_000` |
+| AA Minter (`source: "aa-minter"`) | `AATEST-S` and `AATEST-U` | `tag32 = pad(32, internalDeploymentTag)`, `sep = persistentHash([tag32, familyTag])`, then `tokenType(sep, minterAddress)`; the shielded and unshielded family tags are distinct | already-scaled raw positive `Uint<64>` base units; the harness default is `1_000_000_000` |
 | Offer Files faucet (`source: "offer-files-faucet"`) | the exact registry names `WBTC` and `WETH` | `rawTokenType(domainSepFromName(name), offerFilesAddress)`, where the domain separator is the pinned faucet's `zswap-da-faucet:<name>` derivation | positive whole coins scaled exactly once by `10^6`; the harness default is 1,000 whole coins = `1_000_000_000` base units |
 
 The AA constructor tag (for example `TOKA`) remains `internalDeploymentTag` in metadata. It is not

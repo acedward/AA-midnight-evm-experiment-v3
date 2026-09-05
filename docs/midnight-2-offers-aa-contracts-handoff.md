@@ -75,7 +75,7 @@ contains exactly one WBTC and one WETH shielded row, each with `decimals: 6`, pl
 The producer must derive or independently verify identifiers rather than accept labels attached to
 arbitrary colours:
 
-- AA Minter: `persistentHash([minter.tag, familyTag])`, then
+- AA Minter: pad `minter.tag` to `Bytes<32>`, compute `persistentHash([tag32, familyTag])`, then
   `tokenType(separator, minter.address)`, with the existing distinct shielded/unshielded family
   constants;
 - Offer Files: `rawTokenType(domainSepFromName(name), offerFiles.address)`, with the pinned
