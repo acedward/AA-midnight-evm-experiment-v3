@@ -215,6 +215,27 @@ describe("versioned aa-contracts receipt", () => {
     },
   );
 
+  it.each([
+    ["AATEST-S", 0],
+    ["AATEST-U", 1],
+    ["WBTC", 2],
+    ["WETH", 3],
+  ] as const)("rejects prefixed and uppercase %s token colours at the raw receipt boundary", (_name, index) => {
+    const prefixed: any = deploymentReceipt();
+    prefixed.tokens[index] = { ...prefixed.tokens[index], color: `0x${prefixed.tokens[index].color}` };
+    expect(() => validateAaContractsReceipt(prefixed)).toThrow(/lower-case unprefixed/);
+
+    const uppercase: any = deploymentReceipt();
+    uppercase.tokens[index] = { ...uppercase.tokens[index], color: uppercase.tokens[index].color.toUpperCase() };
+    expect(() => validateAaContractsReceipt(uppercase)).toThrow(/lower-case unprefixed/);
+  });
+
+  it("rejects uppercase aaCommit text instead of normalizing it", () => {
+    const uppercase: any = deploymentReceipt();
+    uppercase.aaCommit = uppercase.aaCommit.toUpperCase();
+    expect(() => validateAaContractsReceipt(uppercase)).toThrow(/7-to-40 digit Git hex id/);
+  });
+
   it("allows omission of Offer Files only when the deployment contains exactly its two AA Minter rows", () => {
     const minterOnly: any = deploymentReceipt();
     delete minterOnly.offerFiles;

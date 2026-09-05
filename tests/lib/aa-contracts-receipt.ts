@@ -108,8 +108,17 @@ function amount(value: unknown, label: string): string {
   return raw;
 }
 
-function tokenArray(value: unknown): readonly TokenMetadata[] {
+function tokenArray(value: unknown, requireCanonicalColors = false): readonly TokenMetadata[] {
   if (!Array.isArray(value) || value.length === 0) throw new RangeError("receipt tokens must be a nonempty array");
+  if (requireCanonicalColors) {
+    value.forEach((entry, index) => {
+      const token = record(entry, `tokens[${index}]`);
+      const rawColor = text(token.color, `tokens[${index}].color`);
+      if (rawColor !== canonicalTokenColor(rawColor)) {
+        throw new RangeError(`tokens[${index}].color must be lower-case unprefixed 32-byte hex`);
+      }
+    });
+  }
   const tokens = value.map(validateTokenMetadata);
   const colors = new Set<string>();
   const identities = new Set<string>();
@@ -134,7 +143,7 @@ export function validateAaContractsReceipt(value: unknown): AaContractsReceipt {
   if (receipt.schemaVersion !== AA_CONTRACTS_RECEIPT_VERSION) {
     throw new RangeError(`aa-contracts schemaVersion must be ${AA_CONTRACTS_RECEIPT_VERSION}`);
   }
-  const commit = text(receipt.aaCommit, "aaCommit").toLowerCase();
+  const commit = text(receipt.aaCommit, "aaCommit");
   if (!/^[0-9a-f]{7,40}$/.test(commit)) throw new RangeError("aaCommit must be a 7-to-40 digit Git hex id");
 
   const manager = record(receipt.manager, "manager");
@@ -154,7 +163,7 @@ export function validateAaContractsReceipt(value: unknown): AaContractsReceipt {
     offerFiles = { address: address(raw.address, "Offer Files address") };
   }
 
-  const tokens = tokenArray(receipt.tokens);
+  const tokens = tokenArray(receipt.tokens, true);
   const shielded = tokens[0];
   const unshielded = tokens[1];
   if (
